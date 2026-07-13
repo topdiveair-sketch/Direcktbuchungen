@@ -1,0 +1,12 @@
+Zuhause am Bach OS V9 – Funktionstest
+Ergebnis: 9/9 erfolgreich
+
+OK | Öffentliche Startseite | 200
+OK | Admin-Login | 302
+OK | Login-Ziel /heute | /heute
+OK | Heute-Ansicht | 200
+OK | Heute-Status API | 200
+OK | Tagesaufgabe anlegen | 200
+OK | Einkaufsartikel anlegen | 200
+OK | Tagesaufgabe erledigen | 200
+OK | Einkaufsartikel erledigen | 200

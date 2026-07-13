@@ -1,0 +1,38 @@
+Zuhause am Bach OS V8.1 – Funktionstest
+Datum: 12.07.2026
+
+Ergebnis: 34 von 34 geprüften Funktionen erfolgreich.
+
+Geprüft:
+- Startseite
+- Health-Check
+- Admin-Anmeldung und Adminbereich
+- OS-Dashboard
+- Gästekartei
+- Aufgaben
+- Inventar
+- Finanzen
+- Windis-Center
+- Marketing-Center
+- Tagesdashboard
+- Gastgeber-Mobilansicht
+- Statistiken
+- Systemtest
+- Rechtstexte
+- Audit-Protokoll
+- Live-Kalender
+- Preis- und Verfügbarkeitsprüfung
+- Gutscheincode mit Preisabzug
+- Direktbuchung
+- Doppelbuchungssperre
+- Gästeportal
+- PDF-Rechnung
+- Stornierungsseite
+- Online-Check-in
+- iCal-Export
+- Anlegen von Aufgabe, Inventarposten, Kosten, Windis-Inhalt und Marketingbeitrag
+
+Behobene Fehler:
+- Adminbereich erhielt nicht alle Preismanager-Daten und erzeugte Fehler 500.
+- Online-Check-in-Token wurde bei neuen Buchungen nicht automatisch erzeugt.
+- Gutscheincodes wurden angezeigt, aber nicht vom Preis abgezogen.

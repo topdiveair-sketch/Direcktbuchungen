@@ -1,0 +1,13 @@
+Zuhause am Bach OS V11 – Prüfung
+
+OK | ZIP-Struktur geprüft
+OK | Python-Syntax geprüft
+OK | Smart Host enthalten
+OK | Autopilot enthalten
+OK | Auslastungsberechnung enthalten
+OK | Wäscheverwaltung enthalten
+OK | Wartungsplan enthalten
+OK | Fidel-Bereich enthalten
+OK | Pia-Bereich enthalten
+
+Hinweis: Live-Dienste benötigen später Zugangsdaten oder externe Datenquellen.

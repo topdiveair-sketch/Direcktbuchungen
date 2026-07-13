@@ -1,0 +1,19 @@
+18/18 erfolgreich
+OK Startseite 200
+OK Admin-Login-Seite 200
+OK Health 200
+OK Admin Login 302
+OK /smart 200
+OK /assistent 200
+OK /heute 200
+OK /os 200
+OK /wissen 200
+OK /admin 200
+OK /setup 200
+OK /quality 200
+OK /quality/report.json 200
+OK Setup speichern 200
+OK Benutzer anlegen 200
+OK Restore Point 200
+OK CSV Vorlage 200
+OK Staff Login 302

@@ -1,0 +1,13 @@
+Zuhause am Bach OS V11.1 – Prüfung
+
+OK | Python-Syntax geprüft
+OK | Wissensverwaltung enthalten
+OK | Stammdaten enthalten
+OK | Fidel/Gloria/Pia-Wissen enthalten
+OK | FAQ-Verwaltung enthalten
+OK | Dokumentvorlagen enthalten
+OK | Medienbibliothek enthalten
+OK | CSV-Export enthalten
+OK | Such-API enthalten
+
+Hinweis: Inhalte wie aktuelle Heurige, Öffnungszeiten, Telefonnummern und Fahrpläne müssen später mit verlässlichen Daten befüllt werden.

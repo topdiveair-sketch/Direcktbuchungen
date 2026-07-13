@@ -1,0 +1,10 @@
+Zuhause am Bach OS V10.0 – Prüfung
+
+OK | Python-Syntax geprüft
+OK | Gastgeber-Assistent enthalten
+OK | Frühstücksmodus enthalten
+OK | Reinigungsmodus enthalten
+OK | Tagesabschluss enthalten
+OK | Responsive CSS enthalten
+
+Hinweis: Externe Live-Dienste wie Wetter, Booking-API, PayPal und E-Mail benötigen später Zugangsdaten.
