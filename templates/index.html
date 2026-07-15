@@ -1,0 +1,231 @@
+
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Zuhause am Bach – Direkt buchen</title>
+  <meta name="description" content="Direktbuchung für Zuhause am Bach in Aggsbach Markt – Basislager für Welterbesteig und Donauradweg.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="hero" id="start">
+  <nav class="topbar">
+    <a class="brand" href="#start">
+      <span class="logo-mark">⌂</span>
+      <span>Zuhause am Bach<small>Gästehaus Wachau</small></span>
+    </a>
+    <div class="nav-links">
+      <a href="#zimmer">Zimmer</a>
+      <a href="#ausstattung">Ausstattung</a>
+      <a href="#kalender">Kalender</a>
+      <a href="#umgebung">Umgebung</a>
+      <a href="#kontakt">Kontakt</a>
+    </div>
+    <a href="#booking" class="btn top-btn">Jetzt buchen</a>
+  </nav>
+
+  <div class="hero-content">
+    <h1>Zuhause am Bach</h1>
+    <p>Das Basislager für Welterbesteig und Donauradweg</p>
+    <span>Mit Fidel, Gloria und Pia – den Wilden Wachauer Windis.</span>
+  </div>
+</header>
+
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <section id="booking" class="booking-shell">
+    <div class="booking-card">
+      <div class="section-heading">
+        <span class="section-icon">▣</span>
+        <div>
+          <h2>Direkt buchen & Bestpreis sichern</h2>
+          <p>Einfach anfragen und entspannt ankommen.</p>
+        </div>
+      </div>
+
+      <form id="bookingForm" action="{{ url_for('book') }}" method="post">
+        <div class="booking-grid">
+          <label>Anreise
+            <input type="date" id="arrival" name="arrival" min="{{ today }}" required>
+          </label>
+          <label>Abreise
+            <input type="date" id="departure" name="departure" min="{{ today }}" required>
+          </label>
+          <label>Nächte
+            <input type="text" id="nights" value="0" readonly>
+          </label>
+          <label>Personen
+            <select id="adults" name="adults">
+              <option value="1">1 Erwachsener</option>
+              <option value="2" selected>2 Erwachsene</option>
+            </select>
+          </label>
+          <button class="btn check-main" type="button" id="checkAvailability">Verfügbarkeit prüfen</button>
+        </div>
+
+        <div id="availabilityResult" class="availability-result hidden"></div>
+
+        <section class="booking-services" aria-label="Zusatzleistungen">
+          <div class="service-heading">
+            <span>Auf Wunsch gleich dazu</span>
+            <strong>Fr?hst?ck, Wachauer Jause und Gep?cktransport</strong>
+          </div>
+          <div class="extras-grid featured-extras">
+            {% for key in ['breakfast', 'jause', 'luggage'] %}
+              {% set item = extras.get(key) %}
+              {% if item and item.enabled %}
+              <label class="extra-option featured-extra">
+                <input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}">
+                <span>
+                  <strong>{{ item.label }}</strong>
+                  <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} ? {% if item.unit=='person_night' %}pro Person/Nacht{% elif item.unit=='night' %}pro Nacht{% else %}einmalig{% endif %}</small>
+                </span>
+              </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </section>
+
+        <h3 class="subheading">Zimmer wählen</h3>
+        <div class="release-note">
+          Bis einschließlich <strong>15.08.2026</strong> ist nur das Zimmer <strong>Bachblick</strong> buchbar.
+          Ab <strong>16.08.2026</strong> stehen alle vier Zimmer zur Verfügung.
+        </div>
+
+        <div id="zimmer" class="room-list">
+          {% for room, info in rooms.items() %}
+          <label class="room-option">
+            <input type="radio" name="room" value="{{ room }}" data-price="{{ info.price }}"
+                   data-from="{{ info.available_from.isoformat() }}" {% if room == 'Bachblick' %}checked{% endif %}>
+            <img src="{{ url_for('static', filename='images/rooms/' + room_images[room]) }}" alt="{{ room }}">
+            <span class="room-copy">
+              <strong>{{ room }}</strong>
+              <small>{{ info.description }}</small>
+              <span class="room-features">Doppelbett · eigenes Bad · WLAN · ruhige Lage</span>
+            </span>
+            <span class="room-price"><strong>{{ '%.0f'|format(info.price) }} €</strong><small>pro Nacht</small></span>
+            <span class="room-check">✓</span>
+          </label>
+          {% endfor %}
+        </div>
+
+        <div id="priceBreakdown" class="price-breakdown"></div>
+
+        <div class="total-row">
+          <span>Gesamtpreis <small>(inkl. gew?hlter Extras)</small></span>
+          <strong id="totalPrice">0 €</strong>
+        </div>
+
+        <div id="guestArea" class="guest-area hidden">
+          <h3>Gästedaten</h3>
+          <div class="guest-grid">
+            <label>Vorname<input type="text" name="first_name" required></label>
+            <label>Nachname<input type="text" name="last_name" required></label>
+            <label>E-Mail<input type="email" name="email" required></label>
+            <label>Telefon<input type="tel" name="phone" required></label>
+          </div>
+          <label>Wünsche oder Nachricht
+            <textarea name="message" rows="4" placeholder="z. B. vegetarisches Frühstück, Fahrräder oder spätere Anreise"></textarea>
+          </label>
+
+          <label>Gutscheincode<input id="couponCode" name="coupon_code" placeholder="optional"></label><div id="couponResult"></div><h3>Zahlungsart</h3>
+          <div class="payment-grid">
+            <label><input type="radio" name="payment_method" value="PayPal" checked><span><strong>PayPal</strong><small>{{ paypal_email }}</small></span></label>
+            <label><input type="radio" name="payment_method" value="Banküberweisung"><span><strong>Banküberweisung</strong><small>Kontodaten nach Bestätigung</small></span></label>
+            <label><input type="radio" name="payment_method" value="Vor Ort"><span><strong>Zahlung vor Ort</strong><small>bei Anreise</small></span></label>
+          </div>
+
+          <button class="btn full" type="submit">Verbindliche Buchungsanfrage senden</button>
+          <small class="legal-note">Die Anfrage wird sofort im Direktbuchungskalender vorgemerkt. Die persönliche Bestätigung folgt anschließend.</small>
+        </div>
+      </form>
+    </div>
+
+    <aside class="benefit-column">
+      <article><span>⌾</span><div><strong>Bestpreis-Garantie</strong><small>Direkt ohne Buchungsgebühr.</small></div></article>
+      <article><span>♡</span><div><strong>Persönlich & herzlich</strong><small>Wir sind vor, während und nach dem Aufenthalt da.</small></div></article>
+      <article><span>🐾</span><div><strong>Windis inklusive</strong><small>Fidel, Gloria und Pia freuen sich auf Besuch.</small></div></article>
+      <article><span>⌖</span><div><strong>Top-Lage</strong><small>Direkt am Welterbesteig und Donauradweg.</small></div></article>
+      <article><span>🚲</span><div><strong>Sicher radeln</strong><small>Innenhof, Unterstand und E-Bike-Laden.</small></div></article>
+    </aside>
+  </section>
+
+  <section id="ausstattung" class="feature-strip">
+    <article><span>♨</span><strong>Frühstück mit Liebe</strong><small>Regional, vegetarisch oder vegan.</small></article>
+    <article><span>🚲</span><strong>E-Bike willkommen</strong><small>Laden, Werkzeug, Luft und Unterstand.</small></article>
+    <article><span>🥾</span><strong>Wanderer & Radfahrer</strong><small>Gepäcktransport auf Anfrage.</small></article>
+    <article><span>💬</span><strong>Ausflugstipps</strong><small>Karten und Geheimtipps in der Gäste-App.</small></article>
+    <article><span>📱</span><strong>Gäste-App</strong><small>Alle Informationen auf dem Smartphone.</small></article>
+    <a class="qr-block" href="{{ guest_app_url }}" target="_blank" rel="noopener">
+      <img src="{{ url_for('static', filename='images/gaesteapp-qr.png') }}" alt="QR-Code zur Gäste-App">
+      <span>Zur Gäste-App</span>
+    </a>
+  </section>
+
+  <section id="kalender" class="calendar-section">
+    <div class="calendar-head">
+      <div>
+        <span class="eyebrow">Live-Verfügbarkeit</span>
+        <h2>Freie und belegte Tage</h2>
+      </div>
+      <select id="calendarRoom">
+        {% for room in rooms %}<option value="{{ room }}">{{ room }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="calendar-controls">
+      <button type="button" id="prevMonth">‹</button>
+      <strong id="calendarTitle"></strong>
+      <button type="button" id="nextMonth">›</button>
+    </div>
+    <div class="calendar-legend">
+      <span><i class="free"></i> frei</span>
+      <span><i class="booking"></i> Booking/iCal</span>
+      <span><i class="direct"></i> Direktbuchung</span>
+      <span><i class="pending"></i> vorgemerkt</span>
+      <span><i class="unreleased"></i> noch nicht freigegeben</span>
+    </div>
+    <div id="liveCalendar" class="live-calendar"></div>
+  </section>
+
+  <section id="umgebung" class="story-section">
+    <div>
+      <span class="eyebrow">Aggsbach Markt</span>
+      <h2>Zwischen Donau, Wald und Geschichten</h2>
+      <p>Ein ruhiges Basislager für Wanderer, Radfahrer, Genießer und alle, die die Wachau nicht nur sehen, sondern erleben möchten.</p>
+    </div>
+    <div class="review-box">
+      <strong>{{ settings.google_rating }}</strong>
+      <span class="stars">★★★★★</span>
+      <small>aus {{ settings.google_review_count }} Google-Bewertungen</small>
+      {% if settings.google_review_url %}
+      <a href="{{ settings.google_review_url }}" target="_blank" rel="noopener">Google-Bewertungen ansehen</a>
+      {% endif %}
+    </div>
+  </section>
+</main>
+
+<footer id="kontakt">
+  <div>
+    <strong>Zuhause am Bach</strong>
+    <span>{{ settings.address }}</span>
+  </div>
+  <div>
+    <a href="tel:{{ settings.phone }}">{{ settings.phone }}</a>
+    <a href="mailto:{{ settings.email }}">{{ settings.email }}</a>
+  </div>
+  <p>Jeder Gast bringt seine Geschichte mit. Bei Zuhause am Bach nimmt jeder eine neue Geschichte für sein Zuhause mit.</p>
+  <a class="admin-link" href="{{ url_for('concierge') }}">Windis Concierge</a><a class="admin-link" href="{{ url_for('legal_page',key='impressum') }}">Impressum</a>
+  <a class="admin-link" href="{{ url_for('legal_page',key='datenschutz') }}">Datenschutz</a>
+  <a class="admin-link" href="{{ url_for('legal_page',key='agb') }}">Buchungsbedingungen</a>
+  <a class="admin-link" href="{{ url_for('admin_login') }}">Verwaltung</a>
+</footer>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

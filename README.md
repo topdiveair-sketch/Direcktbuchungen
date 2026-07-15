@@ -1,3 +1,7 @@
+# Zuhause am Bach OS – V13 HAUPTVERSION
+
+**Zentrale Arbeitsversion ab 13.07.2026.**
+
 
 # Zuhause am Bach – Direktbuchung Pro
 

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Heute – Zuhause am Bach</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+</head>
+<body class="today-page">
+<header class="today-header">
+  <div>
+    <span class="today-kicker">Zuhause am Bach</span>
+    <h1>Guten Morgen, Hans!</h1>
+    <p>{{ today }} · Das ist heute zu tun.</p>
+  </div>
+  <div class="today-header-actions">
+    <form action="{{ url_for('today_refresh') }}" method="post">
+      <button class="today-refresh">↻ Aktualisieren</button>
+    </form>
+    <a href="{{ url_for('os_dashboard') }}">OS</a>
+    <a href="{{ url_for('admin') }}">Verwaltung</a>
+  </div>
+</header>
+
+<main class="today-main">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category,message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <section class="today-metrics">
+    <article><strong>{{ arrivals_count }}</strong><span>Anreisen</span></article>
+    <article><strong>{{ departures_count }}</strong><span>Abreisen</span></article>
+    <article><strong>{{ breakfast_people }}</strong><span>Frühstücke</span></article>
+    <article><strong>{{ open_payments }}</strong><span>offene Zahlungen</span></article>
+    <article><strong>{{ items|length }}</strong><span>offene Punkte</span></article>
+    <article class="done"><strong>{{ completed_count }}</strong><span>heute erledigt</span></article>
+  </section>
+
+  <section class="today-layout">
+    <div class="today-list-column">
+      <section class="today-panel">
+        <div class="today-panel-head">
+          <div>
+            <span class="eyebrow">Tagesassistent</span>
+            <h2>Heute</h2>
+          </div>
+          <span class="today-count">{{ items|length }} offen</span>
+        </div>
+
+        {% for item in items %}
+        <article class="today-item {{ item.priority }} type-{{ item.item_type }}">
+          <div class="today-item-icon">
+            {% if item.item_type=='breakfast' %}🍳
+            {% elif item.item_type=='departure' %}🚪
+            {% elif item.item_type=='arrival' %}🛎️
+            {% elif item.item_type=='cleaning' %}🧹
+            {% elif item.item_type=='payment' %}💶
+            {% elif item.item_type=='guest_order' %}📩
+            {% elif item.item_type=='tomorrow' %}📅
+            {% elif item.item_type=='task' %}✓
+            {% elif item.item_type=='room_status' %}🛏️
+            {% else %}•{% endif %}
+          </div>
+          <div class="today-item-copy">
+            <strong>{{ item.title }}</strong>
+            {% if item.details %}<span>{{ item.details }}</span>{% endif %}
+            {% if item.room %}<small>{{ item.room }}</small>{% endif %}
+          </div>
+          <form action="{{ url_for('today_item_done',item_id=item.id) }}" method="post">
+            <button class="done-button" title="Erledigt">✓</button>
+          </form>
+        </article>
+        {% else %}
+        <div class="today-empty">
+          <strong>Alles erledigt.</strong>
+          <span>Gloria wäre zufrieden. Und das will etwas heißen.</span>
+        </div>
+        {% endfor %}
+      </section>
+
+      <section class="today-panel compact">
+        <h2>Schnell eine Aufgabe hinzufügen</h2>
+        <form action="{{ url_for('today_item_add') }}" method="post" class="today-add-form">
+          <input name="title" placeholder="Was ist noch zu tun?" required>
+          <input name="details" placeholder="Notiz">
+          <select name="priority">
+            <option value="normal">normal</option>
+            <option value="hoch">hoch</option>
+            <option value="niedrig">niedrig</option>
+          </select>
+          <button>Hinzufügen</button>
+        </form>
+      </section>
+    </div>
+
+    <aside class="today-side">
+      <section class="today-panel">
+        <div class="today-panel-head">
+          <div><span class="eyebrow">Glorias Liste</span><h2>Einkauf</h2></div>
+          <span class="today-count">{{ shopping|length }}</span>
+        </div>
+        {% for s in shopping %}
+        <article class="shopping-item">
+          <div>
+            <strong>{{ s.item }}</strong>
+            <span>{{ s.quantity }}{% if s.category %} · {{ s.category }}{% endif %}</span>
+            {% if s.needed_date %}<small>bis {{ s.needed_date }}</small>{% endif %}
+          </div>
+          <form action="{{ url_for('shopping_done',item_id=s.id) }}" method="post">
+            <button>✓</button>
+          </form>
+        </article>
+        {% else %}
+        <p class="muted">Einkaufsliste ist leer.</p>
+        {% endfor %}
+
+        <form action="{{ url_for('shopping_add') }}" method="post" class="shopping-form">
+          <input name="item" placeholder="Artikel" required>
+          <input name="quantity" placeholder="Menge">
+          <select name="category">
+            <option>Frühstück</option>
+            <option>Reinigung</option>
+            <option>Getränke</option>
+            <option>Zimmer</option>
+            <option>Allgemein</option>
+          </select>
+          <input type="date" name="needed_date">
+          <button>Auf Liste setzen</button>
+        </form>
+      </section>
+
+      <section class="today-panel today-shortcuts">
+        <h2>Schnellzugriff</h2>
+        <a href="{{ url_for('dashboard') }}">Betriebsdashboard</a>
+        <a href="{{ url_for('task_center') }}">Alle Aufgaben</a>
+        <a href="{{ url_for('inventory_center') }}">Inventar</a>
+        <a href="{{ url_for('finance_center') }}">Finanzen</a>
+        <a href="{{ url_for('host_mobile') }}">Gastgeber mobil</a>
+        <a href="{{ url_for('index') }}" target="_blank">Buchungsseite</a>
+      </section>
+    </aside>
+  </section>
+</main>
+</body>
+</html>

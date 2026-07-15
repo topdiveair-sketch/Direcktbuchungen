@@ -1,0 +1,38 @@
+
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Buchungsanfrage gespeichert</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="plain-page">
+  <main class="success-shell">
+    <div class="success-card">
+      <span class="eyebrow">Buchungsanfrage gespeichert</span>
+      <h1>Danke, {{ booking.first_name }}!</h1>
+      <p>Der Zeitraum wurde im Direktbuchungskalender vorgemerkt. Die persönliche Bestätigung folgt.</p>
+
+      <div class="booking-summary">
+        <p><strong>Zimmer:</strong> {{ booking.room }}</p>
+        <p><strong>Anreise:</strong> {{ booking.arrival.strftime('%d.%m.%Y') }}</p>
+        <p><strong>Abreise:</strong> {{ booking.departure.strftime('%d.%m.%Y') }}</p>
+        <p><strong>Personen:</strong> {{ booking.adults }}</p>
+        <p><strong>Frühstück:</strong> {{ 'Ja' if booking.breakfast else 'Nein' }}</p>
+        <p><strong>Zahlung:</strong> {{ booking.payment_method }}</p>
+        <p class="summary-total"><strong>Gesamt:</strong> {{ '%.2f'|format(booking.total)|replace('.', ',') }} €</p>
+      </div>
+
+      {% if booking.payment_method == 'PayPal' %}
+      <div class="paypal-note">
+        PayPal-Empfänger: <strong>{{ paypal_email }}</strong><br>
+        Bitte erst nach der persönlichen Buchungsbestätigung bezahlen.
+      </div>
+      {% endif %}
+
+      <p class="muted">Der persönliche Online-Check-in-Link wird mit der Bestätigung versendet.</p><a class="btn" href="{{ url_for('index') }}">Zur Startseite</a>
+    </div>
+  </main>
+</body>
+</html>

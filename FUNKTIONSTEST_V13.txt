@@ -1,0 +1,15 @@
+Zuhause am Bach OS V13.0 – Hauptversion
+
+OK | Ausgangsbasis V12 geprüft
+OK | ZIP-Struktur vollständig
+OK | Python-Syntax aller Hauptmodule geprüft
+OK | STARTEN.bat enthalten
+OK | SYSTEMTEST.bat enthalten
+OK | Qualitätszentrum enthalten
+OK | Wissensverwaltung enthalten
+OK | Smart Host enthalten
+OK | Gastgeber-Assistent enthalten
+OK | Direktbuchung enthalten
+
+Hinweis:
+Externe Live-Dienste wie Booking-iCal, SMTP, PayPal, Wetter und Google benötigen später die echten Zugangsdaten.

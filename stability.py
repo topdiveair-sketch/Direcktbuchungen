@@ -52,6 +52,80 @@ def init_stability(app, DB_PATH, db, require_admin, ROOMS):
         }
         for k,(title,content) in legal_defaults.items():
             conn.execute("INSERT OR IGNORE INTO legal_pages(key,title,content) VALUES(?,?,?)",(k,title,content))
+        legal_live_defaults = {
+            "impressum": ("Impressum", """Angaben gemaess Informationspflichten:
+
+Zuhause am Bach - Wachau
+Betreiberin: Laura Prem
+Aggsbach Markt 82
+3641 Aggsbach Markt
+Oesterreich
+
+Telefon: +43 664 6437526
+E-Mail: topdiveair@gmail.com
+Website: https://topdiveair-sketch.github.io/Gaeste/
+
+Unternehmensgegenstand: Beherbergung / Privatzimmervermietung.
+
+Hinweis: Bitte UID-Nummer, Gewerbe-/Behoerdenangaben, Aufsichtsbehoerde, Kammerzugehoerigkeit und weitere Pflichtangaben vor dem Livegang juristisch pruefen und ergaenzen, falls zutreffend."""),
+            "datenschutz": ("Datenschutzerklaerung", """Datenschutzerklaerung
+
+Verantwortliche Stelle:
+Zuhause am Bach - Wachau, Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Oesterreich.
+Kontakt: topdiveair@gmail.com, +43 664 6437526.
+
+Wir verarbeiten personenbezogene Daten, die Gaeste im Rahmen einer Anfrage, Buchung, Online-Check-in-Nutzung oder Kontaktaufnahme angeben. Dazu gehoeren insbesondere Name, Kontaktdaten, Reisedaten, Zimmer, Zahlungsart, Nachrichten, Angaben zum Check-in und technisch notwendige Protokolldaten.
+
+Zwecke der Verarbeitung sind die Bearbeitung von Buchungsanfragen, Durchfuehrung des Aufenthalts, Kommunikation mit Gaesten, Rechnungslegung, gesetzliche Aufbewahrungspflichten, Sicherheit des Betriebs und Verbesserung des Angebots.
+
+Rechtsgrundlagen sind Vertragserfuellung bzw. vorvertragliche Massnahmen, gesetzliche Verpflichtungen und berechtigte Interessen am sicheren und ordnungsgemaessen Betrieb.
+
+Daten werden nur so lange gespeichert, wie es fuer die genannten Zwecke erforderlich ist oder gesetzliche Aufbewahrungspflichten bestehen. Eine Weitergabe erfolgt nur, wenn sie fuer Buchung, Zahlungsabwicklung, E-Mail-Versand, IT-Betrieb oder gesetzliche Pflichten erforderlich ist.
+
+Betroffene Personen haben nach Massgabe der DSGVO Rechte auf Auskunft, Berichtigung, Loeschung, Einschraenkung, Datenuebertragbarkeit, Widerspruch und Beschwerde bei der Datenschutzbehoerde.
+
+Hinweis: Diese Datenschutzerklaerung ist ein technischer Entwurf und muss vor dem Livegang rechtlich geprueft und an die tatsaechlich eingesetzten Dienste angepasst werden."""),
+            "agb": ("Buchungsbedingungen", """Buchungsbedingungen
+
+Eine Buchung ueber diese Website ist zunaechst eine Buchungsanfrage. Der Beherbergungsvertrag kommt erst zustande, wenn Zuhause am Bach - Wachau die Buchung ausdruecklich bestaetigt.
+
+Preise verstehen sich in Euro und gelten fuer den jeweils angezeigten Zeitraum, das gewaehlte Zimmer und die ausgewaehlten Zusatzleistungen. Abgaben, Ortstaxen oder sonstige gesetzliche Gebuehren koennen zusaetzlich anfallen, sofern sie nicht ausdruecklich enthalten sind.
+
+Die Zahlung erfolgt nach Vereinbarung, insbesondere per Ueberweisung, PayPal oder vor Ort. PayPal-Zahlungen sollen erst nach persoenlicher Bestaetigung der Buchung erfolgen.
+
+Check-in und Check-out richten sich nach den in der Buchungsbestaetigung angegebenen Zeiten. Aenderungen sind nur nach vorheriger Ruecksprache moeglich.
+
+Gaeste verpflichten sich zu sorgsamem Umgang mit Unterkunft, Inventar und Hausumgebung. Schaeden sind unverzueglich zu melden. Rauchen, Haustiere, zusaetzliche Gaeste oder Veranstaltungen sind nur erlaubt, wenn sie ausdruecklich bestaetigt wurden.
+
+Es gilt oesterreichisches Recht, soweit keine zwingenden Verbraucherschutzvorschriften entgegenstehen.
+
+Hinweis: Diese Buchungsbedingungen sind ein Entwurf und muessen vor dem Livegang rechtlich geprueft werden."""),
+            "storno": ("Stornobedingungen", """Stornobedingungen
+
+Eine Stornierung ist bis 7 Tage vor Anreise kostenlos moeglich, sofern in der Buchungsbestaetigung nichts Abweichendes vereinbart wurde.
+
+Bei spaeterer Stornierung, Nichtanreise oder vorzeitiger Abreise koennen Stornokosten anfallen. Die konkrete Hoehe richtet sich nach der bestaetigten Buchung, der Aufenthaltsdauer, dem Zeitpunkt der Stornierung und einer moeglichen Weitervermietung.
+
+Stornierungen muessen schriftlich per E-Mail an topdiveair@gmail.com erfolgen. Massgeblich ist der Zeitpunkt des Eingangs.
+
+Bei aussergewoehnlichen Umstaenden kann Zuhause am Bach - Wachau im Einzelfall kulante Loesungen anbieten; ein Anspruch darauf besteht nicht.
+
+Hinweis: Diese Stornobedingungen sind ein Entwurf und muessen vor dem Livegang rechtlich geprueft werden."""),
+        }
+        for k,(title,content) in legal_live_defaults.items():
+            conn.execute(
+                "INSERT INTO legal_pages(key,title,content) VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET title=excluded.title,content=excluded.content",
+                (k,title,content),
+            )
+        legal_envs = {
+            "impressum": os.environ.get("LEGAL_IMPRESSUM_TEXT", "").strip(),
+            "datenschutz": os.environ.get("LEGAL_DATENSCHUTZ_TEXT", "").strip(),
+            "agb": os.environ.get("LEGAL_AGB_TEXT", "").strip(),
+            "storno": os.environ.get("LEGAL_STORNO_TEXT", "").strip(),
+        }
+        for key, content in legal_envs.items():
+            if content:
+                conn.execute("UPDATE legal_pages SET content=? WHERE key=?", (content, key))
 
     def audit(action, details="", user="system"):
         with db() as conn:

@@ -1,0 +1,216 @@
+
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Direktbuchung – Verwaltung</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="admin-page">
+<header class="admin-header">
+  <div><strong>Zuhause am Bach</strong><small>Direktbuchung & iCal</small></div>
+  <a href="{{ url_for('admin_logout') }}">Abmelden</a>
+</header>
+
+<a class="floating-today" href="{{ url_for('today_dashboard') }}">Heute</a><a class="floating-assistant" href="{{ url_for('host_assistant') }}">Assistent</a><a class="floating-smart" href="{{ url_for('smart_dashboard') }}">Smart Host</a><a class="floating-knowledge" href="{{ url_for('knowledge_dashboard') }}">Wissen</a><main class="admin-main">
+  <section class="admin-panel os-launch"><div><span class="eyebrow">Version 12</span><h2>Qualität & Integration</h2><p>Einrichtung, Systemprüfung, Benutzerrollen, Datenimport und Wiederherstellung.</p></div><div><a class="btn" href="{{ url_for('quality_center') }}">Qualitätszentrum</a> <a class="btn secondary" href="{{ url_for('setup_wizard') }}">Einrichtung</a></div></section>
+
+
+  <section class="admin-panel os-launch">
+    <div>
+      <span class="eyebrow">Neue Zentrale</span>
+      <h2>Zuhause am Bach OS</h2>
+      <p>Gästekartei, Aufgaben, Inventar, Finanzen, Windis und Marketing in einer Oberfläche.</p>
+    </div>
+    <a class="btn" href="{{ url_for('os_dashboard') }}">OS öffnen</a>
+  </section>
+
+
+  <section class="admin-panel quick-actions">
+    <h2>System & Stabilität</h2>
+    <a class="btn" href="{{ url_for('system_test') }}">Systemtest</a>
+    <a class="btn secondary" href="{{ url_for('legal_admin') }}">Rechtstexte</a>
+    <a class="btn secondary" href="{{ url_for('audit_view') }}">Protokoll</a>
+    <form action="{{ url_for('backup_now') }}" method="post"><button class="btn secondary">Backup jetzt</button></form>
+  </section>
+
+  <section class="admin-panel">
+    <h2>Automatik</h2>
+    <form action="{{ url_for('system_settings_save') }}" method="post" id="systemSettings">
+      <label class="switch-row"><input type="checkbox" name="auto_sync_enabled" id="auto_sync_enabled"> Automatische iCal-Synchronisierung</label>
+      <label>Intervall in Minuten<input type="number" min="5" name="auto_sync_minutes" id="auto_sync_minutes" value="15"></label>
+      <label>Backups behalten (Tage)<input type="number" min="1" name="backup_keep_days" id="backup_keep_days" value="30"></label>
+      <label class="switch-row"><input type="checkbox" name="maintenance_mode" id="maintenance_mode"> Wartungsmodus</label>
+      <button class="btn">Automatik speichern</button>
+    </form>
+  </section>
+
+
+  <section class="admin-panel quick-actions">
+    <h2>V6 Funktionen</h2>
+    <a class="btn" href="{{ url_for('host_mobile') }}">Gastgeber mobil</a>
+    <a class="btn secondary" href="{{ url_for('statistics') }}">Statistiken</a>
+  </section>
+
+  <section class="admin-panel">
+    <h2>Wartung und Zimmersperren</h2>
+    <form action="{{ url_for('maintenance_add') }}" method="post" class="season-form">
+      <select name="room">{% for room in rooms %}<option>{{ room }}</option>{% endfor %}</select>
+      <input type="date" name="start_date" required>
+      <input type="date" name="end_date" required>
+      <input name="reason" placeholder="z. B. Renovierung">
+      <button class="btn">Sperren</button>
+    </form>
+    <div id="maintenanceList"></div>
+  </section>
+
+  <section class="admin-panel">
+    <h2>Channel-Manager-Anschlüsse</h2>
+    <p class="muted">iCal kann direkt genutzt werden. Vollständige API-Anbindungen benötigen Freigaben und Zugangsdaten der Plattformen.</p>
+    <form action="{{ url_for('channel_save') }}" method="post" id="channelForm">
+      <div id="channelSettings"></div>
+      <button class="btn">Channel-Einstellungen speichern</button>
+    </form>
+  </section>
+
+
+  <section class="admin-panel quick-actions">
+    <h2>Zentrale Funktionen</h2>
+    <a class="btn" href="{{ url_for('dashboard') }}">Tagesdashboard</a>
+    <a class="btn secondary" href="{{ url_for('export_bookings') }}">Buchungen CSV</a>
+    <a class="btn secondary" href="{{ url_for('export_kurtaxe') }}">Kurtaxenliste CSV</a>
+    <a class="btn secondary" href="{{ url_for('backup_database') }}">Datenbank-Backup</a>
+    <a class="btn secondary" href="{{ url_for('concierge') }}" target="_blank">Windis Concierge</a>
+  </section>
+
+  <section class="admin-panel">
+    <h2>E-Mail, öffentliche Adresse und PayPal</h2>
+    <form action="{{ url_for('email_settings') }}" method="post" class="settings-grid">
+      <label>Öffentliche Basis-URL<input name="public_base_url" value="{{ settings.get('public_base_url','') }}" placeholder="https://ihre-domain.at"></label>
+      <label>SMTP-Server<input name="smtp_host" value="{{ settings.get('smtp_host','') }}" placeholder="smtp.gmail.com"></label>
+      <label>SMTP-Port<input name="smtp_port" value="{{ settings.get('smtp_port','587') }}"></label>
+      <label>SMTP-Benutzer<input name="smtp_user" value="{{ settings.get('smtp_user','') }}"></label>
+      <label>SMTP-Passwort/App-Passwort<input type="password" name="smtp_password" value="{{ settings.get('smtp_password','') }}"></label>
+      <label>Absender<input name="smtp_sender" value="{{ settings.get('smtp_sender','') }}"></label>
+      <label>PayPal.Me-Link<input name="paypal_me_url" value="{{ settings.get('paypal_me_url','') }}" placeholder="https://paypal.me/..."></label>
+      <button class="btn">Speichern</button>
+    </form>
+  </section>
+
+  <section class="admin-panel">
+    <h2>Gutschein anlegen</h2>
+    <form action="{{ url_for('coupon_save') }}" method="post" class="season-form">
+      <input name="code" placeholder="WINDIS10" required>
+      <input type="number" step="0.1" name="percent" placeholder="Rabatt %" required>
+      <input type="date" name="valid_from">
+      <input type="date" name="valid_to">
+      <button class="btn">Speichern</button>
+    </form>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+  {% endwith %}
+
+  <section class="admin-panel"><h2>Preismanager</h2><form method="post" action="{{ url_for('admin_prices') }}"><div class="price-admin-grid">{% for room,p in price_settings.items() %}<div class="price-admin-card"><h3>{{ room }}</h3><label>Standard<input type="number" step="0.01" name="{{room}}_standard" value="{{p.standard}}"></label><label>Wochenende<input type="number" step="0.01" name="{{room}}_weekend" value="{{p.weekend}}"></label><label>Hochsaison<input type="number" step="0.01" name="{{room}}_high" value="{{p.high}}"></label></div>{% endfor %}</div><button class="btn">Preise speichern</button></form></section><section class="admin-panel"><h2>Saisonen</h2>{% for x in seasons %}<div class="season-row"><span><b>{{x.name}}</b> {{x.start_date}} bis {{x.end_date}}</span><form method="post" action="{{ url_for('del_season',i=x.id) }}"><button>Löschen</button></form></div>{% endfor %}<form class="season-form" method="post" action="{{ url_for('add_season') }}"><input name="name" placeholder="Saison" required><input type="date" name="start_date" required><input type="date" name="end_date" required><button class="btn">Hinzufügen</button></form></section><section class="admin-panel"><h2>Rabatte</h2><form method="post" action="{{ url_for('admin_discounts') }}"><div class="discount-admin-grid">{% for k,d in discounts.items() %}<div class="discount-card"><label><input type="checkbox" name="{{k}}_enabled" {% if d.enabled %}checked{% endif %}> {{k|replace('_',' ')|title}}</label><label>Prozent<input type="number" step="0.1" name="{{k}}_percent" value="{{d.percent}}"></label><label>Mindestnächte<input type="number" name="{{k}}_min_nights" value="{{d.min_nights}}"></label><label>Tage vorher<input type="number" name="{{k}}_days_before" value="{{d.days_before}}"></label></div>{% endfor %}</div><button class="btn">Rabatte speichern</button></form></section><section class="admin-panel"><h2>Zusatzleistungen</h2><form method="post" action="{{ url_for('admin_extras') }}"><div class="extras-admin-grid">{% for k,e in extras_cfg.items() %}<div class="extra-admin-card"><label><input type="checkbox" name="{{k}}_enabled" {% if e.enabled %}checked{% endif %}> aktiv</label><label>Name<input name="{{k}}_label" value="{{e.label}}"></label><label>Preis<input type="number" step="0.01" name="{{k}}_price" value="{{e.price}}"></label><label>Einheit<select name="{{k}}_unit"><option value="person_night" {% if e.unit=='person_night' %}selected{% endif %}>Person/Nacht</option><option value="night" {% if e.unit=='night' %}selected{% endif %}>Nacht</option><option value="booking" {% if e.unit=='booking' %}selected{% endif %}>einmalig</option></select></label></div>{% endfor %}</div><button class="btn">Extras speichern</button></form></section><section class="admin-panel">
+    <h2>Booking-iCal</h2>
+    <form action="{{ url_for('admin_ical') }}" method="post">
+      {% for row in ical %}
+      <div class="ical-row">
+        <label>{{ row.room }}
+          <input type="url" name="ical_{{ row.room }}" value="{{ row.import_url }}" placeholder="https://...calendar.ics">
+        </label>
+        <small>Letzter Abgleich: {{ row.last_sync or 'noch nie' }} · {{ row.last_result or 'kein Ergebnis' }}</small>
+        <code>{{ request.url_root.rstrip('/') }}{{ url_for('export_calendar', room=row.room) }}</code>
+      </div>
+      {% endfor %}
+      <button class="btn">Links speichern</button>
+    </form>
+    <form action="{{ url_for('admin_sync') }}" method="post">
+      <button class="btn secondary">Jetzt synchronisieren</button>
+    </form>
+  </section>
+
+  <section class="admin-panel">
+    <h2>Zimmerbilder</h2>
+    <div class="admin-room-grid">
+      {% for room in rooms %}
+      <form action="{{ url_for('admin_room_image', room=room) }}" method="post" enctype="multipart/form-data">
+        <img src="{{ url_for('static', filename='images/rooms/' + room_images[room]) }}" alt="{{ room }}">
+        <strong>{{ room }}</strong>
+        <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" required>
+        <button class="btn">Bild ersetzen</button>
+      </form>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="admin-panel">
+    <h2>Google-Bewertungen & Kontaktdaten</h2>
+    <form action="{{ url_for('admin_settings') }}" method="post" class="settings-grid">
+      <label>Google-Bewertung<input name="google_rating" value="{{ settings.google_rating }}"></label>
+      <label>Anzahl Bewertungen<input name="google_review_count" value="{{ settings.google_review_count }}"></label>
+      <label>Google-Link<input type="url" name="google_review_url" value="{{ settings.google_review_url }}"></label>
+      <label>Telefon<input name="phone" value="{{ settings.phone }}"></label>
+      <label>E-Mail<input type="email" name="email" value="{{ settings.email }}"></label>
+      <label>Adresse<input name="address" value="{{ settings.address }}"></label>
+      <label class="wide">Stornotext<input name="cancellation_text" value="{{ settings.cancellation_text }}"></label>
+      <button class="btn">Einstellungen speichern</button>
+    </form>
+  </section>
+
+  <section class="admin-panel">
+    <h2>Buchungen</h2>
+    <div class="table-scroll">
+      <table class="booking-table">
+        <thead><tr><th>Status</th><th>Zimmer</th><th>Zeitraum</th><th>Gast</th><th>Frühstück</th><th>Zahlung</th><th>Preis</th><th>Aktionen</th></tr></thead>
+        <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td><span class="status {{ b.status }}">{{ b.status }}</span></td>
+          <td>{{ b.room }}</td>
+          <td>{{ b.arrival }}<br>{{ b.departure }}</td>
+          <td><strong>{{ b.first_name }} {{ b.last_name }}</strong><br><small>{{ b.email }}<br>{{ b.phone }}</small></td>
+          <td>{{ 'Ja' if b.breakfast else 'Nein' }}</td>
+          <td>{{ b.payment_method }}</td>
+          <td>{{ '%.2f'|format(b.total)|replace('.', ',') }} €</td>
+          <td class="action-cell">
+            <form action="{{ url_for('admin_booking_action', booking_id=b.id, action='confirm') }}" method="post"><button>Bestätigen</button></form>
+            <form action="{{ url_for('admin_booking_action', booking_id=b.id, action='cancel') }}" method="post"><button>Stornieren</button></form>
+          <br><form action="{{ url_for('resend_email',booking_id=b.id) }}" method="post"><button>E-Mail</button></form>
+            {% if b.public_token %}<a href="{{ url_for('invoice_pdf',token=b.public_token) }}">PDF</a>{% endif %}
+            {% if b.checkin_token %}<a href="{{ url_for('online_checkin',token=b.checkin_token) }}" target="_blank">Check-in</a>{% endif %}
+            <form action="{{ url_for('document_upload',booking_id=b.id) }}" method="post" enctype="multipart/form-data">
+              <input type="file" name="document" required>
+              <select name="category"><option>Ausweis</option><option>Meldeschein</option><option>Rechnung</option><option>Sonstiges</option></select>
+              <button>Dokument</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8">Noch keine Direktbuchungen vorhanden.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>
+<script>
+fetch("/admin/v6-data").then(r=>r.json()).then(data=>{
+ const m=document.getElementById("maintenanceList");
+ m.innerHTML=data.blocks.map(x=>`<div class="season-row"><span><strong>${x.room}</strong><small>${x.start_date} bis ${x.end_date} · ${x.reason}</small></span><form method="post" action="/admin/maintenance/${x.id}/delete"><button>Löschen</button></form></div>`).join("") || "<p>Keine Sperren.</p>";
+ const c=document.getElementById("channelSettings");
+ c.innerHTML=data.channels.map(x=>{const k=x.channel.replaceAll(".","_").replaceAll("-","_").replaceAll(" ","_");return `<div class="channel-card"><label><input type="checkbox" name="${k}_enabled" ${x.enabled?"checked":""}> <strong>${x.channel}</strong></label><input name="${k}_import_url" value="${x.import_url||""}" placeholder="iCal- oder Import-URL"><input name="${k}_api_key" value="${x.api_key||""}" placeholder="API-Schlüssel, falls vorhanden"><input name="${k}_note" value="${x.note||""}" placeholder="Notiz"></div>`}).join("");
+});
+</script><script>
+fetch("/admin/stability-data").then(r=>r.json()).then(d=>{
+ const s=d.settings||{};
+ document.getElementById("auto_sync_enabled").checked=s.auto_sync_enabled==="1";
+ document.getElementById("auto_sync_minutes").value=s.auto_sync_minutes||15;
+ document.getElementById("backup_keep_days").value=s.backup_keep_days||30;
+ document.getElementById("maintenance_mode").checked=s.maintenance_mode==="1";
+});
+</script>

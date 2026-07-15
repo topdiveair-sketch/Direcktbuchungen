@@ -216,6 +216,9 @@ def init_quality_v12(app, DB_PATH, db, require_admin, ROOMS):
         username = request.form.get("username", "").strip().lower()
         password = request.form.get("password", "")
         role = request.form.get("role", "staff")
+        allowed_roles = {"staff", "housekeeping", "accounting", "manager"}
+        if role not in allowed_roles:
+            role = "staff"
         if not username or len(password) < 8:
             flash("Benutzername und Passwort mit mindestens 8 Zeichen erforderlich.", "error")
             return redirect(url_for("quality_center"))
@@ -243,7 +246,12 @@ def init_quality_v12(app, DB_PATH, db, require_admin, ROOMS):
                     session["role"] = user["role"]
                     session["display_name"] = user["display_name"] or user["username"]
                     conn.execute("UPDATE app_users SET last_login=? WHERE id=?", (datetime.now().isoformat(timespec="seconds"), user["id"]))
-                    return redirect(url_for("host_mobile" if user["role"] == "housekeeping" else "smart_dashboard"))
+                    target_by_role = {
+                        "housekeeping": "host_mobile",
+                        "accounting": "finance_center",
+                        "manager": "smart_dashboard",
+                    }
+                    return redirect(url_for(target_by_role.get(user["role"], "smart_dashboard")))
             flash("Anmeldung fehlgeschlagen.", "error")
         return render_template("staff_login.html")
 

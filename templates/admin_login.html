@@ -1,0 +1,23 @@
+
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Verwaltung</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="plain-page">
+  <main class="login-shell">
+    <form class="admin-login" method="post">
+      <h1>Verwaltung</h1>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+      {% endwith %}
+      <label>Passwort<input type="password" name="password" required autofocus></label>
+      <button class="btn full">Anmelden</button>
+      <a href="{{ url_for('index') }}">← Zur Buchungsseite</a>
+    </form>
+  </main>
+</body>
+</html>

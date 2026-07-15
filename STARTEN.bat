@@ -1,6 +1,7 @@
 @echo off
 title Zuhause am Bach - Direktbuchung V5
 cd /d "%~dp0"
+set SESSION_COOKIE_SECURE=0
 echo ============================================
 echo Zuhause am Bach - Direktbuchung V5
 echo ============================================

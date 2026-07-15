@@ -5,6 +5,7 @@ import os
 import sqlite3
 import urllib.request
 import urllib.error
+import hmac
 from datetime import datetime, date, timedelta
 from pathlib import Path
 from uuid import uuid4
@@ -25,13 +26,48 @@ from quality_v12 import init_quality_v12
 from alltag import init_alltag
 
 BASE = Path(__file__).resolve().parent
-DB_PATH = BASE / "data" / "zab.db"
+DATA_DIR = Path(os.environ.get("DATA_DIR", str(BASE / "data"))).expanduser().resolve()
+DB_PATH = DATA_DIR / "zab.db"
 ROOM_IMAGE_DIR = BASE / "static" / "images" / "rooms"
 
+def env_flag(name: str, default: str = "0") -> bool:
+    return os.environ.get(name, default).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def env_value(*names: str) -> str:
+    for name in names:
+        value = os.environ.get(name, "").strip()
+        if value:
+            return value
+    return ""
+
+
+PRODUCTION_MODE = (
+    env_flag("REQUIRE_PRODUCTION_SECRETS")
+    or os.environ.get("APP_ENV", "").lower() == "production"
+    or bool(os.environ.get("RAILWAY_ENVIRONMENT"))
+)
+SECRET_KEY = os.environ.get("SECRET_KEY", "")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+
+if PRODUCTION_MODE:
+    if len(SECRET_KEY) < 32:
+        raise RuntimeError("SECRET_KEY muss im Livebetrieb gesetzt sein und mindestens 32 Zeichen haben.")
+    if len(ADMIN_PASSWORD) < 12 or ADMIN_PASSWORD == "windis2026":
+        raise RuntimeError("ADMIN_PASSWORD muss im Livebetrieb gesetzt und sicher sein.")
+
 app = Flask(__name__, template_folder=str(BASE / "templates"), static_folder=str(BASE / "static"))
-app.secret_key = os.environ.get("SECRET_KEY", "zab-bitte-aendern")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "windis2026")
-PAYPAL_EMAIL = "topdiveair@gmail.com"
+app.json.ensure_ascii = False
+app.secret_key = SECRET_KEY or "zab-local-dev-secret-change-before-live"
+app.config.update(
+    JSON_AS_ASCII=False,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=env_flag("SESSION_COOKIE_SECURE", "0"),
+    MAX_CONTENT_LENGTH=int(os.environ.get("MAX_CONTENT_LENGTH", 16 * 1024 * 1024)),
+)
+ADMIN_PASSWORD = ADMIN_PASSWORD or "windis2026"
+PAYPAL_EMAIL = os.environ.get("PAYPAL_EMAIL", "topdiveair@gmail.com")
 GUEST_APP_URL = "https://topdiveair-sketch.github.io/Gaeste/"
 ROOM_RELEASE_DATE = date(2026, 8, 16)
 BREAKFAST_PRICE = 12.0
@@ -140,12 +176,20 @@ def init_db() -> None:
             )
 
         defaults = {
-            "google_rating": "5.0",
-            "google_review_count": "0",
-            "google_review_url": "",
-            "phone": "+43 677 62314736",
+            "business_name": "Zuhause am Bach - Wachau",
+            "operator_name": "Laura Prem",
+            "google_rating": "4.8",
+            "google_review_count": "4",
+            "google_review_url": "https://www.google.com/maps/search/?api=1&query=Zuhause%20am%20Bach%20-%20Wachau%20Aggsbach%20Markt%2082",
+            "phone": "+43 664 6437526",
             "email": "topdiveair@gmail.com",
-            "address": "Aggsbach Markt, Wachau",
+            "address": "Aggsbach Markt 82, 3641 Aggsbach Markt, Oesterreich",
+            "public_base_url": "https://topdiveair-sketch.github.io/Gaeste/",
+            "smtp_host": "smtp.gmail.com",
+            "smtp_port": "587",
+            "smtp_user": "topdiveair@gmail.com",
+            "smtp_sender": "Zuhause am Bach <topdiveair@gmail.com>",
+            "paypal_email": "topdiveair@gmail.com",
             "cancellation_text": "Kostenlose Stornierung bis 7 Tage vor Anreise.",
         }
         for key, value in defaults.items():
@@ -153,10 +197,50 @@ def init_db() -> None:
                 "INSERT OR IGNORE INTO site_settings(key, value) VALUES (?, ?)",
                 (key, value),
             )
+        env_settings = {
+            "phone": env_value("SITE_PHONE", "ZAB_PHONE"),
+            "email": env_value("SITE_EMAIL", "ZAB_EMAIL"),
+            "address": env_value("SITE_ADDRESS", "ZAB_ADDRESS"),
+            "public_base_url": env_value("PUBLIC_BASE_URL", "ZAB_PUBLIC_BASE_URL"),
+            "paypal_me_url": env_value("PAYPAL_ME_URL", "ZAB_PAYPAL_ME_URL"),
+            "google_rating": env_value("GOOGLE_RATING", "ZAB_GOOGLE_RATING"),
+            "google_review_count": env_value("GOOGLE_REVIEW_COUNT", "ZAB_GOOGLE_REVIEW_COUNT"),
+            "google_review_url": env_value("GOOGLE_REVIEW_URL", "ZAB_GOOGLE_REVIEW_URL"),
+            "google_places_api_key": env_value("GOOGLE_PLACES_API_KEY", "ZAB_GOOGLE_PLACES_API_KEY"),
+            "smtp_host": env_value("SMTP_HOST", "ZAB_SMTP_HOST"),
+            "smtp_port": env_value("SMTP_PORT", "ZAB_SMTP_PORT"),
+            "smtp_user": env_value("SMTP_USER", "ZAB_SMTP_USER"),
+            "smtp_password": env_value("SMTP_PASSWORD", "ZAB_SMTP_PASSWORD"),
+            "smtp_sender": env_value("SMTP_SENDER", "ZAB_SMTP_SENDER"),
+            "cancellation_text": env_value("CANCELLATION_TEXT", "ZAB_CANCELLATION_TEXT"),
+        }
+        if PAYPAL_EMAIL:
+            env_settings["paypal_email"] = PAYPAL_EMAIL
+        for key, value in env_settings.items():
+            if value:
+                conn.execute(
+                    """INSERT INTO site_settings(key, value) VALUES (?, ?)
+                       ON CONFLICT(key) DO UPDATE SET value=excluded.value""",
+                    (key, value),
+                )
+
+        ical_envs = {
+            "Bachblick": env_value("ICAL_BACHBLICK_URL", "BOOKING_ICAL_BACHBLICK_URL"),
+            "Marillenzimmer": env_value("ICAL_MARILLENZIMMER_URL", "BOOKING_ICAL_MARILLENZIMMER_URL"),
+            "Weinbergzimmer": env_value("ICAL_WEINBERGZIMMER_URL", "BOOKING_ICAL_WEINBERGZIMMER_URL"),
+            "Donauzimmer": env_value("ICAL_DONAUZIMMER_URL", "BOOKING_ICAL_DONAUZIMMER_URL"),
+        }
+        for room, import_url in ical_envs.items():
+            if import_url:
+                conn.execute(
+                    "UPDATE ical_settings SET import_url=? WHERE room=?",
+                    (import_url, room),
+                )
         price_defaults={"Bachblick":(75,85,95),"Marillenzimmer":(90,100,110),"Weinbergzimmer":(90,100,110),"Donauzimmer":(90,100,110)}
         for r,p in price_defaults.items(): conn.execute("INSERT OR IGNORE INTO room_prices VALUES(?,?,?,?)",(r,*p))
         for row in [("last_minute",1,10,0,3),("early_bird",0,5,0,60),("three_nights",1,5,3,0),("five_nights",1,8,5,0),("seven_nights",1,12,7,0),("direct_booking",1,3,0,0)]: conn.execute("INSERT OR IGNORE INTO discounts VALUES(?,?,?,?,?)",row)
-        for row in [("breakfast","Frühstück",12,"person_night",1),("jause","Wachauer Jause",29.9,"booking",1),("luggage","Gepäcktransport",25,"booking",1),("dog","Hund",10,"night",1),("baby_bed","Babybett",8,"booking",1)]: conn.execute("INSERT OR IGNORE INTO extras VALUES(?,?,?,?,?)",row)
+        for row in [("breakfast","Frühstück",12,"person_night",1),("jause","Wachauer Jause",29.9,"booking",1),("luggage","Gepäcktransport",15,"booking",1),("dog","Hund",10,"night",1),("baby_bed","Babybett",8,"booking",1)]: conn.execute("INSERT OR IGNORE INTO extras VALUES(?,?,?,?,?)",row)
+        conn.execute("UPDATE extras SET price=15 WHERE key='luggage' AND ABS(price - 25) < 0.001")
         conn.execute("INSERT OR IGNORE INTO seasons(id,name,start_date,end_date) VALUES(1,'Hauptsaison Sommer','2026-06-01','2026-09-30')")
 
 
@@ -231,6 +315,30 @@ def overlaps(a_start: date, a_end: date, b_start: date, b_end: date) -> bool:
     return a_start < b_end and b_start < a_end
 
 
+def room_available_in_conn(conn: sqlite3.Connection, room: str, arrival: date, departure: date) -> tuple[bool, str]:
+    local = conn.execute(
+        """
+        SELECT arrival, departure FROM bookings
+        WHERE room = ? AND status IN ('pending', 'confirmed')
+        """,
+        (room,),
+    ).fetchall()
+    external = conn.execute(
+        "SELECT start_date, end_date FROM external_blocks WHERE room = ?",
+        (room,),
+    ).fetchall()
+
+    for row in local:
+        if overlaps(arrival, departure, parse_date(row["arrival"]), parse_date(row["departure"])):
+            return False, "Das Zimmer ist durch eine Direktbuchung belegt."
+
+    for row in external:
+        if overlaps(arrival, departure, parse_date(row["start_date"]), parse_date(row["end_date"])):
+            return False, "Das Zimmer ist über Booking.com/iCal belegt."
+
+    return True, "Das Zimmer ist verfügbar."
+
+
 def room_available(room: str, arrival: date, departure: date) -> tuple[bool, str]:
     if room not in ROOMS:
         return False, "Unbekanntes Zimmer."
@@ -244,28 +352,7 @@ def room_available(room: str, arrival: date, departure: date) -> tuple[bool, str
             return False, f"Das Zimmer ist wegen {reason} gesperrt."
 
     with db() as conn:
-        local = conn.execute(
-            """
-            SELECT arrival, departure FROM bookings
-            WHERE room = ? AND status IN ('pending', 'confirmed')
-            """,
-            (room,),
-        ).fetchall()
-        external = conn.execute(
-            "SELECT start_date, end_date FROM external_blocks WHERE room = ?",
-            (room,),
-        ).fetchall()
-
-    for row in local:
-        if overlaps(arrival, departure, parse_date(row["arrival"]), parse_date(row["departure"])):
-            return False, "Das Zimmer ist durch eine Direktbuchung belegt."
-
-    for row in external:
-        if overlaps(arrival, departure, parse_date(row["start_date"]), parse_date(row["end_date"])):
-            return False, "Das Zimmer ist über Booking.com/iCal belegt."
-
-    return True, "Das Zimmer ist verfügbar."
-
+        return room_available_in_conn(conn, room, arrival, departure)
 
 def calculate_total(room: str, arrival: date, departure: date, adults: int, breakfast: bool) -> float:
     return price_breakdown(room,arrival,departure,adults,{"breakfast":breakfast})["total"]
@@ -380,8 +467,40 @@ def sync_room(room: str) -> tuple[int, str]:
 app.extensions["zab_sync_room"] = sync_room
 
 
-def require_admin() -> bool:
-    return bool(session.get("admin"))
+ROLE_ALLOWED_PREFIXES = {
+    "staff": (
+        "/host", "/heute", "/assistent", "/fruehstueck", "/reinigung",
+        "/smart", "/os", "/admin/dashboard", "/system-test",
+    ),
+    "housekeeping": (
+        "/host", "/heute", "/assistent", "/fruehstueck", "/reinigung",
+        "/smart/laundry",
+    ),
+    "accounting": (
+        "/os/finance", "/os/status.json", "/admin/dashboard",
+        "/admin/export", "/admin/statistics", "/quality/report.json",
+    ),
+}
+
+
+def staff_path_allowed(role: str, path: str) -> bool:
+    if role == "manager":
+        return True
+    for prefix in ROLE_ALLOWED_PREFIXES.get(role, ()):
+        if path == prefix or path.startswith(prefix + "/"):
+            return True
+    return False
+
+
+def require_admin(*roles: str) -> bool:
+    if session.get("admin"):
+        return True
+    role = session.get("role", "")
+    if not role or not session.get("staff_user_id"):
+        return False
+    if roles:
+        return role in roles
+    return staff_path_allowed(role, request.path)
 
 
 @app.context_processor
@@ -518,6 +637,11 @@ def book():
     uid = f"ZAB-{uuid4()}@zuhause-am-bach"
 
     with db() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        ok, message = room_available_in_conn(conn, room, arrival, departure)
+        if not ok:
+            flash(message, "error")
+            return redirect(url_for("index") + "#booking")
         cur = conn.execute(
             """
             INSERT INTO bookings
@@ -606,9 +730,27 @@ def export_calendar(room: str):
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
-        if request.form.get("password") == ADMIN_PASSWORD:
+        now = datetime.now()
+        lock_until_raw = session.get("admin_lock_until", "")
+        if lock_until_raw:
+            try:
+                lock_until = datetime.fromisoformat(lock_until_raw)
+            except ValueError:
+                lock_until = now
+            if lock_until > now:
+                flash("Zu viele Fehlversuche. Bitte kurz warten.", "error")
+                return render_template("admin_login.html")
+
+        if hmac.compare_digest(request.form.get("password", ""), ADMIN_PASSWORD):
+            session.clear()
             session["admin"] = True
+            session["role"] = "admin"
             return redirect(url_for("smart_dashboard"))
+        failed = int(session.get("admin_failed_logins", 0)) + 1
+        session["admin_failed_logins"] = failed
+        if failed >= 5:
+            session["admin_lock_until"] = (now + timedelta(minutes=10)).isoformat(timespec="seconds")
+            session["admin_failed_logins"] = 0
         flash("Falsches Passwort.", "error")
     return render_template("admin_login.html")
 
@@ -794,4 +936,4 @@ init_quality_v12(app, DB_PATH, db, require_admin, ROOMS)
 init_alltag(app, db, require_admin, ROOMS)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")), debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")), debug=os.environ.get("FLASK_DEBUG", "0") == "1")

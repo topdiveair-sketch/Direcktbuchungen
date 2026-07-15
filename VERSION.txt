@@ -1,0 +1,7 @@
+Zuhause am Bach OS
+Version: 13.1 Fix 7 UTF-8 Umlaute
+Stand: 15.07.2026
+
+Lokaler Betrieb und Railway-Bereitstellung unterstützt.
+UTF-8-Ausgabe fuer Umlaute in HTML/JSON geprueft.
+Persistente Betriebsdaten über DATA_DIR, auf Railway zwingend mit Volume /data.

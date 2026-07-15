@@ -72,8 +72,28 @@ def init_v6(app, DB_PATH, db, require_admin, ROOMS):
             PRIMARY KEY(lang,key)
         );
         """)
-        for channel in ("Booking.com","Airbnb","Expedia","FeWo-direkt","Google Hotels"):
+        channel_env_keys = {
+            "Booking.com": "BOOKING_COM",
+            "Airbnb": "AIRBNB",
+            "Expedia": "EXPEDIA",
+            "FeWo-direkt": "FEWO_DIREKT",
+            "Google Hotels": "GOOGLE_HOTELS",
+        }
+        for channel in channel_env_keys:
             conn.execute("INSERT OR IGNORE INTO channel_settings(channel) VALUES(?)",(channel,))
+        for channel, env_key in channel_env_keys.items():
+            enabled = os.environ.get(f"CHANNEL_{env_key}_ENABLED", "").strip()
+            import_url = os.environ.get(f"CHANNEL_{env_key}_IMPORT_URL", "").strip()
+            export_url = os.environ.get(f"CHANNEL_{env_key}_EXPORT_URL", "").strip()
+            api_key = os.environ.get(f"CHANNEL_{env_key}_API_KEY", "").strip()
+            note = os.environ.get(f"CHANNEL_{env_key}_NOTE", "").strip()
+            if any([enabled, import_url, export_url, api_key, note]):
+                conn.execute(
+                    """UPDATE channel_settings
+                       SET enabled=?, import_url=?, export_url=?, api_key=?, note=?
+                       WHERE channel=?""",
+                    (1 if enabled.lower() in {"1", "true", "yes", "on"} else 0, import_url, export_url, api_key, note, channel),
+                )
         trans = {
             "de":{"checkin_title":"Online-Check-in","save":"Speichern","welcome":"Willkommen"},
             "en":{"checkin_title":"Online check-in","save":"Save","welcome":"Welcome"},
