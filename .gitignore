@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.local
+.env.production
+RAILWAY_VARIABLES_ZAB_PRIVATE*.txt
+run_local_*.ps1
+local_server_*.log
+.local-server.env.txt
+*.log
+.DS_Store
+
+# Betriebsdaten und personenbezogene Daten nie in GitHub
+/data/
+data/*
+!data/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
+
+# Lokale Ausgaben
+instance/
+.pytest_cache/
+work/
+outputs/
