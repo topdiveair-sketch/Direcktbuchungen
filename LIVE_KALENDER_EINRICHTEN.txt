@@ -1,0 +1,33 @@
+LIVE BOOKING-KALENDER EINRICHTEN
+
+Direkt auf GitHub Pages geht die Live-Abfrage nicht, weil Booking den
+iCal-Link im Browser blockiert. Deshalb braucht die Seite einen kleinen
+Cloudflare Worker als Zwischenstation.
+
+Einrichtung:
+
+1. Cloudflare oeffnen.
+2. Workers & Pages oeffnen.
+3. Create Worker waehlen.
+4. Den kompletten Inhalt aus `LIVE_BOOKING_WORKER_CLOUDFLARE.js` einfuegen.
+5. Deploy klicken.
+6. Die Worker-URL kopieren, z. B.
+   `https://zuhause-bach-kalender.DEINNAME.workers.dev`
+7. In `index.html` diese Zeile suchen:
+
+   const LIVE_BOOKING_API_URL = "";
+
+8. Dort die Worker-URL eintragen:
+
+   const LIVE_BOOKING_API_URL = "https://zuhause-bach-kalender.DEINNAME.workers.dev";
+
+9. Direkt darunter auch die Preisabfrage eintragen:
+
+   const LIVE_PRICE_API_URL = "https://zuhause-bach-kalender.DEINNAME.workers.dev?type=prices";
+
+10. `index.html` wieder auf GitHub Pages hochladen.
+
+Danach holt die Seite bei jedem Besuch den aktuellen Bachblick-Kalender
+direkt aus Booking. Wenn der Worker einmal nicht erreichbar ist, verwendet
+die Seite automatisch den gespeicherten Kalenderstand als Notfall-Fallback.
+Die Zimmerpreise werden beim Laden und danach alle 10 Minuten neu abgerufen.
