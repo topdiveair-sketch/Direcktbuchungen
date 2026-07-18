@@ -33,7 +33,9 @@
       display: block;
       position: relative;
       overflow: hidden;
-      background: #f5ecdc;
+      background:
+        linear-gradient(90deg, rgba(18,35,25,.88), rgba(18,35,25,.46)),
+        url("images/aggsbach-markt-luftbild.png") center / cover;
       color: #fff;
     }
     .nav {
@@ -45,33 +47,15 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       gap: 16px;
       padding: 18px min(5vw, 56px);
     }
     .top-image {
+      display: block;
       width: 100%;
       height: auto;
-      display: block;
-      background: #18331e;
-    }
-    .brand {
-      display: flex;
-      flex-direction: column;
-      text-decoration: none;
-      font-weight: 800;
-      letter-spacing: 0;
-      min-width: 150px;
-      padding: 10px 14px;
-      border: 2px solid #e8bd67;
-      border-radius: 8px;
-      background: linear-gradient(145deg, #74401f, #332016);
-      color: #fff3cc;
-      box-shadow: 0 8px 22px rgba(0,0,0,.24);
-    }
-    .brand small {
-      font-weight: 500;
-      opacity: .86;
+      background: #fff3d6;
     }
     .nav-links {
       display: flex;
@@ -79,19 +63,46 @@
       justify-content: flex-end;
       gap: 14px;
       font-size: 14px;
+      margin-top: 40px;
     }
     .nav-links a {
       text-decoration: none;
       opacity: .92;
+    }
+    .language-switcher {
+      position: absolute;
+      z-index: 6;
+      top: 10px;
+      right: min(5vw, 56px);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .language-switcher button {
+      min-height: 34px;
+      border: 0;
+      border-radius: 999px;
+      padding: 6px 11px;
+      background: rgba(255,255,255,.93);
+      color: #111;
+      box-shadow: 0 3px 10px rgba(0,0,0,.22);
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .language-switcher button.active {
+      outline: 3px solid rgba(23,107,90,.85);
+      background: #fff7d6;
     }
     .hero-grid {
       display: grid;
       grid-template-columns: minmax(0, .9fr) minmax(340px, 520px);
       gap: min(5vw, 56px);
       align-items: start;
-      padding: 34px min(5vw, 56px) 46px;
-      color: var(--ink);
-      background: #f5ecdc;
+      padding: 118px min(5vw, 56px) 58px;
+      color: #fff;
+      background: transparent;
     }
     .hero-copy {
       max-width: 740px;
@@ -115,6 +126,8 @@
       max-width: 620px;
       margin: 18px 0 0;
       font-size: clamp(18px, 2.2vw, 24px);
+      color: rgba(255,255,255,.92);
+      text-shadow: 0 2px 10px rgba(0,0,0,.3);
     }
     .panel {
       background: rgba(255, 250, 239, .97);
@@ -134,13 +147,19 @@
       margin: 0 0 18px;
       color: var(--muted);
     }
+    .dashboard-strip {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(310px, 420px);
+      gap: 16px;
+      margin: -44px min(5vw, 56px) 10px;
+      position: relative;
+      z-index: 2;
+    }
     .quick-tiles {
       display: grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 12px;
-      margin: -44px min(5vw, 56px) 10px;
-      position: relative;
-      z-index: 2;
+      margin: 0;
     }
     .quick-tile {
       min-height: 126px;
@@ -188,15 +207,16 @@
     }
     .weather-live {
       display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 14px;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
       align-items: center;
-      margin: 0 min(5vw, 56px) 18px;
-      padding: 18px;
+      align-self: start;
+      margin: 0;
+      padding: 16px;
       border: 1px solid #ead9ba;
       border-radius: 8px;
       background: rgba(255, 250, 239, .97);
-      box-shadow: 0 10px 25px rgba(43, 30, 17, .14);
+      box-shadow: 0 14px 35px rgba(43, 30, 17, .2);
     }
     .weather-live div {
       display: grid;
@@ -219,6 +239,7 @@
     .weather-snow::before { content: "❄ "; color: #6eaad1; }
     .weather-storm::before { content: "⚡ "; color: #d18b00; }
     .weather-live p {
+      grid-column: 1 / -1;
       margin: 0;
       padding: 12px;
       border-radius: 8px;
@@ -462,25 +483,6 @@
     .tip-card small {
       color: #fff0c6;
     }
-    .legal {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-    }
-    .legal article {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      padding: 16px;
-    }
-    .legal h3 {
-      margin: 0 0 8px;
-    }
-    .legal p {
-      margin: 0 0 8px;
-      color: var(--muted);
-      font-size: 14px;
-    }
     .guest-app {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 180px;
@@ -549,6 +551,44 @@
     footer a {
       color: #fff;
     }
+    .footer-main {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .legal-details {
+      width: 100%;
+      border-top: 1px solid rgba(255,255,255,.18);
+      padding-top: 12px;
+      color: rgba(255,255,255,.92);
+    }
+    .legal-details summary {
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .legal-content {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .legal-content article {
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 8px;
+      background: rgba(255,255,255,.06);
+      padding: 14px;
+    }
+    .legal-content h3 {
+      margin: 0 0 8px;
+      color: #fff;
+    }
+    .legal-content p {
+      margin: 0 0 8px;
+      color: rgba(255,255,255,.78);
+      font-size: 14px;
+    }
     .status {
       display: none;
       padding: 12px;
@@ -559,7 +599,10 @@
     }
     .status.show { display: block; }
     @media (max-width: 980px) {
-      .hero-grid, .room-grid, .facts, .legal, .guest-app {
+      .hero-grid, .room-grid, .facts, .legal-content, .guest-app {
+        grid-template-columns: 1fr;
+      }
+      .dashboard-strip {
         grid-template-columns: 1fr;
       }
       .quick-tiles,
@@ -573,7 +616,7 @@
         grid-column: 1 / 3;
       }
       .quick-tiles {
-        margin-top: -22px;
+        margin-top: 0;
       }
       .windis-list { grid-template-columns: 1fr; }
       .hero-copy { padding-bottom: 0; }
@@ -592,12 +635,15 @@
         grid-template-columns: 1fr;
       }
       .weather-live {
-        margin: 12px 18px;
+        margin: 0;
       }
       .weather-live p {
         grid-column: auto;
       }
       .quick-tiles {
+        margin: 0;
+      }
+      .dashboard-strip {
         margin: 10px 18px 0;
       }
     }
@@ -606,16 +652,19 @@
 <body>
   <header class="top" id="start">
     <nav class="nav">
-      <a class="brand" href="#start">
-        Zuhause am Bach
-        <small>Wachau, Aggsbach Markt</small>
-      </a>
+      <div class="language-switcher" aria-label="Sprache wählen">
+        <button type="button" data-lang="de">🇩🇪 DE</button>
+        <button type="button" data-lang="en">🇬🇧 EN</button>
+        <button type="button" data-lang="cs">🇨🇿 CZ</button>
+        <button type="button" data-lang="hu">🇭🇺 HU</button>
+        <button type="button" data-lang="es">🇪🇸 ES</button>
+        <button type="button" data-lang="fr">🇫🇷 FR</button>
+      </div>
       <div class="nav-links">
         <a href="#zimmer">Zimmer</a>
         <a href="#tipps">Tipps</a>
         <a href="#gaesteapp">Gäste-App</a>
         <a href="#infos">Infos</a>
-        <a href="#rechtliches">Rechtliches</a>
         <a href="#kontakt">Kontakt</a>
       </div>
     </nav>
@@ -626,7 +675,7 @@
       <div class="hero-copy">
         <span class="eyebrow">Direkt anfragen ohne Buchungsplattform</span>
         <h1>Zuhause am Bach</h1>
-        <p>Ruhig wohnen in Aggsbach Markt. Ideal für Wachau, Donauradweg und Welterbesteig.</p>
+        <p>Basislager für Donauradweg und Welterbesteig.</p>
       </div>
 
       <section class="panel" aria-labelledby="booking-title">
@@ -679,9 +728,9 @@
             <label>Zimmer</label>
             <div class="rooms">
               <label class="choice">
-                <input type="radio" name="room" value="Bachblick" data-price="101.10" checked>
+                <input type="radio" name="room" value="Bachblick" data-price="101" checked>
                 <span><strong>Bachblick</strong><small>bereits buchbar</small></span>
-                <b class="price">101,10 EUR</b>
+                <b class="price">101 EUR</b>
               </label>
               <label class="choice">
                 <input type="radio" name="room" value="Marillenzimmer" data-price="90" data-from="2026-08-15" data-release-required="1">
@@ -745,28 +794,30 @@
   </header>
 
   <main>
-    <section class="quick-tiles" aria-label="Schnellzugriff">
-      <a class="quick-tile walk" href="#tipps"><span>Wandern</span><small>Welterbesteig</small></a>
-      <a class="quick-tile bike" href="#tipps"><span>Radfahren</span><small>Donauradweg</small></a>
-      <a class="quick-tile sun" href="#wetter"><span>Wetter</span><small>Wanderampel</small></a>
-      <a class="quick-tile wine" href="#tipps"><span>Wachau-Tipps</span><small>Genuss</small></a>
-      <a class="quick-tile book" href="#requestForm"><span>Direkt buchen</span><small>Bestpreis sichern</small></a>
-      <a class="quick-tile call" href="#kontakt"><span>Kontakt</span><small>Anfahrt</small></a>
-    </section>
+    <div class="dashboard-strip">
+      <section class="quick-tiles" aria-label="Schnellzugriff">
+        <a class="quick-tile walk" href="#tipps"><span>Wandern</span><small>Welterbesteig</small></a>
+        <a class="quick-tile bike" href="#tipps"><span>Radfahren</span><small>Donauradweg</small></a>
+        <a class="quick-tile sun" href="#wetter"><span>Wetter</span><small>Wanderampel</small></a>
+        <a class="quick-tile wine" href="#tipps"><span>Wachau-Tipps</span><small>Genuss</small></a>
+        <a class="quick-tile book" href="#requestForm"><span>Direkt buchen</span><small>Bestpreis sichern</small></a>
+        <a class="quick-tile call" href="#kontakt"><span>Kontakt</span><small>Anfahrt</small></a>
+      </section>
 
-    <section id="wetter" class="weather-live" data-weather-lat="48.2945" data-weather-lon="15.4068">
-      <div>
-        <strong>Heute</strong>
-        <span id="weatherTodayTemp" class="weather-cloud">--°</span>
-        <small id="weatherTodayText">Wetter wird geladen</small>
-      </div>
-      <div>
-        <strong>Morgen</strong>
-        <span id="weatherTomorrowTemp" class="weather-cloud">--°</span>
-        <small id="weatherTomorrowText">5-Tage-Prognose wird geladen</small>
-      </div>
-      <p id="weatherHint">Live-Wetter für Aggsbach Markt wird aktualisiert.</p>
-    </section>
+      <section id="wetter" class="weather-live" data-weather-lat="48.2945" data-weather-lon="15.4068">
+        <div>
+          <strong>Heute</strong>
+          <span id="weatherTodayTemp" class="weather-cloud">--°</span>
+          <small id="weatherTodayText">Wetter wird geladen</small>
+        </div>
+        <div>
+          <strong>Morgen</strong>
+          <span id="weatherTomorrowTemp" class="weather-cloud">--°</span>
+          <small id="weatherTomorrowText">5-Tage-Prognose wird geladen</small>
+        </div>
+        <p id="weatherHint">Live-Wetter für Aggsbach Markt wird aktualisiert.</p>
+      </section>
+    </div>
 
     <section id="zimmer">
       <div class="section-head">
@@ -780,7 +831,7 @@
           <div>
             <h3>Bachblick</h3>
             <p>Doppelzimmer mit Blick auf den Bach. Gemütlich, ruhig und zum Wohlfühlen.</p>
-            <strong>ab 101,10 EUR pro Nacht</strong>
+            <strong>ab 101 EUR pro Nacht</strong>
           </div>
         </article>
         <article class="room-card">
@@ -856,12 +907,22 @@
       </div>
     </section>
 
-    <section id="rechtliches">
-      <div class="section-head">
-        <span class="eyebrow">Rechtliches</span>
-        <h2>Kurze Hinweise für den einfachen Start</h2>
+  </main>
+
+  <footer id="kontakt">
+    <div class="footer-main">
+      <div>
+        <strong>Zuhause am Bach - Wachau</strong><br>
+        Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich
       </div>
-      <div class="legal">
+      <div>
+        <a href="mailto:topdiveair@gmail.com">topdiveair@gmail.com</a><br>
+        <a href="tel:+436646437526">+43 664 6437526</a>
+      </div>
+    </div>
+    <details id="impressum" class="legal-details">
+      <summary>Impressum & Rechtliches</summary>
+      <div class="legal-content">
         <article>
           <h3>Impressum</h3>
           <p>Zuhause am Bach - Wachau</p>
@@ -884,18 +945,7 @@
           <p>Die konkrete Regelung wird mit der Buchungsbestätigung bekanntgegeben.</p>
         </article>
       </div>
-    </section>
-  </main>
-
-  <footer id="kontakt">
-    <div>
-      <strong>Zuhause am Bach - Wachau</strong><br>
-      Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich
-    </div>
-    <div>
-      <a href="mailto:topdiveair@gmail.com">topdiveair@gmail.com</a><br>
-      <a href="tel:+436646437526">+43 664 6437526</a>
-    </div>
+    </details>
   </footer>
 
   <script>
@@ -909,12 +959,801 @@
     const paypalBox = document.getElementById("paypalBox");
     const statusBox = document.getElementById("status");
     const availabilityStatus = document.getElementById("availabilityStatus");
+    const LANGUAGES = {
+      de: { html: "de", locale: "de-AT" },
+      en: { html: "en", locale: "en-GB" },
+      cs: { html: "cs", locale: "cs-CZ" },
+      hu: { html: "hu", locale: "hu-HU" },
+      es: { html: "es", locale: "es-ES" },
+      fr: { html: "fr", locale: "fr-FR" }
+    };
+    const STATIC_I18N = {
+      en: {
+        "Sprache wählen": "Choose language",
+        "Schnellzugriff": "Quick access",
+        "Willkommen bei Zuhause am Bach - Gästehaus Wachau": "Welcome to Zuhause am Bach - Wachau guesthouse",
+        "Zimmer": "Rooms",
+        "Tipps": "Tips",
+        "Gäste-App": "Guest App",
+        "Infos": "Info",
+        "Kontakt": "Contact",
+        "Direkt anfragen ohne Buchungsplattform": "Direct request without booking platform",
+        "Basislager für Donauradweg und Welterbesteig.": "Base camp for the Danube Cycle Path and the Welterbesteig.",
+        "Buchungsanfrage": "Booking request",
+        "Anreise": "Arrival",
+        "Abreise": "Departure",
+        "Personen": "Guests",
+        "1 Person": "1 guest",
+        "2 Personen": "2 guests",
+        "Nächte": "Nights",
+        "Derzeit ist nur Bachblick buchbar. Weitere Zimmer sind ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.": "Currently only Bachblick can be requested. The other rooms are prepared from 15/08/2026, but not yet released.",
+        "Zusatzleistungen": "Extras",
+        "Frühstück": "Breakfast",
+        "12,00 EUR pro Person/Nacht": "12.00 EUR per person/night",
+        "Wachauer Jause": "Wachau snack platter",
+        "29,90 EUR einmalig": "29.90 EUR once",
+        "Gepäcktransport": "Luggage transfer",
+        "15,00 EUR einmalig": "15.00 EUR once",
+        "bereits buchbar": "available to request",
+        "ab 15.08.2026, erst nach Freigabe": "from 15/08/2026, after release",
+        "Direktpreis": "Direct price",
+        "PayPal-Zahlung möglich": "PayPal payment possible",
+        "Bei freiem Termin bitte erst nach persönlicher Bestätigung an topdiveair@gmail.com bezahlen.": "If the date is free, please pay to topdiveair@gmail.com only after personal confirmation.",
+        "Vorname": "First name",
+        "Nachname": "Last name",
+        "Telefon": "Phone",
+        "Nachricht oder Wünsche": "Message or wishes",
+        "z. B. vegetarisches Frühstück, spätere Anreise, Fragen zur Umgebung": "e.g. vegetarian breakfast, later arrival, questions about the area",
+        "Wichtig: Diese einfache Version ist eine Anfrage, keine automatische Sofortbuchung. Die Verfügbarkeit wird persönlich bestätigt.": "Important: this simple version is a request, not an automatic instant booking. Availability is confirmed personally.",
+        "E-Mail mit Anfrage öffnen": "Open email request",
+        "Direkt anrufen": "Call directly",
+        "Die E-Mail wurde vorbereitet. Bitte im Mailprogramm absenden.": "The email has been prepared. Please send it in your mail program.",
+        "Wandern": "Hiking",
+        "Welterbesteig": "Welterbesteig trail",
+        "Radfahren": "Cycling",
+        "Donauradweg": "Danube Cycle Path",
+        "Wetter": "Weather",
+        "Wanderampel": "Hiking signal",
+        "Wachau-Tipps": "Wachau tips",
+        "Genuss": "Enjoyment",
+        "Direkt buchen": "Book direct",
+        "Bestpreis sichern": "Secure best price",
+        "Anfahrt": "Directions",
+        "Heute": "Today",
+        "Morgen": "Tomorrow",
+        "Wetter wird geladen": "Loading weather",
+        "5-Tage-Prognose wird geladen": "Loading 5-day forecast",
+        "Live-Wetter für Aggsbach Markt wird aktualisiert.": "Live weather for Aggsbach Markt is updating.",
+        "Vier Zimmer, ruhig und persönlich": "Four rooms, quiet and personal",
+        "Wählen Sie Ihr Wunschzimmer. Verfügbarkeit und Preis werden vor der Bestätigung geprüft.": "Choose your preferred room. Availability and price are checked before confirmation.",
+        "Doppelzimmer mit Blick auf den Bach. Gemütlich, ruhig und zum Wohlfühlen.": "Double room with a view of the stream. Cosy, quiet and comfortable.",
+        "ab 101 EUR pro Nacht": "from 101 EUR per night",
+        "Wachauer Atmosphäre, warme Details und ein ruhiger Rückzugsort.": "Wachau atmosphere, warm details and a quiet retreat.",
+        "derzeit noch nicht buchbar": "not bookable yet",
+        "Inspiriert von den Weinbergen der Wachau, ideal für Genießer.": "Inspired by the Wachau vineyards, ideal for connoisseurs.",
+        "Ein freundliches Zimmer mit Bezug zur Donau und zur Wachauer Landschaft.": "A friendly room inspired by the Danube and the Wachau landscape.",
+        "Unsere Wachau-Geheimtipps": "Our Wachau insider tips",
+        "Entdecken, erleben, genießen": "Discover, experience, enjoy",
+        "Spitz an der Donau": "Spitz on the Danube",
+        "Wandern & Aussicht": "Hiking & views",
+        "Weltkulturerbe": "World Heritage",
+        "Nostalgie pur": "Pure nostalgia",
+        "Original in Willendorf": "Original in Willendorf",
+        "Exklusiv für unsere Gäste": "Exclusive for our guests",
+        "Aufenthalt bei den Wilden Wachauer Windis": "Stay with the Wild Wachau Windis",
+        "Die Gästeapp ist der Begleiter für den Aufenthalt bei Zuhause am Bach: Hausinfo, WLAN-Hilfe, Wetter, Notfallnummern, Wandern, Radfahren, Genuss, Kinderwelt und Gästebuch an einem Ort.": "The guest app accompanies your stay at Zuhause am Bach: house info, Wi-Fi help, weather, emergency numbers, hiking, cycling, enjoyment, kids' world and guestbook in one place.",
+        "Wandern, Wege und Wachau-Abenteuer": "Hiking, routes and Wachau adventures",
+        "Genuss, Hausinfo und gute Ordnung": "Enjoyment, house info and good order",
+        "Kinderwelt, Quiz und kleine Geheimnisse": "Kids' world, quiz and little secrets",
+        "Gästeapp öffnen": "Open guest app",
+        "QR-Code zur Gästeapp": "QR code to the guest app",
+        "Direkt am Smartphone öffnen": "Open directly on your smartphone",
+        "Gut zu wissen": "Good to know",
+        "Alles Wichtige ohne Technik": "Everything important, without fuss",
+        "12,00 EUR pro Person und Nacht, direkt in der Anfrage auswählbar.": "12.00 EUR per person and night, selectable directly in the request.",
+        "29,90 EUR einmalig, ideal für Ankunft oder Ausflugstag.": "29.90 EUR once, ideal for arrival or excursion day.",
+        "15,00 EUR einmalig, besonders praktisch für Radfahrer und Wanderer.": "15.00 EUR once, especially practical for cyclists and hikers.",
+        "Telefon +43 664 6437526, E-Mail topdiveair@gmail.com.": "Phone +43 664 6437526, email topdiveair@gmail.com.",
+        "Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich": "Aggsbach Markt 82, 3641 Aggsbach Markt, Austria",
+        "Impressum & Rechtliches": "Legal notice & terms",
+        "Impressum": "Legal notice",
+        "Betreiberin: Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich.": "Operator: Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Austria.",
+        "Telefon: +43 664 6437526, E-Mail: topdiveair@gmail.com.": "Phone: +43 664 6437526, email: topdiveair@gmail.com.",
+        "Datenschutz": "Privacy",
+        "Die per E-Mail übermittelten Daten werden zur Bearbeitung der Buchungsanfrage verwendet.": "Data sent by email is used to process the booking request.",
+        "Es werden Name, Kontaktdaten, Reisedaten, Zimmerwunsch und Nachricht verarbeitet.": "Name, contact details, travel dates, room request and message are processed.",
+        "Buchungsbedingungen": "Booking terms",
+        "Eine Anfrage über diese Seite ist keine automatische Buchung. Der Beherbergungsvertrag kommt erst nach persönlicher Bestätigung zustande.": "A request via this page is not an automatic booking. The accommodation contract is concluded only after personal confirmation.",
+        "Preise und Verfügbarkeit werden in der Bestätigung geprüft.": "Prices and availability are checked in the confirmation.",
+        "Stornobedingungen": "Cancellation terms",
+        "Stornierungen müssen schriftlich per E-Mail an topdiveair@gmail.com erfolgen.": "Cancellations must be made in writing by email to topdiveair@gmail.com.",
+        "Die konkrete Regelung wird mit der Buchungsbestätigung bekanntgegeben.": "The specific rule is provided with the booking confirmation."
+      },
+      cs: {
+        "Sprache wählen": "Vybrat jazyk",
+        "Schnellzugriff": "Rychlý přístup",
+        "Willkommen bei Zuhause am Bach - Gästehaus Wachau": "Vítejte v Zuhause am Bach - penzion Wachau",
+        "Zimmer": "Pokoje",
+        "Tipps": "Tipy",
+        "Gäste-App": "Aplikace pro hosty",
+        "Infos": "Informace",
+        "Kontakt": "Kontakt",
+        "Direkt anfragen ohne Buchungsplattform": "Přímá poptávka bez rezervační platformy",
+        "Basislager für Donauradweg und Welterbesteig.": "Základna pro Dunajskou cyklostezku a Welterbesteig.",
+        "Buchungsanfrage": "Poptávka na ubytování",
+        "Anreise": "Příjezd",
+        "Abreise": "Odjezd",
+        "Personen": "Hosté",
+        "1 Person": "1 host",
+        "2 Personen": "2 hosté",
+        "Nächte": "Noci",
+        "Derzeit ist nur Bachblick buchbar. Weitere Zimmer sind ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.": "Aktuálně lze poptat pouze Bachblick. Ostatní pokoje jsou připraveny od 15. 8. 2026, ale zatím nejsou uvolněny.",
+        "Zusatzleistungen": "Doplňkové služby",
+        "Frühstück": "Snídaně",
+        "12,00 EUR pro Person/Nacht": "12,00 EUR za osobu/noc",
+        "Wachauer Jause": "Wachauská svačina",
+        "29,90 EUR einmalig": "29,90 EUR jednorázově",
+        "Gepäcktransport": "Přeprava zavazadel",
+        "15,00 EUR einmalig": "15,00 EUR jednorázově",
+        "bereits buchbar": "lze poptat",
+        "ab 15.08.2026, erst nach Freigabe": "od 15. 8. 2026, po uvolnění",
+        "Direktpreis": "Přímá cena",
+        "PayPal-Zahlung möglich": "Platba PayPal možná",
+        "Bei freiem Termin bitte erst nach persönlicher Bestätigung an topdiveair@gmail.com bezahlen.": "Pokud je termín volný, plaťte prosím na topdiveair@gmail.com až po osobním potvrzení.",
+        "Vorname": "Jméno",
+        "Nachname": "Příjmení",
+        "Telefon": "Telefon",
+        "Nachricht oder Wünsche": "Zpráva nebo přání",
+        "z. B. vegetarisches Frühstück, spätere Anreise, Fragen zur Umgebung": "např. vegetariánská snídaně, pozdější příjezd, dotazy k okolí",
+        "Wichtig: Diese einfache Version ist eine Anfrage, keine automatische Sofortbuchung. Die Verfügbarkeit wird persönlich bestätigt.": "Důležité: tato jednoduchá verze je poptávka, ne automatická okamžitá rezervace. Dostupnost bude potvrzena osobně.",
+        "E-Mail mit Anfrage öffnen": "Otevřít e-mail s poptávkou",
+        "Direkt anrufen": "Zavolat přímo",
+        "Die E-Mail wurde vorbereitet. Bitte im Mailprogramm absenden.": "E-mail byl připraven. Odešlete jej prosím ve svém e-mailovém programu.",
+        "Wandern": "Pěší turistika",
+        "Welterbesteig": "Stezka Welterbesteig",
+        "Radfahren": "Cyklistika",
+        "Donauradweg": "Dunajská cyklostezka",
+        "Wetter": "Počasí",
+        "Wanderampel": "Turistický signál",
+        "Wachau-Tipps": "Tipy Wachau",
+        "Genuss": "Požitek",
+        "Direkt buchen": "Poptat přímo",
+        "Bestpreis sichern": "Zajistit nejlepší cenu",
+        "Anfahrt": "Příjezd",
+        "Heute": "Dnes",
+        "Morgen": "Zítra",
+        "Wetter wird geladen": "Načítá se počasí",
+        "5-Tage-Prognose wird geladen": "Načítá se 5denní předpověď",
+        "Live-Wetter für Aggsbach Markt wird aktualisiert.": "Aktualizuje se živé počasí pro Aggsbach Markt.",
+        "Vier Zimmer, ruhig und persönlich": "Čtyři pokoje, klidné a osobní",
+        "Wählen Sie Ihr Wunschzimmer. Verfügbarkeit und Preis werden vor der Bestätigung geprüft.": "Vyberte si požadovaný pokoj. Dostupnost a cena se ověří před potvrzením.",
+        "Doppelzimmer mit Blick auf den Bach. Gemütlich, ruhig und zum Wohlfühlen.": "Dvoulůžkový pokoj s výhledem na potok. Útulný, klidný a pohodlný.",
+        "ab 101 EUR pro Nacht": "od 101 EUR za noc",
+        "Wachauer Atmosphäre, warme Details und ein ruhiger Rückzugsort.": "Wachauská atmosféra, teplé detaily a klidné útočiště.",
+        "derzeit noch nicht buchbar": "zatím nelze rezervovat",
+        "Inspiriert von den Weinbergen der Wachau, ideal für Genießer.": "Inspirováno vinicemi Wachau, ideální pro gurmány.",
+        "Ein freundliches Zimmer mit Bezug zur Donau und zur Wachauer Landschaft.": "Příjemný pokoj inspirovaný Dunajem a krajinou Wachau.",
+        "Unsere Wachau-Geheimtipps": "Naše tajné tipy ve Wachau",
+        "Entdecken, erleben, genießen": "Objevovat, zažít, vychutnat",
+        "Spitz an der Donau": "Spitz na Dunaji",
+        "Wandern & Aussicht": "Turistika a výhled",
+        "Weltkulturerbe": "Světové dědictví",
+        "Nostalgie pur": "Čistá nostalgie",
+        "Original in Willendorf": "Originál ve Willendorfu",
+        "Exklusiv für unsere Gäste": "Exkluzivně pro naše hosty",
+        "Aufenthalt bei den Wilden Wachauer Windis": "Pobyt u divokých Wachau Windis",
+        "Die Gästeapp ist der Begleiter für den Aufenthalt bei Zuhause am Bach: Hausinfo, WLAN-Hilfe, Wetter, Notfallnummern, Wandern, Radfahren, Genuss, Kinderwelt und Gästebuch an einem Ort.": "Aplikace pro hosty vás provází pobytem v Zuhause am Bach: informace o domě, pomoc s Wi-Fi, počasí, nouzová čísla, turistika, cyklistika, zážitky, dětský svět a kniha hostů na jednom místě.",
+        "Wandern, Wege und Wachau-Abenteuer": "Turistika, trasy a dobrodružství ve Wachau",
+        "Genuss, Hausinfo und gute Ordnung": "Požitek, informace o domě a dobrý pořádek",
+        "Kinderwelt, Quiz und kleine Geheimnisse": "Dětský svět, kvíz a malá tajemství",
+        "Gästeapp öffnen": "Otevřít aplikaci pro hosty",
+        "QR-Code zur Gästeapp": "QR kód k aplikaci pro hosty",
+        "Direkt am Smartphone öffnen": "Otevřít přímo v telefonu",
+        "Gut zu wissen": "Dobré vědět",
+        "Alles Wichtige ohne Technik": "Vše důležité jednoduše",
+        "12,00 EUR pro Person und Nacht, direkt in der Anfrage auswählbar.": "12,00 EUR za osobu a noc, lze vybrat přímo v poptávce.",
+        "29,90 EUR einmalig, ideal für Ankunft oder Ausflugstag.": "29,90 EUR jednorázově, ideální při příjezdu nebo na výletní den.",
+        "15,00 EUR einmalig, besonders praktisch für Radfahrer und Wanderer.": "15,00 EUR jednorázově, zvlášť praktické pro cyklisty a turisty.",
+        "Telefon +43 664 6437526, E-Mail topdiveair@gmail.com.": "Telefon +43 664 6437526, e-mail topdiveair@gmail.com.",
+        "Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich": "Aggsbach Markt 82, 3641 Aggsbach Markt, Rakousko",
+        "Impressum & Rechtliches": "Impresum a právní informace",
+        "Impressum": "Impresum",
+        "Betreiberin: Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich.": "Provozovatelka: Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Rakousko.",
+        "Telefon: +43 664 6437526, E-Mail: topdiveair@gmail.com.": "Telefon: +43 664 6437526, e-mail: topdiveair@gmail.com.",
+        "Datenschutz": "Ochrana osobních údajů",
+        "Die per E-Mail übermittelten Daten werden zur Bearbeitung der Buchungsanfrage verwendet.": "Údaje zaslané e-mailem slouží ke zpracování poptávky.",
+        "Es werden Name, Kontaktdaten, Reisedaten, Zimmerwunsch und Nachricht verarbeitet.": "Zpracovává se jméno, kontaktní údaje, termín cesty, požadovaný pokoj a zpráva.",
+        "Buchungsbedingungen": "Podmínky rezervace",
+        "Eine Anfrage über diese Seite ist keine automatische Buchung. Der Beherbergungsvertrag kommt erst nach persönlicher Bestätigung zustande.": "Poptávka přes tuto stránku není automatická rezervace. Ubytovací smlouva vzniká až po osobním potvrzení.",
+        "Preise und Verfügbarkeit werden in der Bestätigung geprüft.": "Ceny a dostupnost budou ověřeny v potvrzení.",
+        "Stornobedingungen": "Storno podmínky",
+        "Stornierungen müssen schriftlich per E-Mail an topdiveair@gmail.com erfolgen.": "Storna musí být provedena písemně e-mailem na topdiveair@gmail.com.",
+        "Die konkrete Regelung wird mit der Buchungsbestätigung bekanntgegeben.": "Konkrétní pravidla budou sdělena v potvrzení rezervace."
+      },
+      hu: {
+        "Sprache wählen": "Nyelv kiválasztása",
+        "Schnellzugriff": "Gyors elérés",
+        "Willkommen bei Zuhause am Bach - Gästehaus Wachau": "Üdvözöljük a Zuhause am Bach - Wachau vendégházban",
+        "Zimmer": "Szobák",
+        "Tipps": "Tippek",
+        "Gäste-App": "Vendégapp",
+        "Infos": "Infók",
+        "Kontakt": "Kapcsolat",
+        "Direkt anfragen ohne Buchungsplattform": "Közvetlen ajánlatkérés foglalási platform nélkül",
+        "Basislager für Donauradweg und Welterbesteig.": "Bázis a Duna-kerékpárúthoz és a Welterbesteighez.",
+        "Buchungsanfrage": "Foglalási kérés",
+        "Anreise": "Érkezés",
+        "Abreise": "Távozás",
+        "Personen": "Vendégek",
+        "1 Person": "1 vendég",
+        "2 Personen": "2 vendég",
+        "Nächte": "Éjszakák",
+        "Derzeit ist nur Bachblick buchbar. Weitere Zimmer sind ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.": "Jelenleg csak a Bachblick kérhető. A többi szoba 2026.08.15-től előkészítve, de még nincs felszabadítva.",
+        "Zusatzleistungen": "Kiegészítő szolgáltatások",
+        "Frühstück": "Reggeli",
+        "12,00 EUR pro Person/Nacht": "12,00 EUR személyenként/éjszakánként",
+        "Wachauer Jause": "Wachaui uzsonna",
+        "29,90 EUR einmalig": "29,90 EUR egyszeri díj",
+        "Gepäcktransport": "Poggyászszállítás",
+        "15,00 EUR einmalig": "15,00 EUR egyszeri díj",
+        "bereits buchbar": "már kérhető",
+        "ab 15.08.2026, erst nach Freigabe": "2026.08.15-től, felszabadítás után",
+        "Direktpreis": "Közvetlen ár",
+        "PayPal-Zahlung möglich": "PayPal fizetés lehetséges",
+        "Bei freiem Termin bitte erst nach persönlicher Bestätigung an topdiveair@gmail.com bezahlen.": "Szabad időpont esetén kérjük, csak személyes visszaigazolás után fizessen a topdiveair@gmail.com címre.",
+        "Vorname": "Keresztnév",
+        "Nachname": "Vezetéknév",
+        "Telefon": "Telefon",
+        "Nachricht oder Wünsche": "Üzenet vagy kívánságok",
+        "z. B. vegetarisches Frühstück, spätere Anreise, Fragen zur Umgebung": "pl. vegetáriánus reggeli, későbbi érkezés, kérdések a környékről",
+        "Wichtig: Diese einfache Version ist eine Anfrage, keine automatische Sofortbuchung. Die Verfügbarkeit wird persönlich bestätigt.": "Fontos: ez az egyszerű változat érdeklődés, nem automatikus azonnali foglalás. A rendelkezésre állást személyesen igazoljuk vissza.",
+        "E-Mail mit Anfrage öffnen": "E-mail megnyitása a kéréssel",
+        "Direkt anrufen": "Közvetlen hívás",
+        "Die E-Mail wurde vorbereitet. Bitte im Mailprogramm absenden.": "Az e-mail elkészült. Kérjük, küldje el a levelezőprogramban.",
+        "Wandern": "Túrázás",
+        "Welterbesteig": "Welterbesteig útvonal",
+        "Radfahren": "Kerékpározás",
+        "Donauradweg": "Duna-kerékpárút",
+        "Wetter": "Időjárás",
+        "Wanderampel": "Túrajelzés",
+        "Wachau-Tipps": "Wachau tippek",
+        "Genuss": "Élvezet",
+        "Direkt buchen": "Közvetlen kérés",
+        "Bestpreis sichern": "Legjobb ár biztosítása",
+        "Anfahrt": "Megközelítés",
+        "Heute": "Ma",
+        "Morgen": "Holnap",
+        "Wetter wird geladen": "Időjárás betöltése",
+        "5-Tage-Prognose wird geladen": "5 napos előrejelzés betöltése",
+        "Live-Wetter für Aggsbach Markt wird aktualisiert.": "Aggsbach Markt élő időjárása frissül.",
+        "Vier Zimmer, ruhig und persönlich": "Négy szoba, csendes és személyes",
+        "Wählen Sie Ihr Wunschzimmer. Verfügbarkeit und Preis werden vor der Bestätigung geprüft.": "Válassza ki a kívánt szobát. A rendelkezésre állást és az árat a visszaigazolás előtt ellenőrizzük.",
+        "Doppelzimmer mit Blick auf den Bach. Gemütlich, ruhig und zum Wohlfühlen.": "Kétágyas szoba patakra néző kilátással. Otthonos, csendes és kényelmes.",
+        "ab 101 EUR pro Nacht": "101 EUR-tól éjszakánként",
+        "Wachauer Atmosphäre, warme Details und ein ruhiger Rückzugsort.": "Wachaui hangulat, meleg részletek és nyugodt menedék.",
+        "derzeit noch nicht buchbar": "jelenleg még nem foglalható",
+        "Inspiriert von den Weinbergen der Wachau, ideal für Genießer.": "A Wachau szőlőhegyei ihlették, ideális ínyenceknek.",
+        "Ein freundliches Zimmer mit Bezug zur Donau und zur Wachauer Landschaft.": "Barátságos szoba, amelyet a Duna és a Wachau tája ihletett.",
+        "Unsere Wachau-Geheimtipps": "Wachau titkos tippjeink",
+        "Entdecken, erleben, genießen": "Felfedezni, átélni, élvezni",
+        "Spitz an der Donau": "Spitz a Dunánál",
+        "Wandern & Aussicht": "Túrázás és kilátás",
+        "Weltkulturerbe": "Világörökség",
+        "Nostalgie pur": "Tiszta nosztalgia",
+        "Original in Willendorf": "Eredeti Willendorfban",
+        "Exklusiv für unsere Gäste": "Exkluzív vendégeinknek",
+        "Aufenthalt bei den Wilden Wachauer Windis": "Tartózkodás a vad wachaui Windikkel",
+        "Die Gästeapp ist der Begleiter für den Aufenthalt bei Zuhause am Bach: Hausinfo, WLAN-Hilfe, Wetter, Notfallnummern, Wandern, Radfahren, Genuss, Kinderwelt und Gästebuch an einem Ort.": "A vendégapp kísérő a Zuhause am Bach tartózkodáshoz: házinformációk, Wi-Fi segítség, időjárás, segélyhívók, túrázás, kerékpározás, élmények, gyerekvilág és vendégkönyv egy helyen.",
+        "Wandern, Wege und Wachau-Abenteuer": "Túrázás, utak és wachaui kalandok",
+        "Genuss, Hausinfo und gute Ordnung": "Élvezet, házinformációk és rend",
+        "Kinderwelt, Quiz und kleine Geheimnisse": "Gyerekvilág, kvíz és apró titkok",
+        "Gästeapp öffnen": "Vendégapp megnyitása",
+        "QR-Code zur Gästeapp": "QR-kód a vendégapphoz",
+        "Direkt am Smartphone öffnen": "Megnyitás közvetlenül okostelefonon",
+        "Gut zu wissen": "Jó tudni",
+        "Alles Wichtige ohne Technik": "Minden fontos egyszerűen",
+        "12,00 EUR pro Person und Nacht, direkt in der Anfrage auswählbar.": "12,00 EUR személyenként és éjszakánként, közvetlenül kiválasztható a kérésben.",
+        "29,90 EUR einmalig, ideal für Ankunft oder Ausflugstag.": "29,90 EUR egyszeri díj, ideális érkezéshez vagy kirándulónapra.",
+        "15,00 EUR einmalig, besonders praktisch für Radfahrer und Wanderer.": "15,00 EUR egyszeri díj, különösen praktikus kerékpárosoknak és túrázóknak.",
+        "Telefon +43 664 6437526, E-Mail topdiveair@gmail.com.": "Telefon +43 664 6437526, e-mail topdiveair@gmail.com.",
+        "Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich": "Aggsbach Markt 82, 3641 Aggsbach Markt, Ausztria",
+        "Impressum & Rechtliches": "Impresszum és jogi információk",
+        "Impressum": "Impresszum",
+        "Betreiberin: Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich.": "Üzemeltető: Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Ausztria.",
+        "Telefon: +43 664 6437526, E-Mail: topdiveair@gmail.com.": "Telefon: +43 664 6437526, e-mail: topdiveair@gmail.com.",
+        "Datenschutz": "Adatvédelem",
+        "Die per E-Mail übermittelten Daten werden zur Bearbeitung der Buchungsanfrage verwendet.": "Az e-mailben küldött adatokat a foglalási kérés feldolgozására használjuk.",
+        "Es werden Name, Kontaktdaten, Reisedaten, Zimmerwunsch und Nachricht verarbeitet.": "Név, elérhetőség, utazási adatok, szobakérés és üzenet kerül feldolgozásra.",
+        "Buchungsbedingungen": "Foglalási feltételek",
+        "Eine Anfrage über diese Seite ist keine automatische Buchung. Der Beherbergungsvertrag kommt erst nach persönlicher Bestätigung zustande.": "Az ezen az oldalon küldött kérés nem automatikus foglalás. A szállásszerződés csak személyes visszaigazolás után jön létre.",
+        "Preise und Verfügbarkeit werden in der Bestätigung geprüft.": "Az árakat és a rendelkezésre állást a visszaigazolásban ellenőrizzük.",
+        "Stornobedingungen": "Lemondási feltételek",
+        "Stornierungen müssen schriftlich per E-Mail an topdiveair@gmail.com erfolgen.": "A lemondásokat írásban, e-mailben kell elküldeni a topdiveair@gmail.com címre.",
+        "Die konkrete Regelung wird mit der Buchungsbestätigung bekanntgegeben.": "A konkrét szabályozást a foglalási visszaigazolással közöljük."
+      },
+      es: {
+        "Sprache wählen": "Elegir idioma",
+        "Schnellzugriff": "Acceso rápido",
+        "Willkommen bei Zuhause am Bach - Gästehaus Wachau": "Bienvenido a Zuhause am Bach - casa de huéspedes Wachau",
+        "Zimmer": "Habitaciones",
+        "Tipps": "Consejos",
+        "Gäste-App": "App de huéspedes",
+        "Infos": "Información",
+        "Kontakt": "Contacto",
+        "Direkt anfragen ohne Buchungsplattform": "Solicitud directa sin plataforma de reservas",
+        "Basislager für Donauradweg und Welterbesteig.": "Base para la ruta ciclista del Danubio y el Welterbesteig.",
+        "Buchungsanfrage": "Solicitud de reserva",
+        "Anreise": "Llegada",
+        "Abreise": "Salida",
+        "Personen": "Personas",
+        "1 Person": "1 persona",
+        "2 Personen": "2 personas",
+        "Nächte": "Noches",
+        "Derzeit ist nur Bachblick buchbar. Weitere Zimmer sind ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.": "Actualmente solo se puede solicitar Bachblick. Las demás habitaciones estarán preparadas desde el 15/08/2026, pero aún no están liberadas.",
+        "Zusatzleistungen": "Servicios extra",
+        "Frühstück": "Desayuno",
+        "12,00 EUR pro Person/Nacht": "12,00 EUR por persona/noche",
+        "Wachauer Jause": "Merienda de Wachau",
+        "29,90 EUR einmalig": "29,90 EUR una vez",
+        "Gepäcktransport": "Transporte de equipaje",
+        "15,00 EUR einmalig": "15,00 EUR una vez",
+        "bereits buchbar": "ya disponible",
+        "ab 15.08.2026, erst nach Freigabe": "desde 15/08/2026, tras liberación",
+        "Direktpreis": "Precio directo",
+        "PayPal-Zahlung möglich": "Pago por PayPal posible",
+        "Bei freiem Termin bitte erst nach persönlicher Bestätigung an topdiveair@gmail.com bezahlen.": "Si la fecha está libre, pague a topdiveair@gmail.com solo después de la confirmación personal.",
+        "Vorname": "Nombre",
+        "Nachname": "Apellido",
+        "Telefon": "Teléfono",
+        "Nachricht oder Wünsche": "Mensaje o deseos",
+        "z. B. vegetarisches Frühstück, spätere Anreise, Fragen zur Umgebung": "p. ej. desayuno vegetariano, llegada más tarde, preguntas sobre la zona",
+        "Wichtig: Diese einfache Version ist eine Anfrage, keine automatische Sofortbuchung. Die Verfügbarkeit wird persönlich bestätigt.": "Importante: esta versión simple es una solicitud, no una reserva automática inmediata. La disponibilidad se confirma personalmente.",
+        "E-Mail mit Anfrage öffnen": "Abrir email de solicitud",
+        "Direkt anrufen": "Llamar directamente",
+        "Die E-Mail wurde vorbereitet. Bitte im Mailprogramm absenden.": "El email está preparado. Envíelo desde su programa de correo.",
+        "Wandern": "Senderismo",
+        "Welterbesteig": "Sendero Welterbesteig",
+        "Radfahren": "Ciclismo",
+        "Donauradweg": "Ruta ciclista del Danubio",
+        "Wetter": "Tiempo",
+        "Wanderampel": "Semáforo de senderismo",
+        "Wachau-Tipps": "Consejos Wachau",
+        "Genuss": "Disfrute",
+        "Direkt buchen": "Reservar directo",
+        "Bestpreis sichern": "Mejor precio",
+        "Anfahrt": "Cómo llegar",
+        "Heute": "Hoy",
+        "Morgen": "Mañana",
+        "Wetter wird geladen": "Cargando tiempo",
+        "5-Tage-Prognose wird geladen": "Cargando previsión de 5 días",
+        "Live-Wetter für Aggsbach Markt wird aktualisiert.": "El tiempo en vivo para Aggsbach Markt se está actualizando.",
+        "Vier Zimmer, ruhig und persönlich": "Cuatro habitaciones, tranquilas y personales",
+        "Wählen Sie Ihr Wunschzimmer. Verfügbarkeit und Preis werden vor der Bestätigung geprüft.": "Elija su habitación. Disponibilidad y precio se revisan antes de la confirmación.",
+        "Doppelzimmer mit Blick auf den Bach. Gemütlich, ruhig und zum Wohlfühlen.": "Habitación doble con vista al arroyo. Acogedora, tranquila y confortable.",
+        "ab 101 EUR pro Nacht": "desde 101 EUR por noche",
+        "Wachauer Atmosphäre, warme Details und ein ruhiger Rückzugsort.": "Ambiente de Wachau, detalles cálidos y un refugio tranquilo.",
+        "derzeit noch nicht buchbar": "aún no reservable",
+        "Inspiriert von den Weinbergen der Wachau, ideal für Genießer.": "Inspirada en los viñedos de Wachau, ideal para disfrutar.",
+        "Ein freundliches Zimmer mit Bezug zur Donau und zur Wachauer Landschaft.": "Una habitación amable inspirada en el Danubio y el paisaje de Wachau.",
+        "Unsere Wachau-Geheimtipps": "Nuestros consejos secretos de Wachau",
+        "Entdecken, erleben, genießen": "Descubrir, vivir, disfrutar",
+        "Spitz an der Donau": "Spitz en el Danubio",
+        "Wandern & Aussicht": "Senderismo y vistas",
+        "Weltkulturerbe": "Patrimonio mundial",
+        "Nostalgie pur": "Pura nostalgia",
+        "Original in Willendorf": "Original en Willendorf",
+        "Exklusiv für unsere Gäste": "Exclusivo para nuestros huéspedes",
+        "Aufenthalt bei den Wilden Wachauer Windis": "Estancia con los Wilden Wachauer Windis",
+        "Die Gästeapp ist der Begleiter für den Aufenthalt bei Zuhause am Bach: Hausinfo, WLAN-Hilfe, Wetter, Notfallnummern, Wandern, Radfahren, Genuss, Kinderwelt und Gästebuch an einem Ort.": "La app de huéspedes acompaña su estancia en Zuhause am Bach: información de la casa, ayuda Wi-Fi, tiempo, números de emergencia, senderismo, ciclismo, disfrute, mundo infantil y libro de visitas en un solo lugar.",
+        "Wandern, Wege und Wachau-Abenteuer": "Senderismo, rutas y aventuras en Wachau",
+        "Genuss, Hausinfo und gute Ordnung": "Disfrute, información de la casa y orden",
+        "Kinderwelt, Quiz und kleine Geheimnisse": "Mundo infantil, quiz y pequeños secretos",
+        "Gästeapp öffnen": "Abrir app de huéspedes",
+        "QR-Code zur Gästeapp": "Código QR para la app de huéspedes",
+        "Direkt am Smartphone öffnen": "Abrir directamente en el smartphone",
+        "Gut zu wissen": "Conviene saber",
+        "Alles Wichtige ohne Technik": "Todo lo importante, sencillo",
+        "12,00 EUR pro Person und Nacht, direkt in der Anfrage auswählbar.": "12,00 EUR por persona y noche, seleccionable en la solicitud.",
+        "29,90 EUR einmalig, ideal für Ankunft oder Ausflugstag.": "29,90 EUR una vez, ideal para la llegada o un día de excursión.",
+        "15,00 EUR einmalig, besonders praktisch für Radfahrer und Wanderer.": "15,00 EUR una vez, especialmente práctico para ciclistas y senderistas.",
+        "Telefon +43 664 6437526, E-Mail topdiveair@gmail.com.": "Teléfono +43 664 6437526, email topdiveair@gmail.com.",
+        "Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich": "Aggsbach Markt 82, 3641 Aggsbach Markt, Austria",
+        "Impressum & Rechtliches": "Aviso legal y condiciones",
+        "Impressum": "Aviso legal",
+        "Betreiberin: Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich.": "Operadora: Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Austria.",
+        "Telefon: +43 664 6437526, E-Mail: topdiveair@gmail.com.": "Teléfono: +43 664 6437526, email: topdiveair@gmail.com.",
+        "Datenschutz": "Privacidad",
+        "Die per E-Mail übermittelten Daten werden zur Bearbeitung der Buchungsanfrage verwendet.": "Los datos enviados por email se utilizan para procesar la solicitud de reserva.",
+        "Es werden Name, Kontaktdaten, Reisedaten, Zimmerwunsch und Nachricht verarbeitet.": "Se procesan nombre, datos de contacto, fechas de viaje, habitación deseada y mensaje.",
+        "Buchungsbedingungen": "Condiciones de reserva",
+        "Eine Anfrage über diese Seite ist keine automatische Buchung. Der Beherbergungsvertrag kommt erst nach persönlicher Bestätigung zustande.": "Una solicitud por esta página no es una reserva automática. El contrato de alojamiento se celebra solo tras confirmación personal.",
+        "Preise und Verfügbarkeit werden in der Bestätigung geprüft.": "Precios y disponibilidad se revisan en la confirmación.",
+        "Stornobedingungen": "Condiciones de cancelación",
+        "Stornierungen müssen schriftlich per E-Mail an topdiveair@gmail.com erfolgen.": "Las cancelaciones deben realizarse por escrito por email a topdiveair@gmail.com.",
+        "Die konkrete Regelung wird mit der Buchungsbestätigung bekanntgegeben.": "La norma concreta se comunica con la confirmación de reserva."
+      },
+      fr: {
+        "Sprache wählen": "Choisir la langue",
+        "Schnellzugriff": "Accès rapide",
+        "Willkommen bei Zuhause am Bach - Gästehaus Wachau": "Bienvenue à Zuhause am Bach - maison d'hôtes Wachau",
+        "Zimmer": "Chambres",
+        "Tipps": "Conseils",
+        "Gäste-App": "Appli invités",
+        "Infos": "Infos",
+        "Kontakt": "Contact",
+        "Direkt anfragen ohne Buchungsplattform": "Demande directe sans plateforme de réservation",
+        "Basislager für Donauradweg und Welterbesteig.": "Camp de base pour la piste cyclable du Danube et le Welterbesteig.",
+        "Buchungsanfrage": "Demande de réservation",
+        "Anreise": "Arrivée",
+        "Abreise": "Départ",
+        "Personen": "Personnes",
+        "1 Person": "1 personne",
+        "2 Personen": "2 personnes",
+        "Nächte": "Nuits",
+        "Derzeit ist nur Bachblick buchbar. Weitere Zimmer sind ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.": "Actuellement, seule Bachblick peut être demandée. Les autres chambres sont préparées à partir du 15/08/2026, mais pas encore libérées.",
+        "Zusatzleistungen": "Services supplémentaires",
+        "Frühstück": "Petit-déjeuner",
+        "12,00 EUR pro Person/Nacht": "12,00 EUR par personne/nuit",
+        "Wachauer Jause": "Collation de la Wachau",
+        "29,90 EUR einmalig": "29,90 EUR une fois",
+        "Gepäcktransport": "Transport des bagages",
+        "15,00 EUR einmalig": "15,00 EUR une fois",
+        "bereits buchbar": "déjà disponible",
+        "ab 15.08.2026, erst nach Freigabe": "à partir du 15/08/2026, après libération",
+        "Direktpreis": "Prix direct",
+        "PayPal-Zahlung möglich": "Paiement PayPal possible",
+        "Bei freiem Termin bitte erst nach persönlicher Bestätigung an topdiveair@gmail.com bezahlen.": "Si la date est libre, veuillez payer à topdiveair@gmail.com uniquement après confirmation personnelle.",
+        "Vorname": "Prénom",
+        "Nachname": "Nom",
+        "Telefon": "Téléphone",
+        "Nachricht oder Wünsche": "Message ou souhaits",
+        "z. B. vegetarisches Frühstück, spätere Anreise, Fragen zur Umgebung": "p. ex. petit-déjeuner végétarien, arrivée plus tardive, questions sur les environs",
+        "Wichtig: Diese einfache Version ist eine Anfrage, keine automatische Sofortbuchung. Die Verfügbarkeit wird persönlich bestätigt.": "Important : cette version simple est une demande, pas une réservation instantanée automatique. La disponibilité est confirmée personnellement.",
+        "E-Mail mit Anfrage öffnen": "Ouvrir l'e-mail de demande",
+        "Direkt anrufen": "Appeler directement",
+        "Die E-Mail wurde vorbereitet. Bitte im Mailprogramm absenden.": "L'e-mail a été préparé. Veuillez l'envoyer dans votre programme de messagerie.",
+        "Wandern": "Randonnée",
+        "Welterbesteig": "Sentier Welterbesteig",
+        "Radfahren": "Vélo",
+        "Donauradweg": "Piste cyclable du Danube",
+        "Wetter": "Météo",
+        "Wanderampel": "Signal randonnée",
+        "Wachau-Tipps": "Conseils Wachau",
+        "Genuss": "Plaisir",
+        "Direkt buchen": "Réserver direct",
+        "Bestpreis sichern": "Meilleur prix",
+        "Anfahrt": "Accès",
+        "Heute": "Aujourd'hui",
+        "Morgen": "Demain",
+        "Wetter wird geladen": "Chargement de la météo",
+        "5-Tage-Prognose wird geladen": "Chargement des prévisions 5 jours",
+        "Live-Wetter für Aggsbach Markt wird aktualisiert.": "La météo en direct pour Aggsbach Markt est mise à jour.",
+        "Vier Zimmer, ruhig und persönlich": "Quatre chambres, calmes et personnelles",
+        "Wählen Sie Ihr Wunschzimmer. Verfügbarkeit und Preis werden vor der Bestätigung geprüft.": "Choisissez votre chambre préférée. Disponibilité et prix sont vérifiés avant confirmation.",
+        "Doppelzimmer mit Blick auf den Bach. Gemütlich, ruhig und zum Wohlfühlen.": "Chambre double avec vue sur le ruisseau. Confortable, calme et agréable.",
+        "ab 101 EUR pro Nacht": "à partir de 101 EUR par nuit",
+        "Wachauer Atmosphäre, warme Details und ein ruhiger Rückzugsort.": "Atmosphère de la Wachau, détails chaleureux et refuge paisible.",
+        "derzeit noch nicht buchbar": "pas encore réservable",
+        "Inspiriert von den Weinbergen der Wachau, ideal für Genießer.": "Inspirée des vignobles de la Wachau, idéale pour les gourmets.",
+        "Ein freundliches Zimmer mit Bezug zur Donau und zur Wachauer Landschaft.": "Une chambre accueillante inspirée du Danube et du paysage de la Wachau.",
+        "Unsere Wachau-Geheimtipps": "Nos conseils secrets pour la Wachau",
+        "Entdecken, erleben, genießen": "Découvrir, vivre, savourer",
+        "Spitz an der Donau": "Spitz sur le Danube",
+        "Wandern & Aussicht": "Randonnée et vue",
+        "Weltkulturerbe": "Patrimoine mondial",
+        "Nostalgie pur": "Pure nostalgie",
+        "Original in Willendorf": "Original à Willendorf",
+        "Exklusiv für unsere Gäste": "Exclusif pour nos invités",
+        "Aufenthalt bei den Wilden Wachauer Windis": "Séjour avec les Wilden Wachauer Windis",
+        "Die Gästeapp ist der Begleiter für den Aufenthalt bei Zuhause am Bach: Hausinfo, WLAN-Hilfe, Wetter, Notfallnummern, Wandern, Radfahren, Genuss, Kinderwelt und Gästebuch an einem Ort.": "L'appli invités accompagne votre séjour à Zuhause am Bach : infos maison, aide Wi-Fi, météo, numéros d'urgence, randonnée, vélo, plaisir, monde des enfants et livre d'or au même endroit.",
+        "Wandern, Wege und Wachau-Abenteuer": "Randonnées, chemins et aventures Wachau",
+        "Genuss, Hausinfo und gute Ordnung": "Plaisir, infos maison et bon ordre",
+        "Kinderwelt, Quiz und kleine Geheimnisse": "Monde des enfants, quiz et petits secrets",
+        "Gästeapp öffnen": "Ouvrir l'appli invités",
+        "QR-Code zur Gästeapp": "Code QR vers l'appli invités",
+        "Direkt am Smartphone öffnen": "Ouvrir directement sur smartphone",
+        "Gut zu wissen": "Bon à savoir",
+        "Alles Wichtige ohne Technik": "Tout l'essentiel simplement",
+        "12,00 EUR pro Person und Nacht, direkt in der Anfrage auswählbar.": "12,00 EUR par personne et par nuit, sélectionnable dans la demande.",
+        "29,90 EUR einmalig, ideal für Ankunft oder Ausflugstag.": "29,90 EUR une fois, idéal à l'arrivée ou pour une journée d'excursion.",
+        "15,00 EUR einmalig, besonders praktisch für Radfahrer und Wanderer.": "15,00 EUR une fois, particulièrement pratique pour cyclistes et randonneurs.",
+        "Telefon +43 664 6437526, E-Mail topdiveair@gmail.com.": "Téléphone +43 664 6437526, e-mail topdiveair@gmail.com.",
+        "Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich": "Aggsbach Markt 82, 3641 Aggsbach Markt, Autriche",
+        "Impressum & Rechtliches": "Mentions légales et conditions",
+        "Impressum": "Mentions légales",
+        "Betreiberin: Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich.": "Exploitante : Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Autriche.",
+        "Telefon: +43 664 6437526, E-Mail: topdiveair@gmail.com.": "Téléphone : +43 664 6437526, e-mail : topdiveair@gmail.com.",
+        "Datenschutz": "Protection des données",
+        "Die per E-Mail übermittelten Daten werden zur Bearbeitung der Buchungsanfrage verwendet.": "Les données transmises par e-mail sont utilisées pour traiter la demande de réservation.",
+        "Es werden Name, Kontaktdaten, Reisedaten, Zimmerwunsch und Nachricht verarbeitet.": "Nom, coordonnées, dates de voyage, souhait de chambre et message sont traités.",
+        "Buchungsbedingungen": "Conditions de réservation",
+        "Eine Anfrage über diese Seite ist keine automatische Buchung. Der Beherbergungsvertrag kommt erst nach persönlicher Bestätigung zustande.": "Une demande via cette page n'est pas une réservation automatique. Le contrat d'hébergement n'est conclu qu'après confirmation personnelle.",
+        "Preise und Verfügbarkeit werden in der Bestätigung geprüft.": "Prix et disponibilité sont vérifiés dans la confirmation.",
+        "Stornobedingungen": "Conditions d'annulation",
+        "Stornierungen müssen schriftlich per E-Mail an topdiveair@gmail.com erfolgen.": "Les annulations doivent être faites par écrit par e-mail à topdiveair@gmail.com.",
+        "Die konkrete Regelung wird mit der Buchungsbestätigung bekanntgegeben.": "La règle concrète est communiquée avec la confirmation de réservation."
+      }
+    };
+    const UI_I18N = {
+      de: {
+        selectDatesLive: "Datum und Zimmer wählen, dann wird Bachblick mit dem aktuellen Booking-Kalender geprüft.",
+        selectDatesWorker: "Der Booking-Kalender wird derzeit nicht automatisch geprüft. Bitte Anfrage senden; wir bestätigen die Verfügbarkeit persönlich.",
+        notReleased: "{room} ist ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.",
+        beforeRelease: "{room} ist erst ab 15.08.2026 buchbar.",
+        noIcal: "{room} ist noch nicht mit Booking-iCal verbunden. Verfügbarkeit wird persönlich bestätigt.",
+        blocked: "Bachblick ist laut aktuellem Booking-Kalender {updated} in diesem Zeitraum belegt oder gesperrt.",
+        free: "Bachblick ist laut aktuellem Booking-Kalender {updated} in diesem Zeitraum frei. Endgültige Bestätigung erfolgt persönlich.",
+        modeLive: "aktueller Booking-Kalender",
+        modeSnapshot: "Booking-Kalenderstand",
+        discount: "Direktbuchungsrabatt: -{amount} (5% vom Zimmerpreis). Zusatzleistungen bleiben voll berechnet.",
+        lastMinute: "Last Minute mit Anreise heute: voller Booking-Preis ohne Direktbuchungsrabatt.",
+        calendarLoading: "Booking-Kalender wird aktuell geprüft ...",
+        calendarError: "Der Booking-Kalender konnte gerade nicht automatisch geprüft werden. Verfügbarkeit wird persönlich bestätigt.",
+        justNow: "gerade eben",
+        invalidDates: "Bitte Anreise und Abreise korrekt auswählen.",
+        mailSubject: "Buchungsanfrage Zuhause am Bach",
+        mailIntro: "Neue Buchungsanfrage über die einfache Website",
+        none: "keine",
+        labelName: "Name",
+        labelEmail: "E-Mail",
+        labelPhone: "Telefon",
+        labelArrival: "Anreise",
+        labelDeparture: "Abreise",
+        labelNights: "Nächte",
+        labelGuests: "Personen",
+        labelRoom: "Zimmer",
+        labelExtras: "Zusatzleistungen",
+        labelDirectPrice: "Direktpreis",
+        labelPriceRule: "Preisregel",
+        priceRuleToday: "Anreise heute, voller Booking-Preis",
+        priceRuleDiscount: "Direktbuchung minus 5 Prozent auf den Zimmerpreis",
+        labelCalendar: "Kalenderprüfung",
+        labelPayment: "Zahlung: PayPal nach persönlicher Bestätigung an topdiveair@gmail.com",
+        labelGuestApp: "Gästeapp: https://topdiveair-sketch.github.io/Gaeste/index",
+        labelMessage: "Nachricht",
+        noteCheck: "Hinweis: Verfügbarkeit bitte manuell prüfen und bestätigen.",
+        rain: "Regen",
+        weatherRainJacket: "Regenjacke empfohlen · Wetter vor der Tour prüfen",
+        weatherPerfect: "Sehr gutes Wanderwetter · genug Wasser mitnehmen",
+        weatherGood: "Gutes Ausflugswetter · 5-Tage-Prognose beachten",
+        weatherUnavailableToday: "Live-Wetter derzeit nicht erreichbar",
+        weatherUnavailableTomorrow: "Bitte später erneut versuchen",
+        weatherUnavailableHint: "Wetterdaten konnten gerade nicht geladen werden."
+      }
+    };
+    UI_I18N.en = {
+      selectDatesLive: "Choose dates and a room, then Bachblick is checked with the current Booking calendar.",
+      selectDatesWorker: "The Booking calendar is not checked automatically right now. Please send the request; we will confirm availability personally.",
+      notReleased: "{room} is prepared from 15/08/2026, but not yet released.",
+      beforeRelease: "{room} is bookable from 15/08/2026.",
+      noIcal: "{room} is not connected to Booking iCal yet. Availability will be confirmed personally.",
+      blocked: "According to the current Booking calendar {updated}, Bachblick is occupied or blocked for this period.",
+      free: "According to the current Booking calendar {updated}, Bachblick is free for this period. Final confirmation is personal.",
+      modeLive: "current Booking calendar",
+      modeSnapshot: "Booking calendar status",
+      discount: "Direct booking discount: -{amount} (5% of room price). Extras remain fully charged.",
+      lastMinute: "Last minute arrival today: full Booking price without direct-booking discount.",
+      calendarLoading: "Checking Booking calendar ...",
+      calendarError: "The Booking calendar could not be checked automatically right now. Availability will be confirmed personally.",
+      justNow: "just now",
+      invalidDates: "Please choose valid arrival and departure dates.",
+      mailSubject: "Booking request Zuhause am Bach",
+      mailIntro: "New booking request via the simple website",
+      none: "none",
+      labelName: "Name",
+      labelEmail: "Email",
+      labelPhone: "Phone",
+      labelArrival: "Arrival",
+      labelDeparture: "Departure",
+      labelNights: "Nights",
+      labelGuests: "Guests",
+      labelRoom: "Room",
+      labelExtras: "Extras",
+      labelDirectPrice: "Direct price",
+      labelPriceRule: "Price rule",
+      priceRuleToday: "Arrival today, full Booking price",
+      priceRuleDiscount: "Direct booking minus 5 percent on the room price",
+      labelCalendar: "Calendar check",
+      labelPayment: "Payment: PayPal after personal confirmation to topdiveair@gmail.com",
+      labelGuestApp: "Guest app: https://topdiveair-sketch.github.io/Gaeste/index",
+      labelMessage: "Message",
+      noteCheck: "Note: please check and confirm availability manually.",
+      rain: "Rain",
+      weatherRainJacket: "Rain jacket recommended · check weather before the tour",
+      weatherPerfect: "Perfect hiking weather · take enough water",
+      weatherGood: "Good excursion weather · check 5-day forecast",
+      weatherUnavailableToday: "Live weather currently unavailable",
+      weatherUnavailableTomorrow: "Please try again later",
+      weatherUnavailableHint: "Weather data could not be loaded right now."
+    };
+    UI_I18N.cs = {
+      ...UI_I18N.en,
+      selectDatesLive: "Vyberte datum a pokoj, potom se Bachblick ověří podle aktuálního kalendáře Booking.",
+      selectDatesWorker: "Kalendář Booking se nyní automaticky nekontroluje. Odešlete prosím poptávku; dostupnost potvrdíme osobně.",
+      notReleased: "{room} je připraven od 15. 8. 2026, ale zatím není uvolněn.",
+      beforeRelease: "{room} lze rezervovat až od 15. 8. 2026.",
+      noIcal: "{room} zatím není připojen k Booking iCal. Dostupnost bude potvrzena osobně.",
+      blocked: "Podle aktuálního kalendáře Booking {updated} je Bachblick v tomto období obsazený nebo blokovaný.",
+      free: "Podle aktuálního kalendáře Booking {updated} je Bachblick v tomto období volný. Konečné potvrzení proběhne osobně.",
+      modeLive: "aktuální Booking kalendář",
+      modeSnapshot: "stavu Booking kalendáře",
+      discount: "Sleva za přímou rezervaci: -{amount} (5 % z ceny pokoje). Doplňky zůstávají účtovány plně.",
+      lastMinute: "Last minute s příjezdem dnes: plná cena Booking bez slevy za přímou rezervaci.",
+      invalidDates: "Vyberte prosím správné datum příjezdu a odjezdu.",
+      calendarLoading: "Kontroluje se kalendář Booking ...",
+      calendarError: "Kalendář Booking se právě nepodařilo automaticky ověřit. Dostupnost potvrdíme osobně.",
+      justNow: "právě teď",
+      rain: "Déšť",
+      weatherRainJacket: "Doporučena pláštěnka · zkontrolujte počasí před túrou",
+      weatherPerfect: "Výborné počasí na túru · vezměte dost vody",
+      weatherGood: "Dobré počasí na výlet · sledujte 5denní předpověď",
+      weatherUnavailableToday: "Živé počasí není momentálně dostupné",
+      weatherUnavailableTomorrow: "Zkuste to prosím později",
+      weatherUnavailableHint: "Data o počasí se právě nepodařilo načíst."
+    };
+    UI_I18N.hu = {
+      ...UI_I18N.en,
+      selectDatesLive: "Válasszon dátumot és szobát, ezután a Bachblick az aktuális Booking-naptár alapján ellenőrzésre kerül.",
+      selectDatesWorker: "A Booking-naptár jelenleg nem kerül automatikusan ellenőrzésre. Küldje el a kérést; a rendelkezésre állást személyesen igazoljuk vissza.",
+      notReleased: "{room} 2026.08.15-től előkészítve, de még nincs felszabadítva.",
+      beforeRelease: "{room} csak 2026.08.15-től foglalható.",
+      noIcal: "{room} még nincs összekötve a Booking iCal-lal. A rendelkezésre állást személyesen igazoljuk vissza.",
+      blocked: "Az aktuális Booking-naptár {updated} szerint a Bachblick ebben az időszakban foglalt vagy zárolt.",
+      free: "Az aktuális Booking-naptár {updated} szerint a Bachblick ebben az időszakban szabad. A végleges visszaigazolás személyesen történik.",
+      modeLive: "aktuális Booking-naptár",
+      modeSnapshot: "Booking-naptár állapota",
+      discount: "Közvetlen foglalási kedvezmény: -{amount} (a szobaár 5%-a). A kiegészítők teljes áron maradnak.",
+      lastMinute: "Last minute mai érkezéssel: teljes Booking-ár közvetlen kedvezmény nélkül.",
+      invalidDates: "Kérjük, válasszon helyes érkezési és távozási dátumot.",
+      calendarLoading: "Booking-naptár ellenőrzése ...",
+      calendarError: "A Booking-naptár jelenleg nem ellenőrizhető automatikusan. A rendelkezésre állást személyesen igazoljuk vissza.",
+      justNow: "épp most",
+      rain: "Eső",
+      weatherRainJacket: "Esőkabát ajánlott · túra előtt ellenőrizze az időjárást",
+      weatherPerfect: "Nagyon jó túraidő · vigyen elég vizet",
+      weatherGood: "Jó kirándulóidő · figyelje az 5 napos előrejelzést",
+      weatherUnavailableToday: "Az élő időjárás jelenleg nem elérhető",
+      weatherUnavailableTomorrow: "Kérjük, próbálja újra később",
+      weatherUnavailableHint: "Az időjárási adatok most nem tölthetők be."
+    };
+    UI_I18N.es = {
+      ...UI_I18N.en,
+      selectDatesLive: "Elija fecha y habitación; Bachblick se comprobará con el calendario Booking actual.",
+      selectDatesWorker: "El calendario Booking no se comprueba automáticamente en este momento. Envíe la solicitud; confirmaremos la disponibilidad personalmente.",
+      notReleased: "{room} está preparada desde el 15/08/2026, pero aún no liberada.",
+      beforeRelease: "{room} se puede reservar desde el 15/08/2026.",
+      noIcal: "{room} aún no está conectada con Booking iCal. La disponibilidad se confirma personalmente.",
+      blocked: "Según el calendario Booking actual {updated}, Bachblick está ocupada o bloqueada en este periodo.",
+      free: "Según el calendario Booking actual {updated}, Bachblick está libre en este periodo. La confirmación final es personal.",
+      modeLive: "calendario Booking actual",
+      modeSnapshot: "estado del calendario Booking",
+      discount: "Descuento de reserva directa: -{amount} (5% del precio de habitación). Los extras se cobran completos.",
+      lastMinute: "Last minute con llegada hoy: precio Booking completo sin descuento directo.",
+      invalidDates: "Elija correctamente llegada y salida.",
+      calendarLoading: "Comprobando calendario Booking ...",
+      calendarError: "El calendario Booking no se pudo comprobar automáticamente ahora. La disponibilidad se confirma personalmente.",
+      justNow: "ahora mismo",
+      rain: "Lluvia",
+      weatherRainJacket: "Chaqueta de lluvia recomendada · revise el tiempo antes de la ruta",
+      weatherPerfect: "Muy buen tiempo para senderismo · lleve suficiente agua",
+      weatherGood: "Buen tiempo para excursiones · revise la previsión de 5 días",
+      weatherUnavailableToday: "Tiempo en vivo no disponible ahora",
+      weatherUnavailableTomorrow: "Inténtelo de nuevo más tarde",
+      weatherUnavailableHint: "Los datos meteorológicos no se pudieron cargar ahora."
+    };
+    UI_I18N.fr = {
+      ...UI_I18N.en,
+      selectDatesLive: "Choisissez dates et chambre, puis Bachblick est vérifiée avec le calendrier Booking actuel.",
+      selectDatesWorker: "Le calendrier Booking n'est pas vérifié automatiquement pour le moment. Envoyez la demande ; nous confirmerons la disponibilité personnellement.",
+      notReleased: "{room} est préparée à partir du 15/08/2026, mais pas encore libérée.",
+      beforeRelease: "{room} est réservable à partir du 15/08/2026.",
+      noIcal: "{room} n'est pas encore connectée à Booking iCal. La disponibilité sera confirmée personnellement.",
+      blocked: "Selon le calendrier Booking actuel {updated}, Bachblick est occupée ou bloquée pendant cette période.",
+      free: "Selon le calendrier Booking actuel {updated}, Bachblick est libre pendant cette période. Confirmation finale personnelle.",
+      modeLive: "calendrier Booking actuel",
+      modeSnapshot: "état du calendrier Booking",
+      discount: "Réduction réservation directe : -{amount} (5 % du prix de la chambre). Les extras restent facturés entièrement.",
+      lastMinute: "Last minute avec arrivée aujourd'hui : prix Booking complet sans réduction directe.",
+      invalidDates: "Veuillez choisir correctement l'arrivée et le départ.",
+      calendarLoading: "Vérification du calendrier Booking ...",
+      calendarError: "Le calendrier Booking n'a pas pu être vérifié automatiquement pour le moment. La disponibilité sera confirmée personnellement.",
+      justNow: "à l'instant",
+      rain: "Pluie",
+      weatherRainJacket: "Veste de pluie recommandée · vérifier la météo avant la sortie",
+      weatherPerfect: "Très bonne météo de randonnée · emporter assez d'eau",
+      weatherGood: "Bonne météo d'excursion · consulter les prévisions 5 jours",
+      weatherUnavailableToday: "Météo en direct indisponible",
+      weatherUnavailableTomorrow: "Veuillez réessayer plus tard",
+      weatherUnavailableHint: "Les données météo ne peuvent pas être chargées maintenant."
+    };
+    const WEATHER_I18N = {
+      de: { 0: "Sonnig", 1: "Überwiegend sonnig", 2: "Teilweise bewölkt", 3: "Bewölkt", 45: "Nebel", 48: "Reifnebel", 51: "Leichter Nieselregen", 53: "Nieselregen", 55: "Starker Nieselregen", 61: "Leichter Regen", 63: "Regen", 65: "Starker Regen", 71: "Leichter Schneefall", 73: "Schneefall", 75: "Starker Schneefall", 80: "Leichte Schauer", 81: "Schauer", 82: "Starke Schauer", 95: "Gewitter", 96: "Gewitter mit Hagel", 99: "Starkes Gewitter" },
+      en: { 0: "Sunny", 1: "Mostly sunny", 2: "Partly cloudy", 3: "Cloudy", 45: "Fog", 48: "Rime fog", 51: "Light drizzle", 53: "Drizzle", 55: "Heavy drizzle", 61: "Light rain", 63: "Rain", 65: "Heavy rain", 71: "Light snow", 73: "Snow", 75: "Heavy snow", 80: "Light showers", 81: "Showers", 82: "Heavy showers", 95: "Thunderstorm", 96: "Thunderstorm with hail", 99: "Severe thunderstorm" },
+      cs: { 0: "Slunečno", 1: "Převážně slunečno", 2: "Částečně oblačno", 3: "Oblačno", 45: "Mlha", 48: "Mrznoucí mlha", 51: "Slabé mrholení", 53: "Mrholení", 55: "Silné mrholení", 61: "Slabý déšť", 63: "Déšť", 65: "Silný déšť", 71: "Slabé sněžení", 73: "Sněžení", 75: "Silné sněžení", 80: "Slabé přeháňky", 81: "Přeháňky", 82: "Silné přeháňky", 95: "Bouřka", 96: "Bouřka s kroupami", 99: "Silná bouřka" },
+      hu: { 0: "Napos", 1: "Többnyire napos", 2: "Részben felhős", 3: "Felhős", 45: "Köd", 48: "Zúzmarás köd", 51: "Gyenge szitálás", 53: "Szitálás", 55: "Erős szitálás", 61: "Gyenge eső", 63: "Eső", 65: "Erős eső", 71: "Gyenge havazás", 73: "Havazás", 75: "Erős havazás", 80: "Gyenge záporok", 81: "Záporok", 82: "Erős záporok", 95: "Zivatar", 96: "Zivatar jéggel", 99: "Erős zivatar" },
+      es: { 0: "Soleado", 1: "Mayormente soleado", 2: "Parcialmente nublado", 3: "Nublado", 45: "Niebla", 48: "Niebla helada", 51: "Llovizna ligera", 53: "Llovizna", 55: "Llovizna fuerte", 61: "Lluvia ligera", 63: "Lluvia", 65: "Lluvia fuerte", 71: "Nieve ligera", 73: "Nieve", 75: "Nieve fuerte", 80: "Chubascos ligeros", 81: "Chubascos", 82: "Chubascos fuertes", 95: "Tormenta", 96: "Tormenta con granizo", 99: "Tormenta fuerte" },
+      fr: { 0: "Ensoleillé", 1: "Plutôt ensoleillé", 2: "Partiellement nuageux", 3: "Nuageux", 45: "Brouillard", 48: "Brouillard givrant", 51: "Bruine légère", 53: "Bruine", 55: "Forte bruine", 61: "Pluie légère", 63: "Pluie", 65: "Forte pluie", 71: "Faible neige", 73: "Neige", 75: "Forte neige", 80: "Averses légères", 81: "Averses", 82: "Fortes averses", 95: "Orage", 96: "Orage avec grêle", 99: "Fort orage" }
+    };
+    let currentLang = localStorage.getItem("zab_lang") || "de";
+    if (!LANGUAGES[currentLang]) currentLang = "de";
+    const staticTextNodes = [];
+    const staticAttributes = [];
+    let latestWeatherState = null;
+
+    function translateStaticText(text) {
+      if (currentLang === "de") return text;
+      return (STATIC_I18N[currentLang] && STATIC_I18N[currentLang][text]) || STATIC_I18N.en[text] || text;
+    }
+
+    function tr(key, vars = {}) {
+      const source = (UI_I18N[currentLang] && UI_I18N[currentLang][key]) || UI_I18N.de[key] || key;
+      return source.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "");
+    }
+
+    function captureStaticText() {
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          const parent = node.parentElement;
+          if (!node.nodeValue.trim() || !parent) return NodeFilter.FILTER_REJECT;
+          if (["SCRIPT", "STYLE"].includes(parent.tagName)) return NodeFilter.FILTER_REJECT;
+          if (parent.closest(".price, #total, #weatherTodayTemp, #weatherTomorrowTemp")) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      });
+      let node;
+      while ((node = walker.nextNode())) {
+        const value = node.nodeValue;
+        staticTextNodes.push({
+          node,
+          original: value.trim(),
+          leading: value.match(/^\s*/)[0],
+          trailing: value.match(/\s*$/)[0]
+        });
+      }
+      document.querySelectorAll("[placeholder], [aria-label], [alt]").forEach((element) => {
+        for (const attr of ["placeholder", "aria-label", "alt"]) {
+          if (element.hasAttribute(attr)) {
+            staticAttributes.push({ element, attr, original: element.getAttribute(attr) });
+          }
+        }
+      });
+    }
+
+    function calendarModeLabel() {
+      return bookingCalendarMode === "live" ? tr("modeLive") : tr("modeSnapshot");
+    }
+
+    function applyLanguage(lang, refresh = true) {
+      currentLang = LANGUAGES[lang] ? lang : "de";
+      localStorage.setItem("zab_lang", currentLang);
+      document.documentElement.lang = LANGUAGES[currentLang].html;
+      staticTextNodes.forEach((item) => {
+        item.node.nodeValue = item.leading + translateStaticText(item.original) + item.trailing;
+      });
+      staticAttributes.forEach((item) => {
+        item.element.setAttribute(item.attr, translateStaticText(item.original));
+      });
+      document.querySelectorAll("[data-lang]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.lang === currentLang);
+      });
+      if (refresh && typeof calculate === "function") calculate();
+      if (refresh && latestWeatherState) renderWeather(latestWeatherState);
+    }
+
+    captureStaticText();
+    document.querySelectorAll("[data-lang]").forEach((button) => {
+      button.addEventListener("click", () => applyLanguage(button.dataset.lang));
+    });
+    applyLanguage(currentLang, false);
+    // Fuer immer aktuelle Booking-Belegung hier die Cloudflare-Adresse eintragen.
     const LIVE_BOOKING_API_URL = "";
     const LIVE_PRICE_API_URL = "";
     const OTHER_ROOMS_RELEASED = false;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
-    let bookingCalendarUpdated = "16.07.2026, 17:51 Uhr";
-    let bookingCalendarMode = "Booking-Kalenderstand";
+    let bookingCalendarUpdated = "";
+    let bookingCalendarMode = "live";
+    let liveBookingCalendarLoaded = false;
+    let liveBookingCalendarPending = false;
     const DIRECT_BOOKING_DISCOUNT_PERCENT = 5;
     const PRICE_REFRESH_MS = 10 * 60 * 1000;
     const BACHBLICK_BOOKING_BLOCKS = [
@@ -949,7 +1788,7 @@
     }
 
     function money(value) {
-      return value.toLocaleString("de-AT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " EUR";
+      return Math.round(value).toLocaleString(LANGUAGES[currentLang].locale, { maximumFractionDigits: 0 }) + " EUR";
     }
 
     function sameDayArrival() {
@@ -997,25 +1836,31 @@
       if (!a || !d || d <= a || !room) {
         return {
           state: "note",
-          text: "Datum und Zimmer wählen, dann wird Bachblick mit dem Booking-Kalenderstand geprüft."
+          text: LIVE_BOOKING_API_URL ? tr("selectDatesLive") : tr("selectDatesWorker")
         };
       }
       if (room.value !== "Bachblick") {
         if (!OTHER_ROOMS_RELEASED) {
           return {
             state: "blocked",
-            text: room.value + " ist ab 15.08.2026 vorbereitet, aber noch nicht freigegeben."
+            text: tr("notReleased", { room: room.value })
           };
         }
         if (a < parseDate(OTHER_ROOMS_RELEASE_DATE)) {
           return {
             state: "blocked",
-            text: room.value + " ist erst ab 15.08.2026 buchbar."
+            text: tr("beforeRelease", { room: room.value })
           };
         }
         return {
           state: "note",
-          text: room.value + " ist noch nicht mit Booking-iCal verbunden. Verfügbarkeit wird persönlich bestätigt."
+          text: tr("noIcal", { room: room.value })
+        };
+      }
+      if (!LIVE_BOOKING_API_URL || !liveBookingCalendarLoaded) {
+        return {
+          state: "note",
+          text: LIVE_BOOKING_API_URL && liveBookingCalendarPending ? tr("calendarLoading") : tr("selectDatesWorker")
         };
       }
       const conflict = bachblickBookingBlocks.find((block) =>
@@ -1024,12 +1869,12 @@
       if (conflict) {
         return {
           state: "blocked",
-          text: "Bachblick ist laut " + bookingCalendarMode + " " + bookingCalendarUpdated + " in diesem Zeitraum belegt oder gesperrt."
+          text: tr("blocked", { mode: calendarModeLabel(), updated: bookingCalendarUpdated })
         };
       }
       return {
         state: "ok",
-        text: "Bachblick ist laut " + bookingCalendarMode + " " + bookingCalendarUpdated + " in diesem Zeitraum frei. Endgültige Bestätigung erfolgt persönlich."
+        text: tr("free", { mode: calendarModeLabel(), updated: bookingCalendarUpdated })
       };
     }
 
@@ -1038,7 +1883,7 @@
       const n = nightCount();
       const people = Number(adults.value || 1);
       const room = selectedRoom();
-      const roomPrice = room ? Number(room.dataset.price || 0) : 0;
+      const roomPrice = room ? Math.round(Number(room.dataset.price || 0)) : 0;
       const roomTotal = n * roomPrice;
       let sum = roomTotal;
       const discount = sameDayArrival() ? 0 : roomTotal * DIRECT_BOOKING_DISCOUNT_PERCENT / 100;
@@ -1049,11 +1894,12 @@
         else sum += price;
       }
       sum -= discount;
+      sum = Math.round(sum);
       nights.value = String(n);
       total.textContent = money(sum);
       discountNote.textContent = discount > 0
-        ? "Direktbuchungsrabatt: -" + money(discount) + " (5% vom Zimmerpreis). Zusatzleistungen bleiben voll berechnet."
-        : "Last Minute mit Anreise heute: voller Booking-Preis ohne Direktbuchungsrabatt.";
+        ? tr("discount", { amount: money(discount) })
+        : tr("lastMinute");
       const availability = availabilityText();
       availabilityStatus.className = "availability-status " + availability.state;
       availabilityStatus.textContent = availability.text;
@@ -1066,7 +1912,7 @@
       for (const [roomName, info] of Object.entries(rooms)) {
         const roomInput = Array.from(form.querySelectorAll('input[name="room"]')).find((item) => item.value === roomName);
         const rawPrice = typeof info === "number" ? info : (info.price ?? info.standard);
-        const price = Number(rawPrice);
+        const price = Math.round(Number(rawPrice));
         if (!roomInput || Number.isNaN(price)) continue;
         roomInput.dataset.price = String(price);
         const label = roomInput.closest(".choice").querySelector("b.price");
@@ -1093,41 +1939,45 @@
     function buildMailBody(sum) {
       const n = nightCount();
       const room = selectedRoom();
-      const extras = selectedExtras().map((item) => item.value).join(", ") || "keine";
+      const extras = selectedExtras().map((item) => translateStaticText(item.value)).join(", ") || tr("none");
       const lines = [
-        "Neue Buchungsanfrage ueber die einfache Website",
+        tr("mailIntro"),
         "",
-        "Name: " + document.getElementById("firstName").value + " " + document.getElementById("lastName").value,
-        "E-Mail: " + document.getElementById("email").value,
-        "Telefon: " + document.getElementById("phone").value,
+        tr("labelName") + ": " + document.getElementById("firstName").value + " " + document.getElementById("lastName").value,
+        tr("labelEmail") + ": " + document.getElementById("email").value,
+        tr("labelPhone") + ": " + document.getElementById("phone").value,
         "",
-        "Anreise: " + arrival.value,
-        "Abreise: " + departure.value,
-        "Naechte: " + n,
-        "Personen: " + adults.value,
-        "Zimmer: " + (room ? room.value : ""),
-        "Zusatzleistungen: " + extras,
-        "Direktpreis: " + money(sum),
-        "Preisregel: " + (sameDayArrival() ? "Anreise heute, voller Booking-Preis" : "Direktbuchung minus 5 Prozent auf den Zimmerpreis"),
-        "Kalenderpruefung: " + availabilityText().text,
-        "Zahlung: PayPal nach persoenlicher Bestaetigung an topdiveair@gmail.com",
-        "Gaesteapp: https://topdiveair-sketch.github.io/Gaeste/index",
+        tr("labelArrival") + ": " + arrival.value,
+        tr("labelDeparture") + ": " + departure.value,
+        tr("labelNights") + ": " + n,
+        tr("labelGuests") + ": " + adults.value,
+        tr("labelRoom") + ": " + (room ? room.value : ""),
+        tr("labelExtras") + ": " + extras,
+        tr("labelDirectPrice") + ": " + money(sum),
+        tr("labelPriceRule") + ": " + (sameDayArrival() ? tr("priceRuleToday") : tr("priceRuleDiscount")),
+        tr("labelCalendar") + ": " + availabilityText().text,
+        tr("labelPayment"),
+        tr("labelGuestApp"),
         "",
-        "Nachricht:",
+        tr("labelMessage") + ":",
         document.getElementById("message").value || "-",
         "",
-        "Hinweis: Verfuegbarkeit bitte manuell pruefen und bestaetigen."
+        tr("noteCheck")
       ];
       return lines.join("\n");
     }
 
     async function loadLiveBookingCalendar() {
       if (!LIVE_BOOKING_API_URL) {
+        liveBookingCalendarLoaded = false;
+        liveBookingCalendarPending = false;
         calculate();
         return;
       }
+      if (liveBookingCalendarPending) return;
+      liveBookingCalendarPending = true;
       availabilityStatus.className = "availability-status note";
-      availabilityStatus.textContent = "Aktueller Booking-Kalender wird geladen ...";
+      availabilityStatus.textContent = tr("calendarLoading");
       try {
         const response = await fetch(LIVE_BOOKING_API_URL, { cache: "no-store" });
         if (!response.ok) throw new Error("HTTP " + response.status);
@@ -1136,26 +1986,39 @@
         bachblickBookingBlocks = payload.events
           .filter((event) => event.start && event.end)
           .map((event) => ({ start: event.start, end: event.end }));
-        bookingCalendarUpdated = payload.updatedAt || "gerade eben";
-        bookingCalendarMode = "Live-Booking-Kalender";
+        bookingCalendarUpdated = payload.updatedAt || tr("justNow");
+        bookingCalendarMode = "live";
+        liveBookingCalendarLoaded = true;
       } catch (error) {
-        bachblickBookingBlocks = BACHBLICK_BOOKING_BLOCKS.slice();
-        bookingCalendarUpdated = "16.07.2026, 17:51 Uhr";
-        bookingCalendarMode = "Booking-Kalenderstand";
+        bachblickBookingBlocks = [];
+        bookingCalendarUpdated = "";
+        bookingCalendarMode = "live";
+        liveBookingCalendarLoaded = false;
         availabilityStatus.className = "availability-status note";
-        availabilityStatus.textContent = "Live-Kalender konnte nicht geladen werden. Es wird der gespeicherte Kalenderstand verwendet.";
+        availabilityStatus.textContent = tr("calendarError");
+      } finally {
+        liveBookingCalendarPending = false;
       }
       calculate();
     }
 
     form.addEventListener("input", calculate);
-    form.addEventListener("change", calculate);
-    form.addEventListener("submit", function(event) {
+    form.addEventListener("change", function(event) {
+      if (["arrival", "departure", "room"].includes(event.target.name)) {
+        loadLiveBookingCalendar();
+      } else {
+        calculate();
+      }
+    });
+    form.addEventListener("submit", async function(event) {
       event.preventDefault();
       const n = nightCount();
       if (n < 1) {
-        alert("Bitte Anreise und Abreise korrekt auswaehlen.");
+        alert(tr("invalidDates"));
         return;
+      }
+      if (LIVE_BOOKING_API_URL) {
+        await loadLiveBookingCalendar();
       }
       const availability = availabilityText();
       if (availability.state === "blocked") {
@@ -1163,7 +2026,7 @@
         return;
       }
       const sum = calculate();
-      const subject = "Buchungsanfrage Zuhause am Bach";
+      const subject = tr("mailSubject");
       const body = buildMailBody(sum);
       const href = "mailto:topdiveair@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
       statusBox.classList.add("show");
@@ -1176,30 +2039,6 @@
     const weatherTomorrowTemp = document.getElementById("weatherTomorrowTemp");
     const weatherTomorrowText = document.getElementById("weatherTomorrowText");
     const weatherHint = document.getElementById("weatherHint");
-    const weatherText = {
-      0: "Sonnig",
-      1: "Überwiegend sonnig",
-      2: "Teilweise bewölkt",
-      3: "Bewölkt",
-      45: "Nebel",
-      48: "Reifnebel",
-      51: "Leichter Nieselregen",
-      53: "Nieselregen",
-      55: "Starker Nieselregen",
-      61: "Leichter Regen",
-      63: "Regen",
-      65: "Starker Regen",
-      71: "Leichter Schneefall",
-      73: "Schneefall",
-      75: "Starker Schneefall",
-      80: "Leichte Schauer",
-      81: "Schauer",
-      82: "Starke Schauer",
-      95: "Gewitter",
-      96: "Gewitter mit Hagel",
-      99: "Starkes Gewitter"
-    };
-
     function weatherClass(code) {
       if ([0, 1].includes(code)) return "weather-sun";
       if ([2, 3, 45, 48].includes(code)) return "weather-cloud";
@@ -1209,17 +2048,28 @@
     }
 
     function weatherDescription(code) {
-      return weatherText[code] || "Wetterlage";
+      const table = WEATHER_I18N[currentLang] || WEATHER_I18N.de;
+      return table[code] || WEATHER_I18N.de[code] || "Wetterlage";
     }
 
     function updateWeatherHint(todayRain, tomorrowRain, todayCode) {
       if (todayRain >= 55 || tomorrowRain >= 65) {
-        weatherHint.textContent = "Regenjacke empfohlen · Wetter vor der Tour prüfen";
+        weatherHint.textContent = tr("weatherRainJacket");
       } else if ([0, 1, 2].includes(todayCode) && todayRain <= 25) {
-        weatherHint.textContent = "Sehr gutes Wanderwetter · genug Wasser mitnehmen";
+        weatherHint.textContent = tr("weatherPerfect");
       } else {
-        weatherHint.textContent = "Gutes Ausflugswetter · 5-Tage-Prognose beachten";
+        weatherHint.textContent = tr("weatherGood");
       }
+    }
+
+    function renderWeather(state) {
+      weatherTodayTemp.className = weatherClass(state.todayCode);
+      weatherTodayTemp.textContent = state.todayTemp + "°";
+      weatherTodayText.textContent = weatherDescription(state.todayCode) + " · " + tr("rain") + " " + state.todayRain + "%";
+      weatherTomorrowTemp.className = weatherClass(state.tomorrowCode);
+      weatherTomorrowTemp.textContent = state.tomorrowTemp + "°";
+      weatherTomorrowText.textContent = weatherDescription(state.tomorrowCode) + " · " + tr("rain") + " " + state.tomorrowRain + "%";
+      updateWeatherHint(state.todayRain, state.tomorrowRain, state.todayCode);
     }
 
     async function loadWeather() {
@@ -1244,24 +2094,20 @@
         const tomorrowMin = Number(data.daily?.temperature_2m_min?.[1] ?? tomorrowMax);
         const tomorrowTemp = Math.round((tomorrowMax + tomorrowMin) / 2);
         const tomorrowRain = Number(data.daily?.precipitation_probability_max?.[1] ?? 0);
-        weatherTodayTemp.className = weatherClass(todayCode);
-        weatherTodayTemp.textContent = todayTemp + "°";
-        weatherTodayText.textContent = weatherDescription(todayCode) + " · Regen " + todayRain + "%";
-        weatherTomorrowTemp.className = weatherClass(tomorrowCode);
-        weatherTomorrowTemp.textContent = tomorrowTemp + "°";
-        weatherTomorrowText.textContent = weatherDescription(tomorrowCode) + " · Regen " + tomorrowRain + "%";
-        updateWeatherHint(todayRain, tomorrowRain, todayCode);
+        latestWeatherState = { todayCode, todayTemp, todayRain, tomorrowCode, tomorrowTemp, tomorrowRain };
+        renderWeather(latestWeatherState);
       } catch (error) {
         console.warn("Wetter konnte nicht geladen werden.", error);
-        weatherTodayText.textContent = "Live-Wetter derzeit nicht erreichbar";
-        weatherTomorrowText.textContent = "Bitte später erneut versuchen";
-        weatherHint.textContent = "Wetterdaten konnten gerade nicht geladen werden.";
+        weatherTodayText.textContent = tr("weatherUnavailableToday");
+        weatherTomorrowText.textContent = tr("weatherUnavailableTomorrow");
+        weatherHint.textContent = tr("weatherUnavailableHint");
       }
     }
 
     loadLiveBookingCalendar();
     loadLivePrices();
     loadWeather();
+    setInterval(loadLiveBookingCalendar, PRICE_REFRESH_MS);
     setInterval(loadLivePrices, PRICE_REFRESH_MS);
   </script>
 </body>
