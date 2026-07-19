@@ -1,0 +1,52 @@
+{
+  "room": "Bachblick",
+  "source": "Booking iCal",
+  "updatedAt": "19.7.2026, 09:25:49",
+  "events": [
+    {
+      "start": "2026-07-17",
+      "end": "2026-07-19",
+      "summary": "CLOSED - Not available"
+    },
+    {
+      "start": "2026-07-20",
+      "end": "2026-07-21",
+      "summary": "CLOSED - Not available"
+    },
+    {
+      "start": "2026-07-21",
+      "end": "2026-07-23",
+      "summary": "CLOSED - Not available"
+    },
+    {
+      "start": "2026-08-06",
+      "end": "2026-08-07",
+      "summary": "CLOSED - Not available"
+    },
+    {
+      "start": "2026-08-08",
+      "end": "2026-08-12",
+      "summary": "CLOSED - Not available"
+    },
+    {
+      "start": "2026-08-22",
+      "end": "2026-08-23",
+      "summary": "CLOSED - Not available"
+    },
+    {
+      "start": "2026-08-29",
+      "end": "2026-08-30",
+      "summary": "CLOSED - Not available"
+    },
+    {
+      "start": "2027-05-01",
+      "end": "2027-05-02",
+      "summary": "CLOSED - Not available"
+    },
+    {
+      "start": "2027-08-19",
+      "end": "2027-08-23",
+      "summary": "CLOSED - Not available"
+    }
+  ]
+}

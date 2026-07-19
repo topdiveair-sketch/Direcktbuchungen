@@ -1477,7 +1477,7 @@
     const UI_I18N = {
       de: {
         selectDatesLive: "Datum und Zimmer wählen, dann wird Bachblick mit dem aktuellen Booking-Kalender geprüft.",
-        selectDatesWorker: "Der Booking-Kalender wird derzeit nicht automatisch geprüft. Bitte Anfrage senden; wir bestätigen die Verfügbarkeit persönlich.",
+        selectDatesWorker: "Bitte Reisedaten wählen und Anfrage senden. Wir bestätigen die Verfügbarkeit persönlich.",
         notReleased: "{room} ist ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.",
         beforeRelease: "{room} ist erst ab 15.08.2026 buchbar.",
         noIcal: "{room} ist noch nicht mit Booking-iCal verbunden. Verfügbarkeit wird persönlich bestätigt.",
@@ -1523,7 +1523,7 @@
     };
     UI_I18N.en = {
       selectDatesLive: "Choose dates and a room, then Bachblick is checked with the current Booking calendar.",
-      selectDatesWorker: "The Booking calendar is not checked automatically right now. Please send the request; we will confirm availability personally.",
+      selectDatesWorker: "Please select your travel dates and send the request. We will confirm availability personally.",
       notReleased: "{room} is prepared from 15/08/2026, but not yet released.",
       beforeRelease: "{room} is bookable from 15/08/2026.",
       noIcal: "{room} is not connected to Booking iCal yet. Availability will be confirmed personally.",
@@ -1569,7 +1569,7 @@
     UI_I18N.cs = {
       ...UI_I18N.en,
       selectDatesLive: "Vyberte datum a pokoj, potom se Bachblick ověří podle aktuálního kalendáře Booking.",
-      selectDatesWorker: "Kalendář Booking se nyní automaticky nekontroluje. Odešlete prosím poptávku; dostupnost potvrdíme osobně.",
+      selectDatesWorker: "Vyberte prosím termín pobytu a odešlete poptávku. Dostupnost potvrdíme osobně.",
       notReleased: "{room} je připraven od 15. 8. 2026, ale zatím není uvolněn.",
       beforeRelease: "{room} lze rezervovat až od 15. 8. 2026.",
       noIcal: "{room} zatím není připojen k Booking iCal. Dostupnost bude potvrzena osobně.",
@@ -1594,7 +1594,7 @@
     UI_I18N.hu = {
       ...UI_I18N.en,
       selectDatesLive: "Válasszon dátumot és szobát, ezután a Bachblick az aktuális Booking-naptár alapján ellenőrzésre kerül.",
-      selectDatesWorker: "A Booking-naptár jelenleg nem kerül automatikusan ellenőrzésre. Küldje el a kérést; a rendelkezésre állást személyesen igazoljuk vissza.",
+      selectDatesWorker: "Kérjük, válassza ki az utazási dátumokat, és küldje el a kérést. A rendelkezésre állást személyesen igazoljuk vissza.",
       notReleased: "{room} 2026.08.15-től előkészítve, de még nincs felszabadítva.",
       beforeRelease: "{room} csak 2026.08.15-től foglalható.",
       noIcal: "{room} még nincs összekötve a Booking iCal-lal. A rendelkezésre állást személyesen igazoljuk vissza.",
@@ -1619,7 +1619,7 @@
     UI_I18N.es = {
       ...UI_I18N.en,
       selectDatesLive: "Elija fecha y habitación; Bachblick se comprobará con el calendario Booking actual.",
-      selectDatesWorker: "El calendario Booking no se comprueba automáticamente en este momento. Envíe la solicitud; confirmaremos la disponibilidad personalmente.",
+      selectDatesWorker: "Seleccione las fechas de viaje y envíe la solicitud. Confirmaremos la disponibilidad personalmente.",
       notReleased: "{room} está preparada desde el 15/08/2026, pero aún no liberada.",
       beforeRelease: "{room} se puede reservar desde el 15/08/2026.",
       noIcal: "{room} aún no está conectada con Booking iCal. La disponibilidad se confirma personalmente.",
@@ -1644,7 +1644,7 @@
     UI_I18N.fr = {
       ...UI_I18N.en,
       selectDatesLive: "Choisissez dates et chambre, puis Bachblick est vérifiée avec le calendrier Booking actuel.",
-      selectDatesWorker: "Le calendrier Booking n'est pas vérifié automatiquement pour le moment. Envoyez la demande ; nous confirmerons la disponibilité personnellement.",
+      selectDatesWorker: "Veuillez choisir vos dates de séjour et envoyer la demande. Nous confirmerons la disponibilité personnellement.",
       notReleased: "{room} est préparée à partir du 15/08/2026, mais pas encore libérée.",
       beforeRelease: "{room} est réservable à partir du 15/08/2026.",
       noIcal: "{room} n'est pas encore connectée à Booking iCal. La disponibilité sera confirmée personnellement.",
@@ -1745,14 +1745,13 @@
       button.addEventListener("click", () => applyLanguage(button.dataset.lang));
     });
     applyLanguage(currentLang, false);
-    // Fuer immer aktuelle Booking-Belegung hier die Cloudflare-Adresse eintragen.
-    const LIVE_BOOKING_API_URL = "";
+    const LIVE_BOOKING_API_URL = "booking-calendar.json";
     const LIVE_PRICE_API_URL = "";
     const OTHER_ROOMS_RELEASED = false;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
-    let bookingCalendarUpdated = "";
-    let bookingCalendarMode = "live";
-    let liveBookingCalendarLoaded = false;
+    let bookingCalendarUpdated = "19.07.2026, 09:16 Uhr";
+    let bookingCalendarMode = "snapshot";
+    let liveBookingCalendarLoaded = !LIVE_BOOKING_API_URL;
     let liveBookingCalendarPending = false;
     const DIRECT_BOOKING_DISCOUNT_PERCENT = 5;
     const PRICE_REFRESH_MS = 10 * 60 * 1000;
@@ -1764,7 +1763,8 @@
       { start: "2026-08-08", end: "2026-08-12" },
       { start: "2026-08-22", end: "2026-08-23" },
       { start: "2026-08-29", end: "2026-08-30" },
-      { start: "2027-05-01", end: "2027-05-02" }
+      { start: "2027-05-01", end: "2027-05-02" },
+      { start: "2027-08-19", end: "2027-08-23" }
     ];
     let bachblickBookingBlocks = BACHBLICK_BOOKING_BLOCKS.slice();
 
@@ -1969,7 +1969,7 @@
 
     async function loadLiveBookingCalendar() {
       if (!LIVE_BOOKING_API_URL) {
-        liveBookingCalendarLoaded = false;
+        liveBookingCalendarLoaded = true;
         liveBookingCalendarPending = false;
         calculate();
         return;
