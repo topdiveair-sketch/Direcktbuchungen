@@ -36,10 +36,12 @@ async function main() {
   }
   const text = await response.text();
   const updatedAt = new Date().toLocaleString("de-AT", { timeZone: "Europe/Vienna" });
+  const updatedAtIso = new Date().toISOString();
   const payload = {
     room: "Bachblick",
     source: "Booking iCal",
     updatedAt,
+    updatedAtIso,
     events: parseIcal(text)
   };
   fs.writeFileSync(
