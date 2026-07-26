@@ -690,7 +690,7 @@
               <input id="departure" name="departure" type="date" required>
             </label>
             <label>Personen
-              <select id="adults" name="adults">
+              <select id="adults" name="adults" required>
                 <option value="1">1 Person</option>
                 <option value="2" selected>2 Personen</option>
               </select>
@@ -773,12 +773,12 @@
               <input id="email" name="email" type="email" required>
             </label>
             <label>Telefon
-              <input id="phone" name="phone" type="tel">
+              <input id="phone" name="phone" type="tel" required>
             </label>
           </div>
 
           <label>Nachricht oder Wünsche
-            <textarea id="message" name="message" placeholder="z. B. vegetarisches Frühstück, spätere Anreise, Fragen zur Umgebung"></textarea>
+            <textarea id="message" name="message" required placeholder="z. B. vegetarisches Frühstück, spätere Anreise, Fragen zur Umgebung"></textarea>
           </label>
 
           <div class="hint">
@@ -1483,7 +1483,7 @@
         noIcal: "{room} ist noch nicht mit Booking-iCal verbunden. Verfügbarkeit wird persönlich bestätigt.",
         blocked: "Bachblick ist laut Booking-Kalenderstand {updated} in diesem Zeitraum belegt oder gesperrt.",
         free: "Bachblick ist laut Booking-Kalenderstand {updated} in diesem Zeitraum frei. Endgültige Bestätigung erfolgt persönlich.",
-        calendarStale: "Der Kalenderstand ist nicht mehr frisch genug. Bitte Anfrage senden; wir bestätigen die Verfügbarkeit persönlich.",
+        calendarStale: "Die Verfügbarkeit wird persönlich bestätigt. Bitte Anfrage senden.",
         modeLive: "aktueller Booking-Kalender",
         modeSnapshot: "Booking-Kalenderstand",
         discount: "Direktbuchungsrabatt: -{amount} (5% vom Zimmerpreis). Zusatzleistungen bleiben voll berechnet.",
@@ -1492,6 +1492,7 @@
         calendarError: "Der Booking-Kalender konnte gerade nicht automatisch geprüft werden. Verfügbarkeit wird persönlich bestätigt.",
         justNow: "gerade eben",
         invalidDates: "Bitte Anreise und Abreise korrekt auswählen.",
+        requiredFields: "Bitte alle Pflichtfelder ausfüllen, inklusive Telefonnummer und Nachricht.",
         mailSubject: "Buchungsanfrage Zuhause am Bach",
         mailIntro: "Neue Buchungsanfrage über die einfache Website",
         none: "keine",
@@ -1530,7 +1531,7 @@
       noIcal: "{room} is not connected to Booking iCal yet. Availability will be confirmed personally.",
       blocked: "According to the Booking calendar status {updated}, Bachblick is occupied or blocked for this period.",
       free: "According to the Booking calendar status {updated}, Bachblick is free for this period. Final confirmation is personal.",
-      calendarStale: "The calendar status is no longer fresh enough. Please send the request; we will confirm availability personally.",
+      calendarStale: "Availability will be confirmed personally. Please send the request.",
       modeLive: "current Booking calendar",
       modeSnapshot: "Booking calendar status",
       discount: "Direct booking discount: -{amount} (5% of room price). Extras remain fully charged.",
@@ -1539,6 +1540,7 @@
       calendarError: "The Booking calendar could not be checked automatically right now. Availability will be confirmed personally.",
       justNow: "just now",
       invalidDates: "Please choose valid arrival and departure dates.",
+      requiredFields: "Please fill in all required fields, including phone number and message.",
       mailSubject: "Booking request Zuhause am Bach",
       mailIntro: "New booking request via the simple website",
       none: "none",
@@ -1577,12 +1579,13 @@
       noIcal: "{room} zatím není připojen k Booking iCal. Dostupnost bude potvrzena osobně.",
       blocked: "Podle stavu kalendáře Booking {updated} je Bachblick v tomto období obsazený nebo blokovaný.",
       free: "Podle stavu kalendáře Booking {updated} je Bachblick v tomto období volný. Konečné potvrzení proběhne osobně.",
-      calendarStale: "Stav kalendáře již není dostatečně aktuální. Odešlete prosím poptávku; dostupnost potvrdíme osobně.",
+      calendarStale: "Dostupnost potvrdíme osobně. Odešlete prosím poptávku.",
       modeLive: "aktuální Booking kalendář",
       modeSnapshot: "stavu Booking kalendáře",
       discount: "Sleva za přímou rezervaci: -{amount} (5 % z ceny pokoje). Doplňky zůstávají účtovány plně.",
       lastMinute: "Last minute s příjezdem dnes: plná cena Booking bez slevy za přímou rezervaci.",
       invalidDates: "Vyberte prosím správné datum příjezdu a odjezdu.",
+      requiredFields: "Vyplňte prosím všechna povinná pole včetně telefonu a zprávy.",
       calendarLoading: "Kontroluje se kalendář Booking ...",
       calendarError: "Kalendář Booking se právě nepodařilo automaticky ověřit. Dostupnost potvrdíme osobně.",
       justNow: "právě teď",
@@ -1603,12 +1606,13 @@
       noIcal: "{room} még nincs összekötve a Booking iCal-lal. A rendelkezésre állást személyesen igazoljuk vissza.",
       blocked: "A Booking-naptár {updated} állapota szerint a Bachblick ebben az időszakban foglalt vagy zárolt.",
       free: "A Booking-naptár {updated} állapota szerint a Bachblick ebben az időszakban szabad. A végleges visszaigazolás személyesen történik.",
-      calendarStale: "A naptár állapota már nem elég friss. Küldje el a kérést; a rendelkezésre állást személyesen igazoljuk vissza.",
+      calendarStale: "A rendelkezésre állást személyesen igazoljuk vissza. Kérjük, küldje el a kérést.",
       modeLive: "aktuális Booking-naptár",
       modeSnapshot: "Booking-naptár állapota",
       discount: "Közvetlen foglalási kedvezmény: -{amount} (a szobaár 5%-a). A kiegészítők teljes áron maradnak.",
       lastMinute: "Last minute mai érkezéssel: teljes Booking-ár közvetlen kedvezmény nélkül.",
       invalidDates: "Kérjük, válasszon helyes érkezési és távozási dátumot.",
+      requiredFields: "Kérjük, töltse ki az összes kötelező mezőt, beleértve a telefonszámot és az üzenetet.",
       calendarLoading: "Booking-naptár ellenőrzése ...",
       calendarError: "A Booking-naptár jelenleg nem ellenőrizhető automatikusan. A rendelkezésre állást személyesen igazoljuk vissza.",
       justNow: "épp most",
@@ -1629,12 +1633,13 @@
       noIcal: "{room} aún no está conectada con Booking iCal. La disponibilidad se confirma personalmente.",
       blocked: "Según el estado del calendario Booking {updated}, Bachblick está ocupada o bloqueada en este periodo.",
       free: "Según el estado del calendario Booking {updated}, Bachblick está libre en este periodo. La confirmación final es personal.",
-      calendarStale: "El estado del calendario ya no es lo bastante reciente. Envíe la solicitud; confirmaremos la disponibilidad personalmente.",
+      calendarStale: "La disponibilidad se confirma personalmente. Envíe la solicitud.",
       modeLive: "calendario Booking actual",
       modeSnapshot: "estado del calendario Booking",
       discount: "Descuento de reserva directa: -{amount} (5% del precio de habitación). Los extras se cobran completos.",
       lastMinute: "Last minute con llegada hoy: precio Booking completo sin descuento directo.",
       invalidDates: "Elija correctamente llegada y salida.",
+      requiredFields: "Complete todos los campos obligatorios, incluido teléfono y mensaje.",
       calendarLoading: "Comprobando calendario Booking ...",
       calendarError: "El calendario Booking no se pudo comprobar automáticamente ahora. La disponibilidad se confirma personalmente.",
       justNow: "ahora mismo",
@@ -1655,12 +1660,13 @@
       noIcal: "{room} n'est pas encore connectée à Booking iCal. La disponibilité sera confirmée personnellement.",
       blocked: "Selon l'état du calendrier Booking {updated}, Bachblick est occupée ou bloquée pendant cette période.",
       free: "Selon l'état du calendrier Booking {updated}, Bachblick est libre pendant cette période. Confirmation finale personnelle.",
-      calendarStale: "L'état du calendrier n'est plus assez récent. Envoyez la demande ; nous confirmerons la disponibilité personnellement.",
+      calendarStale: "La disponibilité sera confirmée personnellement. Envoyez la demande.",
       modeLive: "calendrier Booking actuel",
       modeSnapshot: "état du calendrier Booking",
       discount: "Réduction réservation directe : -{amount} (5 % du prix de la chambre). Les extras restent facturés entièrement.",
       lastMinute: "Last minute avec arrivée aujourd'hui : prix Booking complet sans réduction directe.",
       invalidDates: "Veuillez choisir correctement l'arrivée et le départ.",
+      requiredFields: "Veuillez remplir tous les champs obligatoires, y compris téléphone et message.",
       calendarLoading: "Vérification du calendrier Booking ...",
       calendarError: "Le calendrier Booking n'a pas pu être vérifié automatiquement pour le moment. La disponibilité sera confirmée personnellement.",
       justNow: "à l'instant",
@@ -1755,16 +1761,17 @@
     const LIVE_PRICE_API_URL = "";
     const OTHER_ROOMS_RELEASED = false;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
-    let bookingCalendarUpdated = "24.7.2026, 13:21:32";
-    let bookingCalendarUpdatedIso = "2026-07-24T11:21:32.000Z";
+    let bookingCalendarUpdated = "26.7.2026, 19:22:01";
+    let bookingCalendarUpdatedIso = "2026-07-26T17:22:01.936Z";
     let bookingCalendarMode = "snapshot";
     let liveBookingCalendarLoaded = !LIVE_BOOKING_API_URL;
     let liveBookingCalendarPending = false;
     const DIRECT_BOOKING_DISCOUNT_PERCENT = 5;
     const PRICE_REFRESH_MS = 10 * 60 * 1000;
     const BACHBLICK_BOOKING_BLOCKS = [
-      { start: "2026-07-24", end: "2026-07-25" },
       { start: "2026-07-25", end: "2026-07-26" },
+      { start: "2026-07-28", end: "2026-07-29" },
+      { start: "2026-07-29", end: "2026-07-30" },
       { start: "2026-08-06", end: "2026-08-07" },
       { start: "2026-08-08", end: "2026-08-12" },
       { start: "2026-08-22", end: "2026-08-23" },
@@ -2036,6 +2043,13 @@
     });
     form.addEventListener("submit", async function(event) {
       event.preventDefault();
+      const requiredFields = Array.from(form.querySelectorAll("[required]"));
+      const missingField = requiredFields.find((field) => !String(field.value || "").trim());
+      if (missingField) {
+        missingField.focus();
+        alert(tr("requiredFields"));
+        return;
+      }
       const n = nightCount();
       if (n < 1) {
         alert(tr("invalidDates"));
