@@ -360,6 +360,14 @@
     .paypal-box strong {
       color: var(--ink);
     }
+    .paypal-box .btn {
+      width: fit-content;
+      min-height: 40px;
+      margin-top: 6px;
+      padding: 9px 13px;
+      background: #0070ba;
+      font-size: 13px;
+    }
     .hidden {
       display: none !important;
     }
@@ -758,8 +766,9 @@
             Direktbuchung: 5% unter Booking-Preis. Bei Anreise heute gilt der volle Booking-Preis.
           </div>
           <div id="paypalBox" class="paypal-box hidden">
-            <strong>PayPal-Zahlung möglich</strong>
-            <span>Bei freiem Termin bitte erst nach persönlicher Bestätigung an topdiveair@gmail.com bezahlen.</span>
+            <strong>Sofortzahlung per PayPal möglich</strong>
+            <span id="paypalHint">Bei freiem Termin können Sie den angezeigten Direktpreis per PayPal an topdiveair@gmail.com zahlen. Bitte Name und Reisedatum als Hinweis angeben.</span>
+            <a id="paypalLink" class="btn" href="https://www.paypal.com/myaccount/transfer/homepage/send" target="_blank" rel="noopener">PayPal öffnen</a>
           </div>
 
           <div class="form-grid">
@@ -774,6 +783,18 @@
             </label>
             <label>Telefon
               <input id="phone" name="phone" type="tel" required>
+            </label>
+            <label>Straße und Hausnummer
+              <input id="street" name="street" autocomplete="street-address" required>
+            </label>
+            <label>PLZ
+              <input id="zip" name="zip" autocomplete="postal-code" required>
+            </label>
+            <label>Ort
+              <input id="city" name="city" autocomplete="address-level2" required>
+            </label>
+            <label>Land
+              <input id="country" name="country" autocomplete="country-name" required>
             </label>
           </div>
 
@@ -957,6 +978,8 @@
     const total = document.getElementById("total");
     const discountNote = document.getElementById("discountNote");
     const paypalBox = document.getElementById("paypalBox");
+    const paypalHint = document.getElementById("paypalHint");
+    const paypalLink = document.getElementById("paypalLink");
     const statusBox = document.getElementById("status");
     const availabilityStatus = document.getElementById("availabilityStatus");
     const LANGUAGES = {
@@ -997,11 +1020,16 @@
         "bereits buchbar": "available to request",
         "ab 15.08.2026, erst nach Freigabe": "from 15/08/2026, after release",
         "Direktpreis": "Direct price",
-        "PayPal-Zahlung möglich": "PayPal payment possible",
-        "Bei freiem Termin bitte erst nach persönlicher Bestätigung an topdiveair@gmail.com bezahlen.": "If the date is free, please pay to topdiveair@gmail.com only after personal confirmation.",
+        "Sofortzahlung per PayPal möglich": "Immediate PayPal payment possible",
+        "Bei freiem Termin können Sie den angezeigten Direktpreis per PayPal an topdiveair@gmail.com zahlen. Bitte Name und Reisedatum als Hinweis angeben.": "If the date is free, you can pay the displayed direct price by PayPal to topdiveair@gmail.com. Please include your name and travel dates as a note.",
+        "PayPal öffnen": "Open PayPal",
         "Vorname": "First name",
         "Nachname": "Last name",
         "Telefon": "Phone",
+        "Straße und Hausnummer": "Street and house number",
+        "PLZ": "Postal code",
+        "Ort": "City",
+        "Land": "Country",
         "Nachricht oder Wünsche": "Message or wishes",
         "z. B. vegetarisches Frühstück, spätere Anreise, Fragen zur Umgebung": "e.g. vegetarian breakfast, later arrival, questions about the area",
         "Wichtig: Diese einfache Version ist eine Anfrage, keine automatische Sofortbuchung. Die Verfügbarkeit wird persönlich bestätigt.": "Important: this simple version is a request, not an automatic instant booking. Availability is confirmed personally.",
@@ -1492,13 +1520,14 @@
         calendarError: "Der Booking-Kalender konnte gerade nicht automatisch geprüft werden. Verfügbarkeit wird persönlich bestätigt.",
         justNow: "gerade eben",
         invalidDates: "Bitte Anreise und Abreise korrekt auswählen.",
-        requiredFields: "Bitte alle Pflichtfelder ausfüllen, inklusive Telefonnummer und Nachricht.",
+        requiredFields: "Bitte alle Pflichtfelder ausfüllen, inklusive Telefonnummer, vollständiger Adresse und Nachricht.",
         mailSubject: "Buchungsanfrage Zuhause am Bach",
         mailIntro: "Neue Buchungsanfrage über die einfache Website",
         none: "keine",
         labelName: "Name",
         labelEmail: "E-Mail",
         labelPhone: "Telefon",
+        labelAddress: "Adresse",
         labelArrival: "Anreise",
         labelDeparture: "Abreise",
         labelNights: "Nächte",
@@ -1510,7 +1539,8 @@
         priceRuleToday: "Anreise heute, voller Booking-Preis",
         priceRuleDiscount: "Direktbuchung minus 5 Prozent auf den Zimmerpreis",
         labelCalendar: "Kalenderprüfung",
-        labelPayment: "Zahlung: PayPal nach persönlicher Bestätigung an topdiveair@gmail.com",
+        labelPayment: "Zahlung: PayPal-Sofortzahlung bei freiem Termin an topdiveair@gmail.com möglich",
+        paypalHint: "Bei freiem Termin können Sie {amount} per PayPal an topdiveair@gmail.com zahlen. Bitte Name und Reisedatum als Hinweis angeben.",
         labelGuestApp: "Gästeapp: https://topdiveair-sketch.github.io/Gaeste/index",
         labelMessage: "Nachricht",
         noteCheck: "Hinweis: Verfügbarkeit bitte manuell prüfen und bestätigen.",
@@ -1540,13 +1570,14 @@
       calendarError: "The Booking calendar could not be checked automatically right now. Availability will be confirmed personally.",
       justNow: "just now",
       invalidDates: "Please choose valid arrival and departure dates.",
-      requiredFields: "Please fill in all required fields, including phone number and message.",
+      requiredFields: "Please fill in all required fields, including phone number, full address and message.",
       mailSubject: "Booking request Zuhause am Bach",
       mailIntro: "New booking request via the simple website",
       none: "none",
       labelName: "Name",
       labelEmail: "Email",
       labelPhone: "Phone",
+      labelAddress: "Address",
       labelArrival: "Arrival",
       labelDeparture: "Departure",
       labelNights: "Nights",
@@ -1558,7 +1589,8 @@
       priceRuleToday: "Arrival today, full Booking price",
       priceRuleDiscount: "Direct booking minus 5 percent on the room price",
       labelCalendar: "Calendar check",
-      labelPayment: "Payment: PayPal after personal confirmation to topdiveair@gmail.com",
+      labelPayment: "Payment: immediate PayPal payment to topdiveair@gmail.com possible if the date is free",
+      paypalHint: "If the date is free, you can pay {amount} by PayPal to topdiveair@gmail.com. Please include your name and travel dates as a note.",
       labelGuestApp: "Guest app: https://topdiveair-sketch.github.io/Gaeste/index",
       labelMessage: "Message",
       noteCheck: "Note: please check and confirm availability manually.",
@@ -1585,7 +1617,7 @@
       discount: "Sleva za přímou rezervaci: -{amount} (5 % z ceny pokoje). Doplňky zůstávají účtovány plně.",
       lastMinute: "Last minute s příjezdem dnes: plná cena Booking bez slevy za přímou rezervaci.",
       invalidDates: "Vyberte prosím správné datum příjezdu a odjezdu.",
-      requiredFields: "Vyplňte prosím všechna povinná pole včetně telefonu a zprávy.",
+      requiredFields: "Vyplňte prosím všechna povinná pole včetně telefonu, úplné adresy a zprávy.",
       calendarLoading: "Kontroluje se kalendář Booking ...",
       calendarError: "Kalendář Booking se právě nepodařilo automaticky ověřit. Dostupnost potvrdíme osobně.",
       justNow: "právě teď",
@@ -1612,7 +1644,7 @@
       discount: "Közvetlen foglalási kedvezmény: -{amount} (a szobaár 5%-a). A kiegészítők teljes áron maradnak.",
       lastMinute: "Last minute mai érkezéssel: teljes Booking-ár közvetlen kedvezmény nélkül.",
       invalidDates: "Kérjük, válasszon helyes érkezési és távozási dátumot.",
-      requiredFields: "Kérjük, töltse ki az összes kötelező mezőt, beleértve a telefonszámot és az üzenetet.",
+      requiredFields: "Kérjük, töltse ki az összes kötelező mezőt, beleértve a telefonszámot, a teljes címet és az üzenetet.",
       calendarLoading: "Booking-naptár ellenőrzése ...",
       calendarError: "A Booking-naptár jelenleg nem ellenőrizhető automatikusan. A rendelkezésre állást személyesen igazoljuk vissza.",
       justNow: "épp most",
@@ -1639,7 +1671,7 @@
       discount: "Descuento de reserva directa: -{amount} (5% del precio de habitación). Los extras se cobran completos.",
       lastMinute: "Last minute con llegada hoy: precio Booking completo sin descuento directo.",
       invalidDates: "Elija correctamente llegada y salida.",
-      requiredFields: "Complete todos los campos obligatorios, incluido teléfono y mensaje.",
+      requiredFields: "Complete todos los campos obligatorios, incluido teléfono, dirección completa y mensaje.",
       calendarLoading: "Comprobando calendario Booking ...",
       calendarError: "El calendario Booking no se pudo comprobar automáticamente ahora. La disponibilidad se confirma personalmente.",
       justNow: "ahora mismo",
@@ -1666,7 +1698,7 @@
       discount: "Réduction réservation directe : -{amount} (5 % du prix de la chambre). Les extras restent facturés entièrement.",
       lastMinute: "Last minute avec arrivée aujourd'hui : prix Booking complet sans réduction directe.",
       invalidDates: "Veuillez choisir correctement l'arrivée et le départ.",
-      requiredFields: "Veuillez remplir tous les champs obligatoires, y compris téléphone et message.",
+      requiredFields: "Veuillez remplir tous les champs obligatoires, y compris téléphone, adresse complète et message.",
       calendarLoading: "Vérification du calendrier Booking ...",
       calendarError: "Le calendrier Booking n'a pas pu être vérifié automatiquement pour le moment. La disponibilité sera confirmée personnellement.",
       justNow: "à l'instant",
@@ -1932,6 +1964,7 @@
       const availability = availabilityText();
       availabilityStatus.className = "availability-status " + availability.state;
       availabilityStatus.textContent = availability.text;
+      paypalHint.textContent = tr("paypalHint", { amount: money(sum) });
       paypalBox.classList.toggle("hidden", availability.state !== "ok");
       return sum;
     }
@@ -1969,12 +2002,18 @@
       const n = nightCount();
       const room = selectedRoom();
       const extras = selectedExtras().map((item) => translateStaticText(item.value)).join(", ") || tr("none");
+      const address = [
+        document.getElementById("street").value,
+        document.getElementById("zip").value + " " + document.getElementById("city").value,
+        document.getElementById("country").value
+      ].filter(Boolean).join(", ");
       const lines = [
         tr("mailIntro"),
         "",
         tr("labelName") + ": " + document.getElementById("firstName").value + " " + document.getElementById("lastName").value,
         tr("labelEmail") + ": " + document.getElementById("email").value,
         tr("labelPhone") + ": " + document.getElementById("phone").value,
+        tr("labelAddress") + ": " + address,
         "",
         tr("labelArrival") + ": " + arrival.value,
         tr("labelDeparture") + ": " + departure.value,
