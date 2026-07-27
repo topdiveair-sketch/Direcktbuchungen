@@ -1509,8 +1509,8 @@
         notReleased: "{room} ist ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.",
         beforeRelease: "{room} ist erst ab 15.08.2026 buchbar.",
         noIcal: "{room} ist noch nicht mit Booking-iCal verbunden. Verfügbarkeit wird persönlich bestätigt.",
-        blocked: "Bachblick ist laut Booking-Kalenderstand {updated} in diesem Zeitraum belegt oder gesperrt.",
-        free: "Bachblick ist laut Booking-Kalenderstand {updated} in diesem Zeitraum frei. Endgültige Bestätigung erfolgt persönlich.",
+        blocked: "Bachblick ist laut Kalenderprüfung in diesem Zeitraum belegt oder gesperrt.",
+        free: "Bachblick ist laut Kalenderprüfung in diesem Zeitraum frei. Sie können die Anfrage senden und bei Wunsch direkt per PayPal zahlen.",
         calendarStale: "Die Verfügbarkeit wird persönlich bestätigt. Bitte Anfrage senden.",
         modeLive: "aktueller Booking-Kalender",
         modeSnapshot: "Booking-Kalenderstand",
@@ -1559,8 +1559,8 @@
       notReleased: "{room} is prepared from 15/08/2026, but not yet released.",
       beforeRelease: "{room} is bookable from 15/08/2026.",
       noIcal: "{room} is not connected to Booking iCal yet. Availability will be confirmed personally.",
-      blocked: "According to the Booking calendar status {updated}, Bachblick is occupied or blocked for this period.",
-      free: "According to the Booking calendar status {updated}, Bachblick is free for this period. Final confirmation is personal.",
+      blocked: "According to the calendar check, Bachblick is occupied or blocked for this period.",
+      free: "According to the calendar check, Bachblick is free for this period. You can send the request and, if you wish, pay directly by PayPal.",
       calendarStale: "Availability will be confirmed personally. Please send the request.",
       modeLive: "current Booking calendar",
       modeSnapshot: "Booking calendar status",
@@ -1609,8 +1609,8 @@
       notReleased: "{room} je připraven od 15. 8. 2026, ale zatím není uvolněn.",
       beforeRelease: "{room} lze rezervovat až od 15. 8. 2026.",
       noIcal: "{room} zatím není připojen k Booking iCal. Dostupnost bude potvrzena osobně.",
-      blocked: "Podle stavu kalendáře Booking {updated} je Bachblick v tomto období obsazený nebo blokovaný.",
-      free: "Podle stavu kalendáře Booking {updated} je Bachblick v tomto období volný. Konečné potvrzení proběhne osobně.",
+      blocked: "Podle kontroly kalendáře je Bachblick v tomto období obsazený nebo blokovaný.",
+      free: "Podle kontroly kalendáře je Bachblick v tomto období volný. Můžete odeslat poptávku a případně zaplatit přímo přes PayPal.",
       calendarStale: "Dostupnost potvrdíme osobně. Odešlete prosím poptávku.",
       modeLive: "aktuální Booking kalendář",
       modeSnapshot: "stavu Booking kalendáře",
@@ -1636,8 +1636,8 @@
       notReleased: "{room} 2026.08.15-től előkészítve, de még nincs felszabadítva.",
       beforeRelease: "{room} csak 2026.08.15-től foglalható.",
       noIcal: "{room} még nincs összekötve a Booking iCal-lal. A rendelkezésre állást személyesen igazoljuk vissza.",
-      blocked: "A Booking-naptár {updated} állapota szerint a Bachblick ebben az időszakban foglalt vagy zárolt.",
-      free: "A Booking-naptár {updated} állapota szerint a Bachblick ebben az időszakban szabad. A végleges visszaigazolás személyesen történik.",
+      blocked: "A naptárellenőrzés szerint a Bachblick ebben az időszakban foglalt vagy zárolt.",
+      free: "A naptárellenőrzés szerint a Bachblick ebben az időszakban szabad. Elküldheti a kérést, és igény esetén közvetlenül PayPal-lal fizethet.",
       calendarStale: "A rendelkezésre állást személyesen igazoljuk vissza. Kérjük, küldje el a kérést.",
       modeLive: "aktuális Booking-naptár",
       modeSnapshot: "Booking-naptár állapota",
@@ -1663,8 +1663,8 @@
       notReleased: "{room} está preparada desde el 15/08/2026, pero aún no liberada.",
       beforeRelease: "{room} se puede reservar desde el 15/08/2026.",
       noIcal: "{room} aún no está conectada con Booking iCal. La disponibilidad se confirma personalmente.",
-      blocked: "Según el estado del calendario Booking {updated}, Bachblick está ocupada o bloqueada en este periodo.",
-      free: "Según el estado del calendario Booking {updated}, Bachblick está libre en este periodo. La confirmación final es personal.",
+      blocked: "Según la comprobación del calendario, Bachblick está ocupada o bloqueada en este periodo.",
+      free: "Según la comprobación del calendario, Bachblick está libre en este periodo. Puede enviar la solicitud y, si lo desea, pagar directamente por PayPal.",
       calendarStale: "La disponibilidad se confirma personalmente. Envíe la solicitud.",
       modeLive: "calendario Booking actual",
       modeSnapshot: "estado del calendario Booking",
@@ -1690,8 +1690,8 @@
       notReleased: "{room} est préparée à partir du 15/08/2026, mais pas encore libérée.",
       beforeRelease: "{room} est réservable à partir du 15/08/2026.",
       noIcal: "{room} n'est pas encore connectée à Booking iCal. La disponibilité sera confirmée personnellement.",
-      blocked: "Selon l'état du calendrier Booking {updated}, Bachblick est occupée ou bloquée pendant cette période.",
-      free: "Selon l'état du calendrier Booking {updated}, Bachblick est libre pendant cette période. Confirmation finale personnelle.",
+      blocked: "Selon la vérification du calendrier, Bachblick est occupée ou bloquée pendant cette période.",
+      free: "Selon la vérification du calendrier, Bachblick est libre pendant cette période. Vous pouvez envoyer la demande et, si vous le souhaitez, payer directement par PayPal.",
       calendarStale: "La disponibilité sera confirmée personnellement. Envoyez la demande.",
       modeLive: "calendrier Booking actuel",
       modeSnapshot: "état du calendrier Booking",
@@ -1793,8 +1793,8 @@
     const LIVE_PRICE_API_URL = "";
     const OTHER_ROOMS_RELEASED = false;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
-    let bookingCalendarUpdated = "27.7.2026, 07:59:42";
-    let bookingCalendarUpdatedIso = "2026-07-27T05:59:42.756Z";
+    let bookingCalendarUpdated = "27.7.2026, 14:40:48";
+    let bookingCalendarUpdatedIso = "2026-07-27T12:40:48.402Z";
     let bookingCalendarMode = "snapshot";
     let liveBookingCalendarLoaded = !LIVE_BOOKING_API_URL;
     let liveBookingCalendarPending = false;
@@ -2047,7 +2047,11 @@
       availabilityStatus.className = "availability-status note";
       availabilityStatus.textContent = tr("calendarLoading");
       try {
-        const response = await fetch(LIVE_BOOKING_API_URL, { cache: "no-store" });
+        const separator = LIVE_BOOKING_API_URL.includes("?") ? "&" : "?";
+        const response = await fetch(LIVE_BOOKING_API_URL + separator + "v=" + Date.now(), {
+          cache: "no-store",
+          headers: { "Cache-Control": "no-cache" }
+        });
         if (!response.ok) throw new Error("HTTP " + response.status);
         const payload = await response.json();
         if (!Array.isArray(payload.events)) throw new Error("Ungueltige Kalenderdaten");
