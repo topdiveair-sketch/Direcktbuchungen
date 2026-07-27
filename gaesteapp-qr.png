@@ -1,0 +1,30 @@
+name: Booking-Kalender aktualisieren
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-booking-calendar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository laden
+        uses: actions/checkout@v4
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Booking-iCal abrufen
+        run: node scripts/update-booking-calendar.js
+
+      - name: Aenderungen speichern
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Booking-Kalender aktualisieren"
+          file_pattern: booking-calendar.json
