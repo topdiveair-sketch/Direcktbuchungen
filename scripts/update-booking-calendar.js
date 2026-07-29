@@ -12,6 +12,12 @@ const MANUAL_BLOCKS = [
     end: "2026-08-03",
     summary: "MANUELL GESCHLOSSEN - Not available",
     source: "Manuell"
+  },
+  {
+    start: "2026-08-15",
+    end: "2026-08-21",
+    summary: "MANUELL GESCHLOSSEN - Not available",
+    source: "Manuell"
   }
 ];
 
