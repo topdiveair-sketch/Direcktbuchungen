@@ -337,6 +337,11 @@
       text-align: center;
       text-decoration: none;
     }
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: .55;
+      background: #7d8a85;
+    }
     .btn.secondary {
       background: #263b35;
     }
@@ -825,7 +830,7 @@
             Wichtig: Diese einfache Version ist eine Anfrage, keine automatische Sofortbuchung. Die Verfügbarkeit wird persönlich bestätigt.
           </div>
 
-          <button class="btn" type="submit">E-Mail mit Anfrage öffnen</button>
+          <button id="submitRequest" class="btn" type="submit">E-Mail mit Anfrage öffnen</button>
           <a class="btn secondary" href="tel:+436646437526">Direkt anrufen</a>
           <div id="status" class="status">Die E-Mail wurde vorbereitet. Bitte im Mailprogramm absenden.</div>
         </form>
@@ -1002,6 +1007,7 @@
     const statusBox = document.getElementById("status");
     const availabilityStatus = document.getElementById("availabilityStatus");
     const calendarControl = document.getElementById("calendarControl");
+    const submitRequest = document.getElementById("submitRequest");
     const LANGUAGES = {
       de: { html: "de", locale: "de-AT" },
       en: { html: "en", locale: "en-GB" },
@@ -1813,8 +1819,8 @@
     const LIVE_PRICE_API_URL = "";
     const OTHER_ROOMS_RELEASED = false;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
-    let bookingCalendarUpdated = "29.7.2026, 09:16:20";
-    let bookingCalendarUpdatedIso = "2026-07-29T07:16:20.398Z";
+    let bookingCalendarUpdated = "29.7.2026, 09:25:09";
+    let bookingCalendarUpdatedIso = "2026-07-29T07:25:09.440Z";
     let bookingCalendarMode = "snapshot";
     let liveBookingCalendarLoaded = true;
     let liveBookingCalendarPending = false;
@@ -1897,6 +1903,13 @@
       return aStart < bEnd && aEnd > bStart;
     }
 
+    function blockedCalendarEntry(a, d) {
+      if (!a || !d) return null;
+      return bachblickBookingBlocks.find((block) =>
+        overlaps(a, d, parseDate(block.start), parseDate(block.end))
+      ) || null;
+    }
+
     function calendarIsFresh() {
       if (!bookingCalendarUpdatedIso) return false;
       const updated = new Date(bookingCalendarUpdatedIso);
@@ -1960,9 +1973,7 @@
           text: tr("calendarStale")
         };
       }
-      const conflict = bachblickBookingBlocks.find((block) =>
-        overlaps(a, d, parseDate(block.start), parseDate(block.end))
-      );
+      const conflict = blockedCalendarEntry(a, d);
       if (conflict) {
         return {
           state: "blocked",
@@ -2000,6 +2011,14 @@
       const availability = availabilityText();
       availabilityStatus.className = "availability-status " + availability.state;
       availabilityStatus.textContent = availability.text;
+      const hasValidDates = n > 0;
+      const canSubmit = availability.state === "ok";
+      submitRequest.disabled = !canSubmit;
+      submitRequest.textContent = canSubmit
+        ? "E-Mail mit Anfrage öffnen"
+        : (hasValidDates ? "Zeitraum nicht verfügbar" : "Bitte Datum wählen");
+      arrival.setCustomValidity(availability.state === "blocked" ? availability.text : "");
+      departure.setCustomValidity(availability.state === "blocked" ? availability.text : "");
       updateCalendarControl();
       paypalHint.textContent = tr("paypalHint", { amount: money(sum) });
       paypalBox.classList.toggle("hidden", availability.state !== "ok");
@@ -2136,7 +2155,15 @@
         await loadLiveBookingCalendar();
       }
       const availability = availabilityText();
-      if (availability.state === "blocked") {
+      const room = selectedRoom();
+      const conflict = room && room.value === "Bachblick"
+        ? blockedCalendarEntry(parseDate(arrival.value), parseDate(departure.value))
+        : null;
+      if (conflict) {
+        alert(tr("blocked", { mode: calendarModeLabel(), updated: bookingCalendarUpdated }));
+        return;
+      }
+      if (availability.state !== "ok") {
         alert(availability.text);
         return;
       }

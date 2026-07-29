@@ -61,7 +61,29 @@ async function main() {
     JSON.stringify(payload, null, 2) + "\n",
     "utf8"
   );
-  console.log(`booking-calendar.json aktualisiert: ${payload.events.length} Sperrzeiten, ${updatedAt}`);
+
+  const indexPath = path.join(process.cwd(), "index.html");
+  if (fs.existsSync(indexPath)) {
+    const fallbackBlocks = events
+      .map((event) => `      { start: "${event.start}", end: "${event.end}" }`)
+      .join(",\n");
+    let html = fs.readFileSync(indexPath, "utf8");
+    html = html.replace(
+      /let bookingCalendarUpdated = ".*?";/,
+      `let bookingCalendarUpdated = "${updatedAt}";`
+    );
+    html = html.replace(
+      /let bookingCalendarUpdatedIso = ".*?";/,
+      `let bookingCalendarUpdatedIso = "${updatedAtIso}";`
+    );
+    html = html.replace(
+      /const BACHBLICK_BOOKING_BLOCKS = \[\n[\s\S]*?\n    \];/,
+      `const BACHBLICK_BOOKING_BLOCKS = [\n${fallbackBlocks}\n    ];`
+    );
+    fs.writeFileSync(indexPath, html, "utf8");
+  }
+
+  console.log(`booking-calendar.json und HTML-Fallback aktualisiert: ${payload.events.length} Sperrzeiten, ${updatedAt}`);
 }
 
 main().catch((error) => {
