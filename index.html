@@ -394,21 +394,6 @@
       background: #f4f0e8;
       color: #715725;
     }
-    .calendar-control {
-      display: grid;
-      gap: 4px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid #b9d7ca;
-      background: #f0faf5;
-      color: #145c4d;
-      font-size: 12px;
-      font-weight: 700;
-    }
-    .calendar-control small {
-      color: #4f6d62;
-      font-weight: 500;
-    }
     main {
       display: grid;
       gap: 52px;
@@ -728,11 +713,7 @@
             </label>
           </div>
           <div id="availabilityStatus" class="availability-status note">
-            Booking-Kalender wird aktuell geprüft ...
-          </div>
-          <div id="calendarControl" class="calendar-control">
-            <strong>Booking-Kalenderkontrolle aktiv</strong>
-            <small>Quelle: Booking-iCal Bachblick. Prüfung beim Öffnen und danach automatisch.</small>
+            Bitte Reisedaten wählen.
           </div>
 
           <div>
@@ -1006,7 +987,6 @@
     const paypalLink = document.getElementById("paypalLink");
     const statusBox = document.getElementById("status");
     const availabilityStatus = document.getElementById("availabilityStatus");
-    const calendarControl = document.getElementById("calendarControl");
     const submitRequest = document.getElementById("submitRequest");
     const LANGUAGES = {
       de: { html: "de", locale: "de-AT" },
@@ -1819,8 +1799,8 @@
     const LIVE_PRICE_API_URL = "";
     const OTHER_ROOMS_RELEASED = false;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
-    let bookingCalendarUpdated = "29.7.2026, 09:41:38";
-    let bookingCalendarUpdatedIso = "2026-07-29T07:41:38.758Z";
+    let bookingCalendarUpdated = "29.7.2026, 10:24:09";
+    let bookingCalendarUpdatedIso = "2026-07-29T08:24:09.971Z";
     let bookingCalendarMode = "snapshot";
     let liveBookingCalendarLoaded = true;
     let liveBookingCalendarPending = false;
@@ -1918,22 +1898,6 @@
       return Date.now() - updated.getTime() <= 36 * 60 * 60 * 1000;
     }
 
-    function updateCalendarControl() {
-      if (!calendarControl) return;
-      const freshness = calendarIsFresh() ? "frisch" : "nicht frisch genug";
-      const mode = calendarModeLabel();
-      const nextBlocks = bachblickBookingBlocks
-        .filter((block) => block.start && block.end && block.end >= todayIso)
-        .slice(0, 6)
-        .map((block) => block.start.split("-").reverse().join(".") + " bis " + block.end.split("-").reverse().join("."))
-        .join(" | ");
-      calendarControl.innerHTML =
-        "<strong>Booking-Kalenderkontrolle aktiv</strong>" +
-        "<small>Quelle: Booking-iCal Bachblick. Stand: " + (bookingCalendarUpdated || "wird geprüft") +
-        " (" + mode + ", " + freshness + "). Browser prüft jede Minute neu.</small>" +
-        "<small>Übernommene Sperren: " + (nextBlocks || "keine kommenden Sperren") + "</small>";
-    }
-
     function availabilityText() {
       const a = parseDate(arrival.value);
       const d = parseDate(departure.value);
@@ -2020,7 +1984,6 @@
         : (hasValidDates ? "Zeitraum nicht verfügbar" : "Bitte Datum wählen");
       arrival.setCustomValidity(availability.state === "blocked" ? availability.text : "");
       departure.setCustomValidity(availability.state === "blocked" ? availability.text : "");
-      updateCalendarControl();
       paypalHint.textContent = tr("paypalHint", { amount: money(sum) });
       paypalBox.classList.toggle("hidden", availability.state !== "ok");
       return sum;
