@@ -389,6 +389,21 @@
       background: #f4f0e8;
       color: #715725;
     }
+    .calendar-control {
+      display: grid;
+      gap: 4px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #b9d7ca;
+      background: #f0faf5;
+      color: #145c4d;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .calendar-control small {
+      color: #4f6d62;
+      font-weight: 500;
+    }
     main {
       display: grid;
       gap: 52px;
@@ -708,7 +723,11 @@
             </label>
           </div>
           <div id="availabilityStatus" class="availability-status note">
-            Derzeit ist nur Bachblick buchbar. Weitere Zimmer sind ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.
+            Booking-Kalender wird aktuell geprüft ...
+          </div>
+          <div id="calendarControl" class="calendar-control">
+            <strong>Booking-Kalenderkontrolle aktiv</strong>
+            <small>Quelle: Booking-iCal Bachblick. Prüfung beim Öffnen und danach automatisch.</small>
           </div>
 
           <div>
@@ -982,6 +1001,7 @@
     const paypalLink = document.getElementById("paypalLink");
     const statusBox = document.getElementById("status");
     const availabilityStatus = document.getElementById("availabilityStatus");
+    const calendarControl = document.getElementById("calendarControl");
     const LANGUAGES = {
       de: { html: "de", locale: "de-AT" },
       en: { html: "en", locale: "en-GB" },
@@ -1793,13 +1813,13 @@
     const LIVE_PRICE_API_URL = "";
     const OTHER_ROOMS_RELEASED = false;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
-    let bookingCalendarUpdated = "27.7.2026, 14:40:48";
-    let bookingCalendarUpdatedIso = "2026-07-27T12:40:48.402Z";
+    let bookingCalendarUpdated = "29.7.2026, 06:23:33";
+    let bookingCalendarUpdatedIso = "2026-07-29T04:23:33.287Z";
     let bookingCalendarMode = "snapshot";
-    let liveBookingCalendarLoaded = !LIVE_BOOKING_API_URL;
+    let liveBookingCalendarLoaded = true;
     let liveBookingCalendarPending = false;
     const DIRECT_BOOKING_DISCOUNT_PERCENT = 5;
-    const PRICE_REFRESH_MS = 5 * 60 * 1000;
+    const PRICE_REFRESH_MS = 60 * 1000;
     const BACHBLICK_BOOKING_BLOCKS = [
       { start: "2026-07-28", end: "2026-07-29" },
       { start: "2026-07-29", end: "2026-07-30" },
@@ -1884,6 +1904,16 @@
       return Date.now() - updated.getTime() <= 36 * 60 * 60 * 1000;
     }
 
+    function updateCalendarControl() {
+      if (!calendarControl) return;
+      const freshness = calendarIsFresh() ? "frisch" : "nicht frisch genug";
+      const mode = calendarModeLabel();
+      calendarControl.innerHTML =
+        "<strong>Booking-Kalenderkontrolle aktiv</strong>" +
+        "<small>Quelle: Booking-iCal Bachblick. Stand: " + (bookingCalendarUpdated || "wird geprüft") +
+        " (" + mode + ", " + freshness + "). Browser prüft jede Minute neu.</small>";
+    }
+
     function availabilityText() {
       const a = parseDate(arrival.value);
       const d = parseDate(departure.value);
@@ -1964,6 +1994,7 @@
       const availability = availabilityText();
       availabilityStatus.className = "availability-status " + availability.state;
       availabilityStatus.textContent = availability.text;
+      updateCalendarControl();
       paypalHint.textContent = tr("paypalHint", { amount: money(sum) });
       paypalBox.classList.toggle("hidden", availability.state !== "ok");
       return sum;
@@ -2063,13 +2094,10 @@
         bookingCalendarMode = "live";
         liveBookingCalendarLoaded = true;
       } catch (error) {
-        bachblickBookingBlocks = [];
-        bookingCalendarUpdated = "";
-        bookingCalendarUpdatedIso = "";
-        bookingCalendarMode = "live";
-        liveBookingCalendarLoaded = false;
+        bookingCalendarMode = "snapshot";
+        liveBookingCalendarLoaded = true;
         availabilityStatus.className = "availability-status note";
-        availabilityStatus.textContent = tr("calendarError");
+        availabilityStatus.textContent = tr("calendarError") + " Eingebetteter Kalenderstand bleibt aktiv.";
       } finally {
         liveBookingCalendarPending = false;
       }
