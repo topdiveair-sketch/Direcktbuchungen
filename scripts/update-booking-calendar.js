@@ -6,6 +6,14 @@ const GOOGLE_ICAL_URLS = (process.env.GOOGLE_ICAL_URLS || process.env.GOOGLE_ICA
   .split(";")
   .map((url) => url.trim())
   .filter(Boolean);
+const MANUAL_BLOCKS = [
+  {
+    start: "2026-08-02",
+    end: "2026-08-03",
+    summary: "MANUELL GESPERRT - Not available",
+    source: "Manuell"
+  }
+];
 
 function parseDate(value) {
   if (!value || value.length < 8) return "";
@@ -46,6 +54,7 @@ async function main() {
   for (const [index, googleUrl] of GOOGLE_ICAL_URLS.entries()) {
     events.push(...await fetchIcal(googleUrl, `Google Kalender ${index + 1}`));
   }
+  events.push(...MANUAL_BLOCKS);
   events.sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end));
   const updatedAt = new Date().toLocaleString("de-AT", { timeZone: "Europe/Vienna" });
   const updatedAtIso = new Date().toISOString();
