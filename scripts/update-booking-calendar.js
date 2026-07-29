@@ -10,7 +10,7 @@ const MANUAL_BLOCKS = [
   {
     start: "2026-08-02",
     end: "2026-08-03",
-    summary: "MANUELL GESPERRT - Not available",
+    summary: "MANUELL GESCHLOSSEN - Not available",
     source: "Manuell"
   }
 ];
@@ -27,7 +27,7 @@ function parseIcal(text, source) {
     .map((block) => {
       let start = "";
       let end = "";
-      let summary = "Booking/iCal gesperrt";
+      let summary = "Booking/iCal belegt oder geschlossen";
       for (const rawLine of block.split(/\r?\n/)) {
         const line = rawLine.trim();
         if (line.startsWith("DTSTART")) start = parseDate(line.split(":").pop());
@@ -92,7 +92,7 @@ async function main() {
     fs.writeFileSync(indexPath, html, "utf8");
   }
 
-  console.log(`booking-calendar.json und HTML-Fallback aktualisiert: ${payload.events.length} Sperrzeiten, ${updatedAt}`);
+  console.log(`booking-calendar.json und HTML-Fallback aktualisiert: ${payload.events.length} belegt/geschlossen, ${updatedAt}`);
 }
 
 main().catch((error) => {
