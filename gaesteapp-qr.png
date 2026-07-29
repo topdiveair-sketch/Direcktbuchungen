@@ -21,10 +21,13 @@ jobs:
           node-version: "20"
 
       - name: Booking-iCal abrufen
+        env:
+          GOOGLE_ICAL_URL: ${{ secrets.GOOGLE_ICAL_URL }}
+          GOOGLE_ICAL_URLS: ${{ secrets.GOOGLE_ICAL_URLS }}
         run: node scripts/update-booking-calendar.js
 
       - name: Aenderungen speichern
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Booking-Kalender aktualisieren"
-          file_pattern: booking-calendar.json
+          file_pattern: booking-calendar.json index.html

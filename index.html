@@ -1813,8 +1813,8 @@
     const LIVE_PRICE_API_URL = "";
     const OTHER_ROOMS_RELEASED = false;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
-    let bookingCalendarUpdated = "29.7.2026, 09:04:38";
-    let bookingCalendarUpdatedIso = "2026-07-29T07:04:38.477Z";
+    let bookingCalendarUpdated = "29.7.2026, 09:16:20";
+    let bookingCalendarUpdatedIso = "2026-07-29T07:16:20.398Z";
     let bookingCalendarMode = "snapshot";
     let liveBookingCalendarLoaded = true;
     let liveBookingCalendarPending = false;
@@ -1908,10 +1908,16 @@
       if (!calendarControl) return;
       const freshness = calendarIsFresh() ? "frisch" : "nicht frisch genug";
       const mode = calendarModeLabel();
+      const nextBlocks = bachblickBookingBlocks
+        .filter((block) => block.start && block.end && block.end >= todayIso)
+        .slice(0, 6)
+        .map((block) => block.start.split("-").reverse().join(".") + " bis " + block.end.split("-").reverse().join("."))
+        .join(" | ");
       calendarControl.innerHTML =
         "<strong>Booking-Kalenderkontrolle aktiv</strong>" +
         "<small>Quelle: Booking-iCal Bachblick. Stand: " + (bookingCalendarUpdated || "wird geprüft") +
-        " (" + mode + ", " + freshness + "). Browser prüft jede Minute neu.</small>";
+        " (" + mode + ", " + freshness + "). Browser prüft jede Minute neu.</small>" +
+        "<small>Übernommene Sperren: " + (nextBlocks || "keine kommenden Sperren") + "</small>";
     }
 
     function availabilityText() {
