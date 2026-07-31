@@ -390,7 +390,13 @@
       border-color: #f1b39f;
       color: #9a351f;
     }
-    .availability-status.note {
+        .availability-status.stale {
+      border-color: #d4a017;
+      background: #fff8df;
+      color: #735900;
+    }
+
+.availability-status.note {
       background: #f4f0e8;
       color: #715725;
     }
@@ -1933,17 +1939,17 @@
           text: LIVE_BOOKING_API_URL && liveBookingCalendarPending ? tr("calendarLoading") : tr("selectDatesWorker")
         };
       }
-      if (!calendarIsFresh()) {
-        return {
-          state: "note",
-          text: tr("calendarStale")
-        };
-      }
       const conflict = blockedCalendarEntry(a, d);
       if (conflict) {
         return {
           state: "blocked",
           text: tr("blocked", { mode: calendarModeLabel(), updated: bookingCalendarUpdated })
+        };
+      }
+      if (!calendarIsFresh()) {
+        return {
+          state: "stale",
+          text: tr("calendarStale") + " Letzter Kalenderstand: " + bookingCalendarUpdated + ". Die Anfrage kann gesendet werden, eine Sofortzahlung bleibt gesperrt."
         };
       }
       return {
@@ -1978,10 +1984,10 @@
       availabilityStatus.className = "availability-status " + availability.state;
       availabilityStatus.textContent = availability.text;
       const hasValidDates = n > 0;
-      const canSubmit = availability.state === "ok";
+      const canSubmit = availability.state === "ok" || availability.state === "stale";
       submitRequest.disabled = !canSubmit;
       submitRequest.textContent = canSubmit
-        ? "E-Mail mit Anfrage öffnen"
+        ? (availability.state === "stale" ? "Anfrage zur manuellen Bestätigung öffnen" : "E-Mail mit Anfrage öffnen")
         : (hasValidDates ? "Zeitraum nicht verfügbar" : "Bitte Datum wählen");
       arrival.setCustomValidity(availability.state === "blocked" ? availability.text : "");
       departure.setCustomValidity(availability.state === "blocked" ? availability.text : "");
@@ -2128,7 +2134,7 @@
         alert(tr("blocked", { mode: calendarModeLabel(), updated: bookingCalendarUpdated }));
         return;
       }
-      if (availability.state !== "ok") {
+      if (availability.state !== "ok" && availability.state !== "stale") {
         alert(availability.text);
         return;
       }
