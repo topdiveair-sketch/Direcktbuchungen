@@ -1,0 +1,49 @@
+Zuhause am Bach – Booking-Kalender live über Cloudflare Worker
+==============================================================
+
+WICHTIG
+Der Worker muss einmal im Cloudflare-Konto veröffentlicht werden. Erst danach
+kann die Webseite bei jeder Datums-/Zimmerabfrage einen aktuellen Booking-iCal-
+Stand abrufen. Ohne veröffentlichte Worker-URL verwendet die Seite weiterhin
+booking-calendar.json als sicheren Fallback.
+
+A) Einrichtung im Cloudflare-Dashboard (ohne Programmierwerkzeuge)
+-----------------------------------------------------------------
+1. https://dash.cloudflare.com öffnen und anmelden.
+2. Workers & Pages öffnen.
+3. Create / Worker erstellen.
+4. Name: zab-booking-live
+5. Den Beispielcode vollständig durch den Inhalt von
+   cloudflare-worker/worker.js ersetzen.
+6. Deploy / Bereitstellen anklicken.
+7. Unter Settings > Variables and Secrets eine geheime Variable anlegen:
+   Name: BOOKING_ICAL_URL
+   Wert: die Booking.com-iCal-Exportadresse aus dem bisherigen Projekt.
+   Als Secret speichern.
+8. Worker erneut bereitstellen.
+9. Die workers.dev-Adresse kopieren, zum Beispiel:
+   https://zab-booking-live.DEIN-NAME.workers.dev
+10. In config.js bei bookingWorkerUrl diese Adresse zwischen die Anführungszeichen
+    eintragen.
+11. index.html, config.js, Bilder und übrige Dateien auf GitHub Pages hochladen.
+
+B) Test
+------
+1. Worker-Adresse direkt im Browser öffnen.
+2. Erwartet wird JSON mit:
+   "ok": true
+   "source": "booking-ical-live"
+   "events": [...]
+3. Direktbuchungsseite öffnen, Anreise und Abreise auswählen.
+4. Bei freiem Bachblick erscheint die PayPal-Möglichkeit.
+5. Bei Booking-Belegung wird der Zeitraum gesperrt.
+
+SICHERHEIT
+Die Booking-iCal-Adresse gehört nicht in config.js oder index.html. Sie wird nur
+als Cloudflare-Secret BOOKING_ICAL_URL gespeichert. Die Webseite kennt lediglich
+die öffentliche Worker-Adresse.
+
+VERHALTEN BEI AUSFALL
+Ist Cloudflare oder Booking kurzfristig nicht erreichbar, greift die Webseite auf
+den zuletzt eingebetteten booking-calendar.json-Stand zurück. Dadurch bleibt die
+Seite benutzbar, zeigt aber keinen falschen Live-Erfolg an.

@@ -1,0 +1,47 @@
+Zuhause am Bach – automatische Booking-Kalender-Aktualisierung
+===============================================================
+
+Die GitHub Action ist bereits vollständig vorbereitet.
+Sie aktualisiert den Booking-Kalender automatisch ungefähr alle 5 Minuten.
+
+EINMALIGE EINRICHTUNG
+---------------------
+
+1. Den gesamten Inhalt dieses ZIP-Pakets in dein GitHub-Repository hochladen.
+   Wichtig: Auch der Ordner ".github" muss mit hochgeladen werden.
+
+2. GitHub öffnen und dein Repository auswählen.
+
+3. Oben auf "Actions" klicken.
+
+4. Links "Booking-Kalender automatisch aktualisieren" auswählen.
+
+5. Falls GitHub einen Hinweis zeigt, auf "I understand my workflows,
+   go ahead and enable them" klicken.
+
+6. Rechts auf "Run workflow" und danach nochmals auf den grünen
+   Button "Run workflow" klicken.
+
+7. Nach ungefähr einer Minute die Seite neu laden.
+   Der Lauf sollte ein grünes Häkchen zeigen.
+
+8. Unter Settings > Actions > General kontrollieren:
+   "Read and write permissions" auswählen und speichern.
+   Das ist nötig, damit die Action booking-calendar.json aktualisieren darf.
+
+WAS DANACH PASSIERT
+-------------------
+
+- GitHub lädt den Booking-iCal-Kalender regelmäßig neu.
+- booking-calendar.json wird aktualisiert.
+- Auch der Kalender-Fallback in index.html wird aktualisiert.
+- Ist ein gewählter Zeitraum laut Kalender frei, wird PayPal freigegeben.
+- Ist er belegt, wird die Direktbuchung gesperrt.
+
+WICHTIG
+-------
+
+GitHub garantiert keine sekundengenaue Ausführung. Der Zeitplan ist auf
+5 Minuten gestellt, einzelne Läufe können bei hoher GitHub-Auslastung aber
+später starten. Es handelt sich daher um eine regelmäßig aktualisierte Abfrage,
+nicht um eine echte Live-Abfrage bei jedem Klick.

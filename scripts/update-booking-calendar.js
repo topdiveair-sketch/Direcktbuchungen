@@ -46,13 +46,40 @@ function parseIcal(text, source) {
 }
 
 async function fetchIcal(url, source) {
-  const response = await fetch(url, {
-    headers: { "User-Agent": "Zuhause-am-Bach-Calendar-Sync/1.0" }
-  });
-  if (!response.ok) {
-    throw new Error(`${source} iCal HTTP ${response.status}`);
+  let lastError;
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const separator = url.includes("?") ? "&" : "?";
+      const freshUrl = `${url}${separator}_zab=${Date.now()}`;
+      const response = await fetch(freshUrl, {
+        headers: {
+          "User-Agent": "Zuhause-am-Bach-Calendar-Sync/2.0",
+          "Accept": "text/calendar,text/plain,*/*",
+          "Cache-Control": "no-cache"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`${source} iCal HTTP ${response.status}`);
+      }
+
+      const text = await response.text();
+      if (!text.includes("BEGIN:VCALENDAR")) {
+        throw new Error(`${source} lieferte keinen gültigen iCal-Kalender`);
+      }
+
+      return parseIcal(text, source);
+    } catch (error) {
+      lastError = error;
+      console.warn(`${source}: Versuch ${attempt} von 3 fehlgeschlagen: ${error.message}`);
+      if (attempt < 3) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 3000));
+      }
+    }
   }
-  return parseIcal(await response.text(), source);
+
+  throw lastError;
 }
 
 async function main() {
