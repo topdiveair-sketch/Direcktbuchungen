@@ -1,0 +1,23 @@
+Funktionsprüfung vom 04.08.2026
+
+Geprüft:
+- HTML-Struktur und eindeutige IDs
+- JavaScript-Syntax
+- lokale Bilder und Dateien
+- Formularfelder und Pflichtfelder
+- mobile und Desktop-Darstellung
+- Datumseingabe und Nächteberechnung
+- Verfügbarkeitsstatus und Kalenderdatei
+- Gesamtpreis und Direktbuchungsrabatt
+- Zimmerauswahl und Zusatzleistungen
+- E-Mail-Anfrage
+- Sprachumschaltung
+
+Korrigiert:
+1. localStorage-Zugriff mit Fehlerbehandlung, damit das Buchungsskript auch in geschützten Browsermodi weiterläuft.
+2. 10/10-Buttontext bleibt nach Preisberechnungen erhalten.
+3. Pflichtfeldmeldung korrigiert: Nachricht ist freiwillig.
+4. Formulierung zum E-Mail-Programm präzisiert.
+
+Hinweis:
+Die eigentliche Anfrage wird weiterhin über das auf dem Gerät eingerichtete E-Mail-Programm versendet.

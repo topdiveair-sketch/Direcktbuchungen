@@ -1,0 +1,26 @@
+Zuhause am Bach – zusätzliche Zimmer freigeben
+
+AKTUELL:
+- Bachblick ist sichtbar und anfragbar.
+- Marillenzimmer, Weinbergzimmer und Donauzimmer sind vollständig ausgeblendet.
+
+FREIGABE:
+1. index.html öffnen.
+2. Nach SHOW_ADDITIONAL_ROOMS suchen.
+3. Nur diese Zeile ändern:
+
+   window.SHOW_ADDITIONAL_ROOMS = false;
+
+   in:
+
+   window.SHOW_ADDITIONAL_ROOMS = true;
+
+4. Datei speichern und zu GitHub hochladen.
+
+LOGIK:
+- false: Die drei Zimmer sind unsichtbar, deaktiviert und nicht auswählbar.
+- true: Die drei Zimmer werden sichtbar und können angefragt werden.
+- Zusätzlich gilt weiterhin das im Zimmer hinterlegte Startdatum data-from="2026-08-15".
+  Vor diesem Datum bleiben sie auch bei true deaktiviert.
+- Für die drei Zusatz­zimmer existiert derzeit kein eigener Live-Kalender.
+  Deshalb wird eine Anfrage ermöglicht, die Verfügbarkeit aber persönlich bestätigt.

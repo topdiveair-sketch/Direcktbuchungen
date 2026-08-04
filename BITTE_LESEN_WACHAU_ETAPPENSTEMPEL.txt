@@ -1,0 +1,10 @@
+Zuhause am Bach – Wachau-Etappenstempel
+
+Umgesetzt:
+- echter Stempel als Bild in die Website eingebaut
+- gemeinsame Ansprache von Welterbesteig-Wanderern und Donauradweg-Radfahrern
+- Text und Buchungsaufforderung auf „Wachau-Etappe“ umgestellt
+- Formularvormerkung für Wanderpass oder Radreise-Tagebuch
+- transparente Kennzeichnung als eigener Erinnerungsstempel
+- kein offizieller Kontroll- oder Leistungsstempel
+- GitHub Pages und bestehende Funktionen bleiben erhalten

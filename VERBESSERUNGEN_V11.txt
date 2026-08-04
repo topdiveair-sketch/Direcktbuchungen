@@ -1,0 +1,8 @@
+Zuhause am Bach – Verbesserte Direktanfrage V11
+
+- E-Mail ist nicht mehr der einzige Versandweg.
+- Anfrage kann zusätzlich per WhatsApp gesendet oder kopiert werden.
+- Postalische Adresse ist für die erste Anfrage optional.
+- Zahlung erfolgt ausdrücklich erst nach persönlicher Buchungsbestätigung.
+- Anfrageabschluss ist klarer und fehlertoleranter.
+- GitHub Pages und bestehende Kalender-/Preislogik bleiben erhalten.

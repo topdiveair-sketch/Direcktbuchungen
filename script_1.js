@@ -1,1362 +1,4 @@
-<!doctype html>
-<html lang="de">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Zuhause am Bach Wachau – Welterbesteig, Donauradweg & Etappenstempel</title>
-  <meta name="description" content="Ruhige Unterkunft in Aggsbach Markt für Welterbesteig und Donauradweg. Hausgäste erhalten auf Wunsch den exklusiven Wachau-Etappenstempel von Zuhause am Bach.">
-  <style>
-    :root {
-      color-scheme: light;
-      --ink: #17211f;
-      --muted: #5f6f69;
-      --line: #d8e2dd;
-      --paper: #fbfcf8;
-      --panel: #ffffff;
-      --brand: #176b5a;
-      --brand-2: #9f5f2a;
-      --soft: #eef5f0;
-      --warn: #fff4df;
-      --gold: #f0b424;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      color: var(--ink);
-      background: var(--paper);
-      line-height: 1.5;
-    }
-    a { color: inherit; }
-    .top {
-      min-height: 0;
-      display: block;
-      position: relative;
-      overflow: hidden;
-      background:
-        linear-gradient(90deg, rgba(18,35,25,.88), rgba(18,35,25,.46)),
-        url("images/aggsbach-markt-luftbild.png") center / cover;
-      color: #fff;
-    }
-    .nav {
-      position: absolute;
-      z-index: 3;
-      top: 0;
-      left: 0;
-      right: 0;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 16px;
-      padding: 18px min(5vw, 56px);
-    }
-    .top-image {
-      display: block;
-      width: 100%;
-      height: auto;
-      background: #fff3d6;
-    }
-    .nav-links {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 14px;
-      font-size: 14px;
-      margin-top: 40px;
-    }
-    .nav-links a {
-      text-decoration: none;
-      opacity: .92;
-    }
-    .language-switcher {
-      position: absolute;
-      z-index: 6;
-      top: 10px;
-      right: min(5vw, 56px);
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-    .language-switcher button {
-      min-height: 34px;
-      border: 0;
-      border-radius: 999px;
-      padding: 6px 11px;
-      background: rgba(255,255,255,.93);
-      color: #111;
-      box-shadow: 0 3px 10px rgba(0,0,0,.22);
-      font: inherit;
-      font-weight: 900;
-      cursor: pointer;
-    }
-    .language-switcher button.active {
-      outline: 3px solid rgba(23,107,90,.85);
-      background: #fff7d6;
-    }
-    .hero-grid {
-      display: grid;
-      grid-template-columns: minmax(0, .9fr) minmax(340px, 520px);
-      gap: min(5vw, 56px);
-      align-items: start;
-      padding: 118px min(5vw, 56px) 58px;
-      color: #fff;
-      background: transparent;
-    }
-    .hero-copy {
-      max-width: 740px;
-      padding-bottom: 32px;
-    }
-    .eyebrow {
-      display: inline-block;
-      margin-bottom: 10px;
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-    h1 {
-      margin: 0;
-      font-size: clamp(42px, 8vw, 88px);
-      line-height: .95;
-      letter-spacing: 0;
-    }
-    .hero-copy p {
-      max-width: 620px;
-      margin: 18px 0 0;
-      font-size: clamp(18px, 2.2vw, 24px);
-      color: rgba(255,255,255,.92);
-      text-shadow: 0 2px 10px rgba(0,0,0,.3);
-    }
-    .panel {
-      background: rgba(255, 250, 239, .97);
-      color: var(--ink);
-      border: 1px solid #ead8b6;
-      border-radius: 8px;
-      box-shadow: 0 24px 80px rgba(0,0,0,.25);
-      padding: 22px;
-    }
-    .panel h2, section h2 {
-      margin: 0 0 8px;
-      font-size: 26px;
-      line-height: 1.1;
-      letter-spacing: 0;
-    }
-    .panel p {
-      margin: 0 0 18px;
-      color: var(--muted);
-    }
-    .dashboard-strip {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(310px, 420px);
-      gap: 16px;
-      margin: -44px min(5vw, 56px) 10px;
-      position: relative;
-      z-index: 2;
-    }
-    .quick-tiles {
-      display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 12px;
-      margin: 0;
-    }
-    .quick-tile {
-      min-height: 126px;
-      border: 2px solid rgba(255,255,255,.55);
-      border-radius: 8px;
-      padding: 16px 12px 13px;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      text-decoration: none;
-      text-shadow: 0 2px 8px rgba(0,0,0,.4);
-      box-shadow: 0 10px 22px rgba(44,29,14,.25), inset 0 0 18px rgba(255,255,255,.15);
-      position: relative;
-      overflow: hidden;
-    }
-    .quick-tile::before {
-      position: absolute;
-      top: 12px;
-      left: 15px;
-      font-size: 36px;
-      font-weight: 900;
-    }
-    .quick-tile.walk { background: linear-gradient(145deg, #4f7d18, #1f5a19); }
-    .quick-tile.bike { background: linear-gradient(145deg, #2578a3, #07517a); }
-    .quick-tile.sun { background: linear-gradient(145deg, #f6bc18, #d87800); }
-    .quick-tile.wine { background: linear-gradient(145deg, #b34682, #763058); }
-    .quick-tile.book { background: linear-gradient(145deg, #f07717, #c64108); }
-    .quick-tile.call { background: linear-gradient(145deg, #149ab2, #096072); }
-    .quick-tile.walk::before { content: "↟"; }
-    .quick-tile.bike::before { content: "◎"; }
-    .quick-tile.sun::before { content: "☼"; }
-    .quick-tile.wine::before { content: "♢"; }
-    .quick-tile.book::before { content: "▣"; }
-    .quick-tile.call::before { content: "☎"; }
-    .quick-tile span {
-      font-size: 21px;
-      font-weight: 950;
-      line-height: 1;
-    }
-    .quick-tile small {
-      margin-top: 5px;
-      font-size: 14px;
-      font-weight: 850;
-    }
-    .weather-live {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      align-items: center;
-      align-self: start;
-      margin: 0;
-      padding: 16px;
-      border: 1px solid #ead9ba;
-      border-radius: 8px;
-      background: rgba(255, 250, 239, .97);
-      box-shadow: 0 14px 35px rgba(43, 30, 17, .2);
-    }
-    .weather-live div {
-      display: grid;
-      gap: 3px;
-      text-align: center;
-    }
-    .weather-live strong {
-      font-size: 20px;
-    }
-    .weather-live span {
-      font-size: 38px;
-      font-weight: 950;
-    }
-    .weather-live small {
-      color: var(--muted);
-    }
-    .weather-sun::before { content: "☼ "; color: #efac00; }
-    .weather-cloud::before { content: "☁ "; color: #6d94c7; }
-    .weather-rain::before { content: "☂ "; color: #438bd0; }
-    .weather-snow::before { content: "❄ "; color: #6eaad1; }
-    .weather-storm::before { content: "⚡ "; color: #d18b00; }
-    .weather-live p {
-      grid-column: 1 / -1;
-      margin: 0;
-      padding: 12px;
-      border-radius: 8px;
-      background: linear-gradient(90deg, #88ce49, #ffd04b);
-      font-weight: 900;
-      text-align: center;
-    }
-    form {
-      display: grid;
-      gap: 14px;
-    }
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    label {
-      display: grid;
-      gap: 6px;
-      font-size: 13px;
-      font-weight: 800;
-    }
-    input, select, textarea {
-      width: 100%;
-      min-height: 44px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 10px 11px;
-      font: inherit;
-      color: var(--ink);
-      background: #fff;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 92px;
-    }
-    .extras, .rooms {
-      display: grid;
-      gap: 10px;
-    }
-    .choice {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 10px;
-      align-items: center;
-      padding: 11px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      font-weight: 500;
-    }
-    .choice input {
-      width: 18px;
-      min-height: 18px;
-    }
-    .choice.disabled {
-      opacity: .55;
-      background: #f4f6f3;
-    }
-    .choice span {
-      display: grid;
-      gap: 2px;
-    }
-    .choice small {
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .price {
-      color: var(--brand);
-      font-weight: 800;
-      white-space: nowrap;
-    }
-    .total {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 13px 0 3px;
-      border-top: 1px solid var(--line);
-    }
-    .total strong {
-      font-size: 24px;
-      color: var(--brand);
-    }
-    .btn {
-      border: 0;
-      border-radius: 6px;
-      background: var(--brand);
-      color: #fff;
-      min-height: 48px;
-      padding: 12px 16px;
-      font: inherit;
-      font-weight: 800;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-    }
-    .btn:disabled {
-      cursor: not-allowed;
-      opacity: .55;
-      background: #7d8a85;
-    }
-    .btn.secondary {
-      background: #263b35;
-    }
-    .hint {
-      padding: 11px;
-      border-radius: 8px;
-      background: var(--warn);
-      color: #6d4b17;
-      font-size: 13px;
-    }
-    .paypal-box {
-      display: grid;
-      gap: 4px;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #f0d491;
-      background: #fff8e4;
-      color: #654817;
-      font-size: 13px;
-    }
-    .paypal-box strong {
-      color: var(--ink);
-    }
-    .paypal-box .btn {
-      width: fit-content;
-      min-height: 40px;
-      margin-top: 6px;
-      padding: 9px 13px;
-      background: #0070ba;
-      font-size: 13px;
-    }
-    .hidden {
-      display: none !important;
-    }
-    .availability-status {
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      background: var(--soft);
-      color: var(--brand);
-      font-size: 13px;
-      font-weight: 800;
-    }
-    .availability-status.blocked {
-      background: #fff0eb;
-      border-color: #f1b39f;
-      color: #9a351f;
-    }
-        .availability-status.stale {
-      border-color: #d4a017;
-      background: #fff8df;
-      color: #735900;
-    }
 
-.availability-status.note {
-      background: #f4f0e8;
-      color: #715725;
-    }
-    main {
-      display: grid;
-      gap: 52px;
-      padding: 52px min(5vw, 56px);
-    }
-    .section-head {
-      max-width: 860px;
-      margin-bottom: 20px;
-    }
-    .section-head p {
-      margin: 0;
-      color: var(--muted);
-    }
-    .room-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 16px;
-    }
-    .room-card {
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff9eb;
-      box-shadow: 0 8px 18px rgba(49,31,14,.12);
-    }
-    .room-card img {
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      object-fit: cover;
-      display: block;
-      background: var(--soft);
-    }
-    .room-card div {
-      display: grid;
-      gap: 6px;
-      padding: 14px;
-    }
-    .room-card h3 {
-      margin: 0;
-      font-size: 19px;
-    }
-    .room-card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    .facts {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
-    .fact {
-      min-height: 116px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      padding: 16px;
-    }
-    .fact strong {
-      display: block;
-      margin-bottom: 6px;
-    }
-    .fact small {
-      color: var(--muted);
-    }
-    .tips-section {
-      display: grid;
-      gap: 16px;
-    }
-    .tips-grid {
-      display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 10px;
-    }
-    .tip-card {
-      min-height: 154px;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 14px;
-      border-radius: 8px;
-      overflow: hidden;
-      color: #fff;
-      background-image:
-        linear-gradient(to top, rgba(0,0,0,.82), rgba(0,0,0,.05)),
-        var(--tip-image);
-      background-position: center;
-      background-size: cover;
-      box-shadow: 0 9px 20px rgba(41,29,15,.18);
-      text-decoration: none;
-    }
-    .tip-card:nth-child(2) { background-position: 24% center; }
-    .tip-card:nth-child(3) { background-position: 40% center; }
-    .tip-card:nth-child(4) { background-position: 55% center; }
-    .tip-card:nth-child(5) { background-position: 70% center; }
-    .tip-card:nth-child(6) { background-position: 84% center; }
-    .tip-card strong {
-      font-size: 16px;
-    }
-    .tip-card small {
-      color: #fff0c6;
-    }
-    .guest-app {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 180px;
-      gap: 24px;
-      align-items: center;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #f2f7ef;
-      padding: 24px;
-    }
-    .guest-app p {
-      max-width: 820px;
-      color: var(--muted);
-      margin: 0 0 16px;
-    }
-    .guest-app h2 {
-      margin-bottom: 10px;
-    }
-    .windis-list {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin: 16px 0;
-    }
-    .windis-list span {
-      display: grid;
-      gap: 3px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      padding: 12px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .windis-list strong {
-      color: var(--ink);
-      font-size: 15px;
-    }
-    .guest-app-qr {
-      display: grid;
-      gap: 10px;
-      justify-items: center;
-      text-align: center;
-      color: var(--brand);
-      font-weight: 800;
-      text-decoration: none;
-    }
-    .guest-app-qr img {
-      width: 118px;
-      height: 118px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      padding: 8px;
-    }
-    footer {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      flex-wrap: wrap;
-      padding: 26px min(5vw, 56px);
-      border-top: 1px solid var(--line);
-      background: #17211f;
-      color: #fff;
-    }
-    footer a {
-      color: #fff;
-    }
-    .footer-main {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    .legal-details {
-      width: 100%;
-      border-top: 1px solid rgba(255,255,255,.18);
-      padding-top: 12px;
-      color: rgba(255,255,255,.92);
-    }
-    .legal-details summary {
-      cursor: pointer;
-      font-weight: 800;
-    }
-    .legal-content {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 12px;
-    }
-    .legal-content article {
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 8px;
-      background: rgba(255,255,255,.06);
-      padding: 14px;
-    }
-    .legal-content h3 {
-      margin: 0 0 8px;
-      color: #fff;
-    }
-    .legal-content p {
-      margin: 0 0 8px;
-      color: rgba(255,255,255,.78);
-      font-size: 14px;
-    }
-    .status {
-      display: none;
-      padding: 12px;
-      border-radius: 8px;
-      background: var(--soft);
-      color: var(--brand);
-      font-weight: 800;
-    }
-    .status.show { display: block; }
-    @media (max-width: 980px) {
-      .hero-grid, .room-grid, .facts, .legal-content, .guest-app {
-        grid-template-columns: 1fr;
-      }
-      .dashboard-strip {
-        grid-template-columns: 1fr;
-      }
-      .quick-tiles,
-      .tips-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-      .weather-live {
-        grid-template-columns: 1fr 1fr;
-      }
-      .weather-live p {
-        grid-column: 1 / 3;
-      }
-      .quick-tiles {
-        margin-top: 0;
-      }
-      .windis-list { grid-template-columns: 1fr; }
-      .hero-copy { padding-bottom: 0; }
-      .top { min-height: 0; }
-    }
-    @media (max-width: 640px) {
-      .nav { position: static; background: #15391f; align-items: flex-start; }
-      .nav-links { display: none; }
-      .hero-grid { padding-top: 18px; }
-      .form-grid { grid-template-columns: 1fr; }
-      .panel { padding: 16px; }
-      main { padding-top: 36px; }
-      .quick-tiles,
-      .tips-grid,
-      .weather-live {
-        grid-template-columns: 1fr;
-      }
-      .weather-live {
-        margin: 0;
-      }
-      .weather-live p {
-        grid-column: auto;
-      }
-      .quick-tiles {
-        margin: 0;
-      }
-      .dashboard-strip {
-        margin: 10px 18px 0;
-      }
-    }
-  
-    /* 10/10 Premium-Darstellung */
-    :root { --brand-dark:#0d4d40; --cream:#fffaf0; }
-    html { scroll-behavior:smooth; }
-    body { overflow-x:hidden; }
-    .hero-copy .eyebrow {
-      padding:7px 11px; border:1px solid rgba(255,255,255,.45);
-      border-radius:999px; background:rgba(0,0,0,.16);
-    }
-    .hero-trust { display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
-    .hero-trust span {
-      padding:8px 11px; border-radius:999px; background:rgba(255,255,255,.93);
-      color:#17372f; font-size:13px; font-weight:850; box-shadow:0 5px 16px rgba(0,0,0,.12);
-    }
-    .panel { border-radius:18px; box-shadow:0 28px 80px rgba(0,0,0,.27); }
-    .booking-kicker {
-      margin:0 0 4px; color:var(--brand); font-size:12px; font-weight:900;
-      letter-spacing:.08em; text-transform:uppercase;
-    }
-    .booking-intro { margin:0 0 14px!important; color:#455e56!important; font-size:14px; }
-    .booking-progress {
-      display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin:0 0 18px;
-    }
-    .booking-progress span {
-      padding:8px 6px; border-radius:8px; background:#edf5f1;
-      color:#38534b; text-align:center; font-size:11px; font-weight:900;
-    }
-    .booking-progress span:first-child { background:var(--brand); color:#fff; }
-    .form-block {
-      display:grid; gap:12px; padding:15px; border:1px solid #dfe9e4;
-      border-radius:12px; background:rgba(255,255,255,.72);
-    }
-    .form-block-title {
-      display:flex; align-items:center; gap:9px; margin:0;
-      color:#17372f; font-size:15px; font-weight:900;
-    }
-    .form-block-title b {
-      display:grid; place-items:center; width:27px; height:27px; border-radius:50%;
-      background:var(--brand); color:#fff; font-size:13px;
-    }
-    input:focus, select:focus, textarea:focus {
-      outline:3px solid rgba(23,107,90,.15); border-color:var(--brand);
-      box-shadow:0 0 0 1px var(--brand);
-    }
-    .choice { transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease; }
-    .choice:hover { transform:translateY(-1px); border-color:#95b9aa; box-shadow:0 7px 18px rgba(23,107,90,.08); }
-    .choice:has(input:checked) { border-color:var(--brand); background:#f0f8f4; box-shadow:0 0 0 2px rgba(23,107,90,.10); }
-    .total {
-      padding:15px; border:1px solid #cfe0d7; border-radius:11px;
-      background:linear-gradient(135deg,#eef8f3,#fffaf0);
-    }
-    .total strong { font-size:28px; }
-    #submitRequest {
-      width:100%; min-height:56px; border-radius:10px;
-      background:linear-gradient(135deg,var(--brand),var(--brand-dark));
-      font-size:17px; box-shadow:0 10px 24px rgba(23,107,90,.25);
-    }
-    .secondary { border-radius:10px; }
-    .micro-trust { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:4px; }
-    .micro-trust span {
-      padding:8px; border-radius:8px; background:#f4f6f3;
-      color:#52625d; text-align:center; font-size:11px; font-weight:800;
-    }
-    .quick-tile,.weather-live,.room-card { border-radius:14px; }
-    .room-card { transition:transform .18s ease,box-shadow .18s ease; }
-    .room-card:hover { transform:translateY(-4px); box-shadow:0 18px 34px rgba(49,31,14,.16); }
-    .room-card strong { color:var(--brand); }
-    .mobile-booking-bar { display:none; }
-
-    @media (max-width:900px) {
-      .hero-grid { grid-template-columns:1fr; }
-      .hero-copy { max-width:100%; padding-bottom:0; }
-      .panel { max-width:680px; width:100%; margin:0 auto; }
-      .dashboard-strip { margin-top:18px; }
-    }
-    @media (max-width:640px) {
-      body { padding-bottom:78px; }
-      .nav { position:relative; padding:8px 12px; min-height:54px; }
-      .nav-links { display:none; }
-      .language-switcher {
-        position:static; width:100%; flex-wrap:nowrap; overflow-x:auto;
-        justify-content:flex-start; padding-bottom:3px;
-      }
-      .language-switcher button { flex:0 0 auto; }
-      .hero-grid { padding:34px 12px 32px; }
-      h1 { font-size:clamp(39px,12vw,56px); }
-      .hero-copy p { font-size:18px; }
-      .hero-trust { gap:7px; }
-      .hero-trust span { font-size:12px; padding:7px 9px; }
-      .panel { padding:17px; border-radius:16px; }
-      .panel h2 { font-size:25px; }
-      .booking-progress { gap:4px; }
-      .booking-progress span { font-size:10px; padding:7px 3px; }
-      .form-grid { grid-template-columns:1fr; }
-      .form-block { padding:12px; }
-      input,select,textarea { min-height:49px; font-size:16px; }
-      .choice { padding:12px 9px; grid-template-columns:auto minmax(0,1fr) auto; }
-      .choice small { font-size:11px; }
-      .price { font-size:13px; }
-      .total {
-        position:sticky; bottom:72px; z-index:9; margin:0 -6px;
-        box-shadow:0 -8px 22px rgba(0,0,0,.10);
-      }
-      .micro-trust { grid-template-columns:1fr; }
-      .dashboard-strip { grid-template-columns:1fr; margin:18px 12px 8px; }
-      .quick-tiles { grid-template-columns:repeat(2,1fr); gap:9px; }
-      .quick-tile { min-height:94px; }
-      main { padding:38px 14px; gap:42px; }
-      .room-grid { grid-template-columns:1fr; }
-      .facts { grid-template-columns:repeat(2,1fr); }
-      .mobile-booking-bar {
-        position:fixed; z-index:100; left:0; right:0; bottom:0;
-        display:grid; grid-template-columns:1fr auto; align-items:center; gap:10px;
-        padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-        border-top:1px solid #d8e2dd; background:rgba(255,255,255,.97);
-        box-shadow:0 -10px 28px rgba(0,0,0,.14);
-      }
-      .mobile-booking-bar strong { font-size:13px; line-height:1.2; }
-      .mobile-booking-bar a {
-        display:grid; place-items:center; min-height:44px; padding:8px 14px;
-        border-radius:9px; background:var(--brand); color:#fff;
-        text-decoration:none; font-size:13px; font-weight:900;
-      }
-    }
-
-  
-    /* Verbesserter Anfrageabschluss */
-    .optional-note { color: var(--muted); font-size: 11px; font-weight: 600; }
-    .send-options {
-      display: none; gap: 10px; padding: 15px; border: 1px solid #b9d5c8;
-      border-radius: 12px; background: #f1f8f4;
-    }
-    .send-options.show { display: grid; }
-    .send-options h3 { margin: 0; font-size: 18px; }
-    .send-options p { margin: 0; color: #476158; font-size: 13px; }
-    .send-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
-    .send-actions a,.send-actions button {
-      min-height: 46px; border: 0; border-radius: 9px; padding: 10px;
-      font: inherit; font-weight: 850; cursor: pointer; text-align: center;
-      text-decoration: none; display: grid; place-items: center;
-    }
-    .send-email { background: var(--brand); color: #fff; }
-    .send-whatsapp { background: #1f8f4d; color: #fff; }
-    .send-copy { background: #e7eee9; color: #213b33; }
-    .copy-confirmation { min-height: 18px; color: var(--brand); font-size: 12px; font-weight: 800; }
-    .payment-after-confirmation {
-      display: grid; gap: 5px; padding: 12px; border-radius: 9px;
-      border: 1px solid #d6e3dc; background: #f7faf8; color: #40574f; font-size: 13px;
-    }
-    @media(max-width:640px){ .send-actions{grid-template-columns:1fr;} }
-
-  
-    /* Sonderstempel-Erlebnis – psychologisch stark, sachlich korrekt */
-    .stamp-callout {
-      display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:center;
-      margin-top:20px; max-width:660px; padding:14px 16px;
-      border:1px solid rgba(255,255,255,.52); border-radius:16px;
-      background:rgba(12,45,36,.76); box-shadow:0 10px 28px rgba(0,0,0,.20);
-      backdrop-filter:blur(8px);
-    }
-    .stamp-seal {
-      display:grid; place-items:center; width:76px; height:76px;
-      border:3px dashed #f3d680; border-radius:50%; color:#fff3bd;
-      font-size:11px; font-weight:950; line-height:1.05; text-align:center;
-      transform:rotate(-7deg); text-transform:uppercase;
-    }
-    .stamp-callout strong { display:block; margin-bottom:3px; color:#fff; font-size:18px; }
-    .stamp-callout p { margin:0; color:rgba(255,255,255,.92); font-size:14px; line-height:1.4; }
-
-    .stamp-experience {
-      position:relative; overflow:hidden; padding:clamp(24px,5vw,46px);
-      border:1px solid #dfcfaa; border-radius:20px;
-      background:radial-gradient(circle at 92% 12%,rgba(240,180,36,.25),transparent 27%),
-                 linear-gradient(135deg,#fffaf0,#f1f7f3);
-      box-shadow:0 18px 45px rgba(49,31,14,.11);
-    }
-    .stamp-experience::after {
-      content:"FÜR HAUSGÄSTE"; position:absolute; right:-34px; top:27px;
-      padding:8px 42px; background:#9f5f2a; color:#fff;
-      font-size:11px; font-weight:950; letter-spacing:.09em; transform:rotate(38deg);
-    }
-    .stamp-grid {
-      display:grid; grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);
-      gap:28px; align-items:center;
-    }
-    .stamp-copy h2 { margin-bottom:10px; font-size:clamp(28px,4vw,44px); line-height:1.03; }
-    .stamp-copy .lead { margin:0 0 16px; color:#3d514b; font-size:18px; }
-    .stamp-points { display:grid; gap:10px; margin:18px 0 22px; }
-    .stamp-point { display:flex; gap:10px; align-items:flex-start; color:#314841; font-weight:750; }
-    .stamp-point::before {
-      content:"✓"; display:grid; place-items:center; flex:0 0 25px; height:25px;
-      border-radius:50%; background:var(--brand); color:#fff; font-size:13px;
-    }
-    .stamp-card {
-      display:grid; place-items:center; min-height:270px; padding:25px;
-      border:2px dashed #a66a36; border-radius:18px; background:rgba(255,255,255,.82);
-      text-align:center; transform:rotate(1.2deg);
-    }
-    .stamp-card .big-seal {
-      display:grid; place-items:center; width:168px; height:168px; margin-bottom:15px;
-      border:6px double #8d4f27; border-radius:50%; color:#8d4f27;
-      font-weight:950; line-height:1.08; text-transform:uppercase; transform:rotate(-8deg);
-    }
-    .stamp-card small { max-width:245px; color:#665c52; }
-    .stamp-note { margin-top:14px; color:#70675f; font-size:12px; }
-    .stamp-cta {
-      display:inline-flex; align-items:center; justify-content:center; min-height:50px;
-      padding:12px 18px; border-radius:10px; background:var(--brand); color:#fff;
-      font-weight:900; text-decoration:none; box-shadow:0 9px 22px rgba(23,107,90,.20);
-    }
-    .stamp-cta:hover { filter:brightness(1.05); transform:translateY(-1px); }
-    .scarcity-note {
-      margin:12px 0 0; color:#6c563b; font-size:13px; font-weight:800;
-    }
-    .official-clarifier {
-      margin-top:10px; padding:10px 12px; border-radius:9px;
-      background:#f5f1e8; color:#665f55; font-size:12px;
-    }
-    @media (max-width:720px) {
-      .stamp-callout { grid-template-columns:auto 1fr; padding:12px; }
-      .stamp-seal { width:62px; height:62px; font-size:9px; }
-      .stamp-grid { grid-template-columns:1fr; }
-      .stamp-card { min-height:230px; }
-      .stamp-experience::after { right:-44px; top:20px; }
-    }
-
-  
-    .real-stamp-card {
-      transform:none;
-      padding:18px;
-      background:#fffdf7;
-    }
-    .real-stamp-card img {
-      display:block;
-      width:100%;
-      max-width:430px;
-      height:auto;
-      margin:0 auto 14px;
-      border-radius:14px;
-      box-shadow:0 12px 28px rgba(20,38,32,.14);
-    }
-    .real-stamp-card strong {
-      margin-top:2px;
-      font-size:18px;
-      color:#17372f;
-    }
-    .real-stamp-card small {
-      margin-top:6px;
-      font-size:13px;
-    }
-
-  
-    /* Zimmerfreigabe:
-       Die drei zusätzlichen Zimmer bleiben standardmäßig vollständig unsichtbar. */
-    [data-future-room][hidden] { display: none !important; }
-
-  </style>
-
-  <link rel="canonical" href="https://topdiveair-sketch.github.io/Direcktbuchungen/">
-  <meta name="robots" content="index,follow,max-image-preview:large">
-  <meta property="og:locale" content="de_AT">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Zuhause am Bach Wachau – direkt beim Gastgeber anfragen">
-  <meta property="og:description" content="Übernachten am Welterbesteig in Aggsbach Markt und den exklusiven Zuhause-am-Bach-Erinnerungsstempel für Hausgäste mitnehmen.">
-  <meta property="og:url" content="https://topdiveair-sketch.github.io/Direcktbuchungen/">
-  <meta property="og:image" content="https://topdiveair-sketch.github.io/Direcktbuchungen/images/aggsbach-markt-luftbild.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": ["LodgingBusiness", "BedAndBreakfast"],
-    "name": "Zuhause am Bach",
-    "description": "Ruhige Unterkunft in der Wachau für Wanderer am Welterbesteig, Radfahrer am Donauradweg und Erholungssuchende.",
-    "url": "https://topdiveair-sketch.github.io/Direcktbuchungen/",
-    "image": "https://topdiveair-sketch.github.io/Direcktbuchungen/images/aggsbach-markt-luftbild.png",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "Aggsbach Markt 82",
-      "postalCode": "3641",
-      "addressLocality": "Aggsbach Markt",
-      "addressRegion": "Niederösterreich",
-      "addressCountry": "AT"
-    },
-    "amenityFeature": [
-      {"@type":"LocationFeatureSpecification","name":"Frühstück verfügbar","value":true},
-      {"@type":"LocationFeatureSpecification","name":"Fahrradabstellplatz","value":true},
-      {"@type":"LocationFeatureSpecification","name":"WLAN","value":true},
-      {"@type":"LocationFeatureSpecification","name":"Parkplatz","value":true}
-    ],
-    "sameAs": ["https://www.booking.com/Share-O4rtfLD"]
-  }
-  </script>
-
-  <script>
-    /* ZENTRALE ZIMMERFREIGABE
-       false = nur Bachblick sichtbar und anfragbar
-       true  = Marillen-, Weinberg- und Donauzimmer sichtbar und anfragbar
-       Sicherheitsregel: Das jeweilige data-from-Datum muss zusätzlich erreicht sein.
-    */
-    window.SHOW_ADDITIONAL_ROOMS = false;
-  </script>
-
-</head>
-<body>
-  <header class="top" id="start">
-    <nav class="nav">
-      <div class="language-switcher" aria-label="Sprache wählen">
-        <button type="button" data-lang="de">🇩🇪 DE</button>
-        <button type="button" data-lang="en">🇬🇧 EN</button>
-        <button type="button" data-lang="cs">🇨🇿 CZ</button>
-        <button type="button" data-lang="hu">🇭🇺 HU</button>
-        <button type="button" data-lang="es">🇪🇸 ES</button>
-        <button type="button" data-lang="fr">🇫🇷 FR</button>
-      </div>
-      <div class="nav-links">
-        <a href="#sonderstempel">Sonderstempel</a>
-          <a href="#zimmer">Zimmer</a>
-        <a href="#tipps">Tipps</a>
-        <a href="#gaesteapp">Gäste-App</a>
-        <a href="#infos">Infos</a>
-        <a href="#kontakt">Kontakt</a>
-      </div>
-    </nav>
-
-    <img class="top-image" src="images/windis-wachau-app.png" alt="Willkommen bei Zuhause am Bach - Gästehaus Wachau">
-
-    <div class="hero-grid">
-      <div class="hero-copy">
-        <span class="eyebrow">Direkt anfragen ohne Buchungsplattform</span>
-        <h1>Zuhause am Bach in der Wachau</h1>
-        <p>Ruhig schlafen, herzlich ankommen und eine Erinnerung mitnehmen, die nicht jeder Wanderer hat.</p>
-        <div class="hero-trust"><span>✓ Welterbesteig</span><span>✓ Donauradweg</span><span>✓ Persönliche Gastgeber</span></div>
-        <div class="stamp-callout" aria-label="Zuhause am Bach Erinnerungsstempel">
-          <div class="stamp-seal">Nur für<br>Hausgäste</div>
-          <div>
-            <strong>Ihr besonderer Wachau-Etappenmoment</strong>
-            <p>Wer bei uns übernachtet, erhält auf Wunsch den exklusiven Wachau-Etappenstempel von „Zuhause am Bach“ – für Welterbesteig, Donauradweg und das persönliche Reisetagebuch.</p>
-          </div>
-        </div>
-      </div>
-
-      <section class="panel" aria-labelledby="booking-title">
-        <div class="booking-kicker">Erinnerungsstempel für Hausgäste inklusive</div><h2 id="booking-title">Wachau-Etappe direkt anfragen</h2><p class="booking-intro">Reisedaten wählen, persönlich anfragen und bei der Ankunft Ihren Wachau-Etappenstempel für Wanderpass oder Radreise-Tagebuch erhalten.</p><div class="booking-progress"><span>1 · Reisedaten</span><span>2 · Zimmer</span><span>3 · Kontakt</span></div>
-
-        <form id="requestForm">
-          <div class="form-block">
-            <h3 class="form-block-title"><b>1</b> Reisedaten auswählen</h3>
-            <div class="form-grid">
-            <label>Anreise
-              <input id="arrival" name="arrival" type="date" required>
-            </label>
-            <label>Abreise
-              <input id="departure" name="departure" type="date" required>
-            </label>
-            <label>Personen
-              <select id="adults" name="adults" required>
-                <option value="1">1 Person</option>
-                <option value="2" selected>2 Personen</option>
-              </select>
-            </label>
-            <label>Nächte
-              <input id="nights" name="nights" type="text" value="0" readonly>
-            </label>
-          </div>
-            <div id="availabilityStatus" class="availability-status note">
-              Bitte zuerst Anreise und Abreise auswählen.
-            </div>
-          </div>
-
-          <div class="form-block">
-            <h3 class="form-block-title"><b>2</b> Zimmer und Extras wählen</h3>
-            <div>
-              <label>Zusatzleistungen</label>
-            <div class="extras">
-              <label class="choice">
-                <input type="checkbox" name="extra" value="Frühstück" data-price="12" data-unit="person_night">
-                <span><strong>Frühstück</strong><small>12,00 EUR pro Person/Nacht</small></span>
-                <b class="price">+12,00</b>
-              </label>
-              <label class="choice">
-                <input type="checkbox" name="extra" value="Wachauer Jause" data-price="29.9" data-unit="once">
-                <span><strong>Wachauer Jause</strong><small>29,90 EUR einmalig</small></span>
-                <b class="price">+29,90</b>
-              </label>
-              <label class="choice">
-                <input type="checkbox" name="extra" value="Gepäcktransport" data-price="15" data-unit="once">
-                <span><strong>Gepäcktransport</strong><small>15,00 EUR einmalig</small></span>
-                <b class="price">+15,00</b>
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <label>Zimmer</label>
-            <div class="rooms">
-              <label class="choice">
-                <input type="radio" name="room" value="Bachblick" data-price="101" checked>
-                <span><strong>Bachblick</strong><small>bereits buchbar</small></span>
-                <b class="price">101 EUR</b>
-              </label>
-              <label class="choice future-room" data-future-room hidden>
-                <input type="radio" name="room" value="Marillenzimmer" data-price="90" data-from="2026-08-15" data-release-required="1">
-                <span><strong>Marillenzimmer</strong><small>ab 15.08.2026, erst nach Freigabe</small></span>
-                <b class="price">90 EUR</b>
-              </label>
-              <label class="choice future-room" data-future-room hidden>
-                <input type="radio" name="room" value="Weinbergzimmer" data-price="90" data-from="2026-08-15" data-release-required="1">
-                <span><strong>Weinbergzimmer</strong><small>ab 15.08.2026, erst nach Freigabe</small></span>
-                <b class="price">90 EUR</b>
-              </label>
-              <label class="choice future-room" data-future-room hidden>
-                <input type="radio" name="room" value="Donauzimmer" data-price="90" data-from="2026-08-15" data-release-required="1">
-                <span><strong>Donauzimmer</strong><small>ab 15.08.2026, erst nach Freigabe</small></span>
-                <b class="price">90 EUR</b>
-              </label>
-            </div>
-          </div>
-
-          </div>
-          
-          <label class="choice">
-            <input id="stampRequest" name="stampRequest" type="checkbox" checked>
-            <span>
-              Wachau-Etappenstempel
-              <small>Kostenlos für Hausgäste – für Wanderpass oder Radreise-Tagebuch</small>
-            </span>
-            <span class="price">inklusive</span>
-          </label>
-
-          <div class="total">
-            <span>Direktpreis</span>
-            <strong id="total">0 EUR</strong>
-          </div>
-          <div id="discountNote" class="hint">
-            Ihr Direktpreis wird transparent berechnet. Bei Anreise am selben Tag gilt der aktuelle Tagespreis.
-          </div>
-          <div id="paypalBox" class="payment-after-confirmation hidden">
-            <strong>Zahlung erst nach unserer Bestätigung</strong>
-            <span id="paypalHint">Bitte noch nicht bezahlen. Nach unserer persönlichen Buchungsbestätigung erhalten Sie die Zahlungsinformation.</span>
-            <a id="paypalLink" class="btn hidden" href="https://www.paypal.com/myaccount/transfer/homepage/send" target="_blank" rel="noopener">PayPal öffnen</a>
-          </div>
-
-          <div class="form-block">
-            <h3 class="form-block-title"><b>3</b> Kontaktdaten eintragen</h3>
-          <div class="form-grid">
-            <label>Vorname
-              <input id="firstName" name="first_name" required>
-            </label>
-            <label>Nachname
-              <input id="lastName" name="last_name" required>
-            </label>
-            <label>E-Mail
-              <input id="email" name="email" type="email" required>
-            </label>
-            <label>Telefon
-              <input id="phone" name="phone" type="tel" required>
-            </label>
-            <label>Straße und Hausnummer <span class="optional-note">optional</span>
-              <input id="street" name="street" autocomplete="street-address">
-            </label>
-            <label>PLZ <span class="optional-note">optional</span>
-              <input id="zip" name="zip" autocomplete="postal-code">
-            </label>
-            <label>Ort <span class="optional-note">optional</span>
-              <input id="city" name="city" autocomplete="address-level2">
-            </label>
-            <label>Land <span class="optional-note">optional</span>
-              <input id="country" name="country" autocomplete="country-name">
-            </label>
-          </div>
-
-          <label>Nachricht oder Wünsche
-            <textarea id="message" name="message" placeholder="z. B. vegetarisches Frühstück, spätere Anreise, Fragen zur Umgebung"></textarea>
-          </label>
-
-
-          </div>
-          <button id="submitRequest" class="btn" type="submit">Wachau-Etappe anfragen</button><div class="micro-trust"><span>🔒 Nur für Ihre Anfrage</span><span>☎ Persönliche Rückmeldung</span><span>✓ Keine versteckten Gebühren</span></div>
-
-          <div id="sendOptions" class="send-options" aria-live="polite">
-            <h3 id="sendOptionsTitle">Anfrage ist vorbereitet</h3>
-            <p id="sendOptionsText">Wählen Sie jetzt den für Sie einfachsten Versandweg.</p>
-            <div class="send-actions">
-              <a id="sendEmailLink" class="send-email" href="#">E-Mail öffnen</a>
-              <a id="sendWhatsappLink" class="send-whatsapp" href="#" target="_blank" rel="noopener">Über WhatsApp senden</a>
-              <button id="copyRequestButton" class="send-copy" type="button">Anfrage kopieren</button>
-            </div>
-            <div id="copyConfirmation" class="copy-confirmation"></div>
-          </div>
-          <a class="btn secondary" href="tel:+436646437526">Oder persönlich anrufen</a>
-          <div id="status" class="status">Nach dem Prüfen wählen Sie E-Mail, WhatsApp oder Kopieren.</div>
-        </form>
-      </section>
-    </div>
-  </header>
-
-  <main>
-    <div class="dashboard-strip">
-      <section class="quick-tiles" aria-label="Schnellzugriff">
-        <a class="quick-tile walk" href="#tipps"><span>Wandern</span><small>Welterbesteig</small></a>
-        <a class="quick-tile bike" href="#tipps"><span>Radfahren</span><small>Donauradweg</small></a>
-        <a class="quick-tile sun" href="#wetter"><span>Wetter</span><small>Wanderampel</small></a>
-        <a class="quick-tile wine" href="#tipps"><span>Wachau-Tipps</span><small>Genuss</small></a>
-        <a class="quick-tile book" href="#requestForm"><span>Direkt buchen</span><small>Bestpreis sichern</small></a>
-        <a class="quick-tile call" href="#kontakt"><span>Kontakt</span><small>Anfahrt</small></a>
-      </section>
-
-      <section id="wetter" class="weather-live" data-weather-lat="48.2945" data-weather-lon="15.4068">
-        <div>
-          <strong>Heute</strong>
-          <span id="weatherTodayTemp" class="weather-cloud">--°</span>
-          <small id="weatherTodayText">Wetter wird geladen</small>
-        </div>
-        <div>
-          <strong>Morgen</strong>
-          <span id="weatherTomorrowTemp" class="weather-cloud">--°</span>
-          <small id="weatherTomorrowText">5-Tage-Prognose wird geladen</small>
-        </div>
-        <p id="weatherHint">Live-Wetter für Aggsbach Markt wird aktualisiert.</p>
-      </section>
-    </div>
-
-    
-    <section id="sonderstempel" class="stamp-experience" aria-labelledby="stamp-title">
-      <div class="stamp-grid">
-        <div class="stamp-copy">
-          <span class="eyebrow">Eine kleine Belohnung nach Ihrer Wachau-Etappe</span>
-          <h2 id="stamp-title">Nicht nur übernachten.<br>Eine Spur hinterlassen.</h2>
-          <p class="lead">Ob zu Fuß am Welterbesteig oder mit dem Rad entlang der Donau: Jede Etappe wird zu einer Geschichte, die Sie später noch erzählen werden.</p>
-          <div class="stamp-points">
-            <div class="stamp-point">Exklusiver Wachau-Etappenstempel für übernachtende Wanderer und Radfahrer</div>
-            <div class="stamp-point">Ideal für Wanderpass, Radreise-Tagebuch, Tourenbuch oder persönliche Wachau-Chronik</div>
-            <div class="stamp-point">Persönlich bei der Ankunft oder Abreise überreicht</div>
-          </div>
-          <a class="stamp-cta" href="#booking-title">Meine Wachau-Etappe anfragen</a>
-          <p class="scarcity-note">Nur vor Ort bei einer Übernachtung erhältlich – nicht online und nicht als Versandartikel.</p>
-          <p class="official-clarifier"><strong>Transparenz:</strong> Dies ist ein eigener Erinnerungsstempel von „Zuhause am Bach“ und kein offizieller Kontroll- oder Leistungsstempel des Welterbesteigs oder Donauradwegs.</p>
-        </div>
-        <div class="stamp-card real-stamp-card" aria-label="Wachau-Etappenstempel von Zuhause am Bach">
-          <img src="images/wachau-etappenstempel-zuhause-am-bach.jpg"
-               alt="Wachau-Etappenstempel von Zuhause am Bach für Welterbesteig und Donauradweg mit Fidel, Gloria und Pia">
-          <strong>Ein Stempel für Wanderer und Radfahrer</strong>
-          <small>Exklusiv für Hausgäste von „Zuhause am Bach“ in Aggsbach Markt.</small>
-        </div>
-      </div>
-    </section>
-
-
-    <section id="zimmer">
-      <div class="section-head">
-        <span class="eyebrow">Zimmer</span>
-        <h2>Vier Zimmer, ruhig und persönlich</h2>
-        <p>Wählen Sie Ihr Wunschzimmer. Verfügbarkeit und Preis werden vor der Bestätigung geprüft.</p>
-      </div>
-      <div class="room-grid">
-        <article class="room-card">
-          <img src="images/rooms/bachblick.jpg" alt="Zimmer Bachblick">
-          <div>
-            <h3>Bachblick</h3>
-            <p>Doppelzimmer mit Blick auf den Bach. Gemütlich, ruhig und zum Wohlfühlen.</p>
-            <strong>ab 101 EUR pro Nacht</strong>
-          </div>
-        </article>
-        <article class="room-card future-room" data-future-room hidden>
-          <img src="images/rooms/marillenzimmer.png" alt="Marillenzimmer">
-          <div>
-            <h3>Marillenzimmer</h3>
-            <p>Wachauer Atmosphäre, warme Details und ein ruhiger Rückzugsort.</p>
-            <strong>derzeit noch nicht buchbar</strong>
-          </div>
-        </article>
-        <article class="room-card future-room" data-future-room hidden>
-          <img src="images/rooms/weinbergzimmer.png" alt="Weinbergzimmer">
-          <div>
-            <h3>Weinbergzimmer</h3>
-            <p>Inspiriert von den Weinbergen der Wachau, ideal für Genießer.</p>
-            <strong>derzeit noch nicht buchbar</strong>
-          </div>
-        </article>
-        <article class="room-card future-room" data-future-room hidden>
-          <img src="images/rooms/donauzimmer.png" alt="Donauzimmer">
-          <div>
-            <h3>Donauzimmer</h3>
-            <p>Ein freundliches Zimmer mit Bezug zur Donau und zur Wachauer Landschaft.</p>
-            <strong>derzeit noch nicht buchbar</strong>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section id="tipps" class="tips-section">
-      <div class="section-head">
-        <span class="eyebrow">Unsere Wachau-Geheimtipps</span>
-        <h2>Entdecken, erleben, genießen</h2>
-      </div>
-      <div class="tips-grid">
-        <article class="tip-card" style="--tip-image:url('images/tips/spitz-donau.jpg')"><strong>Donauschlössl / Gritsch</strong><small>Spitz an der Donau</small></article>
-        <article class="tip-card" style="--tip-image:url('images/tips/emmersdorf-donau.jpg')"><strong>Steckerlfisch Graf</strong><small>Emmersdorf</small></article>
-        <article class="tip-card" style="--tip-image:url('images/tips/burgruine-aggstein.jpg')"><strong>Burgruine Aggstein</strong><small>Wandern & Aussicht</small></article>
-        <article class="tip-card" style="--tip-image:url('images/tips/stift-melk.jpg')"><strong>Stift Melk</strong><small>Weltkulturerbe</small></article>
-        <article class="tip-card" style="--tip-image:url('images/tips/wachaubahn.jpg')"><strong>Wachaubahn „Schnaufi“</strong><small>Nostalgie pur</small></article>
-        <article class="tip-card" style="--tip-image:url('images/tips/venus-willendorf.jpg')"><strong>Venus von Willendorf</strong><small>Original in Willendorf</small></article>
-      </div>
-    </section>
-
-    <section id="gaesteapp" class="guest-app">
-      <div>
-        <span class="eyebrow">Exklusiv für unsere Gäste</span>
-        <h2>Aufenthalt bei den Wilden Wachauer Windis</h2>
-        <p>Die Gästeapp ist der Begleiter für den Aufenthalt bei Zuhause am Bach: Hausinfo, WLAN-Hilfe, Wetter, Notfallnummern, Wandern, Radfahren, Genuss, Kinderwelt und Gästebuch an einem Ort.</p>
-        <div class="windis-list">
-          <span><strong>Fidel</strong>Wandern, Wege und Wachau-Abenteuer</span>
-          <span><strong>Gloria</strong>Genuss, Hausinfo und gute Ordnung</span>
-          <span><strong>Pia</strong>Kinderwelt, Quiz und kleine Geheimnisse</span>
-        </div>
-        <a class="btn" href="https://topdiveair-sketch.github.io/Gaeste/index" target="_blank" rel="noopener">Gästeapp öffnen</a>
-      </div>
-      <a class="guest-app-qr" href="https://topdiveair-sketch.github.io/Gaeste/index" target="_blank" rel="noopener">
-        <img src="images/gaesteapp-qr.png" alt="QR-Code zur Gästeapp">
-        <span>Direkt am Smartphone öffnen</span>
-      </a>
-    </section>
-
-    <section id="infos">
-      <div class="section-head">
-        <span class="eyebrow">Gut zu wissen</span>
-        <h2>Alles Wichtige ohne Technik</h2>
-      </div>
-      <div class="facts">
-        <article class="fact"><strong>Frühstück</strong><small>12,00 EUR pro Person und Nacht, direkt in der Anfrage auswählbar.</small></article>
-        <article class="fact"><strong>Wachauer Jause</strong><small>29,90 EUR einmalig, ideal für Ankunft oder Ausflugstag.</small></article>
-        <article class="fact"><strong>Gepäcktransport</strong><small>15,00 EUR einmalig, besonders praktisch für Radfahrer und Wanderer.</small></article>
-        <article class="fact"><strong>Kontakt</strong><small>Telefon +43 664 6437526, E-Mail topdiveair@gmail.com.</small></article>
-      </div>
-    </section>
-
-  
-    <section id="direkt-vorteile" aria-labelledby="direkt-vorteile-title">
-      <div class="section-head">
-        <h2 id="direkt-vorteile-title">Direkt anfragen – klar und persönlich</h2>
-        <p>Reisedaten, Zimmer und Extras auswählen, den berechneten Gesamtpreis prüfen und die Verfügbarkeit direkt bei Zuhause am Bach anfragen.</p>
-      </div>
-      <div class="facts">
-        <article class="fact"><strong>Direkter Kontakt</strong><span>Ihre Anfrage geht ohne Umweg direkt an die Gastgeber.</span></article>
-        <article class="fact"><strong>Gesamtpreis sichtbar</strong><span>Der berechnete Preis wird vor dem Absenden angezeigt.</span></article>
-        <article class="fact"><strong>Welterbesteig Wachau</strong><span>Ruhiger Ausgangspunkt für Wanderungen.</span></article>
-        <article class="fact"><strong>Donauradweg</strong><span>Fahrradfreundliche Unterkunft in Aggsbach Markt.</span></article>
-      </div>
-    </section>
-</main>
-
-  <footer id="kontakt">
-    <div class="footer-main">
-      <div>
-        <strong>Zuhause am Bach - Wachau</strong><br>
-        Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich
-      </div>
-      <div>
-        <a href="mailto:topdiveair@gmail.com">topdiveair@gmail.com</a><br>
-        <a href="tel:+436646437526">+43 664 6437526</a>
-      </div>
-    </div>
-    <details id="impressum" class="legal-details">
-      <summary>Impressum & Rechtliches</summary>
-      <div class="legal-content">
-        <article>
-          <h3>Impressum</h3>
-          <p>Zuhause am Bach - Wachau</p>
-          <p>Betreiberin: Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich.</p>
-          <p>Telefon: +43 664 6437526, E-Mail: topdiveair@gmail.com.</p>
-        </article>
-        <article>
-          <h3>Datenschutz</h3>
-          <p>Die per E-Mail übermittelten Daten werden zur Bearbeitung der Buchungsanfrage verwendet.</p>
-          <p>Es werden Name, Kontaktdaten, Reisedaten, Zimmerwunsch und Nachricht verarbeitet.</p>
-        </article>
-        <article>
-          <h3>Buchungsbedingungen</h3>
-          <p>Nach Ihrer Anfrage prüfen wir die Verfügbarkeit persönlich. Ihre Buchung wird mit unserer Bestätigung verbindlich.</p>
-          <p>Preise und Verfügbarkeit werden in der Bestätigung geprüft.</p>
-        </article>
-        <article>
-          <h3>Stornobedingungen</h3>
-          <p>Stornierungen müssen schriftlich per E-Mail an topdiveair@gmail.com erfolgen.</p>
-          <p>Die konkrete Regelung wird mit der Buchungsbestätigung bekanntgegeben.</p>
-        </article>
-      </div>
-    </details>
-  </footer>
-
-  <script>
     const form = document.getElementById("requestForm");
     const arrival = document.getElementById("arrival");
     const departure = document.getElementById("departure");
@@ -1370,12 +12,6 @@
     const statusBox = document.getElementById("status");
     const availabilityStatus = document.getElementById("availabilityStatus");
     const submitRequest = document.getElementById("submitRequest");
-    const sendOptions = document.getElementById("sendOptions");
-    const sendEmailLink = document.getElementById("sendEmailLink");
-    const sendWhatsappLink = document.getElementById("sendWhatsappLink");
-    const copyRequestButton = document.getElementById("copyRequestButton");
-    const copyConfirmation = document.getElementById("copyConfirmation");
-    let preparedRequestText = "";
     const LANGUAGES = {
       de: { html: "de", locale: "de-AT" },
       en: { html: "en", locale: "en-GB" },
@@ -1403,7 +39,7 @@
         "1 Person": "1 guest",
         "2 Personen": "2 guests",
         "Nächte": "Nights",
-        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Currently only Bachblick can be requested. The other rooms are prepared from 15/08/2026, but not yet released.",
+        "Derzeit ist nur Bachblick buchbar. Weitere Zimmer sind ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.": "Currently only Bachblick can be requested. The other rooms are prepared from 15/08/2026, but not yet released.",
         "Zusatzleistungen": "Extras",
         "Frühstück": "Breakfast",
         "12,00 EUR pro Person/Nacht": "12.00 EUR per person/night",
@@ -1429,7 +65,7 @@
         "": "Important: this simple version is a request, not an automatic instant booking. Availability is confirmed personally.",
         "Verfügbarkeit jetzt anfragen": "Open email request",
         "Direkt anrufen": "Call directly",
-        "Ihre Anfrage wird im E-Mail-Programm vorbereitet. Dort bitte noch auf „Senden“ tippen.": "The email has been prepared. Please send it in your mail program.",
+        "Ihre Anfrage wird im Mailprogramm vorbereitet. Dort bitte noch auf „Senden“ tippen.": "The email has been prepared. Please send it in your mail program.",
         "Wandern": "Hiking",
         "Welterbesteig": "Welterbesteig trail",
         "Radfahren": "Cycling",
@@ -1509,7 +145,7 @@
         "1 Person": "1 host",
         "2 Personen": "2 hosté",
         "Nächte": "Noci",
-        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Aktuálně lze poptat pouze Bachblick. Ostatní pokoje jsou připraveny od 15. 8. 2026, ale zatím nejsou uvolněny.",
+        "Derzeit ist nur Bachblick buchbar. Weitere Zimmer sind ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.": "Aktuálně lze poptat pouze Bachblick. Ostatní pokoje jsou připraveny od 15. 8. 2026, ale zatím nejsou uvolněny.",
         "Zusatzleistungen": "Doplňkové služby",
         "Frühstück": "Snídaně",
         "12,00 EUR pro Person/Nacht": "12,00 EUR za osobu/noc",
@@ -1530,7 +166,7 @@
         "": "Důležité: tato jednoduchá verze je poptávka, ne automatická okamžitá rezervace. Dostupnost bude potvrzena osobně.",
         "Verfügbarkeit jetzt anfragen": "Otevřít e-mail s poptávkou",
         "Direkt anrufen": "Zavolat přímo",
-        "Ihre Anfrage wird im E-Mail-Programm vorbereitet. Dort bitte noch auf „Senden“ tippen.": "E-mail byl připraven. Odešlete jej prosím ve svém e-mailovém programu.",
+        "Ihre Anfrage wird im Mailprogramm vorbereitet. Dort bitte noch auf „Senden“ tippen.": "E-mail byl připraven. Odešlete jej prosím ve svém e-mailovém programu.",
         "Wandern": "Pěší turistika",
         "Welterbesteig": "Stezka Welterbesteig",
         "Radfahren": "Cyklistika",
@@ -1610,7 +246,7 @@
         "1 Person": "1 vendég",
         "2 Personen": "2 vendég",
         "Nächte": "Éjszakák",
-        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Jelenleg csak a Bachblick kérhető. A többi szoba 2026.08.15-től előkészítve, de még nincs felszabadítva.",
+        "Derzeit ist nur Bachblick buchbar. Weitere Zimmer sind ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.": "Jelenleg csak a Bachblick kérhető. A többi szoba 2026.08.15-től előkészítve, de még nincs felszabadítva.",
         "Zusatzleistungen": "Kiegészítő szolgáltatások",
         "Frühstück": "Reggeli",
         "12,00 EUR pro Person/Nacht": "12,00 EUR személyenként/éjszakánként",
@@ -1631,7 +267,7 @@
         "": "Fontos: ez az egyszerű változat érdeklődés, nem automatikus azonnali foglalás. A rendelkezésre állást személyesen igazoljuk vissza.",
         "Verfügbarkeit jetzt anfragen": "E-mail megnyitása a kéréssel",
         "Direkt anrufen": "Közvetlen hívás",
-        "Ihre Anfrage wird im E-Mail-Programm vorbereitet. Dort bitte noch auf „Senden“ tippen.": "Az e-mail elkészült. Kérjük, küldje el a levelezőprogramban.",
+        "Ihre Anfrage wird im Mailprogramm vorbereitet. Dort bitte noch auf „Senden“ tippen.": "Az e-mail elkészült. Kérjük, küldje el a levelezőprogramban.",
         "Wandern": "Túrázás",
         "Welterbesteig": "Welterbesteig útvonal",
         "Radfahren": "Kerékpározás",
@@ -1711,7 +347,7 @@
         "1 Person": "1 persona",
         "2 Personen": "2 personas",
         "Nächte": "Noches",
-        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Actualmente solo se puede solicitar Bachblick. Las demás habitaciones estarán preparadas desde el 15/08/2026, pero aún no están liberadas.",
+        "Derzeit ist nur Bachblick buchbar. Weitere Zimmer sind ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.": "Actualmente solo se puede solicitar Bachblick. Las demás habitaciones estarán preparadas desde el 15/08/2026, pero aún no están liberadas.",
         "Zusatzleistungen": "Servicios extra",
         "Frühstück": "Desayuno",
         "12,00 EUR pro Person/Nacht": "12,00 EUR por persona/noche",
@@ -1732,7 +368,7 @@
         "": "Importante: esta versión simple es una solicitud, no una reserva automática inmediata. La disponibilidad se confirma personalmente.",
         "Verfügbarkeit jetzt anfragen": "Abrir email de solicitud",
         "Direkt anrufen": "Llamar directamente",
-        "Ihre Anfrage wird im E-Mail-Programm vorbereitet. Dort bitte noch auf „Senden“ tippen.": "El email está preparado. Envíelo desde su programa de correo.",
+        "Ihre Anfrage wird im Mailprogramm vorbereitet. Dort bitte noch auf „Senden“ tippen.": "El email está preparado. Envíelo desde su programa de correo.",
         "Wandern": "Senderismo",
         "Welterbesteig": "Sendero Welterbesteig",
         "Radfahren": "Ciclismo",
@@ -1812,7 +448,7 @@
         "1 Person": "1 personne",
         "2 Personen": "2 personnes",
         "Nächte": "Nuits",
-        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Actuellement, seule Bachblick peut être demandée. Les autres chambres sont préparées à partir du 15/08/2026, mais pas encore libérées.",
+        "Derzeit ist nur Bachblick buchbar. Weitere Zimmer sind ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.": "Actuellement, seule Bachblick peut être demandée. Les autres chambres sont préparées à partir du 15/08/2026, mais pas encore libérées.",
         "Zusatzleistungen": "Services supplémentaires",
         "Frühstück": "Petit-déjeuner",
         "12,00 EUR pro Person/Nacht": "12,00 EUR par personne/nuit",
@@ -1833,7 +469,7 @@
         "": "Important : cette version simple est une demande, pas une réservation instantanée automatique. La disponibilité est confirmée personnellement.",
         "Verfügbarkeit jetzt anfragen": "Ouvrir l'e-mail de demande",
         "Direkt anrufen": "Appeler directement",
-        "Ihre Anfrage wird im E-Mail-Programm vorbereitet. Dort bitte noch auf „Senden“ tippen.": "L'e-mail a été préparé. Veuillez l'envoyer dans votre programme de messagerie.",
+        "Ihre Anfrage wird im Mailprogramm vorbereitet. Dort bitte noch auf „Senden“ tippen.": "L'e-mail a été préparé. Veuillez l'envoyer dans votre programme de messagerie.",
         "Wandern": "Randonnée",
         "Welterbesteig": "Sentier Welterbesteig",
         "Radfahren": "Vélo",
@@ -2110,12 +746,7 @@
       es: { 0: "Soleado", 1: "Mayormente soleado", 2: "Parcialmente nublado", 3: "Nublado", 45: "Niebla", 48: "Niebla helada", 51: "Llovizna ligera", 53: "Llovizna", 55: "Llovizna fuerte", 61: "Lluvia ligera", 63: "Lluvia", 65: "Lluvia fuerte", 71: "Nieve ligera", 73: "Nieve", 75: "Nieve fuerte", 80: "Chubascos ligeros", 81: "Chubascos", 82: "Chubascos fuertes", 95: "Tormenta", 96: "Tormenta con granizo", 99: "Tormenta fuerte" },
       fr: { 0: "Ensoleillé", 1: "Plutôt ensoleillé", 2: "Partiellement nuageux", 3: "Nuageux", 45: "Brouillard", 48: "Brouillard givrant", 51: "Bruine légère", 53: "Bruine", 55: "Forte bruine", 61: "Pluie légère", 63: "Pluie", 65: "Forte pluie", 71: "Faible neige", 73: "Neige", 75: "Forte neige", 80: "Averses légères", 81: "Averses", 82: "Fortes averses", 95: "Orage", 96: "Orage avec grêle", 99: "Fort orage" }
     };
-    let currentLang = "de";
-    try {
-      currentLang = localStorage.getItem("zab_lang") || "de";
-    } catch (error) {
-      currentLang = "de";
-    }
+    let currentLang = localStorage.getItem("zab_lang") || "de";
     if (!LANGUAGES[currentLang]) currentLang = "de";
     const staticTextNodes = [];
     const staticAttributes = [];
@@ -2166,11 +797,7 @@
 
     function applyLanguage(lang, refresh = true) {
       currentLang = LANGUAGES[lang] ? lang : "de";
-      try {
-        localStorage.setItem("zab_lang", currentLang);
-      } catch (error) {
-        // Die Seite funktioniert auch, wenn der Browser lokalen Speicher blockiert.
-      }
+      localStorage.setItem("zab_lang", currentLang);
       document.documentElement.lang = LANGUAGES[currentLang].html;
       staticTextNodes.forEach((item) => {
         item.node.nodeValue = item.leading + translateStaticText(item.original) + item.trailing;
@@ -2192,7 +819,7 @@
     applyLanguage(currentLang, false);
     const LIVE_BOOKING_API_URL = "booking-calendar.json";
     const LIVE_PRICE_API_URL = "";
-    const OTHER_ROOMS_RELEASED = window.SHOW_ADDITIONAL_ROOMS === true;
+    const OTHER_ROOMS_RELEASED = false;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
     let bookingCalendarUpdated = "29.7.2026, 10:56:22";
     let bookingCalendarUpdatedIso = "2026-07-29T08:56:22.130Z";
@@ -2318,7 +945,7 @@
           };
         }
         return {
-          state: "ok",
+          state: "note",
           text: tr("noIcal", { room: room.value })
         };
       }
@@ -2338,7 +965,7 @@
       if (!calendarIsFresh()) {
         return {
           state: "ok",
-          text: "Bachblick ist laut dem letzten Booking-Kalenderstand frei. Ihre Anfrage kann gesendet werden; die Buchung wird persönlich bestätigt. Letzter Kalenderstand: " + bookingCalendarUpdated + "."
+          text: "Bachblick ist laut dem letzten Booking-Kalenderstand frei. PayPal-Zahlung ist möglich. Letzter Kalenderstand: " + bookingCalendarUpdated + "."
         };
       }
       return {
@@ -2376,11 +1003,11 @@
       const canSubmit = availability.state === "ok";
       submitRequest.disabled = !canSubmit;
       submitRequest.textContent = canSubmit
-        ? "Wachau-Etappe anfragen"
-        : (hasValidDates ? "Zeitraum nicht verfügbar" : "Bitte Reisedaten wählen");
+        ? "Verfügbarkeit jetzt anfragen"
+        : (hasValidDates ? "Zeitraum nicht verfügbar" : "Bitte Datum wählen");
       arrival.setCustomValidity(availability.state === "blocked" ? availability.text : "");
       departure.setCustomValidity(availability.state === "blocked" ? availability.text : "");
-      paypalHint.textContent = "Bitte noch nicht bezahlen. Nach unserer persönlichen Buchungsbestätigung erhalten Sie die Zahlungsinformation für " + money(sum) + ".";
+      paypalHint.textContent = tr("paypalHint", { amount: money(sum) });
       paypalBox.classList.toggle("hidden", availability.state !== "ok");
       return sum;
     }
@@ -2489,11 +1116,7 @@
       calculate();
     }
 
-    form.addEventListener("input", function() {
-      sendOptions.classList.remove("show");
-      copyConfirmation.textContent = "";
-      calculate();
-    });
+    form.addEventListener("input", calculate);
     form.addEventListener("change", function(event) {
       if (["arrival", "departure", "room"].includes(event.target.name)) {
         loadLiveBookingCalendar();
@@ -2534,34 +1157,9 @@
       const sum = calculate();
       const subject = tr("mailSubject");
       const body = buildMailBody(sum);
-      const emailHref = "mailto:topdiveair@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-      const whatsappText = subject + "\n\n" + body;
-      const whatsappHref = "https://wa.me/436646437526?text=" + encodeURIComponent(whatsappText);
-      preparedRequestText = subject + "\n\n" + body;
-      sendEmailLink.href = emailHref;
-      sendWhatsappLink.href = whatsappHref;
-      sendOptions.classList.add("show");
+      const href = "mailto:topdiveair@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
       statusBox.classList.add("show");
-      sendOptions.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-
-    copyRequestButton.addEventListener("click", async function() {
-      if (!preparedRequestText) return;
-      try {
-        await navigator.clipboard.writeText(preparedRequestText);
-        copyConfirmation.textContent = "Anfrage kopiert – jetzt in eine Nachricht einfügen.";
-      } catch (error) {
-        const helper = document.createElement("textarea");
-        helper.value = preparedRequestText;
-        helper.setAttribute("readonly", "");
-        helper.style.position = "fixed";
-        helper.style.opacity = "0";
-        document.body.appendChild(helper);
-        helper.select();
-        document.execCommand("copy");
-        helper.remove();
-        copyConfirmation.textContent = "Anfrage kopiert – jetzt in eine Nachricht einfügen.";
-      }
+      window.location.href = href;
     });
 
     const weatherCard = document.getElementById("wetter");
@@ -2640,69 +1238,4 @@
     loadWeather();
     setInterval(loadLiveBookingCalendar, PRICE_REFRESH_MS);
     setInterval(loadLivePrices, PRICE_REFRESH_MS);
-  </script>
-
-  <div class="mobile-booking-bar" aria-label="Schnell zur Buchungsanfrage">
-    <strong>Wachau-Auszeit direkt anfragen</strong>
-    <a href="#booking-title">Reisedaten wählen</a>
-  </div>
-
-
-  <script>
-    (function(){
-      const a=document.getElementById('arrival');
-      const d=document.getElementById('departure');
-      const steps=[...document.querySelectorAll('.booking-progress span')];
-      const today=()=>{const x=new Date();x.setMinutes(x.getMinutes()-x.getTimezoneOffset());return x.toISOString().slice(0,10)};
-      if(a)a.min=today();
-      function sync(){
-        if(a&&d){d.min=a.value||today();if(d.value&&a.value&&d.value<=a.value)d.value='';}
-        let n=0;
-        if(a&&d&&a.value&&d.value)n=1;
-        if(n===1&&document.querySelector('input[name="room"]:checked'))n=2;
-        steps.forEach((s,i)=>{s.style.background=i===n?'var(--brand)':'#edf5f1';s.style.color=i===n?'#fff':'#38534b';});
-      }
-      a&&a.addEventListener('change',sync);
-      d&&d.addEventListener('change',sync);
-      document.querySelectorAll('input[name="room"]').forEach(x=>x.addEventListener('change',sync));
-      sync();
-    })();
-  </script>
-
-
-  <script>
-    (function(){
-      const stamp = document.getElementById('stampRequest');
-      if (!stamp) return;
-      const form = document.getElementById('requestForm');
-      if (form) {
-        form.addEventListener('change', function(){
-          try { sessionStorage.setItem('zab_stamp_requested', stamp.checked ? 'yes' : 'no'); } catch(e) {}
-        });
-      }
-    })();
-  </script>
-
-
-
-  <script>
-    (function applyRoomRelease() {
-      const released = window.SHOW_ADDITIONAL_ROOMS === true;
-
-      document.querySelectorAll('[data-future-room]').forEach(function(element) {
-        element.hidden = !released;
-      });
-
-      if (!released) {
-        document.querySelectorAll('input[name="room"][data-release-required="1"]').forEach(function(input) {
-          input.checked = false;
-          input.disabled = true;
-        });
-        const bachblick = document.querySelector('input[name="room"][value="Bachblick"]');
-        if (bachblick) bachblick.checked = true;
-      }
-    })();
-  </script>
-
-</body>
-</html>
+  

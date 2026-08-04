@@ -1,0 +1,16 @@
+PRÜFBERICHT – ZIMMERLOGIK
+
+Behobener Hauptfehler:
+Die sichtbare Zimmerfreigabe und die interne Buchungsfreigabe waren getrennt.
+Bei true wären die Zimmer sichtbar, aber weiterhin deaktiviert gewesen.
+
+Jetzt:
+- genau ein zentraler Schalter
+- false: Zusatz­zimmer unsichtbar und deaktiviert
+- true: Zusatz­zimmer sichtbar und grundsätzlich anfragbar
+- Startdatum 15.08.2026 bleibt als zusätzliche Sicherheit bestehen
+- ohne eigenen Live-Kalender wird eine persönliche Anfrage ermöglicht
+- keine Zahlungsaufforderung vor persönlicher Bestätigung
+- JavaScript-Syntax vollständig geprüft
+- keine doppelten IDs
+- keine fehlenden lokalen Dateien

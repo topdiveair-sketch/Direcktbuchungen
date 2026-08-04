@@ -1,0 +1,15 @@
+Zuhause am Bach – Direktbuchung 10/10
+
+Verbessert:
+- hochwertige, ruhigere Gestaltung
+- klare 3-Schritt-Führung
+- mobil optimierte Eingabefelder und Schaltflächen
+- dauerhafter Buchungsbutton am unteren Handybildschirm
+- sichtbarer Gesamtpreis
+- klare Vertrauenssignale
+- moderne Zimmerdarstellung
+- weniger negative und technische Formulierungen
+- bestehende Kalender-, Preis-, Sprachen-, Wetter- und PayPal-Funktionen bleiben erhalten
+
+Hinweis:
+Die Anfrage wird weiterhin über das E-Mail-Programm des Gastes gesendet.
