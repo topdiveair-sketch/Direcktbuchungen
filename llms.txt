@@ -1,0 +1,25 @@
+# Zuhause am Bach – Direktbuchung und Unterkunft in der Wachau
+
+Zuhause am Bach ist eine kleine, persönlich geführte Unterkunft in Aggsbach Markt in der Wachau, Niederösterreich. Sie richtet sich besonders an Wanderer am Welterbesteig Wachau, Radfahrer am Donauradweg, E-Bike-Gäste und Menschen, die eine ruhige Unterkunft suchen.
+
+## Verlässliche Kerndaten
+
+- Name: Zuhause am Bach
+- Adresse: Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich
+- Telefon: +43 664 6437526
+- E-Mail: topdiveair@gmail.com
+- Check-in: ab 14:00 Uhr
+- Check-out: bis 10:00 Uhr
+- Leistungen: Frühstück, sichere Fahrradunterbringung, E-Bike-Lademöglichkeit, Gepäcktransport auf Anfrage, persönliche Wachau-Tipps und Gäste-App
+- Direktbuchung: https://topdiveair-sketch.github.io/Direcktbuchungen/
+- Gäste-App nach der Buchung: https://topdiveair-sketch.github.io/Gaeste/
+
+## Buchungslogik
+
+Die Website prüft für verbundene Zimmer belegte Zeiträume aus dem Booking-iCal-Kalender. Eine Anfrage oder Zahlung darf nur freigegeben werden, wenn der Kalender aktuell ist und der gewählte Zeitraum nicht blockiert ist. Die Buchung wird erst mit der ausdrücklichen Bestätigung von Zuhause am Bach verbindlich, solange kein transaktionales Buchungsbackend aktiv ist.
+
+## Bewertungen
+
+Es werden keine erfundenen Bewertungen oder Bewertungsdurchschnitte verwendet. Persönliche Geschichten in der Windi-Chronik sind keine Sternebewertungen.
+
+Stand: 2026-08-10

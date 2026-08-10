@@ -917,6 +917,12 @@
        Die drei zusätzlichen Zimmer bleiben standardmäßig vollständig unsichtbar. */
     [data-future-room][hidden] { display: none !important; }
 
+    .mobile-booking-cta { display:none; }
+    @media (max-width: 760px) {
+      body { padding-bottom: 76px; }
+      .mobile-booking-cta { position:fixed; display:flex; left:12px; right:12px; bottom:10px; z-index:1000; align-items:center; justify-content:center; min-height:54px; border-radius:999px; background:#1f5a3c; color:#fff; text-decoration:none; font-weight:900; box-shadow:0 8px 28px rgba(0,0,0,.28); }
+      .mobile-booking-cta:focus-visible { outline:3px solid #fff; outline-offset:2px; }
+    }
   </style>
 
   <link rel="canonical" href="https://topdiveair-sketch.github.io/Direcktbuchungen/">
@@ -934,11 +940,14 @@
   {
     "@context": "https://schema.org",
     "@type": ["LodgingBusiness", "BedAndBreakfast"],
+    "@id": "https://topdiveair-sketch.github.io/Direcktbuchungen/#lodging",
     "name": "Zuhause am Bach",
     "description": "Ruhige Unterkunft in der Wachau für Wanderer am Welterbesteig, Radfahrer am Donauradweg und Erholungssuchende.",
     "url": "https://topdiveair-sketch.github.io/Direcktbuchungen/",
     "image": "https://topdiveair-sketch.github.io/Direcktbuchungen/images/aggsbach-markt-luftbild.webp",
     "telephone": "+436646437526",
+    "email": "topdiveair@gmail.com",
+    "dateModified": "2026-08-10",
     "checkinTime": "14:00",
     "checkoutTime": "10:00",
     "address": {
@@ -969,6 +978,21 @@
     window.SHOW_ADDITIONAL_ROOMS = false;
   </script>
 
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+    {"@type":"Question","name":"Kann ich mein Fahrrad sicher abstellen?","acceptedAnswer":{"@type":"Answer","text":"Ja, Hausgästen steht eine sichere Fahrradunterbringung zur Verfügung."}},
+    {"@type":"Question","name":"Kann ich mein E-Bike laden?","acceptedAnswer":{"@type":"Answer","text":"Ja. Bitte das eigene Ladegerät mitbringen."}},
+    {"@type":"Question","name":"Gibt es Frühstück?","acceptedAnswer":{"@type":"Answer","text":"Frühstück kann in der Direktanfrage als Zusatzleistung gewählt werden."}},
+    {"@type":"Question","name":"Ist Gepäcktransport möglich?","acceptedAnswer":{"@type":"Answer","text":"Gepäcktransport ist auf Anfrage als Zusatzleistung möglich."}},
+    {"@type":"Question","name":"Wann ist Check-in?","acceptedAnswer":{"@type":"Answer","text":"Check-in ist ab 14:00 Uhr, Check-out bis 10:00 Uhr."}}
+  ]}
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@graph":[
+    {"@type":"WebSite","@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#website","name":"Zuhause am Bach","url":"https://topdiveair-sketch.github.io/Direcktbuchungen/","inLanguage":"de-AT"},
+    {"@type":"WebPage","@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#webpage","name":"Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau","url":"https://topdiveair-sketch.github.io/Direcktbuchungen/","isPartOf":{"@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#website"},"about":{"@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#lodging"},"dateModified":"2026-08-10","inLanguage":"de-AT"}
+  ]}
+  </script>
 </head>
 <body>
   <header class="top" id="start">
@@ -1224,7 +1248,7 @@
       </div>
       <div class="room-grid">
         <article class="room-card">
-          <img width="1495" height="1052" loading="lazy" decoding="async" src="images/rooms/bachblick.jpg" alt="Zimmer Bachblick">
+          <img width="1137" height="800" loading="lazy" decoding="async" src="images/rooms/bachblick.webp" alt="Ruhiges Doppelzimmer Bachblick bei Zuhause am Bach in Aggsbach Markt">
           <div>
             <h3>Bachblick</h3>
             <p>Doppelzimmer mit Blick auf den Bach. Gemütlich, ruhig und zum Wohlfühlen.</p>
@@ -1232,7 +1256,7 @@
           </div>
         </article>
         <article class="room-card future-room" data-future-room hidden>
-          <img width="1717" height="916" loading="lazy" decoding="async" src="images/rooms/marillenzimmer.png" alt="Marillenzimmer">
+          <img width="1200" height="800" loading="lazy" decoding="async" src="images/rooms/marillenzimmer.webp" alt="Marillenzimmer für Wachau-Urlauber bei Zuhause am Bach">
           <div>
             <h3>Marillenzimmer</h3>
             <p>Wachauer Atmosphäre, warme Details und ein ruhiger Rückzugsort.</p>
@@ -1240,7 +1264,7 @@
           </div>
         </article>
         <article class="room-card future-room" data-future-room hidden>
-          <img width="1672" height="941" loading="lazy" decoding="async" src="images/rooms/weinbergzimmer.png" alt="Weinbergzimmer">
+          <img width="1200" height="800" loading="lazy" decoding="async" src="images/rooms/weinbergzimmer.webp" alt="Weinbergzimmer für Wanderer und Radfahrer in der Wachau">
           <div>
             <h3>Weinbergzimmer</h3>
             <p>Inspiriert von den Weinbergen der Wachau, ideal für Genießer.</p>
@@ -1248,7 +1272,7 @@
           </div>
         </article>
         <article class="room-card future-room" data-future-room hidden>
-          <img width="1672" height="941" loading="lazy" decoding="async" src="images/rooms/donauzimmer.png" alt="Donauzimmer">
+          <img width="1200" height="800" loading="lazy" decoding="async" src="images/rooms/donauzimmer.webp" alt="Donauzimmer nahe Donauradweg und Welterbesteig Wachau">
           <div>
             <h3>Donauzimmer</h3>
             <p>Ein freundliches Zimmer mit Bezug zur Donau und zur Wachauer Landschaft.</p>
@@ -1291,6 +1315,11 @@
       </a>
     </section>
 
+    <section id="wachau-geschichte" aria-labelledby="wachau-geschichte-title">
+      <div class="section-head"><span class="eyebrow">Windi-Chronik</span><h2 id="wachau-geschichte-title">Werde Teil unserer Wachau-Geschichte</h2><p>Hausgäste können ihre Wanderung, Radtour oder einen besonderen Wachau-Moment freiwillig in der digitalen Windi-Chronik festhalten. Ausgewählte Geschichten können – nur nach Zustimmung – in eine jährliche Chronik aufgenommen werden.</p></div>
+      <a class="btn" href="https://topdiveair-sketch.github.io/Gaeste/index#chronik" target="_blank" rel="noopener">Windi-Chronik ansehen</a>
+    </section>
+
     <section id="infos">
       <div class="section-head">
         <span class="eyebrow">Gut zu wissen</span>
@@ -1305,7 +1334,15 @@
     </section>
 
   
-    <section id="seo-einstiege" aria-labelledby="seo-einstiege-title"><div class="section-head"><span class="eyebrow">Zuhause am Bach auf einen Blick</span><h2 id="seo-einstiege-title">Ruhig wohnen, aktiv die Wachau entdecken</h2><p>Zuhause am Bach ist eine kleine persönliche Unterkunft in Aggsbach Markt in Niederösterreich – mit Frühstück, sicherer Fahrradunterbringung, E-Bike-Lademöglichkeit, Gäste-App und persönlichen Wachau-Tipps.</p></div><div class="facts"><article class="fact"><strong><a href="donauradweg-unterkunft-wachau/">Unterkunft am Donauradweg</a></strong><span>Informationen für Radfahrer und E-Bike-Gäste.</span></article><article class="fact"><strong><a href="welterbesteig-unterkunft-wachau/">Unterkunft am Welterbesteig</a></strong><span>Ruhig ankommen und erholt weiterwandern.</span></article><article class="fact"><strong><a href="aggsbach-markt-wachau/">Aggsbach Markt entdecken</a></strong><span>Lokale Orientierung für den Aufenthalt.</span></article><article class="fact"><strong><a href="wachau-tipps/">Wachau-Tipps</a></strong><span>Wandern, Radfahren, Genuss und die Wilden Wachauer Windis.</span></article><article class="fact"><strong><a href="ruhige-unterkunft-wachau/">Ruhige Unterkunft Wachau</a></strong><span>Klein, persönlich und erholsam in Aggsbach Markt übernachten.</span></article><article class="fact"><strong><a href="wilde-wachauer-windis/">Fidel, Gloria und Pia</a></strong><span>Die Wilden Wachauer Windis begleiten Geschichten und Wachau-Tipps.</span></article></div></section>
+    <section id="seo-einstiege" aria-labelledby="seo-einstiege-title"><div class="section-head"><span class="eyebrow">Zuhause am Bach auf einen Blick</span><h2 id="seo-einstiege-title">Ruhig wohnen, aktiv die Wachau entdecken</h2><p>Zuhause am Bach ist eine kleine persönliche Unterkunft in Aggsbach Markt in Niederösterreich – mit Frühstück, sicherer Fahrradunterbringung, E-Bike-Lademöglichkeit, Gäste-App und persönlichen Wachau-Tipps.</p></div><div class="facts"><article class="fact"><strong><a href="donauradweg-unterkunft-wachau/">Unterkunft am Donauradweg</a></strong><span>Informationen für Radfahrer und E-Bike-Gäste.</span></article><article class="fact"><strong><a href="welterbesteig-unterkunft-wachau/">Unterkunft am Welterbesteig</a></strong><span>Ruhig ankommen und erholt weiterwandern.</span></article><article class="fact"><strong><a href="ebike-unterkunft-wachau/">E-Bike-Unterkunft Wachau</a></strong><span>Sicher abstellen, laden und weiterfahren.</span></article><article class="fact"><strong><a href="radfahrer-unterkunft-wachau/">Unterkunft für Radfahrer</a></strong><span>Radservice, Frühstück und Tipps für die Weiterreise.</span></article><article class="fact"><strong><a href="wanderer-unterkunft-wachau/">Unterkunft für Wanderer</a></strong><span>Etappenquartier mit Frühstück und Gepäcktransport auf Anfrage.</span></article><article class="fact"><strong><a href="unterkunft-aggsbach-markt/">Unterkunft Aggsbach Markt</a></strong><span>Persönlich übernachten am Nordufer der Wachau.</span></article><article class="fact"><strong><a href="aggsbach-markt-wachau/">Aggsbach Markt entdecken</a></strong><span>Lokale Orientierung für den Aufenthalt.</span></article><article class="fact"><strong><a href="wachau-tipps/">Wachau-Tipps</a></strong><span>Wandern, Radfahren, Genuss und die Wilden Wachauer Windis.</span></article><article class="fact"><strong><a href="ruhige-unterkunft-wachau/">Ruhige Unterkunft Wachau</a></strong><span>Klein, persönlich und erholsam in Aggsbach Markt übernachten.</span></article><article class="fact"><strong><a href="wilde-wachauer-windis/">Fidel, Gloria und Pia</a></strong><span>Die Wilden Wachauer Windis begleiten Geschichten und Wachau-Tipps.</span></article></div></section>
+    <section id="zielgruppen-faq" aria-labelledby="zielgruppen-faq-title">
+      <div class="section-head"><span class="eyebrow">Häufige Fragen</span><h2 id="zielgruppen-faq-title">Gut vorbereitet für Rad- und Wanderetappen</h2></div>
+      <div class="legal-content">
+        <article><h3>FAQ für Radfahrer</h3><details><summary>Kann ich mein Fahrrad sicher abstellen?</summary><p>Ja, Hausgästen steht eine sichere Fahrradunterbringung zur Verfügung.</p></details><details><summary>Kann ich mein E-Bike laden?</summary><p>Ja. Bitte das eigene Ladegerät mitbringen.</p></details><details><summary>Gibt es Werkzeug?</summary><p>Kleine Hilfsmittel und persönliche Unterstützung können vor Ort angefragt werden.</p></details><details><summary>Wie weit ist der Donauradweg entfernt?</summary><p>Die Unterkunft ist auf Donauradweg-Gäste in Aggsbach Markt ausgerichtet. Die konkrete Zufahrt bitte über den Routenplaner prüfen.</p></details><details><summary>Ist eine Nacht möglich?</summary><p>Das hängt vom Reisedatum und der verfügbaren Mindestaufenthaltsregel ab.</p></details><details><summary>Gibt es Frühstück?</summary><p>Frühstück kann in der Direktanfrage gewählt werden.</p></details><details><summary>Wann kann ich einchecken?</summary><p>Ab 14:00 Uhr; spätere Anreise bitte abstimmen.</p></details><details><summary>Wo kann ich abends essen?</summary><p>Die Gäste-App enthält lokale Hinweise. Öffnungszeiten bitte aktuell prüfen.</p></details><details><summary>Gibt es Tipps für die nächste Etappe?</summary><p>Ja, persönliche Hinweise und digitale Routeninformationen stehen bereit.</p></details></article>
+        <article><h3>FAQ für Wanderer</h3><details><summary>Liegt Zuhause am Bach am Welterbesteig?</summary><p>Die Unterkunft in Aggsbach Markt richtet sich besonders an Welterbesteig-Gäste.</p></details><details><summary>Welche Etappen sind erreichbar?</summary><p>Je nach Kondition und Wetter kommen Wege Richtung Willendorf, Maria Laach und Spitz infrage. Die konkrete Route bitte aktuell planen.</p></details><details><summary>Gibt es Frühstück?</summary><p>Ja, als wählbare Zusatzleistung.</p></details><details><summary>Kann nasse Kleidung getrocknet werden?</summary><p>Bitte den konkreten Bedarf vor der Buchung abstimmen; eine pauschale Trockenraum-Zusage wird nicht gemacht.</p></details><details><summary>Ist Gepäcktransport möglich?</summary><p>Ja, auf Anfrage als Zusatzleistung.</p></details><details><summary>Wo kann ich abends essen?</summary><p>Lokale Hinweise finden Sie in der Gäste-App; Öffnungszeiten bitte prüfen.</p></details><details><summary>Wann ist Check-in?</summary><p>Ab 14:00 Uhr, Check-out bis 10:00 Uhr.</p></details><details><summary>Wo geht die nächste Etappe weiter?</summary><p>Das hängt von Ihrer Tour ab. Gastgeber und Gäste-App helfen bei der Orientierung.</p></details><details><summary>Gibt es Tourentipps?</summary><p>Ja, persönliche Wachau-Tipps und offizielle Routenlinks sind vorhanden.</p></details></article>
+      </div>
+    </section>
+
     <section id="direkt-vorteile" aria-labelledby="direkt-vorteile-title">
       <div class="section-head">
         <h2 id="direkt-vorteile-title">Direkt anfragen – klar und persönlich</h2>
@@ -1319,6 +1356,8 @@
       </div>
     </section>
 </main>
+
+  <a class="mobile-booking-cta" href="#booking-title" data-track="availability_check">Verfügbarkeit &amp; Preis</a>
 
   <footer id="kontakt">
     <div class="footer-main">
@@ -2271,8 +2310,8 @@
     const LIVE_PRICE_API_URL = "";
     const OTHER_ROOMS_RELEASED = window.SHOW_ADDITIONAL_ROOMS === true;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
-    let bookingCalendarUpdated = "29.7.2026, 10:56:22";
-    let bookingCalendarUpdatedIso = "2026-07-29T08:56:22.130Z";
+    let bookingCalendarUpdated = "10.8.2026, 19:04:04";
+    let bookingCalendarUpdatedIso = "2026-08-10T17:04:04.711Z";
     let bookingCalendarMode = "snapshot";
     let liveBookingCalendarLoaded = true;
     let liveBookingCalendarPending = false;
@@ -2774,6 +2813,39 @@
         const bachblick = document.querySelector('input[name="room"][value="Bachblick"]');
         if (bachblick) bachblick.checked = true;
       }
+    })();
+  </script>
+
+  <script>
+    (function preparePrivacyFriendlyTracking() {
+      window.dataLayer = window.dataLayer || [];
+      window.zabTrack = function(eventName, details) {
+        const payload = Object.assign({ event: eventName, timestamp: new Date().toISOString() }, details || {});
+        window.dataLayer.push(payload);
+        window.dispatchEvent(new CustomEvent('zab:analytics', { detail: payload }));
+      };
+      window.zabTrack('website_view', { page: 'direct_booking' });
+      window.zabTrack('booking_page_view');
+      document.addEventListener('click', function(event) {
+        const link = event.target.closest('a');
+        if (!link) return;
+        if (link.matches('a[href^="tel:"]')) window.zabTrack('phone_click');
+        if (link.matches('a[href^="mailto:"]')) window.zabTrack('email_click');
+        if (link.href.includes('/Gaeste/')) window.zabTrack('guest_app_click');
+        if (link.dataset.track) window.zabTrack(link.dataset.track);
+      });
+      document.querySelectorAll('input[name="room"]').forEach(function(input) {
+        input.addEventListener('change', function() { if (input.checked) window.zabTrack('room_selected', { room: input.value }); });
+      });
+      const arrivalInput = document.getElementById('arrival');
+      const departureInput = document.getElementById('departure');
+      [arrivalInput, departureInput].forEach(function(input) {
+        input?.addEventListener('change', function() {
+          if (arrivalInput?.value && departureInput?.value) window.zabTrack('availability_check');
+        });
+      });
+      document.getElementById('requestForm')?.addEventListener('submit', function() { window.zabTrack('checkout_started'); });
+      document.getElementById('paypalLink')?.addEventListener('click', function() { window.zabTrack('payment_started'); });
     })();
   </script>
 
