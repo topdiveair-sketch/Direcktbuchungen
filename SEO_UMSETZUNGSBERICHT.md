@@ -23,6 +23,9 @@ Stand: 10. August 2026
 - Performance: Das verwirrende erste Titelbild wurde entfernt. Das als Hero-Hintergrund verwendete Luftbild wurde von ca. 3,7 MB auf ca. 244 KB als WebP optimiert; nicht kritische Bilder laden lazy.
 - Indexierung: `robots.txt` und XML-Sitemap mit allen sieben öffentlichen URLs erstellt.
 - Inhalte: keine unbelegten Rankings, Bewertungen, Auszeichnungen, Entfernungen oder Öffnungszeiten ergänzt.
+- Sprachumschaltung: Die neu ergänzten Startseiten-, Navigations- und Fakteninhalte wurden in die vorhandenen Wörterbücher für Englisch, Tschechisch, Ungarisch, Spanisch und Französisch aufgenommen und im Browser geprüft.
+- Vorteils-Audit für Radfahrer und Wanderer: Die beiden Pillar-Pages bündeln jetzt sichere Fahrradunterbringung, E-Bike-Laden, Frühstück einschließlich vegetarischer/veganer Wünsche, Jause, Gepäcktransport, Gäste-App, persönliche Tipps, Direktanfrage und den eigenen Etappenstempel. Fidel, Gloria und Pia schaffen Wiedererkennung, während die Unterkunft der klare Hauptgegenstand bleibt.
+- KI-Lesbarkeit: Kurze Faktenblöcke erklären Angebot, Zielgruppen, Ort und Nutzen in direkter Sprache. Die maschinenlesbaren Unterkunftsdaten der Unterseiten enthalten außerdem Telefon, Check-in/Check-out sowie die zentralen Ausstattungsmerkmale.
 
 ## Neue URLs
 
@@ -57,6 +60,7 @@ Stand: 10. August 2026
 - JavaScript-Syntax der Funktionsskripte erfolgreich mit Node geprüft.
 - Automatischer Test erfolgreich: sieben HTML-Seiten, Metadaten, genau eine H1 je Seite, JSON-LD, lokale Links und Sitemap.
 - Browserprüfung mit Microsoft Edge/Playwright erfolgreich: Desktop und Mobil, keine JavaScript-Seitenfehler, kein mobiler horizontaler Overflow.
+- Sprachprüfung erfolgreich: DE, EN, CS, HU, ES und FR ändern H1, zentrale neue Inhalte und das HTML-Sprachattribut korrekt.
 - Buchungs-, Preis-, Kalender-, Zahlungs- und Zimmerfreigabe-Code wurde nicht verändert.
 
 ## Noch zu bestätigen / manuell zu erledigen
@@ -88,3 +92,23 @@ Stand: 10. August 2026
 | Mittel | Search Console/Analytics einrichten | manuell erforderlich | Messbarkeit von Impressionen und Verhalten |
 | Mittel | Individuelle GitHub-Pages-404 ergänzen | teilweise erledigt | Bessere Navigation bei fehlerhaften URLs |
 | Mittel | Inhalte mit saisonalen lokalen Tipps ausbauen | teilweise erledigt | Wachsende lokale Themenautorität |
+
+## SEO- und KI-Vorteilsprüfung für aktive Gäste
+
+| Vorteil | Radfahrer-Seite | Wanderer-Seite | Einordnung |
+|---|---|---|---|
+| Ruhige persönliche Unterkunft in Aggsbach Markt | enthalten | enthalten | Kernpositionierung |
+| Donauradweg / Welterbesteig | enthalten | enthalten | Klare Suchintention |
+| Sichere Fahrradunterbringung | enthalten | als allgemeiner Unterkunftsfakt enthalten | Praktischer Radreisevorteil |
+| E-Bike-Lademöglichkeit | enthalten | als allgemeiner Unterkunftsfakt enthalten | Praktischer E-Bike-Vorteil |
+| Frühstück | enthalten | enthalten | Etappenstart |
+| Vegetarisch/vegan nach Absprache | enthalten | enthalten | Konkreter Ernährungsnutzen |
+| Wachauer Jause | enthalten | auf der Startseite buchbar | Zusatzleistung |
+| Gepäcktransport | enthalten | enthalten | Nutzen für Etappenreisende |
+| Gäste-App | enthalten | enthalten | Wetter, Hausinfo und Orientierung |
+| Persönliche Wachau-Tipps | enthalten | enthalten | Lokaler Gastgebervorteil |
+| Eigener Wachau-Etappenstempel | enthalten, transparent erklärt | enthalten, transparent erklärt | Einprägsames Hausgast-Erlebnis |
+| Fidel, Gloria und Pia | enthalten | enthalten | Emotionales Markenelement |
+| Direkte persönliche Anfrage | enthalten | enthalten | Vertrauen und Klarheit |
+
+Die Seiten vermeiden weiterhin nicht belegbare Aussagen wie „beste Unterkunft“, „Nr. 1“ oder garantierte Entfernungen. Statt eines künstlichen „Muss“-Versprechens vermitteln sie belegbare Gründe, warum die Unterkunft für Radfahrer und Wanderer besonders passend und erinnerungswürdig ist.
