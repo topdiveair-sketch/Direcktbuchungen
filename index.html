@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Zuhause am Bach | Unterkunft am Welterbesteig & Donauradweg Wachau</title>
-  <meta name="description" content="Zuhause am Bach ist eine ruhige Unterkunft in Aggsbach Markt für Wanderer am Welterbesteig und Radfahrer am Donauradweg – mit Frühstück und persönlicher Betreuung.">
+  <title>Zuhause am Bach | Unterkunft Donauradweg & Welterbesteig Wachau</title>
+  <meta name="description" content="Ruhig übernachten in Aggsbach Markt in der Wachau – ideal für Radfahrer am Donauradweg und Wanderer am Welterbesteig. Frühstück, Fahrradgarage und persönliche Wachau-Tipps.">
   <style>
     :root {
       color-scheme: light;
@@ -35,7 +35,7 @@
       overflow: hidden;
       background:
         linear-gradient(90deg, rgba(18,35,25,.88), rgba(18,35,25,.46)),
-        url("images/aggsbach-markt-luftbild.png") center / cover;
+        url("images/aggsbach-markt-luftbild.webp") center / cover;
       color: #fff;
     }
     .nav {
@@ -404,7 +404,9 @@
       display: grid;
       gap: 52px;
       padding: 52px min(5vw, 56px);
+      min-width: 0;
     }
+    main > * { min-width: 0; max-width: 100%; }
     .section-head {
       max-width: 860px;
       margin-bottom: 20px;
@@ -483,24 +485,17 @@
       border-radius: 8px;
       overflow: hidden;
       color: #fff;
-      background-image:
-        linear-gradient(to top, rgba(0,0,0,.82), rgba(0,0,0,.05)),
-        var(--tip-image);
-      background-position: center;
-      background-size: cover;
+      position: relative;
       box-shadow: 0 9px 20px rgba(41,29,15,.18);
       text-decoration: none;
     }
-    .tip-card:nth-child(2) { background-position: 24% center; }
-    .tip-card:nth-child(3) { background-position: 40% center; }
-    .tip-card:nth-child(4) { background-position: 55% center; }
-    .tip-card:nth-child(5) { background-position: 70% center; }
-    .tip-card:nth-child(6) { background-position: 84% center; }
+    .tip-card::after { content:""; position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.82),rgba(0,0,0,.05)); }
+    .tip-card img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
     .tip-card strong {
-      font-size: 16px;
+      position:relative; z-index:1; font-size: 16px;
     }
     .tip-card small {
-      color: #fff0c6;
+      position:relative; z-index:1; color: #fff0c6;
     }
     .guest-app {
       display: grid;
@@ -746,8 +741,8 @@
       .nav { position:relative; padding:8px 12px; min-height:54px; }
       .nav-links { display:none; }
       .language-switcher {
-        position:static; width:100%; flex-wrap:nowrap; overflow-x:auto;
-        justify-content:flex-start; padding-bottom:3px;
+        position:static; width:100%; flex-wrap:wrap; overflow-x:visible;
+        justify-content:center; gap:6px; padding-bottom:3px;
       }
       .language-switcher button { flex:0 0 auto; }
       .hero-grid { padding:34px 12px 32px; }
@@ -775,7 +770,7 @@
       .quick-tile { min-height:94px; }
       main { padding:38px 14px; gap:42px; }
       .room-grid { grid-template-columns:1fr; }
-      .facts { grid-template-columns:repeat(2,1fr); }
+      .facts { grid-template-columns:1fr; }
       .mobile-booking-bar {
         position:fixed; z-index:100; left:0; right:0; bottom:0;
         display:grid; grid-template-columns:1fr auto; align-items:center; gap:10px;
@@ -928,12 +923,12 @@
   <meta name="robots" content="index,follow,max-image-preview:large">
   <meta property="og:locale" content="de_AT">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Zuhause am Bach Wachau – direkt beim Gastgeber anfragen">
-  <meta property="og:description" content="Übernachten am Welterbesteig in Aggsbach Markt und den exklusiven Zuhause-am-Bach-Erinnerungsstempel für Hausgäste mitnehmen.">
+  <meta property="og:title" content="Zuhause am Bach | Unterkunft Donauradweg & Welterbesteig Wachau">
+  <meta property="og:description" content="Ruhig übernachten in Aggsbach Markt – für Radfahrer am Donauradweg und Wanderer am Welterbesteig, mit Frühstück und persönlichen Wachau-Tipps.">
   <meta property="og:url" content="https://topdiveair-sketch.github.io/Direcktbuchungen/">
   <meta property="og:image" content="https://topdiveair-sketch.github.io/Direcktbuchungen/images/aggsbach-markt-luftbild.webp">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Zuhause am Bach | Unterkunft am Welterbesteig & Donauradweg Wachau">
+  <meta name="twitter:title" content="Zuhause am Bach | Unterkunft Donauradweg & Welterbesteig Wachau">
   <meta name="twitter:description" content="Ruhig und persönlich übernachten in Aggsbach Markt – mit Frühstück für Wanderer und Radfahrer.">
   <script type="application/ld+json">
   {
@@ -1002,7 +997,7 @@
     <div class="hero-grid">
       <div class="hero-copy">
         <span class="eyebrow">Direkt anfragen ohne Buchungsplattform</span>
-        <h1>Zuhause am Bach – eure ruhige Unterkunft in der Wachau</h1>
+        <h1>Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau</h1>
         <p>Persönlich übernachten in Aggsbach Markt – für Wanderer am Welterbesteig, Radfahrer am Donauradweg und alle, die die Wachau abseits des Trubels mit Frühstück und persönlichen Tipps entdecken möchten.</p>
         <div class="hero-trust"><span>✓ Welterbesteig</span><span>✓ Donauradweg</span><span>✓ Persönliche Gastgeber</span></div>
         <div class="stamp-callout" aria-label="Zuhause am Bach Erinnerungsstempel">
@@ -1103,11 +1098,11 @@
           </label>
 
           <div class="total">
-            <span>Direktpreis</span>
+            <span>Voraussichtlicher Gesamtpreis</span>
             <strong id="total">0 EUR</strong>
           </div>
           <div id="discountNote" class="hint">
-            Ihr Direktpreis wird transparent berechnet. Bei Anreise am selben Tag gilt der aktuelle Tagespreis.
+            Zimmerpreis und gewählte Zusatzleistungen werden transparent für die Anfrage berechnet. Verbindlich wird die Buchung erst nach persönlicher Bestätigung.
           </div>
           <div id="paypalBox" class="payment-after-confirmation hidden">
             <strong>Zahlung erst nach unserer Bestätigung</strong>
@@ -1176,7 +1171,7 @@
         <a class="quick-tile bike" href="donauradweg-unterkunft-wachau/"><span>Radfahren</span><small>Donauradweg</small></a>
         <a class="quick-tile sun" href="#wetter"><span>Wetter</span><small>Wanderampel</small></a>
         <a class="quick-tile wine" href="wachau-tipps/"><span>Wachau-Tipps</span><small>Genuss</small></a>
-        <a class="quick-tile book" href="#requestForm"><span>Direkt buchen</span><small>Bestpreis sichern</small></a>
+        <a class="quick-tile book" href="#requestForm"><span>Verfügbarkeit prüfen</span><small>Direkt anfragen</small></a>
         <a class="quick-tile call" href="#kontakt"><span>Kontakt</span><small>Anfahrt</small></a>
       </section>
 
@@ -1212,7 +1207,7 @@
           <p class="official-clarifier"><strong>Transparenz:</strong> Dies ist ein eigener Erinnerungsstempel von „Zuhause am Bach“ und kein offizieller Kontroll- oder Leistungsstempel des Welterbesteigs oder Donauradwegs.</p>
         </div>
         <div class="stamp-card real-stamp-card" aria-label="Wachau-Etappenstempel von Zuhause am Bach">
-          <img loading="lazy" decoding="async" src="images/wachau-etappenstempel-zuhause-am-bach.jpg"
+          <img width="1536" height="1536" loading="lazy" decoding="async" src="images/wachau-etappenstempel-zuhause-am-bach.jpg"
                alt="Wachau-Etappenstempel von Zuhause am Bach für Welterbesteig und Donauradweg mit Fidel, Gloria und Pia">
           <strong>Ein Stempel für Wanderer und Radfahrer</strong>
           <small>Exklusiv für Hausgäste von „Zuhause am Bach“ in Aggsbach Markt.</small>
@@ -1229,7 +1224,7 @@
       </div>
       <div class="room-grid">
         <article class="room-card">
-          <img loading="lazy" decoding="async" src="images/rooms/bachblick.jpg" alt="Zimmer Bachblick">
+          <img width="1495" height="1052" loading="lazy" decoding="async" src="images/rooms/bachblick.jpg" alt="Zimmer Bachblick">
           <div>
             <h3>Bachblick</h3>
             <p>Doppelzimmer mit Blick auf den Bach. Gemütlich, ruhig und zum Wohlfühlen.</p>
@@ -1237,7 +1232,7 @@
           </div>
         </article>
         <article class="room-card future-room" data-future-room hidden>
-          <img loading="lazy" decoding="async" src="images/rooms/marillenzimmer.png" alt="Marillenzimmer">
+          <img width="1717" height="916" loading="lazy" decoding="async" src="images/rooms/marillenzimmer.png" alt="Marillenzimmer">
           <div>
             <h3>Marillenzimmer</h3>
             <p>Wachauer Atmosphäre, warme Details und ein ruhiger Rückzugsort.</p>
@@ -1245,7 +1240,7 @@
           </div>
         </article>
         <article class="room-card future-room" data-future-room hidden>
-          <img loading="lazy" decoding="async" src="images/rooms/weinbergzimmer.png" alt="Weinbergzimmer">
+          <img width="1672" height="941" loading="lazy" decoding="async" src="images/rooms/weinbergzimmer.png" alt="Weinbergzimmer">
           <div>
             <h3>Weinbergzimmer</h3>
             <p>Inspiriert von den Weinbergen der Wachau, ideal für Genießer.</p>
@@ -1253,7 +1248,7 @@
           </div>
         </article>
         <article class="room-card future-room" data-future-room hidden>
-          <img loading="lazy" decoding="async" src="images/rooms/donauzimmer.png" alt="Donauzimmer">
+          <img width="1672" height="941" loading="lazy" decoding="async" src="images/rooms/donauzimmer.png" alt="Donauzimmer">
           <div>
             <h3>Donauzimmer</h3>
             <p>Ein freundliches Zimmer mit Bezug zur Donau und zur Wachauer Landschaft.</p>
@@ -1269,12 +1264,12 @@
         <h2>Entdecken, erleben, genießen</h2>
       </div>
       <div class="tips-grid">
-        <article class="tip-card" style="--tip-image:url('images/tips/spitz-donau.jpg')"><strong>Donauschlössl / Gritsch</strong><small>Spitz an der Donau</small></article>
-        <article class="tip-card" style="--tip-image:url('images/tips/emmersdorf-donau.jpg')"><strong>Steckerlfisch Graf</strong><small>Emmersdorf</small></article>
-        <article class="tip-card" style="--tip-image:url('images/tips/burgruine-aggstein.jpg')"><strong>Burgruine Aggstein</strong><small>Wandern & Aussicht</small></article>
-        <article class="tip-card" style="--tip-image:url('images/tips/stift-melk.jpg')"><strong>Stift Melk</strong><small>Weltkulturerbe</small></article>
-        <article class="tip-card" style="--tip-image:url('images/tips/wachaubahn.jpg')"><strong>Wachaubahn „Schnaufi“</strong><small>Nostalgie pur</small></article>
-        <article class="tip-card" style="--tip-image:url('images/tips/venus-willendorf.jpg')"><strong>Venus von Willendorf</strong><small>Original in Willendorf</small></article>
+        <article class="tip-card"><img src="images/tips/spitz-donau.jpg" width="1000" height="600" loading="lazy" decoding="async" alt="Donauschlössl in Spitz an der Donau"><strong>Donauschlössl / Gritsch</strong><small>Spitz an der Donau</small></article>
+        <article class="tip-card"><img src="images/tips/emmersdorf-donau.jpg" width="1000" height="600" loading="lazy" decoding="async" alt="Donau bei Emmersdorf in der Wachau"><strong>Steckerlfisch Graf</strong><small>Emmersdorf</small></article>
+        <article class="tip-card"><img src="images/tips/burgruine-aggstein.jpg" width="1000" height="600" loading="lazy" decoding="async" alt="Burgruine Aggstein über der Wachau"><strong>Burgruine Aggstein</strong><small>Wandern & Aussicht</small></article>
+        <article class="tip-card"><img src="images/tips/stift-melk.jpg" width="1000" height="600" loading="lazy" decoding="async" alt="Stift Melk als Ausflugsziel in der Wachau"><strong>Stift Melk</strong><small>Weltkulturerbe</small></article>
+        <article class="tip-card"><img src="images/tips/wachaubahn.jpg" width="1000" height="600" loading="lazy" decoding="async" alt="Wachaubahn in der Wachau"><strong>Wachaubahn „Schnaufi“</strong><small>Nostalgie pur</small></article>
+        <article class="tip-card"><img src="images/tips/venus-willendorf.jpg" width="1000" height="600" loading="lazy" decoding="async" alt="Venus von Willendorf als Wachau-Ausflugsziel"><strong>Venus von Willendorf</strong><small>Original in Willendorf</small></article>
       </div>
     </section>
 
@@ -1291,7 +1286,7 @@
         <a class="btn" href="https://topdiveair-sketch.github.io/Gaeste/index" target="_blank" rel="noopener">Gästeapp öffnen</a>
       </div>
       <a class="guest-app-qr" href="https://topdiveair-sketch.github.io/Gaeste/index" target="_blank" rel="noopener">
-        <img loading="lazy" decoding="async" src="images/gaesteapp-qr.png" alt="QR-Code zur Gästeapp">
+        <img width="410" height="410" loading="lazy" decoding="async" src="images/gaesteapp-qr.png" alt="QR-Code zur Gästeapp">
         <span>Direkt am Smartphone öffnen</span>
       </a>
     </section>
@@ -1397,7 +1392,7 @@
         "Donauradweg": "Danube Cycle Path",
         "Welterbesteig": "World Heritage Trail",
         "Wachau-Tipps": "Wachau tips",
-        "Zuhause am Bach – eure ruhige Unterkunft in der Wachau": "Zuhause am Bach – your peaceful accommodation in the Wachau",
+        "Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau": "Zuhause am Bach – accommodation on the Danube Cycle Path & World Heritage Trail",
         "Persönlich übernachten in Aggsbach Markt – für Wanderer am Welterbesteig, Radfahrer am Donauradweg und alle, die die Wachau abseits des Trubels mit Frühstück und persönlichen Tipps entdecken möchten.": "Stay with personal hosts in Aggsbach Markt – for hikers on the World Heritage Trail, cyclists on the Danube Cycle Path and everyone wishing to discover the quieter side of the Wachau with breakfast and personal tips.",
         "Zuhause am Bach auf einen Blick": "Zuhause am Bach at a glance",
         "Ruhig wohnen, aktiv die Wachau entdecken": "Stay peacefully and explore the Wachau",
@@ -1437,7 +1432,6 @@
         "bereits buchbar": "available to request",
         "ab 15.08.2026, erst nach Freigabe": "from 15/08/2026, after release",
         "Direktpreis": "Direct price",
-        "Sofortzahlung per PayPal möglich": "Immediate PayPal payment possible",
         "Bei freiem Termin können Sie den angezeigten Direktpreis per PayPal an topdiveair@gmail.com zahlen. Bitte Name und Reisedatum als Hinweis angeben.": "If the date is free, you can pay the displayed direct price by PayPal to topdiveair@gmail.com. Please include your name and travel dates as a note.",
         "PayPal öffnen": "Open PayPal",
         "Vorname": "First name",
@@ -1461,8 +1455,8 @@
         "Wanderampel": "Hiking signal",
         "Wachau-Tipps": "Wachau tips",
         "Genuss": "Enjoyment",
-        "Direkt buchen": "Book direct",
-        "Bestpreis sichern": "Secure best price",
+        "Verfügbarkeit prüfen": "Check availability",
+        "Direkt anfragen": "Send direct request",
         "Anfahrt": "Directions",
         "Heute": "Today",
         "Morgen": "Tomorrow",
@@ -1518,7 +1512,7 @@
         "Donauradweg": "Dunajská cyklostezka",
         "Welterbesteig": "Stezka světového dědictví",
         "Wachau-Tipps": "Tipy pro Wachau",
-        "Zuhause am Bach – eure ruhige Unterkunft in der Wachau": "Zuhause am Bach – vaše klidné ubytování ve Wachau",
+        "Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau": "Zuhause am Bach – ubytování u Dunajské cyklostezky a Welterbesteig",
         "Persönlich übernachten in Aggsbach Markt – für Wanderer am Welterbesteig, Radfahrer am Donauradweg und alle, die die Wachau abseits des Trubels mit Frühstück und persönlichen Tipps entdecken möchten.": "Osobní ubytování v Aggsbach Markt – pro pěší turisty na stezce Welterbesteig, cyklisty na Dunajské cyklostezce i všechny, kdo chtějí poznat klidnější Wachau se snídaní a osobními tipy.",
         "Zuhause am Bach auf einen Blick": "Zuhause am Bach v kostce",
         "Ruhig wohnen, aktiv die Wachau entdecken": "Klidné ubytování a aktivní poznávání Wachau",
@@ -1577,8 +1571,8 @@
         "Wanderampel": "Turistický signál",
         "Wachau-Tipps": "Tipy Wachau",
         "Genuss": "Požitek",
-        "Direkt buchen": "Poptat přímo",
-        "Bestpreis sichern": "Zajistit nejlepší cenu",
+        "Verfügbarkeit prüfen": "Ověřit dostupnost",
+        "Direkt anfragen": "Odeslat přímou poptávku",
         "Anfahrt": "Příjezd",
         "Heute": "Dnes",
         "Morgen": "Zítra",
@@ -1634,7 +1628,7 @@
         "Donauradweg": "Duna menti kerékpárút",
         "Welterbesteig": "Világörökségi túraút",
         "Wachau-Tipps": "Wachau-tippek",
-        "Zuhause am Bach – eure ruhige Unterkunft in der Wachau": "Zuhause am Bach – nyugodt szálláshely a Wachauban",
+        "Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau": "Zuhause am Bach – szállás a Duna menti kerékpárútnál és a Welterbesteignél",
         "Persönlich übernachten in Aggsbach Markt – für Wanderer am Welterbesteig, Radfahrer am Donauradweg und alle, die die Wachau abseits des Trubels mit Frühstück und persönlichen Tipps entdecken möchten.": "Személyes vendéglátás Aggsbach Marktban – a Welterbesteig túrázóinak, a Duna menti kerékpárút bringásainak és mindenkinek, aki reggelivel és személyes tippekkel fedezné fel Wachau csendesebb oldalát.",
         "Zuhause am Bach auf einen Blick": "Zuhause am Bach röviden",
         "Ruhig wohnen, aktiv die Wachau entdecken": "Nyugodt pihenés, aktív wachaui felfedezés",
@@ -1693,8 +1687,8 @@
         "Wanderampel": "Túrajelzés",
         "Wachau-Tipps": "Wachau tippek",
         "Genuss": "Élvezet",
-        "Direkt buchen": "Közvetlen kérés",
-        "Bestpreis sichern": "Legjobb ár biztosítása",
+        "Verfügbarkeit prüfen": "Elérhetőség ellenőrzése",
+        "Direkt anfragen": "Közvetlen kérés küldése",
         "Anfahrt": "Megközelítés",
         "Heute": "Ma",
         "Morgen": "Holnap",
@@ -1750,7 +1744,7 @@
         "Donauradweg": "Ruta ciclista del Danubio",
         "Welterbesteig": "Sendero del Patrimonio Mundial",
         "Wachau-Tipps": "Consejos de Wachau",
-        "Zuhause am Bach – eure ruhige Unterkunft in der Wachau": "Zuhause am Bach: alojamiento tranquilo en Wachau",
+        "Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau": "Zuhause am Bach: alojamiento junto a la ruta del Danubio y el Welterbesteig",
         "Persönlich übernachten in Aggsbach Markt – für Wanderer am Welterbesteig, Radfahrer am Donauradweg und alle, die die Wachau abseits des Trubels mit Frühstück und persönlichen Tipps entdecken möchten.": "Alojamiento con atención personal en Aggsbach Markt, para senderistas del Welterbesteig, ciclistas de la ruta del Danubio y quienes quieran descubrir la Wachau más tranquila con desayuno y consejos personales.",
         "Zuhause am Bach auf einen Blick": "Zuhause am Bach de un vistazo",
         "Ruhig wohnen, aktiv die Wachau entdecken": "Descansar con tranquilidad y descubrir Wachau",
@@ -1809,8 +1803,8 @@
         "Wanderampel": "Semáforo de senderismo",
         "Wachau-Tipps": "Consejos Wachau",
         "Genuss": "Disfrute",
-        "Direkt buchen": "Reservar directo",
-        "Bestpreis sichern": "Mejor precio",
+        "Verfügbarkeit prüfen": "Comprobar disponibilidad",
+        "Direkt anfragen": "Enviar solicitud directa",
         "Anfahrt": "Cómo llegar",
         "Heute": "Hoy",
         "Morgen": "Mañana",
@@ -1866,7 +1860,7 @@
         "Donauradweg": "Piste cyclable du Danube",
         "Welterbesteig": "Sentier du patrimoine mondial",
         "Wachau-Tipps": "Conseils pour la Wachau",
-        "Zuhause am Bach – eure ruhige Unterkunft in der Wachau": "Zuhause am Bach – votre hébergement paisible dans la Wachau",
+        "Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau": "Zuhause am Bach – hébergement sur la piste du Danube et le Welterbesteig",
         "Persönlich übernachten in Aggsbach Markt – für Wanderer am Welterbesteig, Radfahrer am Donauradweg und alle, die die Wachau abseits des Trubels mit Frühstück und persönlichen Tipps entdecken möchten.": "Séjournez chez des hôtes attentionnés à Aggsbach Markt – pour les randonneurs du Welterbesteig, les cyclistes de la piste du Danube et tous ceux qui souhaitent découvrir la Wachau au calme, avec petit-déjeuner et conseils personnalisés.",
         "Zuhause am Bach auf einen Blick": "Zuhause am Bach en bref",
         "Ruhig wohnen, aktiv die Wachau entdecken": "Séjourner au calme et découvrir la Wachau",
@@ -1925,8 +1919,8 @@
         "Wanderampel": "Signal randonnée",
         "Wachau-Tipps": "Conseils Wachau",
         "Genuss": "Plaisir",
-        "Direkt buchen": "Réserver direct",
-        "Bestpreis sichern": "Meilleur prix",
+        "Verfügbarkeit prüfen": "Vérifier les disponibilités",
+        "Direkt anfragen": "Envoyer une demande directe",
         "Anfahrt": "Accès",
         "Heute": "Aujourd'hui",
         "Morgen": "Demain",
@@ -1987,7 +1981,7 @@
         beforeRelease: "{room} ist erst ab 15.08.2026 buchbar.",
         noIcal: "{room} ist noch nicht mit Booking-iCal verbunden. Verfügbarkeit wird persönlich bestätigt.",
         blocked: "Bachblick ist laut Booking-Kalender in diesem Zeitraum belegt oder geschlossen.",
-        free: "Bachblick ist laut Kalenderprüfung in diesem Zeitraum frei. Sie können die Anfrage senden und bei Wunsch direkt per PayPal zahlen.",
+        free: "Bachblick ist laut Kalenderprüfung in diesem Zeitraum frei. Sie können die Anfrage senden; verbindlich wird die Buchung erst nach persönlicher Bestätigung.",
         calendarStale: "Die Verfügbarkeit wird persönlich bestätigt. Bitte Anfrage senden.",
         modeLive: "aktueller Booking-Kalender",
         modeSnapshot: "Booking-Kalenderstand",
@@ -2012,9 +2006,9 @@
         labelDirectPrice: "Direktpreis",
         labelPriceRule: "Preisregel",
         priceRuleToday: "Anreise heute, voller Booking-Preis",
-        priceRuleDiscount: "Direktbuchung minus 5 Prozent auf den Zimmerpreis",
+        priceRuleDiscount: "Zimmerpreis plus gewählte Zusatzleistungen; kein automatischer Preisvergleich",
         labelCalendar: "Kalenderprüfung",
-        labelPayment: "Zahlung: PayPal-Sofortzahlung bei freiem Termin an topdiveair@gmail.com möglich",
+        labelPayment: "Zahlung erst nach persönlicher Buchungsbestätigung",
         paypalHint: "Bei freiem Termin können Sie {amount} per PayPal an topdiveair@gmail.com zahlen. Bitte Name und Reisedatum als Hinweis angeben.",
         labelGuestApp: "Gästeapp: https://topdiveair-sketch.github.io/Gaeste/index",
         labelMessage: "Nachricht",
@@ -2035,12 +2029,12 @@
       beforeRelease: "{room} is bookable from 15/08/2026.",
       noIcal: "{room} is not connected to Booking iCal yet. Availability will be confirmed personally.",
       blocked: "According to the Booking calendar, Bachblick is occupied or closed for this period.",
-      free: "According to the calendar check, Bachblick is free for this period. You can send the request and, if you wish, pay directly by PayPal.",
+      free: "According to the calendar check, Bachblick is available for this period. You can send a request; the booking becomes binding only after personal confirmation.",
       calendarStale: "Availability will be confirmed personally. Please send the request.",
       modeLive: "current Booking calendar",
       modeSnapshot: "Booking calendar status",
-      discount: "Direct booking discount: -{amount} (5% of room price). Extras remain fully charged.",
-      lastMinute: "Last minute arrival today: full Booking price without direct-booking discount.",
+      discount: "Room price plus selected extras. The booking becomes binding only after personal confirmation.",
+      lastMinute: "Room price plus selected extras.",
       calendarLoading: "Checking Booking calendar ...",
       calendarError: "The Booking calendar could not be checked automatically right now. Availability will be confirmed personally.",
       justNow: "just now",
@@ -2062,9 +2056,9 @@
       labelDirectPrice: "Direct price",
       labelPriceRule: "Price rule",
       priceRuleToday: "Arrival today, full Booking price",
-      priceRuleDiscount: "Direct booking minus 5 percent on the room price",
+      priceRuleDiscount: "Room price plus selected extras; no automatic price comparison",
       labelCalendar: "Calendar check",
-      labelPayment: "Payment: immediate PayPal payment to topdiveair@gmail.com possible if the date is free",
+      labelPayment: "Payment only after personal booking confirmation",
       paypalHint: "If the date is free, you can pay {amount} by PayPal to topdiveair@gmail.com. Please include your name and travel dates as a note.",
       labelGuestApp: "Guest app: https://topdiveair-sketch.github.io/Gaeste/index",
       labelMessage: "Message",
@@ -2085,12 +2079,12 @@
       beforeRelease: "{room} lze rezervovat až od 15. 8. 2026.",
       noIcal: "{room} zatím není připojen k Booking iCal. Dostupnost bude potvrzena osobně.",
       blocked: "Podle kalendáře Booking je Bachblick v tomto období obsazený nebo uzavřený.",
-      free: "Podle kontroly kalendáře je Bachblick v tomto období volný. Můžete odeslat poptávku a případně zaplatit přímo přes PayPal.",
+      free: "Podle kalendáře je Bachblick v tomto období volný. Můžete odeslat poptávku; rezervace je závazná až po osobním potvrzení.",
       calendarStale: "Dostupnost potvrdíme osobně. Odešlete prosím poptávku.",
       modeLive: "aktuální Booking kalendář",
       modeSnapshot: "stavu Booking kalendáře",
-      discount: "Sleva za přímou rezervaci: -{amount} (5 % z ceny pokoje). Doplňky zůstávají účtovány plně.",
-      lastMinute: "Last minute s příjezdem dnes: plná cena Booking bez slevy za přímou rezervaci.",
+      discount: "Cena pokoje plus zvolené doplňky. Rezervace je závazná až po osobním potvrzení.",
+      lastMinute: "Cena pokoje plus zvolené doplňky.",
       invalidDates: "Vyberte prosím správné datum příjezdu a odjezdu.",
       requiredFields: "Vyplňte prosím všechna povinná pole včetně telefonu, úplné adresy a zprávy.",
       calendarLoading: "Kontroluje se kalendář Booking ...",
@@ -2112,12 +2106,12 @@
       beforeRelease: "{room} csak 2026.08.15-től foglalható.",
       noIcal: "{room} még nincs összekötve a Booking iCal-lal. A rendelkezésre állást személyesen igazoljuk vissza.",
       blocked: "A Booking-naptár szerint a Bachblick ebben az időszakban foglalt vagy zárva van.",
-      free: "A naptárellenőrzés szerint a Bachblick ebben az időszakban szabad. Elküldheti a kérést, és igény esetén közvetlenül PayPal-lal fizethet.",
+      free: "A naptár szerint a Bachblick ebben az időszakban szabad. Kérés küldhető; a foglalás csak személyes visszaigazolás után kötelező.",
       calendarStale: "A rendelkezésre állást személyesen igazoljuk vissza. Kérjük, küldje el a kérést.",
       modeLive: "aktuális Booking-naptár",
       modeSnapshot: "Booking-naptár állapota",
-      discount: "Közvetlen foglalási kedvezmény: -{amount} (a szobaár 5%-a). A kiegészítők teljes áron maradnak.",
-      lastMinute: "Last minute mai érkezéssel: teljes Booking-ár közvetlen kedvezmény nélkül.",
+      discount: "Szobaár plusz a kiválasztott kiegészítők. A foglalás csak személyes visszaigazolás után válik kötelezővé.",
+      lastMinute: "Szobaár plusz a kiválasztott kiegészítők.",
       invalidDates: "Kérjük, válasszon helyes érkezési és távozási dátumot.",
       requiredFields: "Kérjük, töltse ki az összes kötelező mezőt, beleértve a telefonszámot, a teljes címet és az üzenetet.",
       calendarLoading: "Booking-naptár ellenőrzése ...",
@@ -2139,12 +2133,12 @@
       beforeRelease: "{room} se puede reservar desde el 15/08/2026.",
       noIcal: "{room} aún no está conectada con Booking iCal. La disponibilidad se confirma personalmente.",
       blocked: "Según el calendario de Booking, Bachblick está ocupada o cerrada en este periodo.",
-      free: "Según la comprobación del calendario, Bachblick está libre en este periodo. Puede enviar la solicitud y, si lo desea, pagar directamente por PayPal.",
+      free: "Según el calendario, Bachblick está disponible en este periodo. Puede enviar una solicitud; la reserva solo es vinculante tras la confirmación personal.",
       calendarStale: "La disponibilidad se confirma personalmente. Envíe la solicitud.",
       modeLive: "calendario Booking actual",
       modeSnapshot: "estado del calendario Booking",
-      discount: "Descuento de reserva directa: -{amount} (5% del precio de habitación). Los extras se cobran completos.",
-      lastMinute: "Last minute con llegada hoy: precio Booking completo sin descuento directo.",
+      discount: "Precio de la habitación más los extras seleccionados. La reserva solo es vinculante tras la confirmación personal.",
+      lastMinute: "Precio de la habitación más los extras seleccionados.",
       invalidDates: "Elija correctamente llegada y salida.",
       requiredFields: "Complete todos los campos obligatorios, incluido teléfono, dirección completa y mensaje.",
       calendarLoading: "Comprobando calendario Booking ...",
@@ -2166,12 +2160,12 @@
       beforeRelease: "{room} est réservable à partir du 15/08/2026.",
       noIcal: "{room} n'est pas encore connectée à Booking iCal. La disponibilité sera confirmée personnellement.",
       blocked: "Selon le calendrier Booking, Bachblick est occupée ou fermée pendant cette période.",
-      free: "Selon la vérification du calendrier, Bachblick est libre pendant cette période. Vous pouvez envoyer la demande et, si vous le souhaitez, payer directement par PayPal.",
+      free: "Selon le calendrier, Bachblick est disponible pour cette période. Vous pouvez envoyer une demande; la réservation devient ferme uniquement après confirmation personnelle.",
       calendarStale: "La disponibilité sera confirmée personnellement. Envoyez la demande.",
       modeLive: "calendrier Booking actuel",
       modeSnapshot: "état du calendrier Booking",
-      discount: "Réduction réservation directe : -{amount} (5 % du prix de la chambre). Les extras restent facturés entièrement.",
-      lastMinute: "Last minute avec arrivée aujourd'hui : prix Booking complet sans réduction directe.",
+      discount: "Prix de la chambre plus les options choisies. La réservation devient ferme uniquement après confirmation personnelle.",
+      lastMinute: "Prix de la chambre plus les options choisies.",
       invalidDates: "Veuillez choisir correctement l'arrivée et le départ.",
       requiredFields: "Veuillez remplir tous les champs obligatoires, y compris téléphone, adresse complète et message.",
       calendarLoading: "Vérification du calendrier Booking ...",
@@ -2282,7 +2276,7 @@
     let bookingCalendarMode = "snapshot";
     let liveBookingCalendarLoaded = true;
     let liveBookingCalendarPending = false;
-    const DIRECT_BOOKING_DISCOUNT_PERCENT = 5;
+    
     const PRICE_REFRESH_MS = 60 * 1000;
     const BACHBLICK_BOOKING_BLOCKS = [
       { start: "2026-07-28", end: "2026-07-29" },
@@ -2438,20 +2432,16 @@
       const roomPrice = room ? Math.round(Number(room.dataset.price || 0)) : 0;
       const roomTotal = n * roomPrice;
       let sum = roomTotal;
-      const discount = sameDayArrival() ? 0 : roomTotal * DIRECT_BOOKING_DISCOUNT_PERCENT / 100;
       for (const extra of selectedExtras()) {
         const price = Number(extra.dataset.price || 0);
         const unit = extra.dataset.unit;
         if (unit === "person_night") sum += price * people * n;
         else sum += price;
       }
-      sum -= discount;
       sum = Math.round(sum);
       nights.value = String(n);
       total.textContent = money(sum);
-      discountNote.textContent = discount > 0
-        ? tr("discount", { amount: money(discount) })
-        : tr("lastMinute");
+      discountNote.textContent = "Zimmerpreis und gewählte Zusatzleistungen – verbindlich erst nach persönlicher Bestätigung.";
       const availability = availabilityText();
       availabilityStatus.className = "availability-status " + availability.state;
       availabilityStatus.textContent = availability.text;
@@ -2521,7 +2511,7 @@
         tr("labelRoom") + ": " + (room ? room.value : ""),
         tr("labelExtras") + ": " + extras,
         tr("labelDirectPrice") + ": " + money(sum),
-        tr("labelPriceRule") + ": " + (sameDayArrival() ? tr("priceRuleToday") : tr("priceRuleDiscount")),
+        tr("labelPriceRule") + ": " + tr("priceRuleDiscount"),
         tr("labelCalendar") + ": " + availabilityText().text,
         tr("labelPayment"),
         tr("labelGuestApp"),

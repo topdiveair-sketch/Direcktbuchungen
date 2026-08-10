@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
 Disallow: /.github/
-Disallow: /scripts/
 Sitemap: https://topdiveair-sketch.github.io/Direcktbuchungen/sitemap.xml

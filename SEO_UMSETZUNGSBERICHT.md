@@ -112,3 +112,59 @@ Stand: 10. August 2026
 | Direkte persönliche Anfrage | enthalten | enthalten | Vertrauen und Klarheit |
 
 Die Seiten vermeiden weiterhin nicht belegbare Aussagen wie „beste Unterkunft“, „Nr. 1“ oder garantierte Entfernungen. Statt eines künstlichen „Muss“-Versprechens vermitteln sie belegbare Gründe, warum die Unterkunft für Radfahrer und Wanderer besonders passend und erinnerungswürdig ist.
+
+## Abschlussstatus der Codex-Aufgabenliste
+
+| Priorität | Aufgabe | Status | Datei | Bemerkung |
+|---|---|---|---|---|
+| 1 | Ziel-Title, H1 und Meta Description | erledigt | `index.html` | Exakte Zielformulierungen, jeweils nur einmal vorhanden |
+| 1 | Canonical | erledigt | `index.html` | Startseite canonicalisiert auf `/Direcktbuchungen/` |
+| 1 | robots.txt | erledigt | `robots.txt` | Öffentliche Seiten, CSS, JavaScript und Bilder erlaubt |
+| 1 | XML-Sitemap | erledigt | `sitemap.xml` | Sieben öffentliche URLs, keine Testseiten |
+| 2 | Donauradweg-Landingpage | erledigt | `donauradweg-unterkunft-wachau/index.html` | Bestehende GitHub-Pages-Ordnerstruktur verwendet |
+| 2 | Welterbesteig-Landingpage | erledigt | `welterbesteig-unterkunft-wachau/index.html` | Keine erfundenen Distanzen oder Gehzeiten |
+| 2 | Aggsbach-Markt-Seite | erledigt | `aggsbach-markt-wachau/index.html` | Keine veraltenden Öffnungszeiten festgeschrieben |
+| 2 | Wachau-Tipps-Hub | erledigt | `wachau-tipps/index.html` | Erweiterbare Themenkarten |
+| 3 | BedAndBreakfast-/LodgingBusiness-Daten | erledigt | `index.html`, SEO-Unterseiten | Check-in 14:00, Check-out 10:00, verifizierte Merkmale |
+| 3 | Breadcrumbs und BreadcrumbList | erledigt | SEO-Unterseiten | Sichtbar und maschinenlesbar |
+| 3 | Interne Verlinkung | erledigt | `index.html`, SEO-Unterseiten | Relevante Kontextlinks und Buchungsanfrage |
+| 3 | Überschriften, IDs und Alt-Texte | erledigt | alle HTML-Dateien | Automatisch geprüft |
+| 4 | Anfrage-/Zahlungsmodell vereinheitlichen | erledigt | `index.html` | „Verfügbarkeit prüfen und direkt anfragen“, Zahlung erst nach Bestätigung |
+| 4 | 5-%-Preisvergleich entfernen | erledigt | `index.html` | Text und automatische Rabattberechnung entfernt |
+| 4 | Preise und Unternehmensdaten | erledigt | `index.html`, strukturierte Daten | Konsistent geprüft |
+| 5 | Hero-Bild optimieren | erledigt | `index.html`, `images/aggsbach-markt-luftbild.webp` | 3,7-MB-PNG durch ca. 244-KB-WebP ersetzt |
+| 5 | Tippbilder lazy laden | erledigt | `index.html` | CSS-Hintergründe durch echte Lazy-Loading-Bilder ersetzt |
+| 5 | Bildabmessungen | erledigt | `index.html` | `width`/`height` für Inhaltsbilder ergänzt |
+| 5 | Doppelte JavaScript-Prüfkopien | erledigt | Projektstamm | Sechs ungenutzte Kopien entfernt; Funktionsskripte bleiben inline |
+| 5 | Mobile Tests | erledigt | `index.html` | 320, 375, 390 px und Tablet ohne horizontalen Overflow |
+| 6 | Faktenblock und Entity-Beziehungen | erledigt | `index.html` | Unterkunft, Ort, Region und Zielgruppen eindeutig verbunden |
+| 6 | Windi-Seite | erledigt | `wilde-wachauer-windis/index.html` | Unterkunft bleibt Hauptthema |
+| 7 | Links, HTML-Struktur und JSON-LD prüfen | erledigt | gesamte Website | Automatisierte Tests bestanden |
+| 7 | Build/Linter | nicht möglich | – | Statische Website ohne Build- oder Lint-Konfiguration |
+| 7 | Search Console und Google Business | manuell erforderlich | externe Dienste | Sitemap einreichen, Indexierung anstoßen, Profil pflegen |
+
+### Neu angelegte öffentliche URLs
+
+- `/Direcktbuchungen/donauradweg-unterkunft-wachau/`
+- `/Direcktbuchungen/welterbesteig-unterkunft-wachau/`
+- `/Direcktbuchungen/ruhige-unterkunft-wachau/`
+- `/Direcktbuchungen/aggsbach-markt-wachau/`
+- `/Direcktbuchungen/wachau-tipps/`
+- `/Direcktbuchungen/wilde-wachauer-windis/`
+
+### Aktuell geänderte Dateien
+
+- `index.html`
+- `robots.txt`
+- `SEO_UMSETZUNGSBERICHT.md`
+
+### Entfernte Dateien
+
+- `script_0.js`, `script_1.js`, `script_2.js`
+- `check_inline_0.js`, `check_inline_1.js`, `check_inline_2.js`
+
+### Manuell außerhalb des Codes
+
+- Sitemap in der Google Search Console einreichen und Haupt-, Donauradweg- sowie Welterbesteig-Seite zur Indexierung anstoßen.
+- Google-Unternehmensprofil mit endgültiger Website-Adresse, Kontaktdaten, Frühstück, Fahrradunterbringung und E-Bike-Laden aktuell halten.
+- Falls künftig eine eigene Domain genutzt wird, Canonicals, OpenGraph-URLs, Schema-URLs, Sitemap und robots.txt gemeinsam umstellen.
