@@ -1,0 +1,28 @@
+ZUHAUSE AM BACH – DONAURADWEG SEO PAKET
+Stand: 10.08.2026
+
+DATEIEN:
+1) donauradweg-wachau.html
+2) robots.txt
+3) sitemap.xml
+
+GITHUB:
+Repository: topdiveair-sketch/Direcktbuchungen
+Die drei Dateien in das Hauptverzeichnis (Root) hochladen.
+Die bestehende index.html NICHT ersetzen.
+
+Danach sollte die neue Seite erreichbar sein unter:
+https://topdiveair-sketch.github.io/Direcktbuchungen/donauradweg-wachau.html
+
+WICHTIG:
+- emmersdorf-donau.jpg ist bereits im Repository vorhanden und wird als Titelbild benutzt.
+- Die Landingpage verlinkt zurück auf index.html#booking.
+- Falls der Buchungsbereich in der bestehenden index.html eine andere Anker-ID als #booking nutzt,
+  kann der Link später angepasst werden.
+
+NÄCHSTE MANUELLE SCHRITTE:
+A) Google Business: Website-Link bzw. Beitrag auf die neue Donauradweg-Seite setzen.
+B) Google Search Console: sitemap.xml einreichen und neue Landingpage zur Indexierung anstoßen.
+C) Komoot: echte abgeschlossene Tour verwenden und Highlight/Route mit Aggsbach Markt erstellen.
+D) Bett+Bike: Mindestkriterien prüfen, dann Gastbetrieb-Zertifizierung beantragen.
+E) Booking.com: Radfahrer-Ausstattung vollständig setzen und Bilder von Fahrradschuppen/E-Bike-Laden nach vorne.
