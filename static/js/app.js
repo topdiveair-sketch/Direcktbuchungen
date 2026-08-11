@@ -10,6 +10,24 @@ const totalPrice = document.getElementById("totalPrice");
 const result = document.getElementById("availabilityResult");
 const guestArea = document.getElementById("guestArea");
 const roomRadios = [...document.querySelectorAll('input[name="room"]')];
+const bookingSubmit = document.getElementById("bookingSubmit");
+const stickyLabel = document.getElementById("stickyLabel");
+const stickyCta = document.getElementById("stickyCta");
+let checkoutOpen = false;
+let bookingSubmitted = false;
+
+function track(event) {
+  const body = JSON.stringify({event});
+  if (navigator.sendBeacon && event === "booking_abandoned") {
+    navigator.sendBeacon("/api/events", new Blob([body], {type:"application/json"}));
+    return;
+  }
+  fetch("/api/events", {method:"POST", headers:{"Content-Type":"application/json"}, body, keepalive:true}).catch(()=>{});
+}
+
+document.getElementById("idempotencyKey").value =
+  (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
+track("landing_view");
 
 function selectedRoom() {
   return document.querySelector('input[name="room"]:checked');
@@ -29,17 +47,8 @@ function euro(v) {
 function updateTotals() {
   const n = nights();
   nightsEl.value = n;
-  const room = selectedRoom();
-  const roomPrice = room ? Number(room.dataset.price) : 0;
-  const persons = Number(adults.value || 1);
-  let extrasTotal = 0;
-  extraInputs.forEach(el => {
-    if (!el.checked) return;
-    const price = Number(el.dataset.price || 0);
-    const unit = el.dataset.unit || "booking";
-    extrasTotal += unit === "person_night" ? price * persons * n : unit === "night" ? price * n : price;
-  });
-  totalPrice.textContent = euro(n * roomPrice + extrasTotal);
+  totalPrice.textContent = n ? "Nach Verfügbarkeitsprüfung" : euro(0);
+  priceBreakdown.innerHTML = "";
 }
 
 function updateRoomRelease() {
@@ -74,6 +83,8 @@ arrival.addEventListener("change", () => {
 
 [departure, adults, ...extraInputs, ...roomRadios].forEach(el => {
   el.addEventListener("change", () => {
+    if (el.matches('input[name="room"]')) track("room_selected");
+    if (extraInputs.includes(el)) track("extras_selected");
     updateTotals();
     resetAvailability();
   });
@@ -94,14 +105,21 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
 
   result.textContent = "Verfügbarkeit wird geprüft …";
   result.className = "availability-result";
+  track("availability_started");
 
   try {
     const response = await fetch("/api/availability", {method:"POST", body:fd});
     const data = await response.json();
     result.textContent = data.message;
-    result.className = data.available ? "availability-result ok" : "availability-result bad";
-    if (data.available) {
+    result.className = data.status === "free" ? "availability-result ok" : data.status === "unknown" ? "availability-result unknown" : "availability-result bad";
+    track(`availability_result_${data.status}`);
+    if (data.status === "free" || data.status === "unknown") {
       guestArea.classList.remove("hidden");
+      checkoutOpen = true;
+      track("checkout_started");
+      bookingSubmit.textContent = data.status === "free" ? "JETZT DIREKT BUCHEN" : "VERFÜGBARKEIT PERSÖNLICH ANFRAGEN";
+      stickyLabel.textContent = data.status === "free" ? "Jetzt direkt buchen" : "Persönlich anfragen";
+      stickyCta.textContent = data.status === "free" ? "Buchen" : "Anfragen";
       totalPrice.textContent=euro(data.total); if(data.breakdown){let h=`<div><span>Zimmer</span><strong>${euro(data.breakdown.room_total)}</strong></div>`;data.breakdown.extras.forEach(x=>h+=`<div><span>${x.label}</span><strong>${euro(x.amount)}</strong></div>`);data.breakdown.discounts.forEach(x=>h+=`<div class="discount-line"><span>${x.label} (${x.percent}%)</span><strong>− ${euro(x.amount)}</strong></div>`);priceBreakdown.innerHTML=h;}
     } else {
       guestArea.classList.add("hidden");
@@ -110,6 +128,15 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
     result.textContent = "Die Prüfung konnte nicht durchgeführt werden.";
     result.className = "availability-result bad";
   }
+});
+
+document.getElementById("bookingForm").addEventListener("submit", () => {
+  bookingSubmitted = true;
+  bookingSubmit.disabled = true;
+  bookingSubmit.textContent = "Wird sicher gespeichert …";
+});
+window.addEventListener("pagehide", () => {
+  if (checkoutOpen && !bookingSubmitted) track("booking_abandoned");
 });
 
 // Live calendar

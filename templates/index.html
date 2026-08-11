@@ -27,7 +27,8 @@
 
   <div class="hero-content">
     <h1>Zuhause am Bach</h1>
-    <p>Das Basislager für Welterbesteig und Donauradweg</p>
+    <p>Für Donauradweg &amp; Welterbesteig</p>
+    {% if google_landing %}<div class="google-trust">★ 4,9 Google · 🚴 Sichere Fahrradunterbringung · ⚡ E-Bike laden · 🥾 Welterbesteig · 🍳 Frühstück</div>{% endif %}
     <span>Mit Fidel, Gloria und Pia – den Wilden Wachauer Windis.</span>
   </div>
 </header>
@@ -44,12 +45,13 @@
       <div class="section-heading">
         <span class="section-icon">▣</span>
         <div>
-          <h2>Direkt buchen & Bestpreis sichern</h2>
+          <h2>Verfügbarkeit &amp; Preis</h2>
           <p>Einfach anfragen und entspannt ankommen.</p>
         </div>
       </div>
 
       <form id="bookingForm" action="{{ url_for('book') }}" method="post">
+        <input type="hidden" name="idempotency_key" id="idempotencyKey">
         <div class="booking-grid">
           <label>Anreise
             <input type="date" id="arrival" name="arrival" min="{{ today }}" required>
@@ -66,7 +68,7 @@
               <option value="2" selected>2 Erwachsene</option>
             </select>
           </label>
-          <button class="btn check-main" type="button" id="checkAvailability">Verfügbarkeit prüfen</button>
+          <button class="btn check-main" type="button" id="checkAvailability">VERFÜGBARKEIT PRÜFEN</button>
         </div>
 
         <div id="availabilityResult" class="availability-result hidden"></div>
@@ -141,7 +143,7 @@
             <label><input type="radio" name="payment_method" value="Vor Ort"><span><strong>Zahlung vor Ort</strong><small>bei Anreise</small></span></label>
           </div>
 
-          <button class="btn full" type="submit">Verbindliche Buchungsanfrage senden</button>
+          <button class="btn full" id="bookingSubmit" type="submit">JETZT DIREKT BUCHEN</button>
           <small class="legal-note">Die Anfrage wird sofort im Direktbuchungskalender vorgemerkt. Die persönliche Bestätigung folgt anschließend.</small>
         </div>
       </form>
@@ -225,6 +227,8 @@
   <a class="admin-link" href="{{ url_for('legal_page',key='agb') }}">Buchungsbedingungen</a>
   <a class="admin-link" href="{{ url_for('admin_login') }}">Verwaltung</a>
 </footer>
+
+<div class="mobile-conversion-bar"><span id="stickyLabel">Verfügbarkeit &amp; Preis</span><a href="#booking" id="stickyCta">Prüfen</a></div>
 
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>

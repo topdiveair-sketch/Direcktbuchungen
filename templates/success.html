@@ -10,17 +10,19 @@
 <body class="plain-page">
   <main class="success-shell">
     <div class="success-card">
-      <span class="eyebrow">Buchungsanfrage gespeichert</span>
-      <h1>Danke, {{ booking.first_name }}!</h1>
-      <p>Der Zeitraum wurde im Direktbuchungskalender vorgemerkt. Die persönliche Bestätigung folgt.</p>
+      <span class="eyebrow">{{ 'Buchungsanfrage gespeichert' if booking.status == 'inquiry' else 'Direktbuchung vorgemerkt' }}</span>
+      <h1>Willkommen bei Zuhause am Bach 🐾</h1>
+      <p>Danke, {{ booking.first_name }}. {{ 'Die Verfügbarkeit wird persönlich bestätigt.' if booking.status == 'inquiry' else 'Der Zeitraum wurde sicher vorgemerkt. Die persönliche Bestätigung folgt.' }}</p>
 
       <div class="booking-summary">
+        <p><strong>Buchungsnummer:</strong> {{ booking.booking_number }}</p>
         <p><strong>Zimmer:</strong> {{ booking.room }}</p>
-        <p><strong>Anreise:</strong> {{ booking.arrival.strftime('%d.%m.%Y') }}</p>
-        <p><strong>Abreise:</strong> {{ booking.departure.strftime('%d.%m.%Y') }}</p>
+        <p><strong>Anreise:</strong> {{ booking.arrival }}</p>
+        <p><strong>Abreise:</strong> {{ booking.departure }}</p>
         <p><strong>Personen:</strong> {{ booking.adults }}</p>
         <p><strong>Frühstück:</strong> {{ 'Ja' if booking.breakfast else 'Nein' }}</p>
         <p><strong>Zahlung:</strong> {{ booking.payment_method }}</p>
+        <p><strong>Zahlungsstatus:</strong> Ausstehend – erst nach persönlicher Bestätigung</p>
         <p class="summary-total"><strong>Gesamt:</strong> {{ '%.2f'|format(booking.total)|replace('.', ',') }} €</p>
       </div>
 
@@ -31,7 +33,10 @@
       </div>
       {% endif %}
 
-      <p class="muted">Der persönliche Online-Check-in-Link wird mit der Bestätigung versendet.</p><a class="btn" href="{{ url_for('index') }}">Zur Startseite</a>
+      <p class="muted">Der persönliche Online-Check-in-Link wird mit der Bestätigung versendet.</p>
+      <p><strong>Check-in:</strong> ab 14:00 · <strong>Check-out:</strong> bis 10:00</p>
+      <p>Aggsbach Markt 82, 3641 Aggsbach Markt</p>
+      <p><a class="btn secondary" href="https://www.google.com/maps/dir/?api=1&destination=Aggsbach+Markt+82%2C+3641+Aggsbach+Markt">Route öffnen</a> <a class="btn secondary" href="{{ guest_app_url }}">Gäste-App öffnen</a> <a class="btn secondary" href="mailto:{{ settings.email }}">Kontakt</a></p>
     </div>
   </main>
 </body>
