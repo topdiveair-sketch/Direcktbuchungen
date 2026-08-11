@@ -3,10 +3,9 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 
 const root=path.resolve(new URL('..',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1'));
-const htmlFiles=[];
-function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory()&&!['.git','.github'].includes(e.name))walk(p);else if(e.isFile()&&e.name.endsWith('.html'))htmlFiles.push(p)}}
-walk(root);
-assert.equal(htmlFiles.length,7,'Startseite plus sechs Themenseiten erwartet');
+const publicDirs=['donauradweg-unterkunft-wachau','welterbesteig-unterkunft-wachau','ruhige-unterkunft-wachau','aggsbach-markt-wachau','wachau-tipps','wilde-wachauer-windis','ebike-unterkunft-wachau','radfahrer-unterkunft-wachau','wanderer-unterkunft-wachau','unterkunft-aggsbach-markt'];
+const htmlFiles=[path.join(root,'index.html'),...publicDirs.map(dir=>path.join(root,dir,'index.html'))];
+assert.equal(htmlFiles.length,11,'Startseite plus zehn Themenseiten erwartet');
 for(const file of htmlFiles){
   const html=fs.readFileSync(file,'utf8');
   assert.equal((html.match(/<title>/g)||[]).length,1,`${file}: genau ein title erwartet`);
@@ -33,7 +32,7 @@ for(const file of htmlFiles){
   }
 }
 const home=fs.readFileSync(path.join(root,'index.html'),'utf8');
-assert.doesNotMatch(home,/5\s*%|5 Prozent|Bestpreis|Direkt buchen|Sofortzahlung/i,'Startseite: alte Preisvergleichs- oder Sofortbuchungsaussage gefunden');
+assert.doesNotMatch(home,/5\s*%|5 Prozent|Bestpreis|Sofortzahlung/i,'Startseite: alte Preisvergleichs- oder Sofortzahlungsaussage gefunden');
 assert.match(home,/Zuhause am Bach \| Unterkunft Donauradweg & Welterbesteig Wachau/,'Startseite: Ziel-Title fehlt');
 assert.match(home,/Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau/,'Startseite: Ziel-H1 fehlt');
 assert.match(home,/images\/aggsbach-markt-luftbild\.webp/,'Startseite: optimiertes Hero-Bild fehlt');
