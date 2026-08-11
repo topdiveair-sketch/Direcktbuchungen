@@ -1,0 +1,28 @@
+{
+  "home": {
+    "label": "Zuhause am Bach",
+    "lat": 48.2945,
+    "lon": 15.4068
+  },
+  "vehicle": {
+    "name": "VW Tiguan 2.0 TDI",
+    "consumption_l_per_100km": 6.5,
+    "wear_eur_per_km": 0.18
+  },
+  "business": {
+    "labor_eur_per_hour": 22.0,
+    "organization_fee_eur": 5.0,
+    "profit_fixed_eur": 12.0,
+    "profit_percent": 10.0,
+    "minimum_price_eur": 29.0,
+    "round_to_eur": 1.0,
+    "calculate_return_to_home": true
+  },
+  "fuel": {
+    "type": "DIE",
+    "fallback_diesel_eur_per_l": 2.1,
+    "use_cheapest_reported_station": true,
+    "max_reasonable_price_eur_per_l": 4.0,
+    "min_reasonable_price_eur_per_l": 0.8
+  }
+}
