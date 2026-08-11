@@ -1240,6 +1240,42 @@
     </section>
 
 
+
+<section id="gepaeckpreis" aria-labelledby="gepaeckpreis-title">
+  <div class="section-head">
+    <span class="eyebrow">ZAB GepäckFrei · Sofortpreis</span>
+    <h2 id="gepaeckpreis-title">Was kostet Ihr Gepäcktransport?</h2>
+    <p>Unterkunft, Ort oder Adresse eingeben. Wir berechnen Ihren Gepäckpreis aus der tatsächlichen Fahrstrecke und aktuellen Betriebskosten.</p>
+  </div>
+
+  <div class="panel zab-guest-price-box">
+    <div class="form-grid">
+      <label>Richtung
+        <select id="zabGuestMode">
+          <option value="to">Von Zuhause am Bach zur nächsten Unterkunft</option>
+          <option value="from">Von der vorherigen Unterkunft zu Zuhause am Bach</option>
+        </select>
+      </label>
+      <label>Unterkunft, Ort oder Adresse
+        <input id="zabGuestDestination" autocomplete="off" placeholder="z. B. Hotel in Spitz oder genaue Adresse">
+        <div id="zabGuestSuggestions" class="zab-suggestions" hidden></div>
+      </label>
+    </div>
+
+    <button id="zabGuestCalc" type="button" class="btn">Gepäckpreis berechnen</button>
+    <div id="zabGuestStatus" class="hint">Noch keine Berechnung.</div>
+
+    <div id="zabGuestResult" class="zab-guest-result" hidden>
+      <span>Ihr berechneter Gepäckpreis</span>
+      <strong id="zabGuestPrice">–</strong>
+      <p id="zabGuestRoute"></p>
+      <small id="zabGuestMeta"></small>
+      <button id="zabGuestUsePrice" type="button" class="btn">Diesen Gepäcktransport anfragen</button>
+      <small class="zab-price-note">Preis auf Basis der aktuellen Routen- und Betriebskalkulation. Die Leistung wird mit unserer persönlichen Bestätigung verbindlich.</small>
+    </div>
+  </div>
+</section>
+
     <section id="zimmer">
       <div class="section-head">
         <span class="eyebrow">Zimmer</span>
@@ -2910,5 +2946,6 @@
     })();
   </script>
 
+  <script src="zab-guest-price.js" defer></script>
 </body>
 </html>
