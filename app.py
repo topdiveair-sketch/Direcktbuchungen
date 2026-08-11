@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import json
 import sqlite3
 import urllib.request
 import urllib.error
@@ -163,8 +164,24 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS seasons (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, start_date TEXT NOT NULL, end_date TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS discounts (key TEXT PRIMARY KEY, enabled INTEGER NOT NULL, percent REAL NOT NULL, min_nights INTEGER NOT NULL DEFAULT 0, days_before INTEGER NOT NULL DEFAULT 0);
             CREATE TABLE IF NOT EXISTS extras (key TEXT PRIMARY KEY, label TEXT NOT NULL, price REAL NOT NULL, unit TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 1);
+            CREATE TABLE IF NOT EXISTS funnel_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_name TEXT NOT NULL, visitor_id TEXT NOT NULL,
+                source TEXT DEFAULT '', utm_source TEXT DEFAULT '', utm_medium TEXT DEFAULT '',
+                utm_campaign TEXT DEFAULT '', utm_content TEXT DEFAULT '', utm_term TEXT DEFAULT '', src TEXT DEFAULT '',
+                booking_id INTEGER, revenue REAL DEFAULT 0, created_at TEXT NOT NULL
+            );
             """
         )
+        booking_columns = {row["name"] for row in conn.execute("PRAGMA table_info(bookings)")}
+        for name, definition in {
+            "booking_number": "TEXT", "idempotency_key": "TEXT",
+            "payment_status": "TEXT NOT NULL DEFAULT 'awaiting_confirmation'",
+            "attribution_source": "TEXT DEFAULT ''", "attribution_json": "TEXT DEFAULT '{}'",
+        }.items():
+            if name not in booking_columns:
+                conn.execute(f"ALTER TABLE bookings ADD COLUMN {name} {definition}")
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_idempotency ON bookings(idempotency_key) WHERE idempotency_key IS NOT NULL")
         for room, data in ROOMS.items():
             conn.execute(
                 "INSERT OR IGNORE INTO ical_settings(room, import_url) VALUES (?, '')",
@@ -319,7 +336,7 @@ def room_available_in_conn(conn: sqlite3.Connection, room: str, arrival: date, d
     local = conn.execute(
         """
         SELECT arrival, departure FROM bookings
-        WHERE room = ? AND status IN ('pending', 'confirmed')
+        WHERE room = ? AND status IN ('pending', 'inquiry', 'confirmed')
         """,
         (room,),
     ).fetchall()
@@ -339,6 +356,31 @@ def room_available_in_conn(conn: sqlite3.Connection, room: str, arrival: date, d
     return True, "Das Zimmer ist verfügbar."
 
 
+def calendar_health_in_conn(conn: sqlite3.Connection, room: str) -> tuple[bool, str]:
+    row = conn.execute("SELECT import_url,last_sync,last_result FROM ical_settings WHERE room=?", (room,)).fetchone()
+    if not row or not (row["import_url"] or "").strip():
+        return False, "Für dieses Zimmer ist keine Belegungsquelle verbunden."
+    if not row["last_sync"] or (row["last_result"] or "").lower().startswith("fehler"):
+        return False, "Die Belegungsquelle konnte nicht zuverlässig geprüft werden."
+    try:
+        synced = datetime.fromisoformat(row["last_sync"])
+    except ValueError:
+        return False, "Der Kalenderstand ist nicht eindeutig datiert."
+    if datetime.now() - synced > timedelta(hours=6):
+        return False, "Der Kalenderstand ist älter als sechs Stunden."
+    return True, "Kalender aktuell."
+
+
+def availability_status_in_conn(conn: sqlite3.Connection, room: str, arrival: date, departure: date) -> tuple[str, str]:
+    ok, message = room_available_in_conn(conn, room, arrival, departure)
+    if not ok:
+        return "occupied", message
+    healthy, health_message = calendar_health_in_conn(conn, room)
+    if not healthy:
+        return "unknown", f"Verfügbarkeit wird persönlich bestätigt. {health_message}"
+    return "free", "Das Zimmer ist verfügbar."
+
+
 def room_available(room: str, arrival: date, departure: date) -> tuple[bool, str]:
     if room not in ROOMS:
         return False, "Unbekanntes Zimmer."
@@ -353,6 +395,14 @@ def room_available(room: str, arrival: date, departure: date) -> tuple[bool, str
 
     with db() as conn:
         return room_available_in_conn(conn, room, arrival, departure)
+
+
+def availability_status(room: str, arrival: date, departure: date) -> tuple[str, str]:
+    if room not in ROOMS or departure <= arrival or arrival < ROOMS.get(room, {}).get("available_from", date.max):
+        ok, message = room_available(room, arrival, departure)
+        return ("free" if ok else "occupied"), message
+    with db() as conn:
+        return availability_status_in_conn(conn, room, arrival, departure)
 
 def calculate_total(room: str, arrival: date, departure: date, adults: int, breakfast: bool) -> float:
     return price_breakdown(room,arrival,departure,adults,{"breakfast":breakfast})["total"]
@@ -518,13 +568,52 @@ def globals_for_templates():
 
 @app.get("/")
 def index():
+    keys = ("utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "src")
+    incoming = {key: request.args.get(key, "")[:200] for key in keys if request.args.get(key)}
+    if incoming:
+        attribution = dict(session.get("attribution", {}))
+        attribution.update(incoming)
+        if attribution.get("utm_source", "").lower() == "google" or attribution.get("src", "").lower() == "google":
+            attribution["source"] = "google_business"
+        session["attribution"] = attribution
+    session.setdefault("visitor_id", uuid4().hex)
     return render_template(
         "index.html",
         today=date.today().isoformat(),
         settings=get_settings(),
         room_images=get_room_images(),
         price_settings=pricing_data()[0], discounts=pricing_data()[1], extras_cfg=pricing_data()[2], seasons=pricing_data()[3],
+        google_landing=session.get("attribution", {}).get("source") == "google_business",
+        attribution=session.get("attribution", {}), visitor_id=session["visitor_id"],
     )
+
+
+ALLOWED_FUNNEL_EVENTS = {
+    "landing_view", "availability_started", "availability_result_free",
+    "availability_result_occupied", "availability_result_unknown", "room_selected",
+    "extras_selected", "checkout_started", "payment_started", "payment_success",
+    "payment_failed", "booking_completed", "booking_abandoned",
+}
+
+
+@app.post("/api/events")
+def api_events():
+    event_name = (request.get_json(silent=True) or {}).get("event")
+    if event_name not in ALLOWED_FUNNEL_EVENTS:
+        return jsonify(ok=False), 400
+    attribution = session.get("attribution", {})
+    visitor_id = session.setdefault("visitor_id", uuid4().hex)
+    with db() as conn:
+        conn.execute(
+            """INSERT INTO funnel_events
+               (event_name,visitor_id,source,utm_source,utm_medium,utm_campaign,utm_content,utm_term,src,created_at)
+               VALUES (?,?,?,?,?,?,?,?,?,?)""",
+            (event_name, visitor_id, attribution.get("source", ""), attribution.get("utm_source", ""),
+             attribution.get("utm_medium", ""), attribution.get("utm_campaign", ""),
+             attribution.get("utm_content", ""), attribution.get("utm_term", ""), attribution.get("src", ""),
+             datetime.now().isoformat(timespec="seconds")),
+        )
+    return jsonify(ok=True)
 
 
 @app.post("/api/availability")
@@ -540,12 +629,14 @@ def api_availability():
     except (KeyError, ValueError):
         return jsonify(available=False, message="Bitte gültige Reisedaten eingeben."), 400
 
-    ok, message = room_available(room, arrival, departure)
+    status, message = availability_status(room, arrival, departure)
+    ok = status == "free"
     return jsonify(
         available=ok,
+        status=status,
         message=message,
-        total=price_breakdown(room,arrival,departure,adults,chosen,coupon_code)["total"] if ok else None,
-        breakdown=price_breakdown(room,arrival,departure,adults,chosen,coupon_code) if ok else None,
+        total=price_breakdown(room,arrival,departure,adults,chosen,coupon_code)["total"] if status != "occupied" else None,
+        breakdown=price_breakdown(room,arrival,departure,adults,chosen,coupon_code) if status != "occupied" else None,
         nights=(departure-arrival).days if departure>arrival else 0,
     )
 
@@ -578,7 +669,7 @@ def api_calendar():
         local = conn.execute(
             """
             SELECT arrival, departure, status FROM bookings
-            WHERE room=? AND status IN ('pending','confirmed')
+            WHERE room=? AND status IN ('pending','inquiry','confirmed')
             """,
             (room,),
         ).fetchall()
@@ -620,12 +711,19 @@ def book():
         email = request.form["email"].strip()
         phone = request.form["phone"].strip()
         payment_method = request.form["payment_method"]
+        idempotency_key = request.form.get("idempotency_key", "").strip()[:100]
     except (KeyError, ValueError):
         flash("Bitte alle Pflichtfelder korrekt ausfüllen.", "error")
         return redirect(url_for("index") + "#booking")
 
-    ok, message = room_available(room, arrival, departure)
-    if not ok:
+    if idempotency_key:
+        with db() as conn:
+            existing = conn.execute("SELECT * FROM bookings WHERE idempotency_key=?", (idempotency_key,)).fetchone()
+        if existing:
+            return render_template("success.html", booking=existing, settings=get_settings())
+
+    status, message = availability_status(room, arrival, departure)
+    if status == "occupied":
         flash(message, "error")
         return redirect(url_for("index") + "#booking")
 
@@ -635,28 +733,44 @@ def book():
 
     total = price_breakdown(room,arrival,departure,adults,chosen,coupon_code)["total"]
     uid = f"ZAB-{uuid4()}@zuhause-am-bach"
+    booking_number = "ZAB-" + datetime.now().strftime("%Y%m%d") + "-" + uuid4().hex[:6].upper()
+    attribution = session.get("attribution", {})
+    # Auch eine persönliche Anfrage wird lokal sofort vorgemerkt. So kann bis zur
+    # manuellen Prüfung kein zweiter Direktgast denselben Zeitraum beanspruchen.
+    booking_status = "pending" if status == "free" else "inquiry"
 
     with db() as conn:
         conn.execute("BEGIN IMMEDIATE")
-        ok, message = room_available_in_conn(conn, room, arrival, departure)
-        if not ok:
+        current_status, message = availability_status_in_conn(conn, room, arrival, departure)
+        if current_status == "occupied":
             flash(message, "error")
             return redirect(url_for("index") + "#booking")
         cur = conn.execute(
             """
             INSERT INTO bookings
             (uid, room, arrival, departure, adults, breakfast, first_name,
-             last_name, email, phone, message, payment_method, total, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+             last_name, email, phone, message, payment_method, total, status, created_at,
+             booking_number, idempotency_key, payment_status, attribution_source, attribution_json)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'awaiting_confirmation', ?, ?)
             """,
             (
                 uid, room, arrival.isoformat(), departure.isoformat(), adults,
                 1 if breakfast else 0, first_name, last_name, email, phone,
                 request.form.get("message", "").strip(), payment_method, total,
-                datetime.now().isoformat(timespec="seconds"),
+                booking_status, datetime.now().isoformat(timespec="seconds"), booking_number,
+                idempotency_key or None, attribution.get("source", ""), json.dumps(attribution, ensure_ascii=False),
             ),
         )
         booking_id = cur.lastrowid
+        conn.execute(
+            """INSERT INTO funnel_events
+               (event_name,visitor_id,source,utm_source,utm_medium,utm_campaign,utm_content,utm_term,src,booking_id,revenue,created_at)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+            ("booking_completed", session.get("visitor_id", "server"), attribution.get("source", ""),
+             attribution.get("utm_source", ""), attribution.get("utm_medium", ""), attribution.get("utm_campaign", ""),
+             attribution.get("utm_content", ""), attribution.get("utm_term", ""), attribution.get("src", ""),
+             booking_id, total, datetime.now().isoformat(timespec="seconds")),
+        )
     if app.extensions.get("zab_ensure_tokens"):
         app.extensions["zab_ensure_tokens"](booking_id)
     if app.extensions.get("v6_ensure_checkin_token"):
@@ -667,22 +781,9 @@ def book():
         except Exception:
             pass
 
-    return render_template(
-        "success.html",
-        booking={
-            "room": room,
-            "arrival": arrival,
-            "departure": departure,
-            "adults": adults,
-            "breakfast": breakfast,
-            "payment_method": payment_method,
-            "total": total,
-            "first_name": first_name,
-        },
-        settings=get_settings(),
-    )
-
-
+    with db() as conn:
+        saved_booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
+    return render_template("success.html", booking=saved_booking, settings=get_settings())
 @app.get("/calendar/<room>.ics")
 def export_calendar(room: str):
     if room not in ROOMS:

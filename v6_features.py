@@ -226,7 +226,16 @@ def init_v6(app, DB_PATH, db, require_admin, ROOMS):
                                  ROUND(AVG(julianday(departure)-julianday(arrival)),1) avg_nights
                                  FROM bookings WHERE status!='cancelled' GROUP BY room""").fetchall()
             sources=[{"source":"Direkt","bookings":conn.execute("SELECT COUNT(*) c FROM bookings WHERE status!='cancelled'").fetchone()["c"]}]
-        return render_template("statistics.html",monthly=monthly,by_room=by_room,sources=sources)
+            funnel_rows=conn.execute("""SELECT event_name,COUNT(*) count,ROUND(SUM(revenue),2) revenue
+                                      FROM funnel_events WHERE source='google_business' GROUP BY event_name""").fetchall()
+            funnel={r["event_name"]:{"count":r["count"],"revenue":r["revenue"] or 0} for r in funnel_rows}
+        visitors=funnel.get("landing_view",{}).get("count",0)
+        def rate(event):
+            return round(100*funnel.get(event,{}).get("count",0)/visitors,1) if visitors else 0
+        metrics={"availability_rate":rate("availability_started"),"checkout_rate":rate("checkout_started"),
+                 "booking_conversion":rate("booking_completed"),
+                 "revenue_per_visitor":round(funnel.get("booking_completed",{}).get("revenue",0)/visitors,2) if visitors else 0}
+        return render_template("statistics.html",monthly=monthly,by_room=by_room,sources=sources,funnel=funnel,metrics=metrics)
 
     @app.get("/admin/v6-data")
     def v6_admin_data():
