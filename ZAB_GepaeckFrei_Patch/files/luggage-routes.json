@@ -1,0 +1,38 @@
+{
+  "currency": "EUR",
+  "pricingStatus": "request",
+  "updatedAt": "2026-08-11",
+  "note": "Preise erst nach bestätigten Partnerkonditionen eintragen. null = Preis auf Anfrage.",
+  "routes": [
+    {
+      "from": "Maria Laach",
+      "to": "Aggsbach Markt",
+      "price": null
+    },
+    {
+      "from": "Aggsbach Markt",
+      "to": "Spitz",
+      "price": null
+    },
+    {
+      "from": "Aggsbach Markt",
+      "to": "Weißenkirchen",
+      "price": null
+    },
+    {
+      "from": "Aggsbach Markt",
+      "to": "Dürnstein",
+      "price": null
+    },
+    {
+      "from": "Aggsbach Markt",
+      "to": "Krems",
+      "price": null
+    },
+    {
+      "from": "Aggsbach Markt",
+      "to": "Melk",
+      "price": null
+    }
+  ]
+}
