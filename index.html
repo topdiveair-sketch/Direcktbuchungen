@@ -993,6 +993,14 @@
     {"@type":"WebPage","@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#webpage","name":"Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau","url":"https://topdiveair-sketch.github.io/Direcktbuchungen/","isPartOf":{"@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#website"},"about":{"@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#lodging"},"dateModified":"2026-08-10","inLanguage":"de-AT"}
   ]}
   </script>
+<style id="zab-gepaeckfrei-style">
+.zab-gf-box{max-width:900px}
+.zab-gf-result{display:grid;gap:8px;margin-top:16px;padding:20px;border:2px solid #176b5a;border-radius:12px;background:#eef8f3;text-align:center}
+.zab-gf-result>strong{font-size:clamp(36px,7vw,58px);line-height:1;color:#176b5a}
+.zab-gf-result p{margin:0;font-weight:850}
+.zab-gf-result small{color:#5f6f69}
+.zab-gf-result .btn{justify-self:center;margin-top:8px}
+</style>
 </head>
 <body>
   <header class="top" id="start">
@@ -1077,9 +1085,9 @@
                 <b class="price">+29,90</b>
               </label>
               <label class="choice">
-                <input type="checkbox" name="extra" value="Gepäcktransport" data-price="15" data-unit="once">
-                <span><strong>Gepäcktransport</strong><small>15,00 EUR einmalig</small></span>
-                <b class="price">+15,00</b>
+                <input id="luggageTransport" type="checkbox" name="extra" value="Gepäcktransport" data-price="0" data-unit="once">
+                <span><strong>Gepäcktransport</strong><small>Preis nach Strecke</small></span>
+                <b class="price">auf Anfrage</b>
               </label>
             </div>
           </div>
@@ -1276,7 +1284,37 @@
   </div>
 </section>
 
-    <section id="zimmer">
+    <section id="gepaeckfrei" aria-labelledby="gepaeckfrei-title">
+  <div class="section-head">
+    <span class="eyebrow">ZAB GepäckFrei · Welterbesteig & Donauradweg</span>
+    <h2 id="gepaeckfrei-title">Du wanderst. Wir kümmern uns um dein Gepäck.</h2>
+    <p>Auch für nur eine Etappe: Gepäck von der vorherigen Unterkunft zu uns oder von Zuhause am Bach zur nächsten Unterkunft.</p>
+  </div>
+  <div class="panel zab-gf-box">
+    <div class="form-grid">
+      <label>Richtung
+        <select id="zabGuestMode">
+          <option value="to">Zuhause am Bach → nächste Unterkunft</option>
+          <option value="from">Vorherige Unterkunft → Zuhause am Bach</option>
+        </select>
+      </label>
+      <label>Unterkunft, Ort oder Adresse
+        <input id="zabGuestDestination" placeholder="z. B. Spitz, Hotelname oder genaue Adresse">
+      </label>
+    </div>
+    <button id="zabGuestCalc" type="button" class="btn">Gepäckpreis berechnen</button>
+    <div id="zabGuestStatus" class="hint">Abhol- oder Zielort eingeben.</div>
+    <div id="zabGuestResult" class="zab-gf-result" hidden>
+      <span>Ihr kalkulierter Gepäckpreis</span>
+      <strong id="zabGuestPrice">–</strong>
+      <p id="zabGuestRoute"></p>
+      <small id="zabGuestMeta"></small>
+      <button id="zabGuestUsePrice" type="button" class="btn">Diesen Gepäcktransport anfragen</button>
+      <small>Verbindlich wird die Zusatzleistung erst mit unserer persönlichen Bestätigung.</small>
+    </div>
+  </div>
+</section>
+<section id="zimmer">
       <div class="section-head">
         <span class="eyebrow">Zimmer</span>
         <h2>Vier Zimmer, ruhig und persönlich</h2>
@@ -1364,7 +1402,7 @@
       <div class="facts">
         <article class="fact"><strong>Frühstück</strong><small>12,00 EUR pro Person und Nacht, direkt in der Anfrage auswählbar.</small></article>
         <article class="fact"><strong>Wachauer Jause</strong><small>29,90 EUR einmalig, ideal für Ankunft oder Ausflugstag.</small></article>
-        <article class="fact"><strong>Gepäcktransport</strong><small>15,00 EUR einmalig, besonders praktisch für Radfahrer und Wanderer.</small></article>
+        <article class="fact"><strong>Gepäcktransport</strong><small>Preis nach Strecke, besonders praktisch für Radfahrer und Wanderer.</small></article>
         <article class="fact"><strong>Kontakt</strong><small>Telefon +43 664 6437526, E-Mail topdiveair@gmail.com.</small></article>
       </div>
     </section>
@@ -1503,7 +1541,7 @@
         "Wachauer Jause": "Wachau snack platter",
         "29,90 EUR einmalig": "29.90 EUR once",
         "Gepäcktransport": "Luggage transfer",
-        "15,00 EUR einmalig": "15.00 EUR once",
+        "Preis nach Strecke": "15.00 EUR once",
         "bereits buchbar": "available to request",
         "ab 15.08.2026, erst nach Freigabe": "from 15/08/2026, after release",
         "Direktpreis": "Direct price",
@@ -1566,7 +1604,7 @@
         "Alles Wichtige ohne Technik": "Everything important, without fuss",
         "12,00 EUR pro Person und Nacht, direkt in der Anfrage auswählbar.": "12.00 EUR per person and night, selectable directly in the request.",
         "29,90 EUR einmalig, ideal für Ankunft oder Ausflugstag.": "29.90 EUR once, ideal for arrival or excursion day.",
-        "15,00 EUR einmalig, besonders praktisch für Radfahrer und Wanderer.": "15.00 EUR once, especially practical for cyclists and hikers.",
+        "Preis nach Strecke, besonders praktisch für Radfahrer und Wanderer.": "15.00 EUR once, especially practical for cyclists and hikers.",
         "Telefon +43 664 6437526, E-Mail topdiveair@gmail.com.": "Phone +43 664 6437526, email topdiveair@gmail.com.",
         "Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich": "Aggsbach Markt 82, 3641 Aggsbach Markt, Austria",
         "Impressum & Rechtliches": "Legal notice & terms",
@@ -1623,7 +1661,7 @@
         "Wachauer Jause": "Wachauská svačina",
         "29,90 EUR einmalig": "29,90 EUR jednorázově",
         "Gepäcktransport": "Přeprava zavazadel",
-        "15,00 EUR einmalig": "15,00 EUR jednorázově",
+        "Preis nach Strecke": "15,00 EUR jednorázově",
         "bereits buchbar": "lze poptat",
         "ab 15.08.2026, erst nach Freigabe": "od 15. 8. 2026, po uvolnění",
         "Direktpreis": "Přímá cena",
@@ -1682,7 +1720,7 @@
         "Alles Wichtige ohne Technik": "Vše důležité jednoduše",
         "12,00 EUR pro Person und Nacht, direkt in der Anfrage auswählbar.": "12,00 EUR za osobu a noc, lze vybrat přímo v poptávce.",
         "29,90 EUR einmalig, ideal für Ankunft oder Ausflugstag.": "29,90 EUR jednorázově, ideální při příjezdu nebo na výletní den.",
-        "15,00 EUR einmalig, besonders praktisch für Radfahrer und Wanderer.": "15,00 EUR jednorázově, zvlášť praktické pro cyklisty a turisty.",
+        "Preis nach Strecke, besonders praktisch für Radfahrer und Wanderer.": "15,00 EUR jednorázově, zvlášť praktické pro cyklisty a turisty.",
         "Telefon +43 664 6437526, E-Mail topdiveair@gmail.com.": "Telefon +43 664 6437526, e-mail topdiveair@gmail.com.",
         "Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich": "Aggsbach Markt 82, 3641 Aggsbach Markt, Rakousko",
         "Impressum & Rechtliches": "Impresum a právní informace",
@@ -1739,7 +1777,7 @@
         "Wachauer Jause": "Wachaui uzsonna",
         "29,90 EUR einmalig": "29,90 EUR egyszeri díj",
         "Gepäcktransport": "Poggyászszállítás",
-        "15,00 EUR einmalig": "15,00 EUR egyszeri díj",
+        "Preis nach Strecke": "15,00 EUR egyszeri díj",
         "bereits buchbar": "már kérhető",
         "ab 15.08.2026, erst nach Freigabe": "2026.08.15-től, felszabadítás után",
         "Direktpreis": "Közvetlen ár",
@@ -1798,7 +1836,7 @@
         "Alles Wichtige ohne Technik": "Minden fontos egyszerűen",
         "12,00 EUR pro Person und Nacht, direkt in der Anfrage auswählbar.": "12,00 EUR személyenként és éjszakánként, közvetlenül kiválasztható a kérésben.",
         "29,90 EUR einmalig, ideal für Ankunft oder Ausflugstag.": "29,90 EUR egyszeri díj, ideális érkezéshez vagy kirándulónapra.",
-        "15,00 EUR einmalig, besonders praktisch für Radfahrer und Wanderer.": "15,00 EUR egyszeri díj, különösen praktikus kerékpárosoknak és túrázóknak.",
+        "Preis nach Strecke, besonders praktisch für Radfahrer und Wanderer.": "15,00 EUR egyszeri díj, különösen praktikus kerékpárosoknak és túrázóknak.",
         "Telefon +43 664 6437526, E-Mail topdiveair@gmail.com.": "Telefon +43 664 6437526, e-mail topdiveair@gmail.com.",
         "Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich": "Aggsbach Markt 82, 3641 Aggsbach Markt, Ausztria",
         "Impressum & Rechtliches": "Impresszum és jogi információk",
@@ -1855,7 +1893,7 @@
         "Wachauer Jause": "Merienda de Wachau",
         "29,90 EUR einmalig": "29,90 EUR una vez",
         "Gepäcktransport": "Transporte de equipaje",
-        "15,00 EUR einmalig": "15,00 EUR una vez",
+        "Preis nach Strecke": "15,00 EUR una vez",
         "bereits buchbar": "ya disponible",
         "ab 15.08.2026, erst nach Freigabe": "desde 15/08/2026, tras liberación",
         "Direktpreis": "Precio directo",
@@ -1914,7 +1952,7 @@
         "Alles Wichtige ohne Technik": "Todo lo importante, sencillo",
         "12,00 EUR pro Person und Nacht, direkt in der Anfrage auswählbar.": "12,00 EUR por persona y noche, seleccionable en la solicitud.",
         "29,90 EUR einmalig, ideal für Ankunft oder Ausflugstag.": "29,90 EUR una vez, ideal para la llegada o un día de excursión.",
-        "15,00 EUR einmalig, besonders praktisch für Radfahrer und Wanderer.": "15,00 EUR una vez, especialmente práctico para ciclistas y senderistas.",
+        "Preis nach Strecke, besonders praktisch für Radfahrer und Wanderer.": "15,00 EUR una vez, especialmente práctico para ciclistas y senderistas.",
         "Telefon +43 664 6437526, E-Mail topdiveair@gmail.com.": "Teléfono +43 664 6437526, email topdiveair@gmail.com.",
         "Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich": "Aggsbach Markt 82, 3641 Aggsbach Markt, Austria",
         "Impressum & Rechtliches": "Aviso legal y condiciones",
@@ -1971,7 +2009,7 @@
         "Wachauer Jause": "Collation de la Wachau",
         "29,90 EUR einmalig": "29,90 EUR une fois",
         "Gepäcktransport": "Transport des bagages",
-        "15,00 EUR einmalig": "15,00 EUR une fois",
+        "Preis nach Strecke": "15,00 EUR une fois",
         "bereits buchbar": "déjà disponible",
         "ab 15.08.2026, erst nach Freigabe": "à partir du 15/08/2026, après libération",
         "Direktpreis": "Prix direct",
@@ -2030,7 +2068,7 @@
         "Alles Wichtige ohne Technik": "Tout l'essentiel simplement",
         "12,00 EUR pro Person und Nacht, direkt in der Anfrage auswählbar.": "12,00 EUR par personne et par nuit, sélectionnable dans la demande.",
         "29,90 EUR einmalig, ideal für Ankunft oder Ausflugstag.": "29,90 EUR une fois, idéal à l'arrivée ou pour une journée d'excursion.",
-        "15,00 EUR einmalig, besonders praktisch für Radfahrer und Wanderer.": "15,00 EUR une fois, particulièrement pratique pour cyclistes et randonneurs.",
+        "Preis nach Strecke, besonders praktisch für Radfahrer und Wanderer.": "15,00 EUR une fois, particulièrement pratique pour cyclistes et randonneurs.",
         "Telefon +43 664 6437526, E-Mail topdiveair@gmail.com.": "Téléphone +43 664 6437526, e-mail topdiveair@gmail.com.",
         "Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich": "Aggsbach Markt 82, 3641 Aggsbach Markt, Autriche",
         "Impressum & Rechtliches": "Mentions légales et conditions",

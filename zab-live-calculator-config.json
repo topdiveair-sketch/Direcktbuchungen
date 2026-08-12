@@ -21,8 +21,7 @@
   "fuel": {
     "type": "DIE",
     "fallback_diesel_eur_per_l": 2.1,
-    "use_cheapest_reported_station": true,
-    "max_reasonable_price_eur_per_l": 4.0,
-    "min_reasonable_price_eur_per_l": 0.8
+    "min_reasonable_price_eur_per_l": 0.8,
+    "max_reasonable_price_eur_per_l": 4.0
   }
 }
