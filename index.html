@@ -1001,6 +1001,7 @@
 .zab-gf-result small{color:#5f6f69}
 .zab-gf-result .btn{justify-self:center;margin-top:8px}
 </style>
+<script src="zab-sync-config.js"></script>
 </head>
 <body>
   <header class="top" id="start">
@@ -2380,13 +2381,13 @@
       button.addEventListener("click", () => applyLanguage(button.dataset.lang));
     });
     applyLanguage(currentLang, false);
-    const LIVE_BOOKING_API_URL = "booking-calendar.json";
+    const LIVE_BOOKING_API_URL = (window.ZAB_BOOKING_SYNC_URL || "") + "/availability";
     const LIVE_PRICE_API_URL = "";
     const OTHER_ROOMS_RELEASED = window.SHOW_ADDITIONAL_ROOMS === true;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
     let bookingCalendarUpdated = "10.8.2026, 19:04:04";
     let bookingCalendarUpdatedIso = "2026-08-10T17:04:04.711Z";
-    let bookingCalendarMode = "snapshot";
+    let bookingCalendarMode = "offline";
     let liveBookingCalendarLoaded = true;
     let liveBookingCalendarPending = false;
     
@@ -2481,7 +2482,7 @@
       if (!bookingCalendarUpdatedIso) return false;
       const updated = new Date(bookingCalendarUpdatedIso);
       if (Number.isNaN(updated.getTime())) return false;
-      return Date.now() - updated.getTime() <= 36 * 60 * 60 * 1000;
+      return Date.now() - updated.getTime() <= 10 * 60 * 1000;
     }
 
     function availabilityText() {
@@ -2527,8 +2528,8 @@
       }
       if (!calendarIsFresh()) {
         return {
-          state: "ok",
-          text: "Bachblick ist laut dem letzten Booking-Kalenderstand frei. Ihre Anfrage kann gesendet werden; die Buchung wird persönlich bestätigt. Letzter Kalenderstand: " + bookingCalendarUpdated + "."
+          state: "note",
+          text: "Die Booking-Verfügbarkeit konnte nicht aktuell bestätigt werden. Bitte erneut versuchen oder Anfrage senden; wir bestätigen den Termin persönlich. Letzter erfolgreicher Sync: " + bookingCalendarUpdated + "."
         };
       }
       return {
@@ -2665,10 +2666,10 @@
         bookingCalendarMode = "live";
         liveBookingCalendarLoaded = true;
       } catch (error) {
-        bookingCalendarMode = "snapshot";
-        liveBookingCalendarLoaded = true;
+        bookingCalendarMode = "offline";
+        liveBookingCalendarLoaded = false;
         availabilityStatus.className = "availability-status note";
-        availabilityStatus.textContent = tr("calendarError") + " Eingebetteter Kalenderstand bleibt aktiv.";
+        availabilityStatus.textContent = "Booking-Abgleich derzeit nicht erreichbar. Es wird keine automatische Frei-Meldung angezeigt.";
       } finally {
         liveBookingCalendarPending = false;
       }
