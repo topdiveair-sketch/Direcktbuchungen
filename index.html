@@ -1086,26 +1086,26 @@
 
           <div>
             <label>Zimmer</label>
-            <div class="rooms" id="roomChoices">
+            <div class="rooms">
               <label class="choice">
                 <input type="radio" name="room" value="Bachblick" data-price="101" checked>
                 <span><strong>Bachblick</strong><small>bereits buchbar</small></span>
-                <b class="price">101,00 EUR</b>
+                <b class="price">101 EUR</b>
               </label>
               <label class="choice future-room" data-future-room hidden>
                 <input type="radio" name="room" value="Marillenzimmer" data-price="90" data-from="2026-08-15" data-release-required="1">
                 <span><strong>Marillenzimmer</strong><small>ab 15.08.2026, erst nach Freigabe</small></span>
-                <b class="price">90,00 EUR</b>
+                <b class="price">90 EUR</b>
               </label>
               <label class="choice future-room" data-future-room hidden>
                 <input type="radio" name="room" value="Weinbergzimmer" data-price="90" data-from="2026-08-15" data-release-required="1">
                 <span><strong>Weinbergzimmer</strong><small>ab 15.08.2026, erst nach Freigabe</small></span>
-                <b class="price">90,00 EUR</b>
+                <b class="price">90 EUR</b>
               </label>
               <label class="choice future-room" data-future-room hidden>
                 <input type="radio" name="room" value="Donauzimmer" data-price="90" data-from="2026-08-15" data-release-required="1">
                 <span><strong>Donauzimmer</strong><small>ab 15.08.2026, erst nach Freigabe</small></span>
-                <b class="price">90,00 EUR</b>
+                <b class="price">90 EUR</b>
               </label>
             </div>
           </div>
@@ -1284,7 +1284,7 @@
       </div>
       <div class="room-grid">
         <article class="room-card">
-          <img width="1137" height="800" loading="lazy" decoding="async" src="images/rooms/bachblick.jpg" alt="Ruhiges Doppelzimmer Bachblick bei Zuhause am Bach in Aggsbach Markt">
+          <img width="1137" height="800" loading="lazy" decoding="async" src="images/rooms/bachblick.webp" alt="Ruhiges Doppelzimmer Bachblick bei Zuhause am Bach in Aggsbach Markt">
           <div>
             <h3>Bachblick</h3>
             <p>Doppelzimmer mit Blick auf den Bach. Gemütlich, ruhig und zum Wohlfühlen.</p>
@@ -1292,7 +1292,7 @@
           </div>
         </article>
         <article class="room-card future-room" data-future-room hidden>
-          <img width="1200" height="800" loading="lazy" decoding="async" src="images/rooms/marillenzimmer.jpg" alt="Marillenzimmer für Wachau-Urlauber bei Zuhause am Bach">
+          <img width="1200" height="800" loading="lazy" decoding="async" src="images/rooms/marillenzimmer.webp" alt="Marillenzimmer für Wachau-Urlauber bei Zuhause am Bach">
           <div>
             <h3>Marillenzimmer</h3>
             <p>Wachauer Atmosphäre, warme Details und ein ruhiger Rückzugsort.</p>
@@ -1300,7 +1300,7 @@
           </div>
         </article>
         <article class="room-card future-room" data-future-room hidden>
-          <img width="1200" height="800" loading="lazy" decoding="async" src="images/rooms/weinbergzimmer.jpg" alt="Weinbergzimmer für Wanderer und Radfahrer in der Wachau">
+          <img width="1200" height="800" loading="lazy" decoding="async" src="images/rooms/weinbergzimmer.webp" alt="Weinbergzimmer für Wanderer und Radfahrer in der Wachau">
           <div>
             <h3>Weinbergzimmer</h3>
             <p>Inspiriert von den Weinbergen der Wachau, ideal für Genießer.</p>
@@ -1308,7 +1308,7 @@
           </div>
         </article>
         <article class="room-card future-room" data-future-room hidden>
-          <img width="1200" height="800" loading="lazy" decoding="async" src="images/rooms/donauzimmer.jpg" alt="Donauzimmer nahe Donauradweg und Welterbesteig Wachau">
+          <img width="1200" height="800" loading="lazy" decoding="async" src="images/rooms/donauzimmer.webp" alt="Donauzimmer nahe Donauradweg und Welterbesteig Wachau">
           <div>
             <h3>Donauzimmer</h3>
             <p>Ein freundliches Zimmer mit Bezug zur Donau und zur Wachauer Landschaft.</p>
@@ -2390,15 +2390,8 @@
       return Math.round((d - a) / 86400000);
     }
 
-    function toCents(euroValue) {
-      return Math.round(Number(euroValue || 0) * 100);
-    }
-
-    function money(cents) {
-      return (cents / 100).toLocaleString(LANGUAGES[currentLang].locale, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }) + " EUR";
+    function money(value) {
+      return Math.round(value).toLocaleString(LANGUAGES[currentLang].locale, { maximumFractionDigits: 0 }) + " EUR";
     }
 
     function sameDayArrival() {
@@ -2477,8 +2470,8 @@
           };
         }
         return {
-          state: "unknown",
-          text: "Verfügbarkeit konnte gerade nicht zuverlässig geprüft werden. Bitte Anfrage senden – wir bestätigen persönlich."
+          state: "ok",
+          text: tr("noIcal", { room: room.value })
         };
       }
       if (!LIVE_BOOKING_API_URL || !liveBookingCalendarLoaded) {
@@ -2491,34 +2484,19 @@
       if (conflict) {
         return {
           state: "blocked",
-          text: "Für diesen Zeitraum ist Bachblick nicht verfügbar. Kalenderstand: " + bookingCalendarUpdated + "."
+          text: tr("blocked", { mode: calendarModeLabel(), updated: bookingCalendarUpdated })
         };
       }
-      if (bookingCalendarMode !== "live" || !calendarIsFresh()) {
+      if (!calendarIsFresh()) {
         return {
-          state: "unknown",
-          text: "Verfügbarkeit konnte gerade nicht zuverlässig geprüft werden. Bitte Anfrage senden – wir bestätigen persönlich. Letzter Kalenderstand: " + bookingCalendarUpdated + "."
+          state: "ok",
+          text: "Bachblick ist laut dem letzten Booking-Kalenderstand frei. Ihre Anfrage kann gesendet werden; die Buchung wird persönlich bestätigt. Letzter Kalenderstand: " + bookingCalendarUpdated + "."
         };
       }
       return {
         state: "ok",
-        text: "Für diesen Zeitraum ist Bachblick laut aktuellem Kalender frei. Kalenderstand: " + bookingCalendarUpdated + "."
+        text: tr("free", { mode: calendarModeLabel(), updated: bookingCalendarUpdated })
       };
-    }
-
-    let lastTrackedAvailability = "";
-    function trackAvailabilityResult(availability, force) {
-      const n = nightCount();
-      const room = selectedRoom();
-      if (!room || n < 1 || typeof window.zabTrack !== "function") return;
-      const eventState = availability.state === "ok" ? "free" : availability.state === "blocked" ? "blocked" : "unknown";
-      const signature = [eventState, room.value, arrival.value, departure.value, bookingCalendarMode, bookingCalendarUpdated].join("|");
-      if (!force && signature === lastTrackedAvailability) return;
-      lastTrackedAvailability = signature;
-      window.zabTrack("availability_result_" + eventState, {
-        room: room.value, arrival: arrival.value, departure: departure.value, nights: n,
-        calendar_mode: bookingCalendarMode, calendar_updated: bookingCalendarUpdated
-      });
     }
 
     function calculate() {
@@ -2526,33 +2504,33 @@
       const n = nightCount();
       const people = Number(adults.value || 1);
       const room = selectedRoom();
-      const roomPriceCents = room ? toCents(room.dataset.price) : 0;
-      const roomTotalCents = n * roomPriceCents;
-      let sumCents = roomTotalCents;
+      const roomPrice = room ? Math.round(Number(room.dataset.price || 0)) : 0;
+      const roomTotal = n * roomPrice;
+      let sum = roomTotal;
       for (const extra of selectedExtras()) {
-        const priceCents = toCents(extra.dataset.price);
+        const price = Number(extra.dataset.price || 0);
         const unit = extra.dataset.unit;
-        if (unit === "person_night") sumCents += priceCents * people * n;
-        else sumCents += priceCents;
+        if (unit === "person_night") sum += price * people * n;
+        else sum += price;
       }
+      sum = Math.round(sum);
       nights.value = String(n);
-      total.textContent = money(sumCents);
+      total.textContent = money(sum);
       discountNote.textContent = "Zimmerpreis und gewählte Zusatzleistungen – verbindlich erst nach persönlicher Bestätigung.";
       const availability = availabilityText();
       availabilityStatus.className = "availability-status " + availability.state;
       availabilityStatus.textContent = availability.text;
       const hasValidDates = n > 0;
-      const canSubmit = availability.state === "ok" || availability.state === "unknown";
+      const canSubmit = availability.state === "ok";
       submitRequest.disabled = !canSubmit;
       submitRequest.textContent = canSubmit
         ? "Wachau-Etappe anfragen"
         : (hasValidDates ? "Zeitraum nicht verfügbar" : "Bitte Reisedaten wählen");
       arrival.setCustomValidity(availability.state === "blocked" ? availability.text : "");
       departure.setCustomValidity(availability.state === "blocked" ? availability.text : "");
-      paypalHint.textContent = "Bitte noch nicht bezahlen. Nach unserer persönlichen Buchungsbestätigung erhalten Sie die Zahlungsinformation für " + money(sumCents) + ".";
+      paypalHint.textContent = "Bitte noch nicht bezahlen. Nach unserer persönlichen Buchungsbestätigung erhalten Sie die Zahlungsinformation für " + money(sum) + ".";
       paypalBox.classList.toggle("hidden", availability.state !== "ok");
-      trackAvailabilityResult(availability, false);
-      return sumCents;
+      return sum;
     }
 
     function applyLivePrices(payload) {
@@ -2560,11 +2538,11 @@
       for (const [roomName, info] of Object.entries(rooms)) {
         const roomInput = Array.from(form.querySelectorAll('input[name="room"]')).find((item) => item.value === roomName);
         const rawPrice = typeof info === "number" ? info : (info.price ?? info.standard);
-        const price = Number(rawPrice);
+        const price = Math.round(Number(rawPrice));
         if (!roomInput || Number.isNaN(price)) continue;
         roomInput.dataset.price = String(price);
         const label = roomInput.closest(".choice").querySelector("b.price");
-        if (label) label.textContent = money(toCents(price));
+        if (label) label.textContent = money(price);
       }
     }
 
@@ -2666,9 +2644,6 @@
     });
     form.addEventListener("change", function(event) {
       if (["arrival", "departure", "room"].includes(event.target.name)) {
-        if (arrival.value && departure.value && typeof window.zabTrack === "function") {
-          window.zabTrack("availability_started", { room: selectedRoom()?.value || "", arrival: arrival.value, departure: departure.value, nights: nightCount() });
-        }
         loadLiveBookingCalendar();
       } else {
         calculate();
@@ -2676,7 +2651,6 @@
     });
     form.addEventListener("submit", async function(event) {
       event.preventDefault();
-      if (typeof window.zabTrack === "function") window.zabTrack("request_started", { room: selectedRoom()?.value || "", arrival: arrival.value, departure: departure.value, nights: nightCount() });
       const requiredFields = Array.from(form.querySelectorAll("[required]"));
       const missingField = requiredFields.find((field) => !String(field.value || "").trim());
       if (missingField) {
@@ -2701,7 +2675,7 @@
         alert(tr("blocked", { mode: calendarModeLabel(), updated: bookingCalendarUpdated }));
         return;
       }
-      if (availability.state !== "ok" && availability.state !== "unknown") {
+      if (availability.state !== "ok") {
         alert(availability.text);
         return;
       }
@@ -2716,7 +2690,6 @@
       sendWhatsappLink.href = whatsappHref;
       sendOptions.classList.add("show");
       statusBox.classList.add("show");
-      if (typeof window.zabTrack === "function") window.zabTrack("request_prepared", { room: room?.value || "", arrival: arrival.value, departure: departure.value, nights: n, total_cents: sum });
       sendOptions.scrollIntoView({ behavior: "smooth", block: "center" });
     });
 
@@ -2737,7 +2710,6 @@
         helper.remove();
         copyConfirmation.textContent = "Anfrage kopiert – jetzt in eine Nachricht einfügen.";
       }
-      if (typeof window.zabTrack === "function") window.zabTrack("request_copied", { room: selectedRoom()?.value || "" });
     });
 
     const weatherCard = document.getElementById("wetter");
@@ -2818,6 +2790,12 @@
     setInterval(loadLivePrices, PRICE_REFRESH_MS);
   </script>
 
+  <div class="mobile-booking-bar" aria-label="Schnell zur Buchungsanfrage">
+    <strong>Wachau-Auszeit direkt anfragen</strong>
+    <a href="#booking-title">Reisedaten wählen</a>
+  </div>
+
+
   <script>
     (function(){
       const a=document.getElementById('arrival');
@@ -2877,26 +2855,11 @@
   <script>
     (function preparePrivacyFriendlyTracking() {
       window.dataLayer = window.dataLayer || [];
-      const attributionKeys = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'];
-      const params = new URLSearchParams(window.location.search);
-      let attribution = {};
-      try { attribution = JSON.parse(sessionStorage.getItem('zab_attribution') || '{}') || {}; } catch (error) { attribution = {}; }
-      if (!attribution.source) {
-        attributionKeys.forEach(function(key) { if (params.get(key)) attribution[key] = params.get(key); });
-        if (params.get('src')) attribution.src = params.get('src');
-        if ((attribution.utm_source || '').toLowerCase() === 'google' || (attribution.src || '').toLowerCase() === 'google') attribution.source = 'google_business';
-        if (attribution.source) {
-          attribution.landing_url = window.location.href;
-          attribution.landing_timestamp = new Date().toISOString();
-          try { sessionStorage.setItem('zab_attribution', JSON.stringify(attribution)); } catch (error) {}
-        }
-      }
       window.zabTrack = function(eventName, details) {
-        const payload = Object.assign({ event: eventName, timestamp: new Date().toISOString() }, attribution, details || {});
+        const payload = Object.assign({ event: eventName, timestamp: new Date().toISOString() }, details || {});
         window.dataLayer.push(payload);
         window.dispatchEvent(new CustomEvent('zab:analytics', { detail: payload }));
       };
-      window.zabTrack('landing_view', { page: 'direct_booking' });
       window.zabTrack('website_view', { page: 'direct_booking' });
       window.zabTrack('booking_page_view');
       document.addEventListener('click', function(event) {
@@ -2910,39 +2873,15 @@
       document.querySelectorAll('input[name="room"]').forEach(function(input) {
         input.addEventListener('change', function() { if (input.checked) window.zabTrack('room_selected', { room: input.value }); });
       });
-      document.querySelectorAll('input[name="extra"]').forEach(function(input) {
-        input.addEventListener('change', function() { window.zabTrack('extras_selected', { extra: input.value, selected: input.checked }); });
-      });
       const arrivalInput = document.getElementById('arrival');
       const departureInput = document.getElementById('departure');
-      document.getElementById('sendEmailLink')?.addEventListener('click', function() { window.zabTrack('request_email_clicked'); });
-      document.getElementById('sendWhatsappLink')?.addEventListener('click', function() { window.zabTrack('request_whatsapp_clicked'); });
-      document.getElementById('paypalLink')?.addEventListener('click', function() { window.zabTrack('payment_started'); });
-
-      const requestForm = document.getElementById('requestForm');
-      const mobileCta = document.querySelector('.mobile-booking-cta');
-      let requestPrepared = false;
-      document.getElementById('sendOptions')?.addEventListener('transitionend', function() { requestPrepared = this.classList.contains('show'); });
-      function updateMobileCta() {
-        if (!mobileCta || !requestForm) return;
-        const datesReady = Boolean(arrivalInput?.value && departureInput?.value);
-        const requiredReady = Array.from(requestForm.querySelectorAll('[required]')).every(function(field) { return String(field.value || '').trim(); });
-        mobileCta.textContent = !datesReady ? 'Verfügbarkeit & Preis' : requiredReady ? 'Anfrage senden' : 'Zimmer auswählen';
-        mobileCta.href = requiredReady ? '#submitRequest' : datesReady ? '#roomChoices' : '#booking-title';
-        mobileCta.dataset.action = requiredReady ? 'submit-request' : 'scroll';
-      }
-      mobileCta?.addEventListener('click', function(event) {
-        if (mobileCta.dataset.action === 'submit-request') {
-          event.preventDefault();
-          requestForm.requestSubmit();
-        }
+      [arrivalInput, departureInput].forEach(function(input) {
+        input?.addEventListener('change', function() {
+          if (arrivalInput?.value && departureInput?.value) window.zabTrack('availability_check');
+        });
       });
-      requestForm?.addEventListener('input', updateMobileCta);
-      requestForm?.addEventListener('change', updateMobileCta);
-      const sendOptions = document.getElementById('sendOptions');
-      if (sendOptions) new MutationObserver(function() { requestPrepared = sendOptions.classList.contains('show'); }).observe(sendOptions, { attributes:true, attributeFilter:['class'] });
-      window.addEventListener('pagehide', function() { if (requestPrepared) window.zabTrack('booking_abandoned'); });
-      updateMobileCta();
+      document.getElementById('requestForm')?.addEventListener('submit', function() { window.zabTrack('checkout_started'); });
+      document.getElementById('paypalLink')?.addEventListener('click', function() { window.zabTrack('payment_started'); });
     })();
   </script>
 
