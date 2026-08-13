@@ -2946,7 +2946,10 @@
         alert(tr("blocked", { mode: calendarModeLabel(), updated: bookingCalendarUpdated }));
         return;
       }
-      if (availability.state !== "ok") {
+      // Ein veralteter oder vorübergehend nicht erreichbarer Kalender darf eine
+      // unverbindliche Anfrage nicht verhindern. Nur ein bestätigter Konflikt
+      // blockiert den Versand.
+      if (availability.state === "blocked") {
         alert(availability.text);
         return;
       }
