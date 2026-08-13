@@ -1,18 +1,23 @@
-WINDIS 2.0 – INSTALLATION
+WINDIS SEO FIX
 
-Fertig enthalten:
-- windis.html – neues Markenzentrum
-- windis/fidel.html
-- windis/gloria.html
-- windis/pia.html
-- windis/buecher.html
-- windis/wachaukarte.html
-- windis/erlebnispass.html
-- windis/windis.css
+Diese Dateien ersetzen/ergänzen die bestehende Struktur.
 
-Einbau:
-Alle Dateien/Ordner in das Hauptverzeichnis des GitHub-Repositories Direcktbuchungen kopieren.
-Die bestehende index.html bleibt unverändert. Falls bereits eine ältere windis.html existiert, diese durch die neue ersetzen.
+Hauptadresse:
+  /wilde-wachauer-windis/
 
-Wichtig:
-Die Bücherseite enthält bewusst nur bereits bekannte/konzipierte Bände und Themen. Vor Veröffentlichung können exakte Titel/ISBN/Kauflinks ergänzt werden.
+Unterseiten:
+  /wilde-wachauer-windis/fidel/
+  /wilde-wachauer-windis/gloria/
+  /wilde-wachauer-windis/pia/
+  /wilde-wachauer-windis/buecher/
+  /wilde-wachauer-windis/wachaukarte/
+  /wilde-wachauer-windis/erlebnispass/
+
+Zusätzlich:
+- windis.html wird zur Weiterleitung und konkurriert nicht mehr mit der Hauptseite.
+- sitemap.xml enthält alle neuen Windis-Seiten.
+- Figuren-Texte sind vereinheitlicht.
+- „Seine/ihre Welt“ wurde entfernt.
+- Bücherseite enthält keine unbestätigten Arbeitstitel als Fakten.
+
+Einfach den Inhalt dieses ZIP in das Repository-Hauptverzeichnis hochladen und vorhandene Dateien ersetzen.
