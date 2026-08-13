@@ -1,0 +1,68 @@
+{
+  "brand": "Die Wilden Wachauer Windis",
+  "positioning": "Erzählende Wachau-Botschafter: drei Windhunde verbinden Kinderbücher, echte Orte, regionale Erlebnisse und Zuhause am Bach.",
+  "characters": [
+    {
+      "name": "Fidel",
+      "breed": "Galgo",
+      "size_cm": 72,
+      "look": "grau gestromt, blaues Halsband",
+      "role": "ruhiger Beschützer und Denker",
+      "themes": [
+        "Eisenbahn",
+        "Technik",
+        "Sicherheit"
+      ]
+    },
+    {
+      "name": "Gloria",
+      "breed": "Galga",
+      "size_cm": 65,
+      "look": "grau gestromt, goldenes Halsband",
+      "role": "Genießerin und verbindende Seele",
+      "themes": [
+        "Wachauer Marille",
+        "Rezepte",
+        "Gastfreundschaft",
+        "Tradition"
+      ]
+    },
+    {
+      "name": "Pia",
+      "breed": "Whippet",
+      "size_cm": 40,
+      "look": "grau gestromt, rotes Halstuch",
+      "role": "neugierige Entdeckerin",
+      "themes": [
+        "Abenteuer",
+        "Geheimnisse",
+        "Entdecken"
+      ]
+    }
+  ],
+  "visual_rules": {
+    "dog_count": 3,
+    "no_white_spots": true,
+    "character_consistency_required": true
+  },
+  "place_anchor": {
+    "name": "Zuhause am Bach",
+    "location": "Aggsbach Markt, Wachau, Niederösterreich",
+    "function": "Reales Zuhause und Erlebnisanker der Windis"
+  },
+  "core_topics": [
+    "Wachau",
+    "Aggsbach Markt",
+    "Donauradweg",
+    "Welterbesteig",
+    "Dürnstein",
+    "Spitz",
+    "Melk",
+    "Jauerling",
+    "Marille",
+    "Bahn",
+    "Sagen"
+  ],
+  "content_rule": "Jeder neue Inhalt soll mindestens zwei der drei Ebenen verbinden: Figur, echter Wachau-Ort, konkretes Erlebnis.",
+  "primary_url": "https://topdiveair-sketch.github.io/Direcktbuchungen/windis.html"
+}
