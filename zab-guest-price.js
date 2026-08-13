@@ -2,6 +2,15 @@
 "use strict";
 const $=id=>document.getElementById(id);
 const money=n=>Number(n||0).toLocaleString("de-AT",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+const TEXT={
+ de:{required:"Bitte Unterkunft, Ort oder Adresse eingeben.",notFound:"Unterkunft nicht gefunden. Bitte Hotelname mit Ort oder die genaue Adresse eingeben.",loading:"Route, Fahrzeit und Dieselpreis werden berechnet …",done:"Preis aktuell berechnet.",failed:"Berechnung nicht möglich: ",accommodation:"Unterkunft",address:"Adresse",place:"Ort",to:"Zuhause am Bach → ",from:"Abholung → Zuhause am Bach: ",distance:"km Fahrzeugstrecke",minutes:"Min."},
+ en:{required:"Please enter an accommodation, place or address.",notFound:"Accommodation not found. Please enter the hotel name with its town or the exact address.",loading:"Calculating route, driving time and diesel price …",done:"Price calculated with current data.",failed:"Calculation not possible: ",accommodation:"Accommodation",address:"Address",place:"Place",to:"Zuhause am Bach → ",from:"Pickup → Zuhause am Bach: ",distance:"km driving distance",minutes:"min."},
+ cs:{required:"Zadejte ubytování, místo nebo adresu.",notFound:"Ubytování nebylo nalezeno. Zadejte název hotelu s místem nebo přesnou adresu.",loading:"Počítáme trasu, dobu jízdy a cenu nafty …",done:"Cena byla aktuálně vypočtena.",failed:"Výpočet není možný: ",accommodation:"Ubytování",address:"Adresa",place:"Místo",to:"Zuhause am Bach → ",from:"Vyzvednutí → Zuhause am Bach: ",distance:"km jízdní trasy",minutes:"min."},
+ hu:{required:"Adjon meg szállást, helyet vagy címet.",notFound:"A szállás nem található. Adja meg a hotel nevét a településsel vagy a pontos címet.",loading:"Útvonal, menetidő és dízelár számítása …",done:"Az ár aktuálisan kiszámítva.",failed:"A számítás nem lehetséges: ",accommodation:"Szállás",address:"Cím",place:"Hely",to:"Zuhause am Bach → ",from:"Felvétel → Zuhause am Bach: ",distance:"km járműút",minutes:"perc"},
+ es:{required:"Introduzca un alojamiento, lugar o dirección.",notFound:"Alojamiento no encontrado. Introduzca el nombre del hotel con la localidad o la dirección exacta.",loading:"Calculando ruta, tiempo de viaje y precio del diésel …",done:"Precio calculado con datos actuales.",failed:"No se puede calcular: ",accommodation:"Alojamiento",address:"Dirección",place:"Lugar",to:"Zuhause am Bach → ",from:"Recogida → Zuhause am Bach: ",distance:"km de recorrido",minutes:"min."},
+ fr:{required:"Saisissez un hébergement, un lieu ou une adresse.",notFound:"Hébergement introuvable. Saisissez le nom de l’hôtel avec la localité ou l’adresse exacte.",loading:"Calcul de l’itinéraire, du temps de trajet et du prix du diesel …",done:"Prix calculé avec les données actuelles.",failed:"Calcul impossible : ",accommodation:"Hébergement",address:"Adresse",place:"Lieu",to:"Zuhause am Bach → ",from:"Ramassage → Zuhause am Bach : ",distance:"km de trajet",minutes:"min"}
+};
+const t=key=>(TEXT[document.documentElement.lang]||TEXT.de)[key]||TEXT.de[key]||key;
 let cfg;
 async function getJson(u,o){const r=await fetch(u,o);if(!r.ok)throw Error("Dienst nicht erreichbar");return r.json();}
 const geoCache=new Map();
@@ -50,10 +59,10 @@ async function searchGeo(q){
 }
 async function geo(q){
  q=String(q||"").trim();
- if(!q) throw Error("Bitte Unterkunft, Ort oder Adresse eingeben.");
+ if(!q) throw Error(t("required"));
  if(/^zuhause am bach$/i.test(q)) return cfg.home;
  const results=await searchGeo(q);
- if(!results.length) throw Error("Unterkunft nicht gefunden. Bitte Hotelname mit Ort oder die genaue Adresse eingeben.");
+ if(!results.length) throw Error(t("notFound"));
  return results[0];
 }
 async function route(a,b){
@@ -82,7 +91,7 @@ async function diesel(){
 function roundUp(n){const s=Math.max(.01,+cfg.business.round_to_eur||1);return Math.ceil(n/s)*s;}
 async function calc(){
  const b=$("zabGuestCalc"),st=$("zabGuestStatus");
- b.disabled=true; st.textContent="Route, Fahrzeit und Dieselpreis werden berechnet …"; $("zabGuestResult").hidden=true;
+ b.disabled=true; st.textContent=t("loading"); $("zabGuestResult").hidden=true;
  try{
   const mode=$("zabGuestMode").value,dest=await geo($("zabGuestDestination").value);
   let r=mode==="to"?await route(cfg.home,dest):await route(dest,cfg.home),m=r.m,s=r.s;
@@ -97,11 +106,11 @@ async function calc(){
   const raw=base+cfg.business.profit_fixed_eur+base*cfg.business.profit_percent/100;
   const sale=Math.max(cfg.business.minimum_price_eur,roundUp(raw));
   $("zabGuestPrice").textContent=money(sale);
-  $("zabGuestRoute").textContent=(mode==="to"?"Zuhause am Bach → ":"Abholung → Zuhause am Bach: ")+dest.label;
-  $("zabGuestMeta").textContent=`${km.toFixed(1)} km Fahrzeugstrecke · ${Math.round(s/60)} Min.`;
-  $("zabGuestResult").hidden=false; st.textContent="Preis aktuell berechnet.";
+  $("zabGuestRoute").textContent=(mode==="to"?t("to"):t("from"))+dest.label;
+  $("zabGuestMeta").textContent=`${km.toFixed(1)} ${t("distance")} · ${Math.round(s/60)} ${t("minutes")}`;
+  $("zabGuestResult").hidden=false; st.textContent=t("done");
   window.zabGuestPriceData={destination:dest.label,sale_price:sale};
- }catch(e){st.textContent="Berechnung nicht möglich: "+(e.message||e);}
+ }catch(e){st.textContent=t("failed")+(e.message||e);}
  finally{b.disabled=false;}
 }
 function usePrice(){
@@ -120,8 +129,8 @@ function renderSuggestions(items){
   const kind=document.createElement("strong");
   const description=document.createElement("span");
   kind.textContent=/(hotel|pension|gasthof|guest_house|hostel|motel|chalet|apartment|tourism)/i.test(`${item.label} ${item.type} ${item.category}`)
-   ? "Unterkunft"
-   : (item.address?.road||item.address?.house_number ? "Adresse" : "Ort");
+   ? t("accommodation")
+   : (item.address?.road||item.address?.house_number ? t("address") : t("place"));
   description.textContent=item.label;
   button.append(kind,description);
   button.addEventListener("click",()=>{
