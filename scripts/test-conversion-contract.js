@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const html = fs.readFileSync(path.resolve(__dirname, "..", "index.html"), "utf8");
+const luggageCalculator = fs.readFileSync(path.resolve(__dirname, "..", "zab-guest-price.js"), "utf8");
 
 for (const room of ["bachblick", "marillenzimmer", "weinbergzimmer", "donauzimmer"]) {
   assert(html.includes(`images/rooms/${room}.webp`), `${room}.webp fehlt`);
@@ -22,4 +23,6 @@ assert.strictEqual((html.match(/class="mobile-booking-bar"/g) || []).length, 1);
 assert(html.includes("progress >= 0.2"), "mobile Buchungsleiste muss erst nach Scrollfortschritt erscheinen");
 assert(!html.includes('if (availability.state !== "ok")'), "veralteter Kalender darf die unverbindliche Anfrage nicht blockieren");
 assert(html.includes('if (availability.state === "blocked")'), "nur bestätigte Kalenderkonflikte dürfen blockieren");
+assert(luggageCalculator.includes('l.dataset.price=String(d.sale_price)'), "berechneter Gepäckpreis muss in die Buchung übernommen werden");
+assert(luggageCalculator.includes('l.dispatchEvent(new Event("change",{bubbles:true}))'), "Gesamtpreis muss nach Gepäckpreisübernahme neu berechnet werden");
 console.log("Conversion-Vertrag bestanden.");

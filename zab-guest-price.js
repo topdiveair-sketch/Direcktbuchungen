@@ -3,12 +3,12 @@
 const $=id=>document.getElementById(id);
 const money=n=>Number(n||0).toLocaleString("de-AT",{style:"currency",currency:"EUR",maximumFractionDigits:0});
 const TEXT={
- de:{required:"Bitte Unterkunft, Ort oder Adresse eingeben.",notFound:"Unterkunft nicht gefunden. Bitte Hotelname mit Ort oder die genaue Adresse eingeben.",loading:"Route, Fahrzeit und Dieselpreis werden berechnet …",done:"Preis aktuell berechnet.",failed:"Berechnung nicht möglich: ",accommodation:"Unterkunft",address:"Adresse",place:"Ort",to:"Zuhause am Bach → ",from:"Abholung → Zuhause am Bach: ",distance:"km Fahrzeugstrecke",minutes:"Min."},
- en:{required:"Please enter an accommodation, place or address.",notFound:"Accommodation not found. Please enter the hotel name with its town or the exact address.",loading:"Calculating route, driving time and diesel price …",done:"Price calculated with current data.",failed:"Calculation not possible: ",accommodation:"Accommodation",address:"Address",place:"Place",to:"Zuhause am Bach → ",from:"Pickup → Zuhause am Bach: ",distance:"km driving distance",minutes:"min."},
- cs:{required:"Zadejte ubytování, místo nebo adresu.",notFound:"Ubytování nebylo nalezeno. Zadejte název hotelu s místem nebo přesnou adresu.",loading:"Počítáme trasu, dobu jízdy a cenu nafty …",done:"Cena byla aktuálně vypočtena.",failed:"Výpočet není možný: ",accommodation:"Ubytování",address:"Adresa",place:"Místo",to:"Zuhause am Bach → ",from:"Vyzvednutí → Zuhause am Bach: ",distance:"km jízdní trasy",minutes:"min."},
- hu:{required:"Adjon meg szállást, helyet vagy címet.",notFound:"A szállás nem található. Adja meg a hotel nevét a településsel vagy a pontos címet.",loading:"Útvonal, menetidő és dízelár számítása …",done:"Az ár aktuálisan kiszámítva.",failed:"A számítás nem lehetséges: ",accommodation:"Szállás",address:"Cím",place:"Hely",to:"Zuhause am Bach → ",from:"Felvétel → Zuhause am Bach: ",distance:"km járműút",minutes:"perc"},
- es:{required:"Introduzca un alojamiento, lugar o dirección.",notFound:"Alojamiento no encontrado. Introduzca el nombre del hotel con la localidad o la dirección exacta.",loading:"Calculando ruta, tiempo de viaje y precio del diésel …",done:"Precio calculado con datos actuales.",failed:"No se puede calcular: ",accommodation:"Alojamiento",address:"Dirección",place:"Lugar",to:"Zuhause am Bach → ",from:"Recogida → Zuhause am Bach: ",distance:"km de recorrido",minutes:"min."},
- fr:{required:"Saisissez un hébergement, un lieu ou une adresse.",notFound:"Hébergement introuvable. Saisissez le nom de l’hôtel avec la localité ou l’adresse exacte.",loading:"Calcul de l’itinéraire, du temps de trajet et du prix du diesel …",done:"Prix calculé avec les données actuelles.",failed:"Calcul impossible : ",accommodation:"Hébergement",address:"Adresse",place:"Lieu",to:"Zuhause am Bach → ",from:"Ramassage → Zuhause am Bach : ",distance:"km de trajet",minutes:"min"}
+ de:{required:"Bitte Unterkunft, Ort oder Adresse eingeben.",notFound:"Unterkunft nicht gefunden. Bitte Hotelname mit Ort oder die genaue Adresse eingeben.",loading:"Route, Fahrzeit und Dieselpreis werden berechnet …",done:"Preis aktuell berechnet.",failed:"Berechnung nicht möglich: ",accommodation:"Unterkunft",address:"Adresse",place:"Ort",to:"Zuhause am Bach → ",from:"Abholung → Zuhause am Bach: ",distance:"km Fahrzeugstrecke",minutes:"Min.",calculatedFor:"Berechnet für"},
+ en:{required:"Please enter an accommodation, place or address.",notFound:"Accommodation not found. Please enter the hotel name with its town or the exact address.",loading:"Calculating route, driving time and diesel price …",done:"Price calculated with current data.",failed:"Calculation not possible: ",accommodation:"Accommodation",address:"Address",place:"Place",to:"Zuhause am Bach → ",from:"Pickup → Zuhause am Bach: ",distance:"km driving distance",minutes:"min.",calculatedFor:"Calculated for"},
+ cs:{required:"Zadejte ubytování, místo nebo adresu.",notFound:"Ubytování nebylo nalezeno. Zadejte název hotelu s místem nebo přesnou adresu.",loading:"Počítáme trasu, dobu jízdy a cenu nafty …",done:"Cena byla aktuálně vypočtena.",failed:"Výpočet není možný: ",accommodation:"Ubytování",address:"Adresa",place:"Místo",to:"Zuhause am Bach → ",from:"Vyzvednutí → Zuhause am Bach: ",distance:"km jízdní trasy",minutes:"min.",calculatedFor:"Vypočteno pro"},
+ hu:{required:"Adjon meg szállást, helyet vagy címet.",notFound:"A szállás nem található. Adja meg a hotel nevét a településsel vagy a pontos címet.",loading:"Útvonal, menetidő és dízelár számítása …",done:"Az ár aktuálisan kiszámítva.",failed:"A számítás nem lehetséges: ",accommodation:"Szállás",address:"Cím",place:"Hely",to:"Zuhause am Bach → ",from:"Felvétel → Zuhause am Bach: ",distance:"km járműút",minutes:"perc",calculatedFor:"Kiszámítva erre"},
+ es:{required:"Introduzca un alojamiento, lugar o dirección.",notFound:"Alojamiento no encontrado. Introduzca el nombre del hotel con la localidad o la dirección exacta.",loading:"Calculando ruta, tiempo de viaje y precio del diésel …",done:"Precio calculado con datos actuales.",failed:"No se puede calcular: ",accommodation:"Alojamiento",address:"Dirección",place:"Lugar",to:"Zuhause am Bach → ",from:"Recogida → Zuhause am Bach: ",distance:"km de recorrido",minutes:"min.",calculatedFor:"Calculado para"},
+ fr:{required:"Saisissez un hébergement, un lieu ou une adresse.",notFound:"Hébergement introuvable. Saisissez le nom de l’hôtel avec la localité ou l’adresse exacte.",loading:"Calcul de l’itinéraire, du temps de trajet et du prix du diesel …",done:"Prix calculé avec les données actuelles.",failed:"Calcul impossible : ",accommodation:"Hébergement",address:"Adresse",place:"Lieu",to:"Zuhause am Bach → ",from:"Ramassage → Zuhause am Bach : ",distance:"km de trajet",minutes:"min",calculatedFor:"Calculé pour"}
 };
 const t=key=>(TEXT[document.documentElement.lang]||TEXT.de)[key]||TEXT.de[key]||key;
 let cfg;
@@ -115,7 +115,17 @@ async function calc(){
 }
 function usePrice(){
  const d=window.zabGuestPriceData;if(!d)return;
- const l=$("luggageTransport");if(l){l.checked=true;l.dispatchEvent(new Event("change",{bubbles:true}));}
+ const l=$("luggageTransport");
+ if(l){
+  l.dataset.price=String(d.sale_price);
+  l.dataset.calculatedDestination=d.destination;
+  l.checked=true;
+  const priceLabel=l.closest(".choice")?.querySelector("b.price");
+  if(priceLabel)priceLabel.textContent="+"+money(d.sale_price);
+  const detailLabel=l.closest(".choice")?.querySelector("small");
+  if(detailLabel)detailLabel.textContent=`${t("calculatedFor")} ${d.destination}`;
+  l.dispatchEvent(new Event("change",{bubbles:true}));
+ }
  const m=$("message");if(m)m.value=(m.value?m.value+"\n":"")+`ZAB GepäckFrei: ${d.destination} – kalkulierter Preis ${money(d.sale_price)}`;
  $("requestForm")?.scrollIntoView({behavior:"smooth"});
 }
