@@ -3,9 +3,9 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 
 const root=path.resolve(new URL('..',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1'));
-const publicDirs=['donauradweg-unterkunft-wachau','welterbesteig-unterkunft-wachau','ruhige-unterkunft-wachau','aggsbach-markt-wachau','wachau-tipps','wilde-wachauer-windis','ebike-unterkunft-wachau','radfahrer-unterkunft-wachau','wanderer-unterkunft-wachau','unterkunft-aggsbach-markt'];
+const publicDirs=['donauradweg-unterkunft-wachau','welterbesteig-unterkunft-wachau','ruhige-unterkunft-wachau','aggsbach-markt-wachau','wachau-tipps','wilde-wachauer-windis','ebike-unterkunft-wachau','radfahrer-unterkunft-wachau','wanderer-unterkunft-wachau','unterkunft-aggsbach-markt','unterkunft-maria-laach-welterbesteig'];
 const htmlFiles=[path.join(root,'index.html'),...publicDirs.map(dir=>path.join(root,dir,'index.html'))];
-assert.equal(htmlFiles.length,11,'Startseite plus zehn Themenseiten erwartet');
+assert.equal(htmlFiles.length,12,'Startseite plus elf Themenseiten erwartet');
 for(const file of htmlFiles){
   const html=fs.readFileSync(file,'utf8');
   assert.equal((html.match(/<title>/g)||[]).length,1,`${file}: genau ein title erwartet`);
