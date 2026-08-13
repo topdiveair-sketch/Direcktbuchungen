@@ -20,6 +20,7 @@
       --gold: #f0b424;
     }
     * { box-sizing: border-box; }
+    .sr-only { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
@@ -603,6 +604,8 @@
       color: rgba(255,255,255,.78);
       font-size: 14px;
     }
+    .mobile-language-select { display:none; }
+    .mobile-hero-title,.mobile-hero-benefits { display:none; }
     #zielgruppen-faq .legal-content article {
       border: 1px solid var(--line);
       background: #fff;
@@ -765,14 +768,19 @@
       body { padding-bottom:78px; }
       .nav { position:relative; padding:8px 12px; min-height:54px; }
       .nav-links { display:none; }
-      .language-switcher {
-        position:static; width:100%; flex-wrap:wrap; overflow-x:visible;
-        justify-content:center; gap:6px; padding-bottom:3px;
+      .language-switcher { position:static; width:100%; justify-content:center; padding:2px 0; }
+      .language-switcher button { display:none; }
+      .mobile-language-select {
+        display:block; width:min(100%,210px); min-height:44px; padding:8px 36px 8px 12px;
+        border:2px solid rgba(23,107,90,.35); border-radius:999px; background:#fff;
+        color:#17372f; font-size:16px; font-weight:850;
       }
-      .language-switcher button { flex:0 0 auto; min-height:44px; padding:8px 11px; font-size:13px; }
-      .hero-grid { padding:34px 12px 32px; }
-      h1 { font-size:clamp(34px,11vw,50px); line-height:1.02; overflow-wrap:anywhere; }
-      .hero-copy p { font-size:18px; }
+      .hero-grid { padding:24px 12px 28px; }
+      h1 { font-size:clamp(32px,10vw,43px); line-height:1.02; overflow-wrap:anywhere; }
+      .desktop-hero-title { display:none; }
+      .mobile-hero-title { display:inline; }
+      .hero-copy > p:not(.mobile-hero-benefits) { font-size:17px; }
+      .mobile-hero-benefits { display:block; margin-top:14px!important; font-size:16px!important; line-height:1.5; font-weight:800; }
       .hero-trust { gap:7px; }
       .hero-trust span { font-size:12px; padding:7px 9px; }
       .panel { padding:17px; border-radius:16px; }
@@ -800,14 +808,17 @@
       .facts { grid-template-columns:1fr; }
       .mobile-booking-bar {
         position:fixed; z-index:100; left:0; right:0; bottom:0;
-        display:grid; grid-template-columns:1fr auto; align-items:center; gap:10px;
+        display:grid; grid-template-columns:1fr auto; align-items:center; gap:8px;
         padding:10px 12px calc(10px + env(safe-area-inset-bottom));
         border-top:1px solid #d8e2dd; background:rgba(255,255,255,.97);
         box-shadow:0 -10px 28px rgba(0,0,0,.14);
+        transform:translateY(120%); opacity:0; pointer-events:none;
+        transition:transform .22s ease,opacity .22s ease;
       }
+      .mobile-booking-bar.is-visible { transform:translateY(0); opacity:1; pointer-events:auto; }
       .mobile-booking-bar strong { font-size:14px; line-height:1.25; }
       .mobile-booking-bar a {
-        display:grid; place-items:center; min-height:44px; padding:8px 14px;
+        display:grid; place-items:center; min-height:48px; padding:8px 14px;
         border-radius:9px; background:var(--brand); color:#fff;
         text-decoration:none; font-size:13px; font-weight:900;
       }
@@ -944,12 +955,6 @@
        Die drei zusätzlichen Zimmer bleiben standardmäßig vollständig unsichtbar. */
     [data-future-room][hidden] { display: none !important; }
 
-    .mobile-booking-cta { display:none; }
-    @media (max-width: 760px) {
-      body { padding-bottom: 76px; }
-      .mobile-booking-cta { position:fixed; display:flex; left:12px; right:12px; bottom:10px; z-index:1000; align-items:center; justify-content:center; min-height:54px; border-radius:999px; background:#1f5a3c; color:#fff; text-decoration:none; font-weight:900; box-shadow:0 8px 28px rgba(0,0,0,.28); }
-      .mobile-booking-cta:focus-visible { outline:3px solid #fff; outline-offset:2px; }
-    }
   </style>
 
   <link rel="canonical" href="https://topdiveair-sketch.github.io/Direcktbuchungen/">
@@ -1046,6 +1051,10 @@
         <button type="button" data-lang="hu">🇭🇺 HU</button>
         <button type="button" data-lang="es">🇪🇸 ES</button>
         <button type="button" data-lang="fr">🇫🇷 FR</button>
+        <label class="sr-only" for="mobileLanguage">Sprache wählen</label>
+        <select id="mobileLanguage" class="mobile-language-select" aria-label="Sprache wählen">
+          <option value="de">🇩🇪 Deutsch</option><option value="en">🇬🇧 English</option><option value="cs">🇨🇿 Čeština</option><option value="hu">🇭🇺 Magyar</option><option value="es">🇪🇸 Español</option><option value="fr">🇫🇷 Français</option>
+        </select>
       </div>
       <div class="nav-links">
         <a href="donauradweg-unterkunft-wachau/">Donauradweg</a>
@@ -1063,8 +1072,9 @@
     <div class="hero-grid">
       <div class="hero-copy">
         <span class="eyebrow">Direkt anfragen ohne Buchungsplattform</span>
-        <h1>Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau</h1>
+        <h1><span class="desktop-hero-title">Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau</span><span class="mobile-hero-title">Zuhause am Bach – Basislager am Donauradweg & Welterbesteig</span></h1>
         <p>Persönlich übernachten in Aggsbach Markt – für Wanderer am Welterbesteig, Radfahrer am Donauradweg und alle, die die Wachau abseits des Trubels mit Frühstück und persönlichen Tipps entdecken möchten.</p>
+        <p class="mobile-hero-benefits">🚴 Fahrrad sicher · ⚡ E-Bike laden<br>🥾 Gepäckservice · 🍳 Frühstück</p>
         <div class="hero-trust"><span>✓ Welterbesteig</span><span>✓ Donauradweg</span><span>✓ Persönliche Gastgeber</span></div>
         <div class="stamp-callout" aria-label="Zuhause am Bach Erinnerungsstempel">
           <div class="stamp-seal">Nur für<br>Hausgäste</div>
@@ -1450,8 +1460,6 @@
       <a class="btn" href="donauradweg-etappenstopp-aggsbach-markt/">Donauradweg-Etappenstopp ansehen</a>
     </section>
 </main>
-
-  <a class="mobile-booking-cta" href="#booking-title" data-track="availability_check">Verfügbarkeit &amp; Preis</a>
 
   <footer id="kontakt">
     <div class="footer-main">
@@ -2142,6 +2150,9 @@
     };
     Object.assign(STATIC_I18N.en, {
       "✓ Persönliche Gastgeber": "✓ Personal hosts",
+      "Zuhause am Bach – Basislager am Donauradweg & Welterbesteig": "Zuhause am Bach – base for the Danube Cycle Path & World Heritage Trail",
+      "🚴 Fahrrad sicher · ⚡ E-Bike laden": "🚴 Secure bicycle storage · ⚡ Charge your e-bike",
+      "🥾 Gepäckservice · 🍳 Frühstück": "🥾 Luggage service · 🍳 Breakfast",
       "Ihr besonderer Wachau-Etappenmoment": "Your special Wachau stage moment",
       "Wer bei uns übernachtet, erhält auf Wunsch den exklusiven Wachau-Etappenstempel von „Zuhause am Bach“ – für Welterbesteig, Donauradweg und das persönliche Reisetagebuch.": "Guests can receive the exclusive Zuhause am Bach Wachau stage stamp for their hiking pass, cycling journal or personal travel diary.",
       "Bitte noch nicht bezahlen. Nach unserer persönlichen Buchungsbestätigung erhalten Sie die Zahlungsinformation für 0 EUR.": "Please do not pay yet. You will receive payment information after our personal booking confirmation.",
@@ -2237,6 +2248,9 @@
       ,"Maria-Laach-Etappenstopp ansehen": "View the Maria Laach stage stop"
     });
     Object.assign(STATIC_I18N.cs, {
+      "Zuhause am Bach – Basislager am Donauradweg & Welterbesteig": "Zuhause am Bach – základna u Dunajské cyklostezky a Welterbesteigu",
+      "🚴 Fahrrad sicher · ⚡ E-Bike laden": "🚴 Bezpečné uložení kola · ⚡ Nabíjení elektrokola",
+      "🥾 Gepäckservice · 🍳 Frühstück": "🥾 Přeprava zavazadel · 🍳 Snídaně",
       "Zahlung erst nach unserer Bestätigung": "Platba až po našem potvrzení",
       "Ob zu Fuß am Welterbesteig oder mit dem Rad entlang der Donau: Jede Etappe wird zu einer Geschichte, die Sie später noch erzählen werden.": "Ať jdete pěšky po Welterbesteigu, nebo jedete na kole podél Dunaje, každá etapa se stane příběhem, na který budete vzpomínat.",
       "Exklusiver Wachau-Etappenstempel für übernachtende Wanderer und Radfahrer": "Exkluzivní etapové razítko Wachau pro ubytované pěší turisty a cyklisty",
@@ -2246,6 +2260,10 @@
       "Reisedaten wählen": "Vybrat termín"
     });
     Object.assign(STATIC_I18N.hu, {
+      "Zuhause am Bach – Basislager am Donauradweg & Welterbesteig": "Zuhause am Bach – bázis a Duna menti kerékpárútnál és a Welterbesteignél",
+      "🚴 Biztonságos kerékpártárolás · ⚡ E-bike töltés": "🚴 Biztonságos kerékpártárolás · ⚡ E-bike töltés",
+      "🚴 Fahrrad sicher · ⚡ E-Bike laden": "🚴 Biztonságos kerékpártárolás · ⚡ E-bike töltés",
+      "🥾 Gepäckservice · 🍳 Frühstück": "🥾 Poggyászszolgáltatás · 🍳 Reggeli",
       "Zahlung erst nach unserer Bestätigung": "Fizetés csak a visszaigazolásunk után",
       "Ob zu Fuß am Welterbesteig oder mit dem Rad entlang der Donau: Jede Etappe wird zu einer Geschichte, die Sie später noch erzählen werden.": "Akár gyalog járja a Welterbesteiget, akár kerékpárral halad a Duna mentén, minden szakasz emlékezetes történetté válik.",
       "Exklusiver Wachau-Etappenstempel für übernachtende Wanderer und Radfahrer": "Exkluzív wachaui szakaszbélyeg megszálló túrázóknak és kerékpárosoknak",
@@ -2255,6 +2273,9 @@
       "Reisedaten wählen": "Dátumok kiválasztása"
     });
     Object.assign(STATIC_I18N.es, {
+      "Zuhause am Bach – Basislager am Donauradweg & Welterbesteig": "Zuhause am Bach: base junto a la ruta del Danubio y el Welterbesteig",
+      "🚴 Fahrrad sicher · ⚡ E-Bike laden": "🚴 Bicicleta segura · ⚡ Carga de e-bike",
+      "🥾 Gepäckservice · 🍳 Frühstück": "🥾 Servicio de equipaje · 🍳 Desayuno",
       "Zahlung erst nach unserer Bestätigung": "Pago solo después de nuestra confirmación",
       "Ob zu Fuß am Welterbesteig oder mit dem Rad entlang der Donau: Jede Etappe wird zu einer Geschichte, die Sie später noch erzählen werden.": "Ya sea a pie por el Welterbesteig o en bicicleta junto al Danubio, cada etapa se convierte en una historia para recordar.",
       "Exklusiver Wachau-Etappenstempel für übernachtende Wanderer und Radfahrer": "Sello exclusivo de etapa de Wachau para senderistas y ciclistas alojados",
@@ -2264,6 +2285,9 @@
       "Reisedaten wählen": "Elegir fechas"
     });
     Object.assign(STATIC_I18N.fr, {
+      "Zuhause am Bach – Basislager am Donauradweg & Welterbesteig": "Zuhause am Bach – base près de la piste du Danube et du Welterbesteig",
+      "🚴 Fahrrad sicher · ⚡ E-Bike laden": "🚴 Vélo en sécurité · ⚡ Recharge de vélo électrique",
+      "🥾 Gepäckservice · 🍳 Frühstück": "🥾 Service bagages · 🍳 Petit-déjeuner",
       "Zahlung erst nach unserer Bestätigung": "Paiement uniquement après notre confirmation",
       "Ob zu Fuß am Welterbesteig oder mit dem Rad entlang der Donau: Jede Etappe wird zu einer Geschichte, die Sie später noch erzählen werden.": "À pied sur le Welterbesteig ou à vélo le long du Danube, chaque étape devient une histoire dont vous vous souviendrez.",
       "Exklusiver Wachau-Etappenstempel für übernachtende Wanderer und Radfahrer": "Tampon d’étape Wachau exclusif pour randonneurs et cyclistes hébergés",
@@ -2572,6 +2596,8 @@
       document.querySelectorAll("[data-lang]").forEach((button) => {
         button.classList.toggle("active", button.dataset.lang === currentLang);
       });
+      const mobileLanguage = document.getElementById("mobileLanguage");
+      if (mobileLanguage) mobileLanguage.value = currentLang;
       if (refresh && typeof calculate === "function") calculate();
       if (refresh && latestWeatherState) renderWeather(latestWeatherState);
     }
@@ -2580,6 +2606,7 @@
     document.querySelectorAll("[data-lang]").forEach((button) => {
       button.addEventListener("click", () => applyLanguage(button.dataset.lang));
     });
+    document.getElementById("mobileLanguage")?.addEventListener("change", (event) => applyLanguage(event.target.value));
     applyLanguage(currentLang, false);
     const configuredBookingSyncUrl = String(window.ZAB_BOOKING_SYNC_URL || "").replace(/\/+$/, "");
     const hasConfiguredBookingSync = /^https:\/\//i.test(configuredBookingSyncUrl)
@@ -3053,6 +3080,16 @@
       });
     });
     applyLanguage(currentLang, false);
+    const mobileBookingBar = document.querySelector('.mobile-booking-bar');
+    function updateMobileBookingBar() {
+      if (!mobileBookingBar) return;
+      const scrollable = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const progress = window.scrollY / scrollable;
+      mobileBookingBar.classList.toggle('is-visible', progress >= 0.2);
+    }
+    window.addEventListener('scroll', updateMobileBookingBar, { passive:true });
+    window.addEventListener('resize', updateMobileBookingBar);
+    updateMobileBookingBar();
   </script>
 
 
