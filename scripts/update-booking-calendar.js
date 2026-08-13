@@ -119,7 +119,7 @@ async function main() {
       `let bookingCalendarUpdatedIso = "${updatedAtIso}";`
     );
     html = html.replace(
-      /const BACHBLICK_BOOKING_BLOCKS = \[\n[\s\S]*?\n    \];/,
+      /const BACHBLICK_BOOKING_BLOCKS = \[\r?\n[\s\S]*?\r?\n\s*\];/,
       `const BACHBLICK_BOOKING_BLOCKS = [\n${fallbackBlocks}\n    ];`
     );
     fs.writeFileSync(indexPath, html, "utf8");
