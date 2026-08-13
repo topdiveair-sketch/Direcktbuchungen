@@ -1098,7 +1098,7 @@
             <div class="rooms">
               <label class="choice">
                 <input type="radio" name="room" value="Bachblick" data-price="101" checked>
-                <span><strong>Bachblick</strong><small>bereits buchbar</small></span>
+                <span><strong>Bachblick</strong><small>direkt anfragbar · Verfügbarkeit wird geprüft</small></span>
                 <b class="price">101 EUR</b>
               </label>
               <label class="choice future-room" data-future-room hidden>
@@ -1285,36 +1285,6 @@
   </div>
 </section>
 
-    <section id="gepaeckfrei" aria-labelledby="gepaeckfrei-title">
-  <div class="section-head">
-    <span class="eyebrow">ZAB GepäckFrei · Welterbesteig & Donauradweg</span>
-    <h2 id="gepaeckfrei-title">Du wanderst. Wir kümmern uns um dein Gepäck.</h2>
-    <p>Auch für nur eine Etappe: Gepäck von der vorherigen Unterkunft zu uns oder von Zuhause am Bach zur nächsten Unterkunft.</p>
-  </div>
-  <div class="panel zab-gf-box">
-    <div class="form-grid">
-      <label>Richtung
-        <select id="zabGuestMode">
-          <option value="to">Zuhause am Bach → nächste Unterkunft</option>
-          <option value="from">Vorherige Unterkunft → Zuhause am Bach</option>
-        </select>
-      </label>
-      <label>Unterkunft, Ort oder Adresse
-        <input id="zabGuestDestination" placeholder="z. B. Spitz, Hotelname oder genaue Adresse">
-      </label>
-    </div>
-    <button id="zabGuestCalc" type="button" class="btn">Gepäckpreis berechnen</button>
-    <div id="zabGuestStatus" class="hint">Abhol- oder Zielort eingeben.</div>
-    <div id="zabGuestResult" class="zab-gf-result" hidden>
-      <span>Ihr kalkulierter Gepäckpreis</span>
-      <strong id="zabGuestPrice">–</strong>
-      <p id="zabGuestRoute"></p>
-      <small id="zabGuestMeta"></small>
-      <button id="zabGuestUsePrice" type="button" class="btn">Diesen Gepäcktransport anfragen</button>
-      <small>Verbindlich wird die Zusatzleistung erst mit unserer persönlichen Bestätigung.</small>
-    </div>
-  </div>
-</section>
 <section id="zimmer">
       <div class="section-head">
         <span class="eyebrow">Zimmer</span>
@@ -1529,6 +1499,15 @@
         "Direkt anfragen ohne Buchungsplattform": "Direct request without booking platform",
         "Basislager für Donauradweg und Welterbesteig.": "Base camp for the Danube Cycle Path and the Welterbesteig.",
         "Buchungsanfrage": "Booking request",
+        "Wachau-Etappe direkt anfragen": "Request your Wachau stay directly",
+        "Reisedaten auswählen": "Choose travel dates",
+        "Zimmer und Extras wählen": "Choose room and extras",
+        "Kontaktdaten eintragen": "Enter contact details",
+        "Erinnerungsstempel für Hausgäste inklusive": "Souvenir stamp included for house guests",
+        "Reisedaten wählen, persönlich anfragen und bei der Ankunft Ihren Wachau-Etappenstempel für Wanderpass oder Radreise-Tagebuch erhalten.": "Choose your travel dates, send a personal request and receive your Wachau stage stamp for your hiking pass or cycling journal on arrival.",
+        "1 · Reisedaten": "1 · Dates",
+        "2 · Zimmer": "2 · Room",
+        "3 · Kontakt": "3 · Contact",
         "Anreise": "Arrival",
         "Abreise": "Departure",
         "Personen": "Guests",
@@ -1542,8 +1521,13 @@
         "Wachauer Jause": "Wachau snack platter",
         "29,90 EUR einmalig": "29.90 EUR once",
         "Gepäcktransport": "Luggage transfer",
-        "Preis nach Strecke": "15.00 EUR once",
-        "bereits buchbar": "available to request",
+        "Preis nach Strecke": "Price based on route",
+        "auf Anfrage": "on request",
+        "Wachau-Etappenstempel": "Wachau stage stamp",
+        "Kostenlos für Hausgäste – für Wanderpass oder Radreise-Tagebuch": "Free for house guests – for a hiking pass or cycling journal",
+        "inklusive": "included",
+        "Voraussichtlicher Gesamtpreis": "Estimated total price",
+        "direkt anfragbar · Verfügbarkeit wird geprüft": "available to request · availability will be checked",
         "ab 15.08.2026, erst nach Freigabe": "from 15/08/2026, after release",
         "Direktpreis": "Direct price",
         "Bei freiem Termin können Sie den angezeigten Direktpreis per PayPal an topdiveair@gmail.com zahlen. Bitte Name und Reisedatum als Hinweis angeben.": "If the date is free, you can pay the displayed direct price by PayPal to topdiveair@gmail.com. Please include your name and travel dates as a note.",
@@ -1556,7 +1540,27 @@
         "Ort": "City",
         "Land": "Country",
         "Nachricht oder Wünsche": "Message or wishes",
+        "E-Mail": "Email",
+        "Nur für Ihre Anfrage": "Only for your request",
+        "Persönliche Rückmeldung": "Personal reply",
+        "Keine versteckten Gebühren": "No hidden fees",
+        "🔒 Nur für Ihre Anfrage": "🔒 Only for your request",
+        "☎ Persönliche Rückmeldung": "☎ Personal reply",
+        "✓ Keine versteckten Gebühren": "✓ No hidden fees",
+        "Oder persönlich anrufen": "Or call us directly",
         "z. B. vegetarisches Frühstück, spätere Anreise, Fragen zur Umgebung": "e.g. vegetarian breakfast, later arrival, questions about the area",
+        "Was kostet Ihr Gepäcktransport?": "How much does your luggage transfer cost?",
+        "Unterkunft, Ort oder Adresse eingeben. Wir berechnen Ihren Gepäckpreis aus der tatsächlichen Fahrstrecke und aktuellen Betriebskosten.": "Enter an accommodation, town or address. We calculate your luggage price from the actual driving distance and current operating costs.",
+        "Richtung": "Direction",
+        "Von Zuhause am Bach zur nächsten Unterkunft": "From Zuhause am Bach to the next accommodation",
+        "Von der vorherigen Unterkunft zu Zuhause am Bach": "From the previous accommodation to Zuhause am Bach",
+        "Unterkunft, Ort oder Adresse": "Accommodation, town or address",
+        "z. B. Hotel in Spitz oder genaue Adresse": "e.g. a hotel in Spitz or an exact address",
+        "Gepäckpreis berechnen": "Calculate luggage price",
+        "Noch keine Berechnung.": "No calculation yet.",
+        "Ihr berechneter Gepäckpreis": "Your calculated luggage price",
+        "Diesen Gepäcktransport anfragen": "Request this luggage transfer",
+        "Preis auf Basis der aktuellen Routen- und Betriebskalkulation. Die Leistung wird mit unserer persönlichen Bestätigung verbindlich.": "Price based on the current route and operating-cost calculation. The service becomes binding only after our personal confirmation.",
         "": "Important: this simple version is a request, not an automatic instant booking. Availability is confirmed personally.",
         "Verfügbarkeit jetzt anfragen": "Open email request",
         "Direkt anrufen": "Call directly",
@@ -2103,6 +2107,11 @@
         calendarError: "Der Booking-Kalender konnte gerade nicht automatisch geprüft werden. Verfügbarkeit wird persönlich bestätigt.",
         justNow: "gerade eben",
         invalidDates: "Bitte Anreise und Abreise korrekt auswählen.",
+        requestButton: "Wachau-Etappe anfragen",
+        requestButtonPending: "Anfrage senden · Verfügbarkeit wird bestätigt",
+        unavailableButton: "Zeitraum nicht verfügbar",
+        chooseDatesButton: "Bitte Reisedaten wählen",
+        priceDisclaimer: "Zimmerpreis und gewählte Zusatzleistungen – verbindlich erst nach persönlicher Bestätigung.",
         requiredFields: "Bitte alle Pflichtfelder ausfüllen, inklusive Telefonnummer, vollständiger Adresse und Nachricht.",
         mailSubject: "Buchungsanfrage Zuhause am Bach",
         mailIntro: "Neue Direktanfrage über die Website von Zuhause am Bach",
@@ -2153,6 +2162,11 @@
       calendarError: "The Booking calendar could not be checked automatically right now. Availability will be confirmed personally.",
       justNow: "just now",
       invalidDates: "Please choose valid arrival and departure dates.",
+      requestButton: "Request your Wachau stay",
+      requestButtonPending: "Send request · availability will be confirmed",
+      unavailableButton: "Dates unavailable",
+      chooseDatesButton: "Please choose travel dates",
+      priceDisclaimer: "Room price and selected extras – binding only after personal confirmation.",
       requiredFields: "Please fill in all required fields, including phone number, full address and message.",
       mailSubject: "Booking request Zuhause am Bach",
       mailIntro: "New booking request via the simple website",
@@ -2328,7 +2342,7 @@
           const parent = node.parentElement;
           if (!node.nodeValue.trim() || !parent) return NodeFilter.FILTER_REJECT;
           if (["SCRIPT", "STYLE"].includes(parent.tagName)) return NodeFilter.FILTER_REJECT;
-          if (parent.closest(".price, #total, #weatherTodayTemp, #weatherTomorrowTemp")) return NodeFilter.FILTER_REJECT;
+          if (parent.closest("#total, #weatherTodayTemp, #weatherTomorrowTemp")) return NodeFilter.FILTER_REJECT;
           return NodeFilter.FILTER_ACCEPT;
         }
       });
@@ -2381,7 +2395,12 @@
       button.addEventListener("click", () => applyLanguage(button.dataset.lang));
     });
     applyLanguage(currentLang, false);
-    const LIVE_BOOKING_API_URL = (window.ZAB_BOOKING_SYNC_URL || "") + "/availability";
+    const configuredBookingSyncUrl = String(window.ZAB_BOOKING_SYNC_URL || "").replace(/\/+$/, "");
+    const hasConfiguredBookingSync = /^https:\/\//i.test(configuredBookingSyncUrl)
+      && !/(PASTE-YOUR-WORKER|DEIN-NAME)/i.test(configuredBookingSyncUrl);
+    const LIVE_BOOKING_API_URL = hasConfiguredBookingSync
+      ? configuredBookingSyncUrl + "/availability"
+      : "";
     const LIVE_PRICE_API_URL = "";
     const OTHER_ROOMS_RELEASED = window.SHOW_ADDITIONAL_ROOMS === true;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
@@ -2513,10 +2532,10 @@
           text: tr("noIcal", { room: room.value })
         };
       }
-      if (!LIVE_BOOKING_API_URL || !liveBookingCalendarLoaded) {
+      if (LIVE_BOOKING_API_URL && !liveBookingCalendarLoaded) {
         return {
           state: "note",
-          text: LIVE_BOOKING_API_URL && liveBookingCalendarPending ? tr("calendarLoading") : tr("selectDatesWorker")
+          text: liveBookingCalendarPending ? tr("calendarLoading") : tr("selectDatesWorker")
         };
       }
       const conflict = blockedCalendarEntry(a, d);
@@ -2529,7 +2548,7 @@
       if (!calendarIsFresh()) {
         return {
           state: "note",
-          text: "Die Booking-Verfügbarkeit konnte nicht aktuell bestätigt werden. Bitte erneut versuchen oder Anfrage senden; wir bestätigen den Termin persönlich. Letzter erfolgreicher Sync: " + bookingCalendarUpdated + "."
+          text: tr("calendarStale", { updated: bookingCalendarUpdated })
         };
       }
       return {
@@ -2555,16 +2574,18 @@
       sum = Math.round(sum);
       nights.value = String(n);
       total.textContent = money(sum);
-      discountNote.textContent = "Zimmerpreis und gewählte Zusatzleistungen – verbindlich erst nach persönlicher Bestätigung.";
+      discountNote.textContent = tr("priceDisclaimer");
       const availability = availabilityText();
       availabilityStatus.className = "availability-status " + availability.state;
       availabilityStatus.textContent = availability.text;
       const hasValidDates = n > 0;
-      const canSubmit = availability.state === "ok";
+      // A stale or temporarily unavailable calendar must not prevent a non-binding
+      // request. Only a confirmed conflict blocks the form.
+      const canSubmit = hasValidDates && availability.state !== "blocked";
       submitRequest.disabled = !canSubmit;
       submitRequest.textContent = canSubmit
-        ? "Wachau-Etappe anfragen"
-        : (hasValidDates ? "Zeitraum nicht verfügbar" : "Bitte Reisedaten wählen");
+        ? (availability.state === "ok" ? tr("requestButton") : tr("requestButtonPending"))
+        : (hasValidDates ? tr("unavailableButton") : tr("chooseDatesButton"));
       arrival.setCustomValidity(availability.state === "blocked" ? availability.text : "");
       departure.setCustomValidity(availability.state === "blocked" ? availability.text : "");
       paypalHint.textContent = "Bitte noch nicht bezahlen. Nach unserer persönlichen Buchungsbestätigung erhalten Sie die Zahlungsinformation für " + money(sum) + ".";
