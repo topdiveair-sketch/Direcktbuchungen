@@ -17,6 +17,7 @@ for (const event of [
 
 assert(!html.includes("payment_success"), "payment_success darf nicht simuliert werden");
 assert(!html.includes("booking_completed"), "booking_completed darf nicht simuliert werden");
-assert.strictEqual((html.match(/class="mobile-booking-cta"/g) || []).length, 1);
+assert.strictEqual((html.match(/class="mobile-booking-cta"/g) || []).length, 0);
 assert.strictEqual((html.match(/class="mobile-booking-bar"/g) || []).length, 1);
+assert(html.includes("progress >= 0.2"), "mobile Buchungsleiste muss erst nach Scrollfortschritt erscheinen");
 console.log("Conversion-Vertrag bestanden.");
