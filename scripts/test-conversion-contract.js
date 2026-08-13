@@ -20,4 +20,6 @@ assert(!html.includes("booking_completed"), "booking_completed darf nicht simuli
 assert.strictEqual((html.match(/class="mobile-booking-cta"/g) || []).length, 0);
 assert.strictEqual((html.match(/class="mobile-booking-bar"/g) || []).length, 1);
 assert(html.includes("progress >= 0.2"), "mobile Buchungsleiste muss erst nach Scrollfortschritt erscheinen");
+assert(!html.includes('if (availability.state !== "ok")'), "veralteter Kalender darf die unverbindliche Anfrage nicht blockieren");
+assert(html.includes('if (availability.state === "blocked")'), "nur bestätigte Kalenderkonflikte dürfen blockieren");
 console.log("Conversion-Vertrag bestanden.");
