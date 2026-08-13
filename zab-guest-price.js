@@ -15,22 +15,34 @@ async function searchGeo(q){
  if(q.length<2)return [];
  const key=q.toLocaleLowerCase("de-AT");
  if(geoCache.has(key))return geoCache.get(key);
- const queries=[q,`${q}, Wachau, Österreich`,`${q}, Niederösterreich, Österreich`];
  const found=[];
- for(const query of queries){
-  const url="https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&namedetails=1&limit=8&countrycodes=at,de,cz,sk,hu&q="+encodeURIComponent(query);
-  const rows=await getJson(url,{headers:{Accept:"application/json"}});
-  for(const row of rows){
-   const item={lat:+row.lat,lon:+row.lon,label:row.display_name,type:row.type||"",category:row.category||row.class||""};
+ const url="https://photon.komoot.io/api/?limit=10&lang=de&lat="+cfg.home.lat+"&lon="+cfg.home.lon+"&q="+encodeURIComponent(q);
+ const payload=await getJson(url,{headers:{Accept:"application/json"}});
+ for(const feature of payload.features||[]){
+   const row=feature.properties||{},coordinates=feature.geometry?.coordinates||[];
+   const address={road:row.street||"",house_number:row.housenumber||"",city:row.city||row.locality||row.district||""};
+   const parts=[row.name,[row.street,row.housenumber].filter(Boolean).join(" "),row.postcode,row.city||row.locality,row.state,row.country].filter(Boolean);
+   const item={lat:+coordinates[1],lon:+coordinates[0],label:[...new Set(parts)].join(", "),type:row.type||"",category:row.osm_value||"",address};
    if(!Number.isFinite(item.lat)||!Number.isFinite(item.lon))continue;
    const id=`${item.lat.toFixed(5)},${item.lon.toFixed(5)}`;
    if(!found.some(x=>x.id===id))found.push({...item,id});
-  }
-  if(found.length)break;
  }
  found.sort((a,b)=>{
-  const accommodation=x=>/(hotel|guest_house|hostel|motel|chalet|apartment|restaurant)/i.test(`${x.type} ${x.category}`)?0:1;
-  return accommodation(a)-accommodation(b)||distanceKm(cfg.home,a)-distanceKm(cfg.home,b);
+  const normalized=x=>x.toLocaleLowerCase("de-AT").normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const query=normalized(q),tokens=query.split(/[^a-z0-9]+/).filter(x=>x.length>1);
+  const accommodation=x=>/(hotel|pension|gasthof|guest_house|hostel|motel|chalet|apartment|tourism)/i.test(`${x.label} ${x.type} ${x.category}`);
+  const locality=x=>/(city|town|village|locality|municipality)/i.test(`${x.type} ${x.category}`);
+  const score=x=>{
+   const label=normalized(x.label);
+   let value=tokens.reduce((sum,token)=>sum+(label.includes(token)?3:0),0);
+   if(label.includes(query))value+=12;
+   if(/\d/.test(query)&&x.address?.house_number&&query.includes(normalized(x.address.house_number)))value+=8;
+   if(/^(hotel|pension|gasthof|unterkunft)/i.test(q)&&accommodation(x))value+=10;
+   if(!/\d/.test(q)&&tokens.length===1&&locality(x))value+=8;
+   if(distanceKm(cfg.home,x)<80)value+=4;
+   return value;
+  };
+  return score(b)-score(a)||distanceKm(cfg.home,a)-distanceKm(cfg.home,b);
  });
  const result=found.slice(0,6);
  geoCache.set(key,result);
@@ -105,7 +117,13 @@ function renderSuggestions(items){
  for(const item of items){
   const button=document.createElement("button");
   button.type="button";
-  button.textContent=item.label;
+  const kind=document.createElement("strong");
+  const description=document.createElement("span");
+  kind.textContent=/(hotel|pension|gasthof|guest_house|hostel|motel|chalet|apartment|tourism)/i.test(`${item.label} ${item.type} ${item.category}`)
+   ? "Unterkunft"
+   : (item.address?.road||item.address?.house_number ? "Adresse" : "Ort");
+  description.textContent=item.label;
+  button.append(kind,description);
   button.addEventListener("click",()=>{
    $("zabGuestDestination").value=item.label;
    geoCache.set(item.label.toLocaleLowerCase("de-AT"),[item]);
