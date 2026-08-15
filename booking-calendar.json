@@ -1,20 +1,14 @@
 {
   "room": "Bachblick",
   "source": "Booking iCal",
-  "updatedAt": "15.8.2026, 23:56:36",
-  "updatedAtIso": "2026-08-15T21:56:36.050Z",
+  "updatedAt": "16.8.2026, 00:24:30",
+  "updatedAtIso": "2026-08-15T22:24:30.980Z",
   "events": [
     {
       "start": "2026-08-02",
       "end": "2026-08-03",
       "summary": "MANUELL GESCHLOSSEN - Not available",
       "source": "Manuell"
-    },
-    {
-      "start": "2026-08-15",
-      "end": "2026-08-16",
-      "summary": "CLOSED - Not available",
-      "source": "Booking"
     },
     {
       "start": "2026-08-15",
