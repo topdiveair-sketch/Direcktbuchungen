@@ -102,6 +102,40 @@ function stableCalendar(payload) {
   };
 }
 
+function sameCalendarData(left, right) {
+  return Boolean(left) && JSON.stringify(stableCalendar(left)) === JSON.stringify(stableCalendar(right));
+}
+
+function renderFallbackBlocks(events) {
+  return events
+    .map((event) => `      { start: "${event.start}", end: "${event.end}" }`)
+    .join(",\n");
+}
+
+function updateHtmlFallback(events, updatedAt, updatedAtIso) {
+  const indexPath = path.join(process.cwd(), "index.html");
+  if (!fs.existsSync(indexPath)) return false;
+
+  const original = fs.readFileSync(indexPath, "utf8");
+  let html = original;
+  html = html.replace(
+    /let bookingCalendarUpdated = ".*?";/,
+    `let bookingCalendarUpdated = "${updatedAt}";`
+  );
+  html = html.replace(
+    /let bookingCalendarUpdatedIso = ".*?";/,
+    `let bookingCalendarUpdatedIso = "${updatedAtIso}";`
+  );
+  html = html.replace(
+    /const BACHBLICK_BOOKING_BLOCKS = \[\r?\n[\s\S]*?\r?\n\s*\];/,
+    `const BACHBLICK_BOOKING_BLOCKS = [\n${renderFallbackBlocks(events)}\n    ];`
+  );
+
+  if (html === original) return false;
+  fs.writeFileSync(indexPath, html, "utf8");
+  return true;
+}
+
 async function main() {
   if (!BOOKING_ICAL_URL) throw new Error("BOOKING_ICAL_URL fehlt; als GitHub Actions Secret konfigurieren");
 
@@ -122,22 +156,34 @@ async function main() {
     }
   }
 
-  const payload = {
+  const next = {
     room: "Bachblick",
     source: GOOGLE_ICAL_URLS.length ? "Booking iCal + Google Calendar iCal" : "Booking iCal",
     events
   };
 
-  if (previous && JSON.stringify(stableCalendar(previous)) === JSON.stringify(stableCalendar(payload))) {
-    console.log(`Kalender unverändert: ${events.length} belegt/geschlossen; keine Dateiänderung.`);
+  if (sameCalendarData(previous, next)) {
+    const htmlChanged = updateHtmlFallback(
+      events,
+      previous.updatedAt || "",
+      previous.updatedAtIso || ""
+    );
+    console.log(htmlChanged
+      ? `Kalenderdaten unverändert; HTML-Fallback wurde repariert (${events.length} Einträge).`
+      : `Kalender unverändert: ${events.length} belegt/geschlossen; keine Dateiänderung.`);
     return;
   }
 
   const now = new Date();
-  payload.updatedAt = now.toLocaleString("de-AT", { timeZone: "Europe/Vienna" });
-  payload.updatedAtIso = now.toISOString();
+  const payload = {
+    ...next,
+    updatedAt: now.toLocaleString("de-AT", { timeZone: "Europe/Vienna" }),
+    updatedAtIso: now.toISOString()
+  };
+
   fs.writeFileSync(calendarPath, JSON.stringify(payload, null, 2) + "\n", "utf8");
-  console.log(`booking-calendar.json aktualisiert: ${events.length} belegt/geschlossen, ${payload.updatedAt}`);
+  updateHtmlFallback(events, payload.updatedAt, payload.updatedAtIso);
+  console.log(`Kalender aktualisiert: ${events.length} belegt/geschlossen, ${payload.updatedAt}`);
 }
 
 main().catch((error) => {
