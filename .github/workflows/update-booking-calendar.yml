@@ -2,7 +2,7 @@ name: Booking-Kalender aktualisieren
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -24,8 +24,10 @@ jobs:
           node-version: "20"
       - name: Booking-iCal abrufen
         env:
+          BOOKING_ICAL_URL: ${{ secrets.BOOKING_ICAL_URL }}
           GOOGLE_ICAL_URL: ${{ secrets.GOOGLE_ICAL_URL }}
           GOOGLE_ICAL_URLS: ${{ secrets.GOOGLE_ICAL_URLS }}
+          MANUAL_BOOKING_BLOCKS_JSON: ${{ vars.MANUAL_BOOKING_BLOCKS_JSON }}
         run: node scripts/update-booking-calendar.js
       - name: Kalenderdateien prüfen
         run: |
@@ -35,4 +37,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Booking-Kalender aktualisieren"
-          file_pattern: booking-calendar.json index.html
+          file_pattern: booking-calendar.json
