@@ -1,19 +1,68 @@
 {
   "room": "Bachblick",
   "source": "Booking iCal",
-  "updatedAt": "19.8.2026, 18:03:30",
-  "updatedAtIso": "2026-08-19T16:03:30.447Z",
   "events": [
-    {"start":"2026-08-19","end":"2026-08-20","summary":"CLOSED - Not available","source":"Booking"},
-    {"start":"2026-08-22","end":"2026-08-23","summary":"CLOSED - Not available","source":"Booking"},
-    {"start":"2026-08-29","end":"2026-08-30","summary":"CLOSED - Not available","source":"Booking"},
-    {"start":"2026-09-04","end":"2026-09-06","summary":"CLOSED - Not available","source":"Booking"},
-    {"start":"2026-09-11","end":"2026-09-14","summary":"CLOSED - Not available","source":"Booking"},
-    {"start":"2026-09-24","end":"2026-09-28","summary":"CLOSED - Not available","source":"Booking"},
-    {"start":"2026-10-17","end":"2026-10-19","summary":"CLOSED - Not available","source":"Booking"},
-    {"start":"2026-12-19","end":"2027-01-11","summary":"CLOSED - Not available","source":"Booking"},
-    {"start":"2027-05-01","end":"2027-05-02","summary":"CLOSED - Not available","source":"Booking"},
-    {"start":"2027-08-20","end":"2027-08-23","summary":"CLOSED - Not available","source":"Booking"},
-    {"start":"2027-12-20","end":"2028-01-10","summary":"CLOSED - Not available","source":"Booking"}
-  ]
+    {
+      "start": "2026-08-22",
+      "end": "2026-08-23",
+      "summary": "CLOSED - Not available",
+      "source": "Booking"
+    },
+    {
+      "start": "2026-08-29",
+      "end": "2026-08-30",
+      "summary": "CLOSED - Not available",
+      "source": "Booking"
+    },
+    {
+      "start": "2026-09-04",
+      "end": "2026-09-06",
+      "summary": "CLOSED - Not available",
+      "source": "Booking"
+    },
+    {
+      "start": "2026-09-11",
+      "end": "2026-09-14",
+      "summary": "CLOSED - Not available",
+      "source": "Booking"
+    },
+    {
+      "start": "2026-09-24",
+      "end": "2026-09-28",
+      "summary": "CLOSED - Not available",
+      "source": "Booking"
+    },
+    {
+      "start": "2026-10-17",
+      "end": "2026-10-19",
+      "summary": "CLOSED - Not available",
+      "source": "Booking"
+    },
+    {
+      "start": "2026-12-19",
+      "end": "2027-01-11",
+      "summary": "CLOSED - Not available",
+      "source": "Booking"
+    },
+    {
+      "start": "2027-05-01",
+      "end": "2027-05-02",
+      "summary": "CLOSED - Not available",
+      "source": "Booking"
+    },
+    {
+      "start": "2027-08-20",
+      "end": "2027-08-23",
+      "summary": "CLOSED - Not available",
+      "source": "Booking"
+    },
+    {
+      "start": "2027-12-20",
+      "end": "2028-01-10",
+      "summary": "CLOSED - Not available",
+      "source": "Booking"
+    }
+  ],
+  "updatedAt": "20.8.2026, 00:26:41",
+  "updatedAtIso": "2026-08-19T22:26:41.969Z"
 }
