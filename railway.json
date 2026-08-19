@@ -1,10 +1,28 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
-    "builder": "NIXPACKS"
+    "builder": "NIXPACKS",
+    "watchPatterns": [
+      "railway.json",
+      "Procfile",
+      "requirements.txt",
+      "app.py",
+      "railway_app.py",
+      "addons.py",
+      "v6_features.py",
+      "stability.py",
+      "zab_os.py",
+      "host_assistant.py",
+      "smart_host.py",
+      "knowledge.py",
+      "quality_v12.py",
+      "alltag.py",
+      "templates/**",
+      "static/**"
+    ]
   },
   "deploy": {
-    "startCommand": "gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 app:app",
+    "startCommand": "gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 railway_app:app",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
