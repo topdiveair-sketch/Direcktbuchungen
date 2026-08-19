@@ -7,18 +7,8 @@ const GOOGLE_ICAL_URLS = (process.env.GOOGLE_ICAL_URLS || process.env.GOOGLE_ICA
   .map((url) => url.trim())
   .filter(Boolean);
 const MANUAL_BLOCKS = [
-  {
-    start: "2026-08-02",
-    end: "2026-08-03",
-    summary: "MANUELL GESCHLOSSEN - Not available",
-    source: "Manuell"
-  },
-  {
-    start: "2026-08-15",
-    end: "2026-08-21",
-    summary: "MANUELL GESCHLOSSEN - Not available",
-    source: "Manuell"
-  }
+  { start: "2026-08-02", end: "2026-08-03", summary: "MANUELL GESCHLOSSEN - Not available", source: "Manuell" },
+  { start: "2026-08-15", end: "2026-08-21", summary: "MANUELL GESCHLOSSEN - Not available", source: "Manuell" }
 ];
 
 function parseDate(value) {
@@ -27,59 +17,56 @@ function parseDate(value) {
 }
 
 function parseIcal(text, source) {
-  return text
-    .split("BEGIN:VEVENT")
-    .slice(1)
-    .map((block) => {
-      let start = "";
-      let end = "";
-      let summary = "Booking/iCal belegt oder geschlossen";
-      for (const rawLine of block.split(/\r?\n/)) {
-        const line = rawLine.trim();
-        if (line.startsWith("DTSTART")) start = parseDate(line.split(":").pop());
-        if (line.startsWith("DTEND")) end = parseDate(line.split(":").pop());
-        if (line.startsWith("SUMMARY")) summary = line.split(":").slice(1).join(":") || summary;
-      }
-      return { start, end, summary, source };
-    })
-    .filter((event) => event.start && event.end);
+  return text.split("BEGIN:VEVENT").slice(1).map((block) => {
+    let start = "";
+    let end = "";
+    let summary = "Booking/iCal belegt oder geschlossen";
+    for (const rawLine of block.split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (line.startsWith("DTSTART")) start = parseDate(line.split(":").pop());
+      if (line.startsWith("DTEND")) end = parseDate(line.split(":").pop());
+      if (line.startsWith("SUMMARY")) summary = line.split(":").slice(1).join(":") || summary;
+    }
+    return { start, end, summary, source };
+  }).filter((event) => event.start && event.end);
 }
 
 async function fetchIcal(url, source) {
   let lastError;
-
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
       const separator = url.includes("?") ? "&" : "?";
-      const freshUrl = `${url}${separator}_zab=${Date.now()}`;
-      const response = await fetch(freshUrl, {
+      const response = await fetch(`${url}${separator}_zab=${Date.now()}`, {
         headers: {
           "User-Agent": "Zuhause-am-Bach-Calendar-Sync/2.0",
           "Accept": "text/calendar,text/plain,*/*",
           "Cache-Control": "no-cache"
         }
       });
-
-      if (!response.ok) {
-        throw new Error(`${source} iCal HTTP ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`${source} iCal HTTP ${response.status}`);
       const text = await response.text();
-      if (!text.includes("BEGIN:VCALENDAR")) {
-        throw new Error(`${source} lieferte keinen gültigen iCal-Kalender`);
-      }
-
+      if (!text.includes("BEGIN:VCALENDAR")) throw new Error(`${source} lieferte keinen gültigen iCal-Kalender`);
       return parseIcal(text, source);
     } catch (error) {
       lastError = error;
       console.warn(`${source}: Versuch ${attempt} von 3 fehlgeschlagen: ${error.message}`);
-      if (attempt < 3) {
-        await new Promise((resolve) => setTimeout(resolve, attempt * 3000));
-      }
+      if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, attempt * 3000));
     }
   }
-
   throw lastError;
+}
+
+function eventData(payload) {
+  return {
+    room: payload.room,
+    source: payload.source,
+    events: payload.events
+  };
+}
+
+function sameCalendarData(previous, next) {
+  if (!previous) return false;
+  return JSON.stringify(eventData(previous)) === JSON.stringify(eventData(next));
 }
 
 async function main() {
@@ -89,35 +76,41 @@ async function main() {
   }
   events.push(...MANUAL_BLOCKS);
   events.sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end));
-  const updatedAt = new Date().toLocaleString("de-AT", { timeZone: "Europe/Vienna" });
-  const updatedAtIso = new Date().toISOString();
+
+  const calendarPath = path.join(process.cwd(), "booking-calendar.json");
+  let previous = null;
+  if (fs.existsSync(calendarPath)) {
+    try {
+      previous = JSON.parse(fs.readFileSync(calendarPath, "utf8"));
+    } catch (error) {
+      console.warn(`Bestehender Kalender konnte nicht gelesen werden: ${error.message}`);
+    }
+  }
+
   const payload = {
     room: "Bachblick",
     source: GOOGLE_ICAL_URLS.length ? "Booking iCal + Google Calendar iCal" : "Booking iCal",
-    updatedAt,
-    updatedAtIso,
     events
   };
-  fs.writeFileSync(
-    path.join(process.cwd(), "booking-calendar.json"),
-    JSON.stringify(payload, null, 2) + "\n",
-    "utf8"
-  );
+
+  if (sameCalendarData(previous, payload)) {
+    console.log(`Kalender unverändert: ${events.length} belegt/geschlossen; kein Commit erforderlich.`);
+    return;
+  }
+
+  const updatedAt = new Date().toLocaleString("de-AT", { timeZone: "Europe/Vienna" });
+  const updatedAtIso = new Date().toISOString();
+  payload.updatedAt = updatedAt;
+  payload.updatedAtIso = updatedAtIso;
+
+  fs.writeFileSync(calendarPath, JSON.stringify(payload, null, 2) + "\n", "utf8");
 
   const indexPath = path.join(process.cwd(), "index.html");
   if (fs.existsSync(indexPath)) {
-    const fallbackBlocks = events
-      .map((event) => `      { start: "${event.start}", end: "${event.end}" }`)
-      .join(",\n");
+    const fallbackBlocks = events.map((event) => `      { start: "${event.start}", end: "${event.end}" }`).join(",\n");
     let html = fs.readFileSync(indexPath, "utf8");
-    html = html.replace(
-      /let bookingCalendarUpdated = ".*?";/,
-      `let bookingCalendarUpdated = "${updatedAt}";`
-    );
-    html = html.replace(
-      /let bookingCalendarUpdatedIso = ".*?";/,
-      `let bookingCalendarUpdatedIso = "${updatedAtIso}";`
-    );
+    html = html.replace(/let bookingCalendarUpdated = ".*?";/, `let bookingCalendarUpdated = "${updatedAt}";`);
+    html = html.replace(/let bookingCalendarUpdatedIso = ".*?";/, `let bookingCalendarUpdatedIso = "${updatedAtIso}";`);
     html = html.replace(
       /const BACHBLICK_BOOKING_BLOCKS = \[\r?\n[\s\S]*?\r?\n\s*\];/,
       `const BACHBLICK_BOOKING_BLOCKS = [\n${fallbackBlocks}\n    ];`
