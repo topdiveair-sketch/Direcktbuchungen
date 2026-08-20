@@ -19,6 +19,34 @@ function el(tag,attrs={},html=""){
 }
 
 ready(function(){
+  function enforceAdditionalRoomLock(){
+    if(window.SHOW_ADDITIONAL_ROOMS === true) return;
+
+    document.querySelectorAll('[data-future-room]').forEach(function(element){
+      element.hidden = true;
+      element.setAttribute('aria-hidden','true');
+      element.style.setProperty('display','none','important');
+    });
+
+    document.querySelectorAll('input[name="room"][data-release-required="1"]').forEach(function(input){
+      input.checked = false;
+      input.disabled = true;
+      input.tabIndex = -1;
+    });
+
+    const bachblick = document.querySelector('input[name="room"][value="Bachblick"]');
+    if(bachblick && !document.querySelector('input[name="room"]:checked')) bachblick.checked = true;
+  }
+
+  enforceAdditionalRoomLock();
+  const bookingForm = document.getElementById('requestForm');
+  ['input','change'].forEach(function(eventName){
+    bookingForm?.addEventListener(eventName,function(){
+      enforceAdditionalRoomLock();
+      setTimeout(enforceAdditionalRoomLock,0);
+    });
+  });
+
   if(document.getElementById("zab-conv-style")) return;
 
   const style=el("style",{id:"zab-conv-style"},`
