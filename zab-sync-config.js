@@ -3,22 +3,9 @@ window.ZAB_BOOKING_SYNC_URL = "https://PASTE-YOUR-WORKER.workers.dev";
 (function () {
   const RELEASE_DATE = "2026-08-16";
 
-  function viennaDateIso() {
-    try {
-      const parts = new Intl.DateTimeFormat("sv-SE", {
-        timeZone: "Europe/Vienna",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-      }).formatToParts(new Date());
-      const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-      return `${values.year}-${values.month}-${values.day}`;
-    } catch (error) {
-      return new Date().toISOString().slice(0, 10);
-    }
-  }
-
-  window.SHOW_ADDITIONAL_ROOMS = viennaDateIso() >= RELEASE_DATE;
+  /* Sicherheitsregel: Zusatz­zimmer werden niemals automatisch nach Datum
+     freigegeben. Sichtbarkeit nur nach ausdrücklicher manueller Freigabe. */
+  window.SHOW_ADDITIONAL_ROOMS = false;
 
   const dateReplacements = [
     ["15.08.2026", "16.08.2026"],
@@ -37,12 +24,12 @@ window.ZAB_BOOKING_SYNC_URL = "https://PASTE-YOUR-WORKER.workers.dev";
   };
 
   const pendingLabel = {
-    de: "buchbar ab 16.08.2026",
-    en: "bookable from 16/08/2026",
-    cs: "rezervovatelné od 16. 8. 2026",
-    hu: "foglalható 2026.08.16-tól",
-    es: "reservable desde el 16/08/2026",
-    fr: "réservable à partir du 16/08/2026"
+    de: "noch nicht freigegeben",
+    en: "not released yet",
+    cs: "zatím neuvolněno",
+    hu: "még nincs felszabadítva",
+    es: "aún no liberada",
+    fr: "pas encore libérée"
   };
 
   function patchRoomReleaseUi() {
@@ -52,7 +39,11 @@ window.ZAB_BOOKING_SYNC_URL = "https://PASTE-YOUR-WORKER.workers.dev";
     document.querySelectorAll("[data-future-room]").forEach((element) => {
       element.hidden = !released;
       const input = element.querySelector('input[name="room"]');
-      if (input) input.dataset.from = RELEASE_DATE;
+      if (input) {
+        input.dataset.from = RELEASE_DATE;
+        input.disabled = !released;
+        if (!released) input.checked = false;
+      }
 
       if (element.matches("article.room-card")) {
         const status = element.querySelector("strong");
@@ -61,6 +52,11 @@ window.ZAB_BOOKING_SYNC_URL = "https://PASTE-YOUR-WORKER.workers.dev";
           : (pendingLabel[lang] || pendingLabel.de);
       }
     });
+
+    if (!released) {
+      const bachblick = document.querySelector('input[name="room"][value="Bachblick"]');
+      if (bachblick) bachblick.checked = true;
+    }
 
     document.querySelectorAll('input[name="room"][data-from]').forEach((input) => {
       if (input.value !== "Bachblick") input.dataset.from = RELEASE_DATE;
@@ -79,8 +75,9 @@ window.ZAB_BOOKING_SYNC_URL = "https://PASTE-YOUR-WORKER.workers.dev";
   document.addEventListener("DOMContentLoaded", () => {
     patchRoomReleaseUi();
 
-    document.querySelectorAll("[data-lang], #mobileLanguage").forEach((element) => {
+    document.querySelectorAll("[data-lang], #mobileLanguage, #arrival, #departure").forEach((element) => {
       element.addEventListener("click", () => setTimeout(patchRoomReleaseUi, 0));
+      element.addEventListener("input", () => setTimeout(patchRoomReleaseUi, 0));
       element.addEventListener("change", () => setTimeout(patchRoomReleaseUi, 0));
     });
   });
