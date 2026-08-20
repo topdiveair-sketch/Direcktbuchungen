@@ -52,6 +52,12 @@
     },
     {
       "start": "2027-08-19",
+      "end": "2027-08-20",
+      "summary": "CLOSED - Not available",
+      "source": "Booking"
+    },
+    {
+      "start": "2027-08-21",
       "end": "2027-08-23",
       "summary": "CLOSED - Not available",
       "source": "Booking"
@@ -63,6 +69,6 @@
       "source": "Booking"
     }
   ],
-  "updatedAt": "20.8.2026, 00:52:09",
-  "updatedAtIso": "2026-08-19T22:52:09.132Z"
+  "updatedAt": "20.8.2026, 03:44:57",
+  "updatedAtIso": "2026-08-20T01:44:57.335Z"
 }
