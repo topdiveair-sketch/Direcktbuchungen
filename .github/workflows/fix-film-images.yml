@@ -1,0 +1,48 @@
+name: Repair film images
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-film-images.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode image payloads if stored as Base64 text
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in images/film-site-final.jpg images/comic-site-final.jpg; do
+            if [ ! -f "$f" ]; then
+              echo "Missing $f" >&2
+              exit 1
+            fi
+            mime=$(file -b --mime-type "$f")
+            echo "$f before: $mime"
+            if [ "$mime" = "text/plain" ] || [ "$mime" = "application/octet-stream" ]; then
+              tr -d '\r\n\t ' < "$f" | base64 -d > "$f.decoded"
+              mv "$f.decoded" "$f"
+            fi
+            file "$f"
+          done
+          file -b --mime-type images/film-site-final.jpg | grep -qx 'image/jpeg'
+          file -b --mime-type images/comic-site-final.jpg | grep -Eq '^image/(jpeg|png)$'
+      - name: Commit repaired binary images
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- images/film-site-final.jpg images/comic-site-final.jpg; then
+            echo 'No repair needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add images/film-site-final.jpg images/comic-site-final.jpg
+          git commit -m 'Decode Mariandl images to real binaries'
+          git push
