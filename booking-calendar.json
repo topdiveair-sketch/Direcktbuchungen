@@ -21,7 +21,7 @@
       "source": "Booking"
     },
     {
-      "start": "2026-09-11",
+      "start": "2026-09-10",
       "end": "2026-09-14",
       "summary": "CLOSED - Not available",
       "source": "Booking"
@@ -75,6 +75,6 @@
       "source": "Booking"
     }
   ],
-  "updatedAt": "21.8.2026, 15:15:53",
-  "updatedAtIso": "2026-08-21T13:15:53.777Z"
+  "updatedAt": "21.8.2026, 16:01:37",
+  "updatedAtIso": "2026-08-21T14:01:37.541Z"
 }
