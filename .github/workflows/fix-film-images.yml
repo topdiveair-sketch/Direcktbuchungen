@@ -1,5 +1,6 @@
 name: Repair film images
 
+# retrigger 2026-08-21
 on:
   push:
     paths:
