@@ -1,6 +1,10 @@
-"""Railway entrypoint with a lightweight health check."""
+"""Railway entrypoint with booking hold cleanup and health check."""
 
-from app import app
+from app import app, db
+from payment_hold import init_payment_hold
+
+
+init_payment_hold(app, db)
 
 
 @app.get("/health")
