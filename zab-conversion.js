@@ -1,5 +1,5 @@
 /* ZAB Conversion Layer 2026-08-25
-   Additive UI only: no booking, calendar, price or payment logic is replaced. */
+   Additive UI: booking, calendar and base price logic stay untouched; payment UI is enabled only for confirmed-free dates. */
 (function(){
 "use strict";
 
@@ -81,6 +81,9 @@ ready(function(){
     .zab-direct-price{display:inline-block;margin-top:4px;padding:4px 9px;border-radius:999px;background:#e5f3eb;color:#115846;font-size:12px;font-weight:900}
     .zab-room-clarity{display:block;margin-top:4px;padding:7px 9px;border-radius:8px;background:#fff7df;color:#654817;font-size:12px;font-weight:780;line-height:1.35}
     .zab-price-note{margin:8px 0 2px;padding:9px 11px;border-radius:9px;background:#eef8f3;color:#285045;font-size:12px;font-weight:780}
+    #paypalBox.zab-paypal-ready{border:2px solid #0070ba;background:#eef7ff;box-shadow:0 8px 22px rgba(0,112,186,.12)}
+    #paypalBox.zab-paypal-ready>strong{font-size:16px;color:#074f86}
+    #paypalBox.zab-paypal-ready #paypalLink{display:inline-grid;place-items:center;width:100%;min-height:52px;background:#0070ba;color:#fff;font-size:15px;font-weight:900}
     @media(max-width:760px){
       .zab-entry-grid,.zab-sales-grid,.zab-gf-usecases,.zab-direct-benefits{grid-template-columns:1fr}
       .zab-entry-card{min-height:86px;padding:15px}
@@ -149,10 +152,10 @@ ready(function(){
   if(form && !document.getElementById('zab-direct-box')){
     const directBox=el('aside',{class:'zab-direct-box',id:'zab-direct-box','aria-labelledby':'zab-direct-title'},`
       <h3 id="zab-direct-title">Direkt bei uns anfragen – persönlich & transparent</h3>
-      <p>Sie fragen ohne Buchungsportal direkt bei den Gastgebern an. Der angezeigte Gesamtpreis ist der Preis Ihrer Direktanfrage; verbindlich wird die Buchung erst mit unserer persönlichen Bestätigung.</p>
+      <p>Sie fragen ohne Buchungsportal direkt bei den Gastgebern an. Ist der Termin im aktuellen Kalender eindeutig frei, können Sie den angezeigten Direktpreis sofort über PayPal bezahlen. Die persönliche Buchungsbestätigung folgt anschließend.</p>
       <ul class="zab-direct-benefits">
         <li>Keine versteckten Gebühren</li>
-        <li>Persönliche Buchungsbestätigung</li>
+        <li>PayPal nur bei freiem Termin</li>
         <li>Parkplatz & WLAN inklusive</li>
         <li>Frühstück flexibel zubuchbar</li>
       </ul>
@@ -200,8 +203,47 @@ ready(function(){
 
   const total=document.querySelector('#requestForm .total');
   if(total && !document.getElementById('zab-price-note')){
-    const note=el('div',{class:'zab-price-note',id:'zab-price-note'},'Direktanfrage: Gesamtpreis transparent vor dem Absenden. Keine Zahlung, bevor wir Verfügbarkeit und Preis persönlich bestätigt haben.');
+    const note=el('div',{class:'zab-price-note',id:'zab-price-note'},'Direktanfrage: Gesamtpreis transparent vor dem Absenden. Bei eindeutig freiem Termin wird darunter die direkte PayPal-Zahlung freigeschaltet.');
     total.insertAdjacentElement('afterend',note);
+  }
+
+  const paypalBox=document.getElementById('paypalBox');
+  const paypalHint=document.getElementById('paypalHint');
+  const paypalLink=document.getElementById('paypalLink');
+  const availabilityStatus=document.getElementById('availabilityStatus');
+  const totalAmount=document.getElementById('total');
+  const paypalHeading=paypalBox?.querySelector('strong');
+
+  function syncDirectPayPal(){
+    if(!paypalBox || !paypalLink || !availabilityStatus || !totalAmount) return;
+    const isFree=availabilityStatus.classList.contains('ok');
+    if(!isFree){
+      paypalLink.classList.add('hidden');
+      paypalBox.classList.remove('zab-paypal-ready');
+      if(paypalHeading) paypalHeading.textContent='Zahlung erst bei eindeutig freier Verfügbarkeit';
+      return;
+    }
+
+    const amount=(totalAmount.textContent||'').trim() || 'Direktpreis';
+    paypalBox.classList.remove('hidden');
+    paypalBox.classList.add('zab-paypal-ready');
+    paypalLink.classList.remove('hidden');
+    paypalLink.href='https://www.paypal.com/myaccount/transfer/homepage/send';
+    paypalLink.target='_blank';
+    paypalLink.rel='noopener';
+    paypalLink.textContent='Jetzt '+amount+' per PayPal zahlen';
+    paypalLink.dataset.track='direct_paypal_payment';
+    if(paypalHeading) paypalHeading.textContent='✅ Termin laut aktuellem Kalender frei – jetzt bezahlen';
+    if(paypalHint) paypalHint.textContent='Direktpreis: '+amount+'. PayPal öffnet sich in einem neuen Fenster. Zahlung bitte an topdiveair@gmail.com senden und Name sowie Reisedatum als Hinweis angeben.';
+  }
+
+  if(availabilityStatus && totalAmount){
+    const paypalObserver=new MutationObserver(syncDirectPayPal);
+    paypalObserver.observe(availabilityStatus,{attributes:true,attributeFilter:['class'],childList:true,subtree:true,characterData:true});
+    paypalObserver.observe(totalAmount,{childList:true,subtree:true,characterData:true});
+    bookingForm?.addEventListener('input',()=>setTimeout(syncDirectPayPal,0));
+    bookingForm?.addEventListener('change',()=>setTimeout(syncDirectPayPal,0));
+    syncDirectPayPal();
   }
 
   const gf=document.getElementById("gepaeckpreis");
@@ -240,6 +282,10 @@ ready(function(){
     link.addEventListener("click",function(){
       window.zabTrack?.("conversion_cta_click",{label:(link.textContent||"").trim()});
     });
+  });
+
+  paypalLink?.addEventListener('click',function(){
+    window.zabTrack?.('direct_paypal_payment',{amount:(totalAmount?.textContent||'').trim()});
   });
 });
 })();
