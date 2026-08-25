@@ -95,7 +95,7 @@ def init_paypal_checkout(
         if token:
             headers["Authorization"] = f"Bearer {token}"
         if request_id:
-            headers["PayPal-Request-Id"] = request_id[:38]
+            headers["PayPal-Request-Id"] = request_id[:108]
         req = urllib.request.Request(url, data=body, headers=headers, method=method)
         try:
             with urllib.request.urlopen(req, timeout=25) as response:
@@ -339,20 +339,15 @@ def init_paypal_checkout(
                         "intent": "CAPTURE",
                         "purchase_units": [
                             {
-                                "reference_id": str(booking_id),
-                                "custom_id": uid[:127],
-                                "description": f"Zuhause am Bach – {room} {arrival.isoformat()} bis {departure.isoformat()}",
-                                "amount": {"currency_code": "EUR", "value": f"{total:.2f}"},
+                                "amount": {
+                                    "currency_code": "EUR",
+                                    "value": f"{total:.2f}",
+                                }
                             }
                         ],
                         "payment_source": {
                             "paypal": {
                                 "experience_context": {
-                                    "brand_name": "Zuhause am Bach",
-                                    "payment_method_preference": "IMMEDIATE_PAYMENT_REQUIRED",
-                                    "landing_page": "LOGIN",
-                                    "shipping_preference": "NO_SHIPPING",
-                                    "user_action": "PAY_NOW",
                                     "return_url": f"{base}/paypal/return?booking={booking_id}",
                                     "cancel_url": f"{base}/paypal/cancel?booking={booking_id}",
                                 }
