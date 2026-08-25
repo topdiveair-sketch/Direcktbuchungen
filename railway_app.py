@@ -65,9 +65,9 @@ init_paypal_checkout(
 )
 
 
-@app.get("/health")
-def railway_health():
-    """Return 200 when the Flask process is ready to accept requests."""
+@app.get("/health/deploy")
+def railway_deploy_health():
+    """Return the exact Railway/PayPal checkout revision currently running."""
     return {
         "status": "ok",
         "paypal_checkout": bool(app.extensions.get("zab_paypal_checkout_enabled")),
