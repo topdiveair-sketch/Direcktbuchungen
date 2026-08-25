@@ -7,8 +7,6 @@ function ready(fn){
 }
 
 ready(function(){
-  /* Erst nach allen alten DOMContentLoaded-Handlern initialisieren.
-     So kann der sichere Checkout alte PayPal-Listener/Observer sauber isolieren. */
   setTimeout(function(){
     const apiBase=String(window.ZAB_DIRECT_BOOKING_API_URL||"").replace(/\/+$/,"");
     let paypalLink=document.getElementById("paypalLink");
@@ -18,9 +16,6 @@ ready(function(){
     const availability=document.getElementById("availabilityStatus");
     if(!paypalLink||!form) return;
 
-    /* Der frühere Conversion-Layer verwaltete denselben Link als einfachen
-       PayPal-Geld-senden-Link. Durch Klonen werden dessen alte Listener und
-       MutationObserver-Referenzen von den aktiven Checkout-Elementen getrennt. */
     const isolatedLink=paypalLink.cloneNode(true);
     isolatedLink.id="paypalLink";
     paypalLink.replaceWith(isolatedLink);
@@ -133,7 +128,7 @@ ready(function(){
         : "Jetzt sicher mit PayPal buchen";
       checkoutHeading("✅ Termin frei – sichere Direktzahlung");
       if(paypalHint){
-        paypalHint.textContent="Termin ist laut aktuellem Booking-Kalender frei. Beim Klick wird Verfügbarkeit und Preis nochmals serverseitig geprüft.";
+        paypalHint.textContent="Termin ist laut aktuellem Booking-Kalender frei. Beim Klick wird der Termin serverseitig reserviert und vor PayPal nochmals sicher geprüft.";
       }
       if(availability){
         availability.className="availability-status ok zab-backend-ok";
@@ -141,7 +136,7 @@ ready(function(){
       }
     }
 
-    async function verifyAvailability(data,{force=false}={}){
+    async function verifyAvailability(data){
       if(!configured()){
         hidePayPal("Sofortzahlung ist noch nicht vollständig eingerichtet. Bitte senden Sie stattdessen die Buchungsanfrage.");
         return false;
@@ -156,7 +151,7 @@ ready(function(){
       }
 
       const signature=quoteSignature(data);
-      if(!force && verifiedSignature===signature && !paypalLink.classList.contains("hidden")) return true;
+      if(verifiedSignature===signature && !paypalLink.classList.contains("hidden")) return true;
 
       const sequence=++quoteSequence;
       showChecking();
@@ -207,14 +202,16 @@ ready(function(){
         return;
       }
 
-      const isStillFree=await verifyAvailability(data,{force:true});
-      if(!isStillFree) return;
-
+      /* Keine zweite Quote-Anfrage mehr: /api/paypal/create-order führt selbst
+         die aktuelle iCal-Synchronisierung und die atomare Verfügbarkeitsprüfung
+         durch. So verschwindet der Button nicht mehr zwischen zwei Prüfungen. */
       const oldText=paypalLink.textContent;
       paypalLink.setAttribute("aria-busy","true");
       paypalLink.textContent="Termin wird reserviert und PayPal vorbereitet …";
       paypalLink.style.pointerEvents="none";
       checkoutHeading("PayPal wird vorbereitet …");
+      if(paypalHint) paypalHint.textContent="Verfügbarkeit und Preis werden jetzt serverseitig final geprüft.";
+
       try{
         const response=await fetch(apiBase+"/api/paypal/create-order",{
           method:"POST",
@@ -238,6 +235,8 @@ ready(function(){
         paypalLink.removeAttribute("aria-busy");
         paypalLink.href="#";
         paypalLink.removeAttribute("target");
+        paypalLink.classList.remove("hidden");
+        paypalBox?.classList.add("zab-paypal-ready");
         checkoutHeading("⚠️ PayPal konnte nicht gestartet werden");
         if(paypalHint){
           paypalHint.textContent="Sofortbuchung nicht gestartet: "+(error.message||error)+" Bitte nicht mehrfach klicken; bei Bedarf die Buchungsanfrage senden.";
