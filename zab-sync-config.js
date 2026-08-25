@@ -1,8 +1,7 @@
 window.ZAB_BOOKING_SYNC_URL = "https://PASTE-YOUR-WORKER.workers.dev";
 
-/* Railway-Backend fuer serverseitig gepruefte Direktbuchung + PayPal.
-   Hier nach dem Railway-Deploy die echte HTTPS-Domain eintragen. */
-window.ZAB_DIRECT_BOOKING_API_URL = "https://PASTE-YOUR-RAILWAY-DOMAIN.up.railway.app";
+/* Railway-Backend fuer serverseitig gepruefte Direktbuchung + PayPal. */
+window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-7db62.up.railway.app";
 
 (function () {
   /* Zusatz­zimmer nur nach ausdrücklicher manueller Freigabe anzeigen. */
