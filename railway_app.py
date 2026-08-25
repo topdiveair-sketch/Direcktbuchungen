@@ -1,6 +1,10 @@
 """Railway entrypoint with booking hold cleanup, PayPal checkout and health check."""
 
+import base64
+import json
 import os
+import urllib.error
+import urllib.request
 
 from app import (
     app,
@@ -65,3 +69,62 @@ def railway_health():
         "status": "ok",
         "paypal_checkout": bool(app.extensions.get("zab_paypal_checkout_enabled")),
     }, 200
+
+
+@app.get("/health/paypal")
+def paypal_health():
+    """Verify PayPal credentials without creating an order or exposing secrets."""
+    environment = os.environ.get("PAYPAL_ENV", "live").strip().lower()
+    client_id = os.environ.get("PAYPAL_CLIENT_ID", "").strip()
+    secret = os.environ.get("PAYPAL_CLIENT_SECRET", "").strip()
+    if not client_id or not secret:
+        return {
+            "ok": False,
+            "environment": environment,
+            "reason": "credentials_missing",
+        }, 503
+
+    api_base = (
+        "https://api-m.sandbox.paypal.com"
+        if environment == "sandbox"
+        else "https://api-m.paypal.com"
+    )
+    auth = base64.b64encode(f"{client_id}:{secret}".encode("utf-8")).decode("ascii")
+    req = urllib.request.Request(
+        api_base + "/v1/oauth2/token",
+        data=b"grant_type=client_credentials",
+        headers={
+            "Authorization": f"Basic {auth}",
+            "Accept": "application/json",
+            "Accept-Language": "de_AT",
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        if not payload.get("access_token"):
+            return {
+                "ok": False,
+                "environment": environment,
+                "reason": "token_missing",
+            }, 502
+        return {
+            "ok": True,
+            "environment": environment,
+            "credentials": "accepted",
+        }, 200
+    except urllib.error.HTTPError as exc:
+        return {
+            "ok": False,
+            "environment": environment,
+            "reason": "paypal_rejected_credentials" if exc.code == 401 else "paypal_http_error",
+            "paypal_status": exc.code,
+        }, 503
+    except Exception:
+        return {
+            "ok": False,
+            "environment": environment,
+            "reason": "paypal_unreachable",
+        }, 503
