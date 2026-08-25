@@ -1,4 +1,4 @@
-/* ZAB Conversion Layer 2026-08-14
+/* ZAB Conversion Layer 2026-08-25
    Additive UI only: no booking, calendar, price or payment logic is replaced. */
 (function(){
 "use strict";
@@ -72,8 +72,17 @@ ready(function(){
     .zab-gf-usecases span{padding:12px;border:1px solid var(--line);border-radius:11px;background:#fff;color:#38534b;font-size:13px;font-weight:800;text-align:center}
     #gepaeckpreis.zab-gf-upgraded{padding:clamp(20px,4vw,34px);border:1px solid #d8e4dc;border-radius:18px;background:linear-gradient(145deg,#f7fbf8,#fffaf0)}
     #gepaeckpreis.zab-gf-upgraded .section-head h2{font-size:clamp(30px,4.3vw,44px)}
+    .zab-direct-box{display:grid;gap:10px;margin:0 0 16px;padding:16px;border:2px solid var(--brand);border-radius:14px;background:linear-gradient(145deg,#eef8f3,#fffaf0);box-shadow:0 8px 20px rgba(23,107,90,.08)}
+    .zab-direct-box h3{margin:0;font-size:19px;color:var(--brand)}
+    .zab-direct-box p{margin:0;color:#314841;font-size:14px}
+    .zab-direct-benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 12px;margin:0;padding:0;list-style:none}
+    .zab-direct-benefits li{font-size:13px;font-weight:800;color:#314841}
+    .zab-direct-benefits li:before{content:"✓ ";color:var(--brand);font-weight:950}
+    .zab-direct-price{display:inline-block;margin-top:4px;padding:4px 9px;border-radius:999px;background:#e5f3eb;color:#115846;font-size:12px;font-weight:900}
+    .zab-room-clarity{display:block;margin-top:4px;padding:7px 9px;border-radius:8px;background:#fff7df;color:#654817;font-size:12px;font-weight:780;line-height:1.35}
+    .zab-price-note{margin:8px 0 2px;padding:9px 11px;border-radius:9px;background:#eef8f3;color:#285045;font-size:12px;font-weight:780}
     @media(max-width:760px){
-      .zab-entry-grid,.zab-sales-grid,.zab-gf-usecases{grid-template-columns:1fr}
+      .zab-entry-grid,.zab-sales-grid,.zab-gf-usecases,.zab-direct-benefits{grid-template-columns:1fr}
       .zab-entry-card{min-height:86px;padding:15px}
       .zab-sales-card{padding:18px}
     }
@@ -82,6 +91,9 @@ ready(function(){
 
   const h1=document.querySelector("h1");
   if(h1) h1.textContent="Zuhause am Bach – Unterkunft am Donauradweg und Welterbesteig Wachau";
+
+  const heroEyebrow=document.querySelector('.hero-copy .eyebrow');
+  if(heroEyebrow) heroEyebrow.textContent='Direkt bei den Gastgebern anfragen – ohne Buchungsplattform';
 
   const main=document.querySelector("main");
   if(main){
@@ -111,7 +123,7 @@ ready(function(){
           <li>Persönliche Unterkunft statt großes Hotel</li>
           <li>Die Wachauer Windis als unverwechselbares Extra</li>
         </ul>
-        <a class="btn" href="#booking-title" data-track="bike_booking_cta">Verfügbarkeit für meine Radetappe prüfen</a>
+        <a class="btn" href="#booking-title" data-track="bike_booking_cta">Direktpreis für meine Radetappe prüfen</a>
         <div class="zab-pia-tip">🐾 <strong>Pias Etappentipp:</strong> Dein Rad schläft sicher – und du hoffentlich noch besser.</div>
       </article>
       <article class="zab-sales-card" id="zab-wanderer">
@@ -126,7 +138,7 @@ ready(function(){
           <li>Wachauer Etappenstempel für Hausgäste</li>
           <li>Gäste-App mit regionalen Informationen</li>
         </ul>
-        <a class="btn" href="#booking-title" data-track="hike_booking_cta">Meine Welterbesteig-Nacht prüfen</a>
+        <a class="btn" href="#booking-title" data-track="hike_booking_cta">Direktpreis für meine Wanderetappe prüfen</a>
       </article>
     `);
     if(dashboard) dashboard.insertAdjacentElement("afterend",sales);
@@ -134,15 +146,62 @@ ready(function(){
   }
 
   const form=document.getElementById("requestForm");
+  if(form && !document.getElementById('zab-direct-box')){
+    const directBox=el('aside',{class:'zab-direct-box',id:'zab-direct-box','aria-labelledby':'zab-direct-title'},`
+      <h3 id="zab-direct-title">Direkt bei uns anfragen – persönlich & transparent</h3>
+      <p>Sie fragen ohne Buchungsportal direkt bei den Gastgebern an. Der angezeigte Gesamtpreis ist der Preis Ihrer Direktanfrage; verbindlich wird die Buchung erst mit unserer persönlichen Bestätigung.</p>
+      <ul class="zab-direct-benefits">
+        <li>Keine versteckten Gebühren</li>
+        <li>Persönliche Buchungsbestätigung</li>
+        <li>Parkplatz & WLAN inklusive</li>
+        <li>Frühstück flexibel zubuchbar</li>
+      </ul>
+    `);
+    form.parentNode?.insertBefore(directBox,form);
+  }
+
   if(form && !document.getElementById("zab-reviews")){
     const reviews=el("aside",{class:"zab-review-box",id:"zab-reviews","aria-labelledby":"zab-reviews-title"},`
       <h3 id="zab-reviews-title">⭐ Das sagen unsere Gäste</h3>
       <blockquote>„Wunderbar ruhige und sehr freundliche Unterkunft am Donauradweg.“</blockquote>
       <blockquote>„Die Fahrräder werden in einem Schuppen sicher untergestellt.“</blockquote>
       <blockquote>„Die Jausenplatte und das Frühstück waren phantastisch.“</blockquote>
-      <a class="btn" href="#arrival" data-track="reviews_booking_cta">Jetzt meine Übernachtung prüfen</a>
+      <a class="btn" href="#arrival" data-track="reviews_booking_cta">Direktpreis & Verfügbarkeit prüfen</a>
     `);
     form.parentNode?.insertBefore(reviews,form);
+  }
+
+  const bachblickInput=document.querySelector('input[name="room"][value="Bachblick"]');
+  if(bachblickInput){
+    const choice=bachblickInput.closest('.choice');
+    const label=choice?.querySelector('span');
+    if(label && !label.querySelector('.zab-room-clarity')){
+      const clarity=el('small',{class:'zab-room-clarity'},'Privates Badezimmer ausschließlich für Gäste dieses Zimmers; außerhalb des Schlafzimmers und über den Flur erreichbar.');
+      label.appendChild(clarity);
+      const directPrice=el('small',{class:'zab-direct-price'},'Direktpreis wird für Ihre Reisedaten angezeigt');
+      label.appendChild(directPrice);
+      const priceNode=choice?.querySelector('b.price');
+      const syncDirectPrice=function(){
+        const visible=(priceNode?.textContent||'').trim();
+        if(visible) directPrice.textContent='Direktpreis: '+visible+' pro Nacht';
+      };
+      syncDirectPrice();
+      if(priceNode) new MutationObserver(syncDirectPrice).observe(priceNode,{childList:true,subtree:true,characterData:true});
+    }
+  }
+
+  document.querySelectorAll('.room-card').forEach(function(card){
+    const title=(card.querySelector('h3')?.textContent||'').trim();
+    if(title==='Bachblick'){
+      const description=card.querySelector('p');
+      if(description) description.textContent='Ruhiges Doppelzimmer mit Bachblick. Dazu gehört ein privates Badezimmer ausschließlich für Sie; es liegt außerhalb des Schlafzimmers und ist über den Flur erreichbar.';
+    }
+  });
+
+  const total=document.querySelector('#requestForm .total');
+  if(total && !document.getElementById('zab-price-note')){
+    const note=el('div',{class:'zab-price-note',id:'zab-price-note'},'Direktanfrage: Gesamtpreis transparent vor dem Absenden. Keine Zahlung, bevor wir Verfügbarkeit und Preis persönlich bestätigt haben.');
+    total.insertAdjacentElement('afterend',note);
   }
 
   const gf=document.getElementById("gepaeckpreis");
@@ -167,7 +226,15 @@ ready(function(){
   }
 
   const submit=document.getElementById("submitRequest");
-  if(submit) submit.textContent="Diese Etappe anfragen";
+  if(submit) submit.textContent="Direktpreis & Verfügbarkeit anfragen";
+
+  const mobileBar=document.querySelector('.mobile-booking-bar');
+  if(mobileBar){
+    const strong=mobileBar.querySelector('strong');
+    const link=mobileBar.querySelector('a');
+    if(strong) strong.textContent='Direkt bei Zuhause am Bach anfragen';
+    if(link) link.textContent='Reisedaten & Preis';
+  }
 
   document.querySelectorAll('a[href="#booking-title"],a[href="#requestForm"],a[href="#arrival"]').forEach(link=>{
     link.addEventListener("click",function(){
