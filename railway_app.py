@@ -20,7 +20,21 @@ from paypal_checkout import init_paypal_checkout
 
 
 # Bump this marker when Railway must rebuild after PayPal checkout module changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-25-minimal-orders-v2"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-25-callback-url-v1"
+
+# PayPal requires return_url/cancel_url to be valid absolute URIs.  Normalize
+# the Railway callback base before the checkout module reads the environment.
+KNOWN_RAILWAY_CHECKOUT_BASE = "https://web-production-7db62.up.railway.app"
+_raw_checkout_base = os.environ.get("PUBLIC_CHECKOUT_BASE_URL", "")
+_clean_checkout_base = _raw_checkout_base.strip().strip("'\"").strip().rstrip("/")
+if not _clean_checkout_base.startswith("https://"):
+    _clean_checkout_base = KNOWN_RAILWAY_CHECKOUT_BASE
+if _clean_checkout_base != KNOWN_RAILWAY_CHECKOUT_BASE:
+    # The current production checkout is hosted on this Railway domain.  Using
+    # a single canonical base prevents hidden characters, paths or stale URLs
+    # from producing an INVALID_PARAMETER_SYNTAX response at PayPal.
+    _clean_checkout_base = KNOWN_RAILWAY_CHECKOUT_BASE
+os.environ["PUBLIC_CHECKOUT_BASE_URL"] = _clean_checkout_base
 
 PUBLIC_BACHBLICK_NIGHTLY_PRICE = float(
     os.environ.get("PUBLIC_BACHBLICK_NIGHTLY_PRICE", "101.00")
@@ -28,13 +42,7 @@ PUBLIC_BACHBLICK_NIGHTLY_PRICE = float(
 
 
 def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, coupon_code=""):
-    """Return the price that is actually published on the direct-booking page.
-
-    Bachblick is currently the only released room on GitHub Pages. The public
-    page advertises 101 EUR/night and calculates extras separately. PayPal must
-    therefore use exactly the same room price and must not silently apply the
-    backend's legacy direct-booking/last-minute discounts.
-    """
+    """Return the price that is actually published on the direct-booking page."""
     breakdown = price_breakdown(room, arrival, departure, adults, chosen, coupon_code)
     if room != "Bachblick":
         return breakdown
@@ -72,6 +80,7 @@ def railway_deploy_health():
         "status": "ok",
         "paypal_checkout": bool(app.extensions.get("zab_paypal_checkout_enabled")),
         "paypal_checkout_rev": PAYPAL_CHECKOUT_DEPLOY_REV,
+        "checkout_base": os.environ.get("PUBLIC_CHECKOUT_BASE_URL", ""),
     }, 200
 
 
