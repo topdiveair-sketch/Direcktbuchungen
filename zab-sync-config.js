@@ -43,7 +43,7 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-7db62.up.railway.app
 
     if (!document.querySelector('script[data-zab-paypal-checkout]')) {
       const script = document.createElement("script");
-      script.src = "zab-paypal-checkout.js?v=20260825-1";
+      script.src = "zab-paypal-checkout.js?v=20260825-2";
       script.defer = true;
       script.dataset.zabPaypalCheckout = "1";
       document.body.appendChild(script);
