@@ -19,6 +19,9 @@ from payment_hold import init_payment_hold
 from paypal_checkout import init_paypal_checkout
 
 
+# Bump this marker when Railway must rebuild after PayPal checkout module changes.
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-25-minimal-orders-v2"
+
 PUBLIC_BACHBLICK_NIGHTLY_PRICE = float(
     os.environ.get("PUBLIC_BACHBLICK_NIGHTLY_PRICE", "101.00")
 )
@@ -68,6 +71,7 @@ def railway_health():
     return {
         "status": "ok",
         "paypal_checkout": bool(app.extensions.get("zab_paypal_checkout_enabled")),
+        "paypal_checkout_rev": PAYPAL_CHECKOUT_DEPLOY_REV,
     }, 200
 
 
