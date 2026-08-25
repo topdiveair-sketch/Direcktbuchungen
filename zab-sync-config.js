@@ -1,5 +1,9 @@
 window.ZAB_BOOKING_SYNC_URL = "https://PASTE-YOUR-WORKER.workers.dev";
 
+/* Railway-Backend fuer serverseitig gepruefte Direktbuchung + PayPal.
+   Hier nach dem Railway-Deploy die echte HTTPS-Domain eintragen. */
+window.ZAB_DIRECT_BOOKING_API_URL = "https://PASTE-YOUR-RAILWAY-DOMAIN.up.railway.app";
+
 (function () {
   /* Zusatz­zimmer nur nach ausdrücklicher manueller Freigabe anzeigen. */
   window.SHOW_ADDITIONAL_ROOMS = false;
@@ -37,5 +41,13 @@ window.ZAB_BOOKING_SYNC_URL = "https://PASTE-YOUR-WORKER.workers.dev";
       element.addEventListener("click", () => setTimeout(removeUnreleasedRooms, 0));
       element.addEventListener("change", () => setTimeout(removeUnreleasedRooms, 0));
     });
+
+    if (!document.querySelector('script[data-zab-paypal-checkout]')) {
+      const script = document.createElement("script");
+      script.src = "zab-paypal-checkout.js?v=20260825-1";
+      script.defer = true;
+      script.dataset.zabPaypalCheckout = "1";
+      document.body.appendChild(script);
+    }
   });
 })();
