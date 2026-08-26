@@ -16,9 +16,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Improve direct booking form
-        shell: python
         run: |
+          python3 <<'PY'
           from pathlib import Path
 
           path = Path('index.html')
@@ -30,16 +31,19 @@ jobs:
                   raise SystemExit(f'Anchor not found: {label}')
               text = text.replace(old, new, 1)
 
-          # Trust and direct-price message directly in the booking box.
-          old = '''<div class="booking-kicker">Erinnerungsstempel für Hausgäste inklusive</div><h2 id="booking-title">Wachau-Etappe direkt anfragen</h2><p class="booking-intro">Reisedaten wählen, persönlich anfragen und bei der Ankunft Ihren Wachau-Etappenstempel für Wanderpass oder Radreise-Tagebuch erhalten.</p><div class="booking-progress">'''
-          new = '''<div class="booking-kicker">Erinnerungsstempel für Hausgäste inklusive</div><h2 id="booking-title">Wachau-Etappe direkt anfragen</h2><p class="booking-intro">Reisedaten wählen, persönlich anfragen und bei der Ankunft Ihren Wachau-Etappenstempel für Wanderpass oder Radreise-Tagebuch erhalten.</p><div class="direct-booking-trust" aria-label="Bewertung und Direktbuchungsvorteil"><strong>⭐ 9,0/10 – Hervorragend</strong><span>45 Gästebewertungen auf Booking.com</span><small>Direkt buchen zum besten verfügbaren Direktpreis.</small></div><div class="booking-progress">'''
-          replace_once(old, new, 'booking trust block')
+          replace_once(
+              '<div class="booking-kicker">Erinnerungsstempel für Hausgäste inklusive</div><h2 id="booking-title">Wachau-Etappe direkt anfragen</h2><p class="booking-intro">Reisedaten wählen, persönlich anfragen und bei der Ankunft Ihren Wachau-Etappenstempel für Wanderpass oder Radreise-Tagebuch erhalten.</p><div class="booking-progress">',
+              '<div class="booking-kicker">Erinnerungsstempel für Hausgäste inklusive</div><h2 id="booking-title">Wachau-Etappe direkt anfragen</h2><p class="booking-intro">Reisedaten wählen, persönlich anfragen und bei der Ankunft Ihren Wachau-Etappenstempel für Wanderpass oder Radreise-Tagebuch erhalten.</p><div class="direct-booking-trust" aria-label="Bewertung und Direktbuchungsvorteil"><strong>⭐ 9,0/10 – Hervorragend</strong><span>45 Gästebewertungen auf Booking.com</span><small>Direkt buchen zum besten verfügbaren Direktpreis.</small></div><div class="booking-progress">',
+              'booking trust block'
+          )
 
-          # Make the availability wording more confidence-building.
-          replace_once('''<span><strong>Bachblick</strong><small>Anfrage möglich · erst nach Kalenderprüfung frei</small></span>''', '''<span><strong>Bachblick</strong><small>Jetzt anfragen – wir bestätigen die Verfügbarkeit persönlich.</small></span>''', 'Bachblick wording')
+          replace_once(
+              '<span><strong>Bachblick</strong><small>Anfrage möglich · erst nach Kalenderprüfung frei</small></span>',
+              '<span><strong>Bachblick</strong><small>Jetzt anfragen – wir bestätigen die Verfügbarkeit persönlich.</small></span>',
+              'Bachblick wording'
+          )
 
-          # Remove postal-address fields from the pre-booking form; these are collected at check-in.
-          old = '''            <label>Straße und Hausnummer <span class="optional-note">optional</span>
+          address_fields = '''            <label>Straße und Hausnummer <span class="optional-note">optional</span>
               <input id="street" name="street" autocomplete="street-address">
             </label>
             <label>PLZ <span class="optional-note">optional</span>
@@ -52,38 +56,39 @@ jobs:
               <input id="country" name="country" autocomplete="country-name">
             </label>
 '''
-          replace_once(old, '', 'address fields')
+          replace_once(address_fields, '', 'address fields')
 
-          old = '''          </div>
+          replace_once(
+              '          </div>\n\n          <label>Nachricht oder Wünsche',
+              '          </div>\n          <p class="checkin-data-note">Weitere Meldedaten benötigen wir erst beim Check-in.</p>\n\n          <label>Nachricht oder Wünsche',
+              'check-in data note'
+          )
 
-          <label>Nachricht oder Wünsche'''
-          new = '''          </div>
-          <p class="checkin-data-note">Weitere Meldedaten benötigen wir erst beim Check-in.</p>
-
-          <label>Nachricht oder Wünsche'''
-          replace_once(old, new, 'check-in data note')
-
-          # The mail body must no longer access removed address inputs.
-          old = '''      const address = [
+          address_builder = '''      const address = [
         document.getElementById("street").value,
         document.getElementById("zip").value + " " + document.getElementById("city").value,
         document.getElementById("country").value
       ].filter(Boolean).join(", ");
 '''
-          replace_once(old, '', 'mail address builder')
-          replace_once('''        tr("labelPhone") + ": " + document.getElementById("phone").value,
-        tr("labelAddress") + ": " + address,
-        "",''', '''        tr("labelPhone") + ": " + document.getElementById("phone").value,
-        "",''', 'mail address line')
+          replace_once(address_builder, '', 'mail address builder')
 
-          # Correct validation messages: only contact details are required online.
-          text = text.replace('requiredFields: "Bitte alle Pflichtfelder ausfüllen, inklusive Telefonnummer, vollständiger Adresse und Nachricht."', 'requiredFields: "Bitte alle Pflichtfelder ausfüllen: Vorname, Nachname, E-Mail und Telefonnummer."')
-          text = text.replace('requiredFields: "Please fill in all required fields, including phone number, full address and message."', 'requiredFields: "Please fill in all required fields: first name, last name, email and phone number."')
+          replace_once(
+              '        tr("labelPhone") + ": " + document.getElementById("phone").value,\n        tr("labelAddress") + ": " + address,\n        "",',
+              '        tr("labelPhone") + ": " + document.getElementById("phone").value,\n        "",',
+              'mail address line'
+          )
 
-          # Styling for trust and check-in notes.
-          anchor = '''    .booking-intro { margin:0 0 14px!important; color:#455e56!important; font-size:14px; }
-'''
-          addition = '''    .booking-intro { margin:0 0 14px!important; color:#455e56!important; font-size:14px; }
+          text = text.replace(
+              'requiredFields: "Bitte alle Pflichtfelder ausfüllen, inklusive Telefonnummer, vollständiger Adresse und Nachricht."',
+              'requiredFields: "Bitte alle Pflichtfelder ausfüllen: Vorname, Nachname, E-Mail und Telefonnummer."'
+          )
+          text = text.replace(
+              'requiredFields: "Please fill in all required fields, including phone number, full address and message."',
+              'requiredFields: "Please fill in all required fields: first name, last name, email and phone number."'
+          )
+
+          anchor = '    .booking-intro { margin:0 0 14px!important; color:#455e56!important; font-size:14px; }\n'
+          styles = '''    .booking-intro { margin:0 0 14px!important; color:#455e56!important; font-size:14px; }
     .direct-booking-trust {
       display:grid; gap:3px; margin:0 0 14px; padding:12px 14px;
       border:1px solid #c8dfd4; border-radius:11px; background:#f1f8f4;
@@ -97,9 +102,10 @@ jobs:
       background:#f4f6f3; color:#52625d!important; font-size:12px; font-weight:750;
     }
 '''
-          replace_once(anchor, addition, 'conversion styles')
+          replace_once(anchor, styles, 'conversion styles')
 
           path.write_text(text, encoding='utf-8')
+          PY
 
       - name: Commit changes
         run: |
