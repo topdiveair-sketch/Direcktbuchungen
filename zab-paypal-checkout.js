@@ -17,6 +17,10 @@ ready(function(){
     const submitRequest=document.getElementById("submitRequest");
     if(!paypalLink||!form) return;
 
+    const style=document.createElement("style");
+    style.textContent='.zab-paypal-primary #submitRequest{display:none!important;}';
+    document.head.appendChild(style);
+
     const contactNote=form.querySelector(".checkin-data-note");
     if(paypalBox&&contactNote&&contactNote.nextElementSibling!==paypalBox){
       contactNote.insertAdjacentElement("afterend",paypalBox);
@@ -43,7 +47,6 @@ ready(function(){
     let verifiedSignature="";
     let quoteTimer=0;
     let quoteSequence=0;
-    let paypalReady=false;
 
     function configured(){
       return /^https:\/\//i.test(apiBase) && !/(PASTE|DEIN|EXAMPLE|RAILWAY-DOMAIN)/i.test(apiBase);
@@ -56,25 +59,11 @@ ready(function(){
     }
 
     function setRequestFallback(visible){
-      if(!submitRequest) return;
-      if(visible){
+      form.classList.toggle("zab-paypal-primary",!visible);
+      if(visible && submitRequest){
         submitRequest.classList.remove("hidden");
         submitRequest.style.removeProperty("display");
-      }else{
-        submitRequest.classList.add("hidden");
-        submitRequest.style.setProperty("display","none","important");
       }
-    }
-
-    function enforcePrimaryAction(){
-      if(paypalReady) setRequestFallback(false);
-    }
-
-    if(submitRequest){
-      new MutationObserver(enforcePrimaryAction).observe(submitRequest,{attributes:true,attributeFilter:["class","style"]});
-    }
-    if(paypalBox){
-      new MutationObserver(enforcePrimaryAction).observe(paypalBox,{attributes:true,attributeFilter:["class"]});
     }
 
     function payload(){
@@ -122,8 +111,8 @@ ready(function(){
     }
 
     function hidePayPal(message=""){
-      paypalReady=false;
       verifiedSignature="";
+      form.classList.remove("zab-paypal-primary");
       paypalLink.classList.add("hidden");
       paypalBox?.classList.remove("zab-paypal-ready");
       if(message && paypalHint) paypalHint.textContent=message;
@@ -131,7 +120,6 @@ ready(function(){
     }
 
     function showChecking(){
-      paypalReady=false;
       setRequestFallback(false);
       paypalBox?.classList.remove("hidden");
       paypalBox?.classList.remove("zab-paypal-ready");
@@ -141,7 +129,6 @@ ready(function(){
     }
 
     function showAvailable(data,result){
-      paypalReady=true;
       setRequestFallback(false);
       verifiedSignature=quoteSignature(data);
       const total=Number(result.total||0);
@@ -161,10 +148,6 @@ ready(function(){
         availability.className="availability-status ok zab-backend-ok";
         availability.textContent="✅ Frei – live über den aktuellen Booking-Kalender geprüft.";
       }
-      requestAnimationFrame(enforcePrimaryAction);
-      setTimeout(enforcePrimaryAction,0);
-      setTimeout(enforcePrimaryAction,250);
-      setTimeout(enforcePrimaryAction,1000);
     }
 
     async function verifyAvailability(data){
@@ -182,8 +165,7 @@ ready(function(){
       }
       const signature=quoteSignature(data);
       if(verifiedSignature===signature && !paypalLink.classList.contains("hidden")){
-        paypalReady=true;
-        enforcePrimaryAction();
+        setRequestFallback(false);
         return true;
       }
       const sequence=++quoteSequence;
@@ -210,7 +192,6 @@ ready(function(){
     function scheduleVerification(){
       clearTimeout(quoteTimer);
       verifiedSignature="";
-      paypalReady=false;
       quoteTimer=setTimeout(()=>verifyAvailability(payload()),350);
     }
 
@@ -246,7 +227,6 @@ ready(function(){
         window.zabTrack?.("direct_paypal_checkout_started",{booking_id:result.booking_id,order_id:result.order_id,total:result.total});
         window.location.assign(result.approval_url);
       }catch(error){
-        paypalReady=false;
         paypalLink.textContent=oldText;
         paypalLink.style.pointerEvents="";
         paypalLink.removeAttribute("aria-busy");
