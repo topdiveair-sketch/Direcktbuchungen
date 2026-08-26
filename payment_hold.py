@@ -236,6 +236,34 @@ def init_payment_hold(app, db):
     def cleanup_expired_payment_holds():
         release_expired()
 
+    @app.after_request
+    def notify_new_confirmed_bookings(response):
+        """Send the phone alert after a booking has actually become paid/confirmed."""
+        try:
+            with db() as conn:
+                rows = conn.execute(
+                    """SELECT b.id
+                       FROM bookings b
+                       WHERE b.status='confirmed'
+                         AND COALESCE(b.paid,0)=1
+                         AND NOT EXISTS (
+                             SELECT 1 FROM email_log e
+                             WHERE e.booking_id=b.id
+                               AND lower(e.recipient)=lower(?)
+                               AND e.subject LIKE '%Neue bezahlte Buchung:%'
+                               AND e.status='gesendet'
+                         )
+                       ORDER BY b.id
+                       LIMIT 5""",
+                    (ALERT_EMAIL,),
+                ).fetchall()
+            for row in rows:
+                send_priority_alert(row["id"], "confirmed")
+        except Exception:
+            # A notification problem must never break a successful booking response.
+            pass
+        return response
+
     app.extensions["zab_original_send_confirmation"] = original_confirmation
     app.extensions["zab_send_confirmation"] = send_payment_hold_reply
     app.extensions["zab_start_payment_hold"] = start_hold
