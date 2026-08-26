@@ -16,6 +16,11 @@ ready(function(){
     const availability=document.getElementById("availabilityStatus");
     if(!paypalLink||!form) return;
 
+    const contactNote=form.querySelector(".checkin-data-note");
+    if(paypalBox&&contactNote&&contactNote.nextElementSibling!==paypalBox){
+      contactNote.insertAdjacentElement("afterend",paypalBox);
+    }
+
     const isolatedLink=paypalLink.cloneNode(true);
     isolatedLink.id="paypalLink";
     paypalLink.replaceWith(isolatedLink);
