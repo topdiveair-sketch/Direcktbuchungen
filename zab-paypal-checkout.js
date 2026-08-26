@@ -43,6 +43,7 @@ ready(function(){
     let verifiedSignature="";
     let quoteTimer=0;
     let quoteSequence=0;
+    let paypalReady=false;
 
     function configured(){
       return /^https:\/\//i.test(apiBase) && !/(PASTE|DEIN|EXAMPLE|RAILWAY-DOMAIN)/i.test(apiBase);
@@ -56,7 +57,24 @@ ready(function(){
 
     function setRequestFallback(visible){
       if(!submitRequest) return;
-      submitRequest.classList.toggle("hidden",!visible);
+      if(visible){
+        submitRequest.classList.remove("hidden");
+        submitRequest.style.removeProperty("display");
+      }else{
+        submitRequest.classList.add("hidden");
+        submitRequest.style.setProperty("display","none","important");
+      }
+    }
+
+    function enforcePrimaryAction(){
+      if(paypalReady) setRequestFallback(false);
+    }
+
+    if(submitRequest){
+      new MutationObserver(enforcePrimaryAction).observe(submitRequest,{attributes:true,attributeFilter:["class","style"]});
+    }
+    if(paypalBox){
+      new MutationObserver(enforcePrimaryAction).observe(paypalBox,{attributes:true,attributeFilter:["class"]});
     }
 
     function payload(){
@@ -80,13 +98,7 @@ ready(function(){
     }
 
     function quoteSignature(data){
-      return JSON.stringify({
-        room:data.room,
-        arrival:data.arrival,
-        departure:data.departure,
-        adults:data.adults,
-        extras:data.extras
-      });
+      return JSON.stringify({room:data.room,arrival:data.arrival,departure:data.departure,adults:data.adults,extras:data.extras});
     }
 
     function validDates(data){
@@ -110,6 +122,7 @@ ready(function(){
     }
 
     function hidePayPal(message=""){
+      paypalReady=false;
       verifiedSignature="";
       paypalLink.classList.add("hidden");
       paypalBox?.classList.remove("zab-paypal-ready");
@@ -118,6 +131,7 @@ ready(function(){
     }
 
     function showChecking(){
+      paypalReady=false;
       setRequestFallback(false);
       paypalBox?.classList.remove("hidden");
       paypalBox?.classList.remove("zab-paypal-ready");
@@ -127,6 +141,7 @@ ready(function(){
     }
 
     function showAvailable(data,result){
+      paypalReady=true;
       setRequestFallback(false);
       verifiedSignature=quoteSignature(data);
       const total=Number(result.total||0);
@@ -141,13 +156,15 @@ ready(function(){
         ? `Jetzt ${total.toFixed(2).replace(".",",")} EUR sicher mit PayPal buchen`
         : "Jetzt sicher mit PayPal buchen";
       checkoutHeading("✅ Termin frei – sichere Direktzahlung");
-      if(paypalHint){
-        paypalHint.textContent="Termin ist laut aktuellem Booking-Kalender frei. Beim Klick wird der Termin serverseitig reserviert und vor PayPal nochmals sicher geprüft.";
-      }
+      if(paypalHint) paypalHint.textContent="Termin ist laut aktuellem Booking-Kalender frei. Beim Klick wird der Termin serverseitig reserviert und vor PayPal nochmals sicher geprüft.";
       if(availability){
         availability.className="availability-status ok zab-backend-ok";
         availability.textContent="✅ Frei – live über den aktuellen Booking-Kalender geprüft.";
       }
+      requestAnimationFrame(enforcePrimaryAction);
+      setTimeout(enforcePrimaryAction,0);
+      setTimeout(enforcePrimaryAction,250);
+      setTimeout(enforcePrimaryAction,1000);
     }
 
     async function verifyAvailability(data){
@@ -163,18 +180,17 @@ ready(function(){
         hidePayPal("Gepäcktransport hat einen streckenabhängigen Preis. Bitte Gepäcktransport abwählen und die Übernachtung bezahlen oder zuerst eine Anfrage senden.");
         return false;
       }
-
       const signature=quoteSignature(data);
-      if(verifiedSignature===signature && !paypalLink.classList.contains("hidden")) return true;
-
+      if(verifiedSignature===signature && !paypalLink.classList.contains("hidden")){
+        paypalReady=true;
+        enforcePrimaryAction();
+        return true;
+      }
       const sequence=++quoteSequence;
       showChecking();
       try{
         const response=await fetch(apiBase+"/api/paypal/quote",{
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          cache:"no-store",
-          body:JSON.stringify(data)
+          method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify(data)
         });
         const result=await response.json().catch(()=>({}));
         if(sequence!==quoteSequence) return false;
@@ -194,13 +210,13 @@ ready(function(){
     function scheduleVerification(){
       clearTimeout(quoteTimer);
       verifiedSignature="";
+      paypalReady=false;
       quoteTimer=setTimeout(()=>verifyAvailability(payload()),350);
     }
 
     async function startCheckout(event){
       event.preventDefault();
       event.stopImmediatePropagation();
-
       const data=payload();
       const missing=missingCustomer(data);
       if(missing){
@@ -215,32 +231,22 @@ ready(function(){
         document.getElementById("luggageTransport")?.focus();
         return;
       }
-
       const oldText=paypalLink.textContent;
       paypalLink.setAttribute("aria-busy","true");
       paypalLink.textContent="Termin wird reserviert und PayPal vorbereitet …";
       paypalLink.style.pointerEvents="none";
       checkoutHeading("PayPal wird vorbereitet …");
       if(paypalHint) paypalHint.textContent="Verfügbarkeit und Preis werden jetzt serverseitig final geprüft.";
-
       try{
         const response=await fetch(apiBase+"/api/paypal/create-order",{
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          cache:"no-store",
-          body:JSON.stringify(data)
+          method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify(data)
         });
         const result=await response.json().catch(()=>({}));
-        if(!response.ok||!result.ok||!result.approval_url){
-          throw new Error(result.message||"PayPal-Checkout konnte nicht gestartet werden.");
-        }
-        window.zabTrack?.("direct_paypal_checkout_started",{
-          booking_id:result.booking_id,
-          order_id:result.order_id,
-          total:result.total
-        });
+        if(!response.ok||!result.ok||!result.approval_url) throw new Error(result.message||"PayPal-Checkout konnte nicht gestartet werden.");
+        window.zabTrack?.("direct_paypal_checkout_started",{booking_id:result.booking_id,order_id:result.order_id,total:result.total});
         window.location.assign(result.approval_url);
       }catch(error){
+        paypalReady=false;
         paypalLink.textContent=oldText;
         paypalLink.style.pointerEvents="";
         paypalLink.removeAttribute("aria-busy");
@@ -272,9 +278,7 @@ ready(function(){
     form.addEventListener("input",function(event){
       const id=event.target?.id||"";
       const name=event.target?.name||"";
-      if(["arrival","departure","adults","luggageTransport"].includes(id)||["room","extra"].includes(name)){
-        scheduleVerification();
-      }
+      if(["arrival","departure","adults","luggageTransport"].includes(id)||["room","extra"].includes(name)) scheduleVerification();
     });
 
     scheduleVerification();
