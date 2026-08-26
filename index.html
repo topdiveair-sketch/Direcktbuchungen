@@ -709,6 +709,11 @@
       letter-spacing:.08em; text-transform:uppercase;
     }
     .booking-intro { margin:0 0 14px!important; color:#455e56!important; font-size:14px; }
+    .direct-booking-trust { display:grid; gap:3px; margin:0 0 14px; padding:12px 14px; border:1px solid #c8dfd4; border-radius:11px; background:#f1f8f4; color:#24483d; }
+    .direct-booking-trust strong { font-size:16px; color:var(--brand); }
+    .direct-booking-trust span { font-size:13px; font-weight:800; }
+    .direct-booking-trust small { color:#526b63; font-size:12px; font-weight:700; }
+    .checkin-data-note { margin:0!important; padding:9px 11px; border-radius:8px; background:#f4f6f3; color:#52625d!important; font-size:12px; font-weight:750; }
     .booking-progress {
       display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin:0 0 18px;
     }
@@ -1108,7 +1113,7 @@
       </div>
 
       <section class="panel" aria-labelledby="booking-title">
-        <div class="booking-kicker">Erinnerungsstempel für Hausgäste inklusive</div><h2 id="booking-title">Wachau-Etappe direkt anfragen</h2><p class="booking-intro">Reisedaten wählen, persönlich anfragen und bei der Ankunft Ihren Wachau-Etappenstempel für Wanderpass oder Radreise-Tagebuch erhalten.</p><div class="booking-progress"><span>1 · Reisedaten</span><span>2 · Zimmer</span><span>3 · Kontakt</span></div>
+        <div class="booking-kicker">Erinnerungsstempel für Hausgäste inklusive</div><h2 id="booking-title">Wachau-Etappe direkt anfragen</h2><p class="booking-intro">Reisedaten wählen, persönlich anfragen und bei der Ankunft Ihren Wachau-Etappenstempel für Wanderpass oder Radreise-Tagebuch erhalten.</p><div class="direct-booking-trust"><strong>⭐ 9,0/10 – Hervorragend</strong><span>45 Gästebewertungen auf Booking.com</span><small>Direkt buchen zum besten verfügbaren Direktpreis.</small></div><div class="booking-progress"><span>1 · Reisedaten</span><span>2 · Zimmer</span><span>3 · Kontakt</span></div>
 
         <form id="requestForm">
           <div class="form-block">
@@ -1163,7 +1168,7 @@
             <div class="rooms">
               <label class="choice">
                 <input type="radio" name="room" value="Bachblick" data-price="101" checked>
-                <span><strong>Bachblick</strong><small>Anfrage möglich · erst nach Kalenderprüfung frei</small></span>
+                <span><strong>Bachblick</strong><small>Jetzt anfragen – wir bestätigen die Verfügbarkeit persönlich.</small></span>
                 <b class="price">101 EUR</b>
               </label>
               <label class="choice future-room" data-future-room hidden>
@@ -1223,19 +1228,9 @@
             <label>Telefon
               <input id="phone" name="phone" type="tel" required>
             </label>
-            <label>Straße und Hausnummer <span class="optional-note">optional</span>
-              <input id="street" name="street" autocomplete="street-address">
-            </label>
-            <label>PLZ <span class="optional-note">optional</span>
-              <input id="zip" name="zip" autocomplete="postal-code">
-            </label>
-            <label>Ort <span class="optional-note">optional</span>
-              <input id="city" name="city" autocomplete="address-level2">
-            </label>
-            <label>Land <span class="optional-note">optional</span>
-              <input id="country" name="country" autocomplete="country-name">
-            </label>
+
           </div>
+          <p class="checkin-data-note">Weitere Meldedaten benötigen wir erst beim Check-in.</p>
 
           <label>Nachricht oder Wünsche
             <textarea id="message" name="message" placeholder="z. B. vegetarisches Frühstück, spätere Anreise, Fragen zur Umgebung"></textarea>
@@ -1636,7 +1631,7 @@
         "Kostenlos für Hausgäste – für Wanderpass oder Radreise-Tagebuch": "Free for house guests – for a hiking pass or cycling journal",
         "inklusive": "included",
         "Voraussichtlicher Gesamtpreis": "Estimated total price",
-        "Anfrage möglich · erst nach Kalenderprüfung frei": "request possible · available only after calendar check",
+        "Jetzt anfragen – wir bestätigen die Verfügbarkeit persönlich.": "request possible · available only after calendar check",
         "ab 15.08.2026, erst nach Freigabe": "from 15/08/2026, after release",
         "Direktpreis": "Direct price",
         "Bei freiem Termin können Sie den angezeigten Direktpreis per PayPal an topdiveair@gmail.com zahlen. Bitte Name und Reisedatum als Hinweis angeben.": "If the date is free, you can pay the displayed direct price by PayPal to topdiveair@gmail.com. Please include your name and travel dates as a note.",
@@ -2370,7 +2365,7 @@
         chooseDatesButton: "Bitte Reisedaten wählen",
         priceDisclaimer: "Zimmerpreis und gewählte Zusatzleistungen – verbindlich erst nach persönlicher Bestätigung.",
         paymentPending: "Bitte noch nicht bezahlen. Nach unserer persönlichen Buchungsbestätigung erhalten Sie die Zahlungsinformation für {amount}.",
-        requiredFields: "Bitte alle Pflichtfelder ausfüllen, inklusive Telefonnummer, vollständiger Adresse und Nachricht.",
+        requiredFields: "Bitte alle Pflichtfelder ausfüllen: Vorname, Nachname, E-Mail und Telefonnummer.",
         mailSubject: "Buchungsanfrage Zuhause am Bach",
         mailIntro: "Neue Direktanfrage über die Website von Zuhause am Bach",
         none: "keine",
@@ -2426,7 +2421,7 @@
       chooseDatesButton: "Please choose travel dates",
       priceDisclaimer: "Room price and selected extras – binding only after personal confirmation.",
       paymentPending: "Please do not pay yet. You will receive payment information for {amount} after our personal booking confirmation.",
-      requiredFields: "Please fill in all required fields, including phone number, full address and message.",
+      requiredFields: "Please fill in all required fields: first name, last name, email and phone number.",
       mailSubject: "Booking request Zuhause am Bach",
       mailIntro: "New booking request via the simple website",
       none: "none",
@@ -2913,18 +2908,12 @@
       const n = nightCount();
       const room = selectedRoom();
       const extras = selectedExtras().map((item) => translateStaticText(item.value)).join(", ") || tr("none");
-      const address = [
-        document.getElementById("street").value,
-        document.getElementById("zip").value + " " + document.getElementById("city").value,
-        document.getElementById("country").value
-      ].filter(Boolean).join(", ");
       const lines = [
         tr("mailIntro"),
         "",
         tr("labelName") + ": " + document.getElementById("firstName").value + " " + document.getElementById("lastName").value,
         tr("labelEmail") + ": " + document.getElementById("email").value,
         tr("labelPhone") + ": " + document.getElementById("phone").value,
-        tr("labelAddress") + ": " + address,
         "",
         tr("labelArrival") + ": " + arrival.value,
         tr("labelDeparture") + ": " + departure.value,
