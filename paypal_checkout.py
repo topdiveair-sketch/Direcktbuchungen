@@ -13,7 +13,7 @@ from uuid import uuid4
 from flask import Response, jsonify, redirect, render_template_string, request
 
 
-HOLD_MINUTES = 30
+HOLD_MINUTES = 10
 DEFAULT_DIRECT_ORIGIN = "https://topdiveair-sketch.github.io"
 
 
@@ -31,7 +31,7 @@ def init_paypal_checkout(
     Flow:
     1. Re-sync Booking iCal before quoting/booking.
     2. Recheck availability inside BEGIN IMMEDIATE.
-    3. Create a local pending booking and hold it for 30 minutes.
+    3. Create a local pending booking and hold it for 10 minutes.
     4. Create a PayPal order with the server-side amount.
     5. After PayPal approval, capture on the server.
     6. Only a COMPLETED capture marks the booking paid + confirmed.
