@@ -1,4 +1,4 @@
-name: Update direct booking conversion
+name: Move PayPal below contact details
 
 on:
   push:
@@ -10,56 +10,37 @@ permissions:
   contents: write
 
 jobs:
-  update-booking-page:
+  move-paypal:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Update booking page
+      - name: Move PayPal block
         run: |
-          cat > /tmp/update.py <<'PY'
+          python3 <<'PY'
           from pathlib import Path
-          p = Path("index.html")
-          s = p.read_text(encoding="utf-8")
-
-          def rep(a, b, name):
-              global s
-              if a not in s:
-                  raise SystemExit("missing anchor: " + name)
-              s = s.replace(a, b, 1)
-
-          rep('.booking-intro { margin:0 0 14px!important; color:#455e56!important; font-size:14px; }', '.booking-intro { margin:0 0 14px!important; color:#455e56!important; font-size:14px; }\n    .direct-booking-trust { display:grid; gap:3px; margin:0 0 14px; padding:12px 14px; border:1px solid #c8dfd4; border-radius:11px; background:#f1f8f4; color:#24483d; }\n    .direct-booking-trust strong { font-size:16px; color:var(--brand); }\n    .direct-booking-trust span { font-size:13px; font-weight:800; }\n    .direct-booking-trust small { color:#526b63; font-size:12px; font-weight:700; }\n    .checkin-data-note { margin:0!important; padding:9px 11px; border-radius:8px; background:#f4f6f3; color:#52625d!important; font-size:12px; font-weight:750; }', 'styles')
-
-          marker = '<p class="booking-intro">Reisedaten wählen, persönlich anfragen und bei der Ankunft Ihren Wachau-Etappenstempel für Wanderpass oder Radreise-Tagebuch erhalten.</p>'
-          rep(marker, marker + '<div class="direct-booking-trust"><strong>⭐ 9,0/10 – Hervorragend</strong><span>45 Gästebewertungen auf Booking.com</span><small>Direkt buchen zum besten verfügbaren Direktpreis.</small></div>', 'trust')
-
-          s = s.replace('Anfrage möglich · erst nach Kalenderprüfung frei', 'Jetzt anfragen – wir bestätigen die Verfügbarkeit persönlich.')
-
-          start = s.find('            <label>Straße und Hausnummer')
-          end_marker = '            <label>Land <span class="optional-note">optional</span>'
-          end_start = s.find(end_marker, start)
-          if start < 0 or end_start < 0:
-              raise SystemExit('missing address fields')
-          end = s.find('            </label>', end_start) + len('            </label>')
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          start = s.find('          <div id="paypalBox" class="payment-after-confirmation hidden">')
+          if start < 0:
+              raise SystemExit('PayPal block not found')
+          end = s.find('          </div>', start)
+          if end < 0:
+              raise SystemExit('PayPal block end not found')
+          end += len('          </div>')
+          block = s[start:end]
           s = s[:start] + s[end:]
-
-          contact_end = '          </div>\n\n          <label>Nachricht oder Wünsche'
-          rep(contact_end, '          </div>\n          <p class="checkin-data-note">Weitere Meldedaten benötigen wir erst beim Check-in.</p>\n\n          <label>Nachricht oder Wünsche', 'checkin note')
-
-          a = s.find('      const address = [')
-          if a < 0:
-              raise SystemExit('missing address builder')
-          b = s.find('      const lines = [', a)
-          s = s[:a] + s[b:]
-          s = s.replace('        tr("labelAddress") + ": " + address,\n', '')
-          s = s.replace('requiredFields: "Bitte alle Pflichtfelder ausfüllen, inklusive Telefonnummer, vollständiger Adresse und Nachricht."', 'requiredFields: "Bitte alle Pflichtfelder ausfüllen: Vorname, Nachname, E-Mail und Telefonnummer."')
-          s = s.replace('requiredFields: "Please fill in all required fields, including phone number, full address and message."', 'requiredFields: "Please fill in all required fields: first name, last name, email and phone number."')
-          p.write_text(s, encoding="utf-8")
+          anchor = '          <p class="checkin-data-note">Weitere Meldedaten benötigen wir erst beim Check-in.</p>'
+          pos = s.find(anchor)
+          if pos < 0:
+              raise SystemExit('Contact details anchor not found')
+          pos += len(anchor)
+          s = s[:pos] + '\n\n' + block + s[pos:]
+          p.write_text(s, encoding='utf-8')
           PY
-          python3 /tmp/update.py
       - name: Commit
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add index.html
-          git commit -m "Improve direct booking conversion"
+          git commit -m "Move PayPal below contact details"
           git push
