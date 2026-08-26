@@ -8,6 +8,8 @@
       "requirements.txt",
       "app.py",
       "railway_app.py",
+      "payment_hold.py",
+      "paypal_checkout.py",
       "addons.py",
       "v6_features.py",
       "stability.py",
