@@ -1,10 +1,10 @@
 window.ZAB_BOOKING_SYNC_URL = "https://PASTE-YOUR-WORKER.workers.dev";
 
 /* Railway-Backend fuer serverseitig gepruefte Direktbuchung + PayPal. */
-window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-7db62.up.railway.app";
+window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app";
 
 (function () {
-  /* Zusatz­zimmer nur nach ausdrücklicher manueller Freigabe anzeigen. */
+  /* Zusatzzimmer nur nach ausdruecklicher manueller Freigabe anzeigen. */
   window.SHOW_ADDITIONAL_ROOMS = false;
 
   const blockedRooms = new Set(["Marillenzimmer", "Weinbergzimmer", "Donauzimmer"]);
@@ -41,9 +41,10 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-7db62.up.railway.app
       element.addEventListener("change", () => setTimeout(removeUnreleasedRooms, 0));
     });
 
-    if (!document.querySelector('script[data-zab-paypal-checkout]')) {
+    /* index.html laedt das Checkout-Script bereits. Nur als Fallback nachladen. */
+    if (!document.querySelector('script[src*="zab-paypal-checkout.js"]')) {
       const script = document.createElement("script");
-      script.src = "zab-paypal-checkout.js?v=20260825-4";
+      script.src = "zab-paypal-checkout.js?v=20260826-4";
       script.defer = true;
       script.dataset.zabPaypalCheckout = "1";
       document.body.appendChild(script);
