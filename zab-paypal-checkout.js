@@ -18,7 +18,7 @@ ready(function(){
     if(!paypalLink||!form) return;
 
     const style=document.createElement("style");
-    style.textContent='.zab-paypal-primary #submitRequest{display:none!important;}';
+    style.textContent='.zab-paypal-primary #submitRequest,.zab-booking-blocked #submitRequest{display:none!important;}';
     document.head.appendChild(style);
 
     const contactNote=form.querySelector(".checkin-data-note");
@@ -59,6 +59,7 @@ ready(function(){
     }
 
     function setRequestFallback(visible){
+      form.classList.remove("zab-booking-blocked");
       form.classList.toggle("zab-paypal-primary",!visible);
       if(visible && submitRequest){
         submitRequest.classList.remove("hidden");
@@ -112,14 +113,33 @@ ready(function(){
 
     function hidePayPal(message=""){
       verifiedSignature="";
-      form.classList.remove("zab-paypal-primary");
+      form.classList.remove("zab-paypal-primary","zab-booking-blocked");
       paypalLink.classList.add("hidden");
       paypalBox?.classList.remove("zab-paypal-ready");
       if(message && paypalHint) paypalHint.textContent=message;
       setRequestFallback(Boolean(message));
     }
 
+    function showBlocked(message){
+      verifiedSignature="";
+      form.classList.remove("zab-paypal-primary");
+      form.classList.add("zab-booking-blocked");
+      paypalBox?.classList.remove("hidden","zab-paypal-ready");
+      paypalLink.classList.add("hidden");
+      checkoutHeading("⛔ Belegt – bitte anderen Termin wählen");
+      if(paypalHint) paypalHint.textContent=message||"Das Zimmer ist für diesen Zeitraum bereits belegt.";
+      if(availability){
+        availability.className="availability-status blocked";
+        availability.textContent="⛔ Belegt – bitte einen anderen Termin wählen.";
+      }
+      if(submitRequest){
+        submitRequest.classList.add("hidden");
+        submitRequest.style.setProperty("display","none","important");
+      }
+    }
+
     function showChecking(){
+      form.classList.remove("zab-booking-blocked");
       setRequestFallback(false);
       paypalBox?.classList.remove("hidden");
       paypalBox?.classList.remove("zab-paypal-ready");
@@ -129,6 +149,7 @@ ready(function(){
     }
 
     function showAvailable(data,result){
+      form.classList.remove("zab-booking-blocked");
       setRequestFallback(false);
       verifiedSignature=quoteSignature(data);
       const total=Number(result.total||0);
@@ -148,6 +169,11 @@ ready(function(){
         availability.className="availability-status ok zab-backend-ok";
         availability.textContent="✅ Frei – live über den aktuellen Booking-Kalender geprüft.";
       }
+    }
+
+    function isClearlyBlocked(result){
+      const message=String(result?.message||"").toLowerCase();
+      return result?.available===false && /(belegt|direktbuchung|already booked|occupied|not available)/i.test(message);
     }
 
     async function verifyAvailability(data){
@@ -176,6 +202,10 @@ ready(function(){
         });
         const result=await response.json().catch(()=>({}));
         if(sequence!==quoteSequence) return false;
+        if(isClearlyBlocked(result)){
+          showBlocked(result.message);
+          return false;
+        }
         if(!response.ok||!result.ok||!result.available){
           hidePayPal(result.message||"Dieser Termin ist aktuell nicht für eine Sofortbuchung verfügbar.");
           return false;
