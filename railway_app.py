@@ -17,12 +17,13 @@ from app import (
 )
 from payment_hold import init_payment_hold
 from paypal_checkout import init_paypal_checkout
+from booking_notifications import init_booking_notifications
 
 
-# Bump this marker when Railway must rebuild after PayPal checkout module changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-25-callback-url-v1"
+# Bump this marker when Railway must rebuild after checkout/notification changes.
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-26-booking-notifications-v2"
 
-# PayPal requires return_url/cancel_url to be valid absolute URIs.  Normalize
+# PayPal requires return_url/cancel_url to be valid absolute URIs. Normalize
 # the Railway callback base before the checkout module reads the environment.
 KNOWN_RAILWAY_CHECKOUT_BASE = "https://web-production-7db62.up.railway.app"
 _raw_checkout_base = os.environ.get("PUBLIC_CHECKOUT_BASE_URL", "")
@@ -30,9 +31,6 @@ _clean_checkout_base = _raw_checkout_base.strip().strip("'\"").strip().rstrip("/
 if not _clean_checkout_base.startswith("https://"):
     _clean_checkout_base = KNOWN_RAILWAY_CHECKOUT_BASE
 if _clean_checkout_base != KNOWN_RAILWAY_CHECKOUT_BASE:
-    # The current production checkout is hosted on this Railway domain.  Using
-    # a single canonical base prevents hidden characters, paths or stale URLs
-    # from producing an INVALID_PARAMETER_SYNTAX response at PayPal.
     _clean_checkout_base = KNOWN_RAILWAY_CHECKOUT_BASE
 os.environ["PUBLIC_CHECKOUT_BASE_URL"] = _clean_checkout_base
 
@@ -71,6 +69,7 @@ init_paypal_checkout(
     room_available_in_conn,
     sync_room,
 )
+init_booking_notifications(app, db)
 
 
 @app.get("/health/deploy")
@@ -79,6 +78,7 @@ def railway_deploy_health():
     return {
         "status": "ok",
         "paypal_checkout": bool(app.extensions.get("zab_paypal_checkout_enabled")),
+        "paid_guest_email": bool(app.extensions.get("zab_send_paid_guest_confirmation")),
         "paypal_checkout_rev": PAYPAL_CHECKOUT_DEPLOY_REV,
         "checkout_base": os.environ.get("PUBLIC_CHECKOUT_BASE_URL", ""),
     }, 200
