@@ -1168,7 +1168,7 @@
             <div class="rooms">
               <label class="choice">
                 <input type="radio" name="room" value="Bachblick" data-price="101" checked>
-                <span><strong>Bachblick</strong><small>Jetzt anfragen – wir bestätigen die Verfügbarkeit persönlich.</small></span>
+                <span><strong>Bachblick</strong><small>Termin wählen – die Verfügbarkeit wird live geprüft.</small></span>
                 <b class="price">101 EUR</b>
               </label>
               <label class="choice future-room" data-future-room hidden>
@@ -1205,7 +1205,7 @@
             <strong id="total">0 EUR</strong>
           </div>
           <div id="discountNote" class="hint">
-            Zimmerpreis und gewählte Zusatzleistungen werden transparent für die Anfrage berechnet. Verbindlich wird die Buchung erst nach persönlicher Bestätigung.
+            Zimmerpreis und gewählte Zusatzleistungen werden transparent berechnet. Bei bestätigter Live-Verfügbarkeit können Sie direkt und sicher mit PayPal buchen.
           </div>
 
 
@@ -1229,8 +1229,8 @@
           <p class="checkin-data-note">Weitere Meldedaten benötigen wir erst beim Check-in.</p>
 
           <div id="paypalBox" class="payment-after-confirmation hidden">
-            <strong>Zahlung erst nach unserer Bestätigung</strong>
-            <span id="paypalHint">Bitte noch nicht bezahlen. Nach unserer persönlichen Buchungsbestätigung erhalten Sie die Zahlungsinformation.</span>
+            <strong>Live-Verfügbarkeit & sichere Direktzahlung</strong>
+            <span id="paypalHint">Nach der Live-Prüfung erscheint hier die sichere PayPal-Direktbuchung, wenn der Termin frei ist.</span>
             <a id="paypalLink" class="btn hidden" href="https://www.paypal.com/myaccount/transfer/homepage/send" target="_blank" rel="noopener">PayPal öffnen</a>
           </div>
 
@@ -1240,7 +1240,7 @@
 
 
           </div>
-          <button id="submitRequest" class="btn" type="submit">Wachau-Etappe anfragen</button><div class="micro-trust"><span>🔒 Nur für Ihre Anfrage</span><span>☎ Persönliche Rückmeldung</span><span>✓ Keine versteckten Gebühren</span></div>
+          <button id="submitRequest" class="btn" type="submit">Wachau-Etappe anfragen</button><div class="micro-trust"><span>🔒 Sichere Direktbuchung</span><span>✓ Live-Verfügbarkeit</span><span>✓ Keine versteckten Gebühren</span></div>
 
           <div id="sendOptions" class="send-options" aria-live="polite">
             <h3 id="sendOptionsTitle">Anfrage ist vorbereitet</h3>
@@ -2872,8 +2872,11 @@
         : (hasValidDates ? tr("unavailableButton") : tr("chooseDatesButton"));
       arrival.setCustomValidity(availability.state === "blocked" ? availability.text : "");
       departure.setCustomValidity(availability.state === "blocked" ? availability.text : "");
-      paypalHint.textContent = tr("paymentPending", { amount: money(sum) });
-      paypalBox.classList.toggle("hidden", availability.state !== "ok");
+      // PayPal visibility and checkout state are controlled exclusively by zab-paypal-checkout.js.
+      // The main form only calculates price and availability.
+      if (!window.ZAB_DIRECT_BOOKING_API_URL) {
+        paypalHint.textContent = tr("paymentPending", { amount: money(sum) });
+      }
       return sum;
     }
 
@@ -3254,6 +3257,6 @@
 
   <script src="zab-guest-price.js?v=20260813-3" defer></script>
   <script src="zab-conversion.js?v=20260814-1" defer></script>
-  <script src="zab-paypal-checkout.js?v=20260826-2" defer></script>
+  <script src="zab-paypal-checkout.js?v=20260826-3" defer></script>
 </body>
 </html>
