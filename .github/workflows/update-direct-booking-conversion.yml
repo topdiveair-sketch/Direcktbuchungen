@@ -1,4 +1,4 @@
-name: Move PayPal below contact details
+name: Force fresh PayPal checkout script
 
 on:
   push:
@@ -10,37 +10,32 @@ permissions:
   contents: write
 
 jobs:
-  move-paypal:
+  cache-bust-paypal:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Move PayPal block
+      - name: Add versioned PayPal checkout script
         run: |
           python3 <<'PY'
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          start = s.find('          <div id="paypalBox" class="payment-after-confirmation hidden">')
-          if start < 0:
-              raise SystemExit('PayPal block not found')
-          end = s.find('          </div>', start)
-          if end < 0:
-              raise SystemExit('PayPal block end not found')
-          end += len('          </div>')
-          block = s[start:end]
-          s = s[:start] + s[end:]
-          anchor = '          <p class="checkin-data-note">Weitere Meldedaten benötigen wir erst beim Check-in.</p>'
-          pos = s.find(anchor)
-          if pos < 0:
-              raise SystemExit('Contact details anchor not found')
-          pos += len(anchor)
-          s = s[:pos] + '\n\n' + block + s[pos:]
-          p.write_text(s, encoding='utf-8')
+          tag = '  <script src="zab-paypal-checkout.js?v=20260826-1" defer></script>\n'
+          if 'zab-paypal-checkout.js?v=20260826-1' not in s:
+              anchor = '  <script src="zab-conversion.js?v=20260814-1" defer></script>\n'
+              if anchor not in s:
+                  raise SystemExit('script anchor not found')
+              s = s.replace(anchor, anchor + tag, 1)
+              p.write_text(s, encoding='utf-8')
           PY
       - name: Commit
         run: |
+          if git diff --quiet -- index.html; then
+            echo "No changes needed"
+            exit 0
+          fi
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add index.html
-          git commit -m "Move PayPal below contact details"
+          git commit -m "Force fresh PayPal checkout script"
           git push
