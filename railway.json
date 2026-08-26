@@ -10,6 +10,7 @@
       "railway_app.py",
       "payment_hold.py",
       "paypal_checkout.py",
+      "booking_notifications.py",
       "addons.py",
       "v6_features.py",
       "stability.py",
