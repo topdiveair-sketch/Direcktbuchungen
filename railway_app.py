@@ -23,18 +23,17 @@ from booking_notifications import init_booking_notifications
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-26-wsgi-liveness-v4"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-26-current-domain-v5"
 
-# PayPal requires return_url/cancel_url to be valid absolute URIs. Prefer the
-# explicitly configured public URL, otherwise Railway's current public domain.
-# The historic URL remains only as a last-resort fallback for older setups.
-FALLBACK_RAILWAY_CHECKOUT_BASE = "https://web-production-7db62.up.railway.app"
+# PayPal callbacks must use the currently active Railway public domain. Railway's
+# own RAILWAY_PUBLIC_DOMAIN wins over a stale manually configured callback URL.
+FALLBACK_RAILWAY_CHECKOUT_BASE = "https://web-production-f05a4.up.railway.app"
 _raw_checkout_base = os.environ.get("PUBLIC_CHECKOUT_BASE_URL", "").strip().strip("'\"").strip().rstrip("/")
 _railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "").strip().strip("/")
-if _raw_checkout_base.startswith("https://"):
-    _clean_checkout_base = _raw_checkout_base
-elif _railway_public_domain:
+if _railway_public_domain:
     _clean_checkout_base = f"https://{_railway_public_domain}"
+elif _raw_checkout_base.startswith("https://"):
+    _clean_checkout_base = _raw_checkout_base
 else:
     _clean_checkout_base = FALLBACK_RAILWAY_CHECKOUT_BASE
 os.environ["PUBLIC_CHECKOUT_BASE_URL"] = _clean_checkout_base
