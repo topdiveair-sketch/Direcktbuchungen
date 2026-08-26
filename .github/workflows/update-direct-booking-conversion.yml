@@ -1,4 +1,4 @@
-name: Force fresh PayPal checkout script
+name: Simplify direct booking actions
 
 on:
   push:
@@ -10,23 +10,31 @@ permissions:
   contents: write
 
 jobs:
-  cache-bust-paypal:
+  simplify-actions:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Add versioned PayPal checkout script
+      - name: Hide redundant request button for live PayPal booking
         run: |
           python3 <<'PY'
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          tag = '  <script src="zab-paypal-checkout.js?v=20260826-1" defer></script>\n'
-          if 'zab-paypal-checkout.js?v=20260826-1' not in s:
-              anchor = '  <script src="zab-conversion.js?v=20260814-1" defer></script>\n'
-              if anchor not in s:
-                  raise SystemExit('script anchor not found')
-              s = s.replace(anchor, anchor + tag, 1)
-              p.write_text(s, encoding='utf-8')
+          old = '''      submitRequest.disabled = !canSubmit;
+      submitRequest.textContent = canSubmit
+        ? (availability.state === "ok" ? tr("requestButton") : tr("requestButtonPending"))
+        : (hasValidDates ? tr("unavailableButton") : tr("chooseDatesButton"));'''
+          new = '''      submitRequest.disabled = !canSubmit;
+      submitRequest.textContent = canSubmit
+        ? (availability.state === "ok" ? tr("requestButton") : tr("requestButtonPending"))
+        : (hasValidDates ? tr("unavailableButton") : tr("chooseDatesButton"));
+      // When live availability is confirmed, PayPal is the single primary action.
+      // Keep the request button only as a fallback if live verification is not OK.
+      submitRequest.classList.toggle("hidden", availability.state === "ok");'''
+          if old not in s:
+              raise SystemExit('request button logic anchor not found')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
           PY
       - name: Commit
         run: |
@@ -37,5 +45,5 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add index.html
-          git commit -m "Force fresh PayPal checkout script"
+          git commit -m "Hide request button when PayPal booking is available"
           git push
