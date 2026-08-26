@@ -6,6 +6,8 @@ import os
 import urllib.error
 import urllib.request
 
+from flask import request
+
 from app import (
     app,
     db,
@@ -15,23 +17,26 @@ from app import (
     room_available_in_conn,
     sync_room,
 )
-from payment_hold import init_payment_hold
+from payment_hold import ALERT_EMAIL, init_payment_hold
 from paypal_checkout import init_paypal_checkout
 from booking_notifications import init_booking_notifications
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-26-booking-notifications-v2"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-26-healthcheck-safe-notifications-v3"
 
-# PayPal requires return_url/cancel_url to be valid absolute URIs. Normalize
-# the Railway callback base before the checkout module reads the environment.
-KNOWN_RAILWAY_CHECKOUT_BASE = "https://web-production-7db62.up.railway.app"
-_raw_checkout_base = os.environ.get("PUBLIC_CHECKOUT_BASE_URL", "")
-_clean_checkout_base = _raw_checkout_base.strip().strip("'\"").strip().rstrip("/")
-if not _clean_checkout_base.startswith("https://"):
-    _clean_checkout_base = KNOWN_RAILWAY_CHECKOUT_BASE
-if _clean_checkout_base != KNOWN_RAILWAY_CHECKOUT_BASE:
-    _clean_checkout_base = KNOWN_RAILWAY_CHECKOUT_BASE
+# PayPal requires return_url/cancel_url to be valid absolute URIs. Prefer the
+# explicitly configured public URL, otherwise Railway's current public domain.
+# The historic URL remains only as a last-resort fallback for older setups.
+FALLBACK_RAILWAY_CHECKOUT_BASE = "https://web-production-7db62.up.railway.app"
+_raw_checkout_base = os.environ.get("PUBLIC_CHECKOUT_BASE_URL", "").strip().strip("'\"").strip().rstrip("/")
+_railway_public_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "").strip().strip("/")
+if _raw_checkout_base.startswith("https://"):
+    _clean_checkout_base = _raw_checkout_base
+elif _railway_public_domain:
+    _clean_checkout_base = f"https://{_railway_public_domain}"
+else:
+    _clean_checkout_base = FALLBACK_RAILWAY_CHECKOUT_BASE
 os.environ["PUBLIC_CHECKOUT_BASE_URL"] = _clean_checkout_base
 
 PUBLIC_BACHBLICK_NIGHTLY_PRICE = float(
@@ -70,6 +75,70 @@ init_paypal_checkout(
     sync_room,
 )
 init_booking_notifications(app, db)
+
+
+# The notification modules historically retried email delivery in global
+# after_request handlers. That can make Railway's /health request wait on SMTP
+# and fail the deployment healthcheck. Remove those global handlers and notify
+# only after a successful, paid PayPal return.
+_BLOCKING_NOTIFICATION_HANDLERS = {
+    "notify_new_confirmed_bookings",
+    "send_missing_paid_confirmations",
+}
+app.after_request_funcs[None] = [
+    func
+    for func in app.after_request_funcs.get(None, [])
+    if getattr(func, "__name__", "") not in _BLOCKING_NOTIFICATION_HANDLERS
+]
+
+
+@app.after_request
+def notify_successful_paypal_booking(response):
+    """Send owner/guest mail only for a genuinely paid PayPal return."""
+    if request.path != "/paypal/return" or response.status_code != 200:
+        return response
+
+    booking_id = request.args.get("booking", type=int)
+    if not booking_id:
+        return response
+
+    try:
+        with db() as conn:
+            booking = conn.execute(
+                "SELECT id,email,status,paid FROM bookings WHERE id=?",
+                (booking_id,),
+            ).fetchone()
+            owner_sent = conn.execute(
+                """SELECT 1 FROM email_log
+                   WHERE booking_id=?
+                     AND lower(recipient)=lower(?)
+                     AND subject LIKE '%Neue bezahlte Buchung:%'
+                     AND status='gesendet'
+                   LIMIT 1""",
+                (booking_id, ALERT_EMAIL),
+            ).fetchone()
+    except Exception:
+        return response
+
+    if not booking or booking["status"] != "confirmed" or not int(booking["paid"] or 0):
+        return response
+
+    if not owner_sent:
+        sender = app.extensions.get("zab_send_priority_alert")
+        if sender:
+            try:
+                sender(booking_id, "confirmed")
+            except Exception:
+                pass
+
+    guest_sender = app.extensions.get("zab_send_paid_guest_confirmation")
+    if guest_sender:
+        try:
+            guest_sender(booking_id)
+        except Exception:
+            pass
+
+    return response
 
 
 @app.get("/health/deploy")
