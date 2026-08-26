@@ -23,7 +23,7 @@ from booking_notifications import init_booking_notifications
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-26-healthcheck-safe-notifications-v3"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-26-wsgi-liveness-v4"
 
 # PayPal requires return_url/cancel_url to be valid absolute URIs. Prefer the
 # explicitly configured public URL, otherwise Railway's current public domain.
@@ -78,9 +78,8 @@ init_booking_notifications(app, db)
 
 
 # The notification modules historically retried email delivery in global
-# after_request handlers. That can make Railway's /health request wait on SMTP
-# and fail the deployment healthcheck. Remove those global handlers and notify
-# only after a successful, paid PayPal return.
+# after_request handlers. That can make Railway's health request wait on SMTP.
+# Remove those global handlers and notify only after a successful paid return.
 _BLOCKING_NOTIFICATION_HANDLERS = {
     "notify_new_confirmed_bookings",
     "send_missing_paid_confirmations",
@@ -90,6 +89,30 @@ app.after_request_funcs[None] = [
     for func in app.after_request_funcs.get(None, [])
     if getattr(func, "__name__", "") not in _BLOCKING_NOTIFICATION_HANDLERS
 ]
+
+
+# Railway liveness must not depend on Flask hooks, SQLite, SMTP or iCal.
+# This WSGI-level endpoint proves only that Gunicorn imported the app and is
+# accepting HTTP requests. If application startup itself crashes, it still fails.
+_flask_wsgi_app = app.wsgi_app
+
+
+def railway_liveness_wsgi(environ, start_response):
+    if environ.get("PATH_INFO") == "/health/live":
+        body = b"ok\n"
+        start_response(
+            "200 OK",
+            [
+                ("Content-Type", "text/plain; charset=utf-8"),
+                ("Content-Length", str(len(body))),
+                ("Cache-Control", "no-store"),
+            ],
+        )
+        return [body]
+    return _flask_wsgi_app(environ, start_response)
+
+
+app.wsgi_app = railway_liveness_wsgi
 
 
 @app.after_request
