@@ -1,4 +1,4 @@
-name: Bump PayPal script cache version
+name: Unify direct booking PayPal UI
 
 on:
   push:
@@ -10,25 +10,56 @@ permissions:
   contents: write
 
 jobs:
-  bump-cache-version:
+  unify-booking-ui:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Update PayPal script version in index
+      - name: Patch booking UI ownership and wording
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          old = 'zab-paypal-checkout.js?v=20260826-1'
-          new = 'zab-paypal-checkout.js?v=20260826-2'
-          if new in s:
-              raise SystemExit(0)
-          if old not in s:
-              raise SystemExit('old PayPal script version not found')
-          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+
+          replacements = [
+            (
+              'paypalHint.textContent = tr("paymentPending", { amount: money(sum) });\n      paypalBox.classList.toggle("hidden", availability.state !== "ok");',
+              '// PayPal visibility and checkout state are controlled exclusively by zab-paypal-checkout.js.\n      // The main form only calculates price and availability.\n      if (!window.ZAB_DIRECT_BOOKING_API_URL) {\n        paypalHint.textContent = tr("paymentPending", { amount: money(sum) });\n      }'
+            ),
+            (
+              'Zimmerpreis und gewählte Zusatzleistungen werden transparent für die Anfrage berechnet. Verbindlich wird die Buchung erst nach persönlicher Bestätigung.',
+              'Zimmerpreis und gewählte Zusatzleistungen werden transparent berechnet. Bei bestätigter Live-Verfügbarkeit können Sie direkt und sicher mit PayPal buchen.'
+            ),
+            (
+              '<strong>Zahlung erst nach unserer Bestätigung</strong>\n            <span id="paypalHint">Bitte noch nicht bezahlen. Nach unserer persönlichen Buchungsbestätigung erhalten Sie die Zahlungsinformation.</span>',
+              '<strong>Live-Verfügbarkeit & sichere Direktzahlung</strong>\n            <span id="paypalHint">Nach der Live-Prüfung erscheint hier die sichere PayPal-Direktbuchung, wenn der Termin frei ist.</span>'
+            ),
+            (
+              '<span><strong>Bachblick</strong><small>Jetzt anfragen – wir bestätigen die Verfügbarkeit persönlich.</small></span>',
+              '<span><strong>Bachblick</strong><small>Termin wählen – die Verfügbarkeit wird live geprüft.</small></span>'
+            ),
+            (
+              '<div class="micro-trust"><span>🔒 Nur für Ihre Anfrage</span><span>☎ Persönliche Rückmeldung</span><span>✓ Keine versteckten Gebühren</span></div>',
+              '<div class="micro-trust"><span>🔒 Sichere Direktbuchung</span><span>✓ Live-Verfügbarkeit</span><span>✓ Keine versteckten Gebühren</span></div>'
+            ),
+            (
+              'zab-paypal-checkout.js?v=20260826-2',
+              'zab-paypal-checkout.js?v=20260826-3'
+            )
+          ]
+
+          changed = False
+          for old, new in replacements:
+            if old in s:
+              s = s.replace(old, new, 1)
+              changed = True
+            elif new not in s:
+              raise SystemExit('Expected booking UI anchor not found: ' + old[:80])
+
+          if changed:
+            p.write_text(s, encoding='utf-8')
           PY
-      - name: Commit and push index update
+      - name: Commit and push
         run: |
           if git diff --quiet -- index.html; then
             echo "No changes needed"
@@ -37,5 +68,5 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add index.html
-          git commit -m "Bump PayPal checkout cache version"
+          git commit -m "Unify PayPal booking UI and wording"
           git push
