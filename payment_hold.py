@@ -5,11 +5,11 @@ from datetime import datetime, timedelta
 from email.message import EmailMessage
 
 
-HOLD_MINUTES = 30
+HOLD_MINUTES = 10
 
 
 def init_payment_hold(app, db):
-    """Add a 30-minute payment hold and booking-specific payment reply."""
+    """Add a 10-minute payment hold and booking-specific payment reply."""
 
     def ensure_column(conn, table, column, definition):
         cols = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
@@ -43,7 +43,7 @@ def init_payment_hold(app, db):
             cur = conn.execute(
                 """UPDATE bookings
                    SET status='cancelled', released_at=?,
-                       release_reason='Zahlungsfrist von 30 Minuten abgelaufen'
+                       release_reason='Zahlungsfrist von 10 Minuten abgelaufen'
                    WHERE status='pending'
                      AND COALESCE(paid,0)=0
                      AND COALESCE(hold_expires_at,'')!=''
@@ -105,7 +105,7 @@ def init_payment_hold(app, db):
         body = (
             f"Hallo {b['first_name']} {b['last_name']},\n\n"
             "vielen Dank für Ihre Buchungsanfrage bei Zuhause am Bach.\n\n"
-            f"Wir haben das Zimmer {b['room']} für Sie für 30 Minuten reserviert.\n\n"
+            f"Wir haben das Zimmer {b['room']} für Sie für 10 Minuten reserviert.\n\n"
             "Ihre Buchungsdaten:\n"
             f"Anreise: {b['arrival']}\n"
             f"Abreise: {b['departure']}\n"
@@ -114,10 +114,10 @@ def init_payment_hold(app, db):
             f"Zimmer: {b['room']}\n"
             f"Zusatzleistungen: {extras_text}\n"
             f"Gesamtpreis: {b['total']:.2f} EUR\n\n"
-            f"Bitte bezahlen Sie den Betrag innerhalb von 30 Minuten, spätestens bis {expires}.\n"
+            f"Bitte bezahlen Sie den Betrag innerhalb von 10 Minuten, spätestens bis {expires}.\n"
             f"{payment_line}\n\n"
             "Nach Eingang der Zahlung wird Ihre Buchung verbindlich bestätigt.\n\n"
-            "Erfolgt innerhalb von 30 Minuten keine Zahlung, wird die Reservierung automatisch aufgehoben und das Zimmer wieder zur Buchung freigegeben.\n\n"
+            "Erfolgt innerhalb von 10 Minuten keine Zahlung, wird die Reservierung automatisch aufgehoben und das Zimmer wieder zur Buchung freigegeben.\n\n"
             "Herzliche Grüße\nZuhause am Bach"
         )
         ok_guest, guest_status = smtp_send(
@@ -126,7 +126,7 @@ def init_payment_hold(app, db):
 
         owner = cfg.get("email", paypal_email)
         owner_body = (
-            f"Neue Direktanfrage mit 30-Minuten-Zahlungsfrist\n\n"
+            f"Neue Direktanfrage mit 10-Minuten-Zahlungsfrist\n\n"
             f"Gast: {b['first_name']} {b['last_name']}\n"
             f"Zimmer: {b['room']}\n"
             f"Anreise: {b['arrival']}\nAbreise: {b['departure']}\n"
@@ -139,7 +139,7 @@ def init_payment_hold(app, db):
         with db() as conn:
             conn.execute(
                 "INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
-                (booking_id, b["email"], "Zimmerreservierung 30 Minuten", guest_status, datetime.now().isoformat(timespec="seconds")),
+                (booking_id, b["email"], "Zimmerreservierung 10 Minuten", guest_status, datetime.now().isoformat(timespec="seconds")),
             )
         return ok_guest or ok_owner
 
