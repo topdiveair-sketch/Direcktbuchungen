@@ -14,6 +14,7 @@ ready(function(){
     let paypalHint=document.getElementById("paypalHint");
     const form=document.getElementById("requestForm");
     const availability=document.getElementById("availabilityStatus");
+    const submitRequest=document.getElementById("submitRequest");
     if(!paypalLink||!form) return;
 
     const contactNote=form.querySelector(".checkin-data-note");
@@ -51,6 +52,11 @@ ready(function(){
     function selectedRoom(){ return form.querySelector('input[name="room"]:checked'); }
     function selectedExtraByValue(name){
       return Array.from(form.querySelectorAll('input[name="extra"]:checked')).some(x=>x.value===name);
+    }
+
+    function setRequestFallback(visible){
+      if(!submitRequest) return;
+      submitRequest.classList.toggle("hidden",!visible);
     }
 
     function payload(){
@@ -108,9 +114,11 @@ ready(function(){
       paypalLink.classList.add("hidden");
       paypalBox?.classList.remove("zab-paypal-ready");
       if(message && paypalHint) paypalHint.textContent=message;
+      setRequestFallback(Boolean(message));
     }
 
     function showChecking(){
+      setRequestFallback(false);
       paypalBox?.classList.remove("hidden");
       paypalBox?.classList.remove("zab-paypal-ready");
       paypalLink.classList.add("hidden");
@@ -119,6 +127,7 @@ ready(function(){
     }
 
     function showAvailable(data,result){
+      setRequestFallback(false);
       verifiedSignature=quoteSignature(data);
       const total=Number(result.total||0);
       paypalBox?.classList.remove("hidden");
@@ -207,9 +216,6 @@ ready(function(){
         return;
       }
 
-      /* Keine zweite Quote-Anfrage mehr: /api/paypal/create-order führt selbst
-         die aktuelle iCal-Synchronisierung und die atomare Verfügbarkeitsprüfung
-         durch. So verschwindet der Button nicht mehr zwischen zwei Prüfungen. */
       const oldText=paypalLink.textContent;
       paypalLink.setAttribute("aria-busy","true");
       paypalLink.textContent="Termin wird reserviert und PayPal vorbereitet …";
@@ -242,6 +248,7 @@ ready(function(){
         paypalLink.removeAttribute("target");
         paypalLink.classList.remove("hidden");
         paypalBox?.classList.add("zab-paypal-ready");
+        setRequestFallback(true);
         checkoutHeading("⚠️ PayPal konnte nicht gestartet werden");
         if(paypalHint){
           paypalHint.textContent="Sofortbuchung nicht gestartet: "+(error.message||error)+" Bitte nicht mehrfach klicken; bei Bedarf die Buchungsanfrage senden.";
