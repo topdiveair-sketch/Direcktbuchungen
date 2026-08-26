@@ -3,118 +3,63 @@ name: Update direct booking conversion
 on:
   push:
     paths:
-      - '.github/workflows/update-direct-booking-conversion.yml'
+      - .github/workflows/update-direct-booking-conversion.yml
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  update:
+  update-booking-page:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Improve direct booking form
+      - name: Update booking page
         run: |
-          python3 <<'PY'
+          cat > /tmp/update.py <<'PY'
           from pathlib import Path
+          p = Path("index.html")
+          s = p.read_text(encoding="utf-8")
 
-          path = Path('index.html')
-          text = path.read_text(encoding='utf-8')
+          def rep(a, b, name):
+              global s
+              if a not in s:
+                  raise SystemExit("missing anchor: " + name)
+              s = s.replace(a, b, 1)
 
-          def replace_once(old, new, label):
-              global text
-              if old not in text:
-                  raise SystemExit(f'Anchor not found: {label}')
-              text = text.replace(old, new, 1)
+          rep('.booking-intro { margin:0 0 14px!important; color:#455e56!important; font-size:14px; }', '.booking-intro { margin:0 0 14px!important; color:#455e56!important; font-size:14px; }\n    .direct-booking-trust { display:grid; gap:3px; margin:0 0 14px; padding:12px 14px; border:1px solid #c8dfd4; border-radius:11px; background:#f1f8f4; color:#24483d; }\n    .direct-booking-trust strong { font-size:16px; color:var(--brand); }\n    .direct-booking-trust span { font-size:13px; font-weight:800; }\n    .direct-booking-trust small { color:#526b63; font-size:12px; font-weight:700; }\n    .checkin-data-note { margin:0!important; padding:9px 11px; border-radius:8px; background:#f4f6f3; color:#52625d!important; font-size:12px; font-weight:750; }', 'styles')
 
-          replace_once(
-              '<div class="booking-kicker">Erinnerungsstempel für Hausgäste inklusive</div><h2 id="booking-title">Wachau-Etappe direkt anfragen</h2><p class="booking-intro">Reisedaten wählen, persönlich anfragen und bei der Ankunft Ihren Wachau-Etappenstempel für Wanderpass oder Radreise-Tagebuch erhalten.</p><div class="booking-progress">',
-              '<div class="booking-kicker">Erinnerungsstempel für Hausgäste inklusive</div><h2 id="booking-title">Wachau-Etappe direkt anfragen</h2><p class="booking-intro">Reisedaten wählen, persönlich anfragen und bei der Ankunft Ihren Wachau-Etappenstempel für Wanderpass oder Radreise-Tagebuch erhalten.</p><div class="direct-booking-trust" aria-label="Bewertung und Direktbuchungsvorteil"><strong>⭐ 9,0/10 – Hervorragend</strong><span>45 Gästebewertungen auf Booking.com</span><small>Direkt buchen zum besten verfügbaren Direktpreis.</small></div><div class="booking-progress">',
-              'booking trust block'
-          )
+          marker = '<p class="booking-intro">Reisedaten wählen, persönlich anfragen und bei der Ankunft Ihren Wachau-Etappenstempel für Wanderpass oder Radreise-Tagebuch erhalten.</p>'
+          rep(marker, marker + '<div class="direct-booking-trust"><strong>⭐ 9,0/10 – Hervorragend</strong><span>45 Gästebewertungen auf Booking.com</span><small>Direkt buchen zum besten verfügbaren Direktpreis.</small></div>', 'trust')
 
-          replace_once(
-              '<span><strong>Bachblick</strong><small>Anfrage möglich · erst nach Kalenderprüfung frei</small></span>',
-              '<span><strong>Bachblick</strong><small>Jetzt anfragen – wir bestätigen die Verfügbarkeit persönlich.</small></span>',
-              'Bachblick wording'
-          )
+          s = s.replace('Anfrage möglich · erst nach Kalenderprüfung frei', 'Jetzt anfragen – wir bestätigen die Verfügbarkeit persönlich.')
 
-          address_fields = '''            <label>Straße und Hausnummer <span class="optional-note">optional</span>
-              <input id="street" name="street" autocomplete="street-address">
-            </label>
-            <label>PLZ <span class="optional-note">optional</span>
-              <input id="zip" name="zip" autocomplete="postal-code">
-            </label>
-            <label>Ort <span class="optional-note">optional</span>
-              <input id="city" name="city" autocomplete="address-level2">
-            </label>
-            <label>Land <span class="optional-note">optional</span>
-              <input id="country" name="country" autocomplete="country-name">
-            </label>
-'''
-          replace_once(address_fields, '', 'address fields')
+          start = s.find('            <label>Straße und Hausnummer')
+          end_marker = '            <label>Land <span class="optional-note">optional</span>'
+          end_start = s.find(end_marker, start)
+          if start < 0 or end_start < 0:
+              raise SystemExit('missing address fields')
+          end = s.find('            </label>', end_start) + len('            </label>')
+          s = s[:start] + s[end:]
 
-          replace_once(
-              '          </div>\n\n          <label>Nachricht oder Wünsche',
-              '          </div>\n          <p class="checkin-data-note">Weitere Meldedaten benötigen wir erst beim Check-in.</p>\n\n          <label>Nachricht oder Wünsche',
-              'check-in data note'
-          )
+          contact_end = '          </div>\n\n          <label>Nachricht oder Wünsche'
+          rep(contact_end, '          </div>\n          <p class="checkin-data-note">Weitere Meldedaten benötigen wir erst beim Check-in.</p>\n\n          <label>Nachricht oder Wünsche', 'checkin note')
 
-          address_builder = '''      const address = [
-        document.getElementById("street").value,
-        document.getElementById("zip").value + " " + document.getElementById("city").value,
-        document.getElementById("country").value
-      ].filter(Boolean).join(", ");
-'''
-          replace_once(address_builder, '', 'mail address builder')
-
-          replace_once(
-              '        tr("labelPhone") + ": " + document.getElementById("phone").value,\n        tr("labelAddress") + ": " + address,\n        "",',
-              '        tr("labelPhone") + ": " + document.getElementById("phone").value,\n        "",',
-              'mail address line'
-          )
-
-          text = text.replace(
-              'requiredFields: "Bitte alle Pflichtfelder ausfüllen, inklusive Telefonnummer, vollständiger Adresse und Nachricht."',
-              'requiredFields: "Bitte alle Pflichtfelder ausfüllen: Vorname, Nachname, E-Mail und Telefonnummer."'
-          )
-          text = text.replace(
-              'requiredFields: "Please fill in all required fields, including phone number, full address and message."',
-              'requiredFields: "Please fill in all required fields: first name, last name, email and phone number."'
-          )
-
-          anchor = '    .booking-intro { margin:0 0 14px!important; color:#455e56!important; font-size:14px; }\n'
-          styles = '''    .booking-intro { margin:0 0 14px!important; color:#455e56!important; font-size:14px; }
-    .direct-booking-trust {
-      display:grid; gap:3px; margin:0 0 14px; padding:12px 14px;
-      border:1px solid #c8dfd4; border-radius:11px; background:#f1f8f4;
-      color:#24483d;
-    }
-    .direct-booking-trust strong { font-size:16px; color:var(--brand-dark); }
-    .direct-booking-trust span { font-size:13px; font-weight:800; }
-    .direct-booking-trust small { color:#526b63; font-size:12px; font-weight:700; }
-    .checkin-data-note {
-      margin:0!important; padding:9px 11px; border-radius:8px;
-      background:#f4f6f3; color:#52625d!important; font-size:12px; font-weight:750;
-    }
-'''
-          replace_once(anchor, styles, 'conversion styles')
-
-          path.write_text(text, encoding='utf-8')
+          a = s.find('      const address = [')
+          if a < 0:
+              raise SystemExit('missing address builder')
+          b = s.find('      const lines = [', a)
+          s = s[:a] + s[b:]
+          s = s.replace('        tr("labelAddress") + ": " + address,\n', '')
+          s = s.replace('requiredFields: "Bitte alle Pflichtfelder ausfüllen, inklusive Telefonnummer, vollständiger Adresse und Nachricht."', 'requiredFields: "Bitte alle Pflichtfelder ausfüllen: Vorname, Nachname, E-Mail und Telefonnummer."')
+          s = s.replace('requiredFields: "Please fill in all required fields, including phone number, full address and message."', 'requiredFields: "Please fill in all required fields: first name, last name, email and phone number."')
+          p.write_text(s, encoding="utf-8")
           PY
-
-      - name: Commit changes
+          python3 /tmp/update.py
+      - name: Commit
         run: |
-          if git diff --quiet -- index.html; then
-            echo "No changes needed"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add index.html
           git commit -m "Improve direct booking conversion"
           git push
