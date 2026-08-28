@@ -14,12 +14,14 @@ function authorized(request, env) {
   return request.headers.get('Authorization') === `Bearer ${env.ADMIN_TOKEN}`;
 }
 
+function approvalHtml() {
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Growth Engine Approval</title><style>body{font-family:system-ui,sans-serif;max-width:980px;margin:40px auto;padding:0 16px;line-height:1.4}input,button,textarea{font:inherit}input,textarea{width:100%;box-sizing:border-box;padding:10px;margin:6px 0 12px}button{padding:9px 14px;margin-right:8px;cursor:pointer}.card{border:1px solid #ddd;border-radius:10px;padding:14px;margin:12px 0}.muted{opacity:.7}.ok{font-weight:600}</style></head><body><h1>Growth Engine Approval</h1><p class="muted">Status, manueller Lauf und Freigaben für Zuhause am Bach & Windis.</p><label>Agent-Basis-URL</label><input id="base" placeholder="https://.../agents/growth-runtime/main"><label>ADMIN_TOKEN</label><input id="token" type="password"><button id="status">Status laden</button><button id="run">Jetzt ausführen</button><div id="meta"></div><div id="items"></div><script>const $=id=>document.getElementById(id);const auth=()=>({'Authorization':'Bearer '+$('token').value,'Content-Type':'application/json'});async function req(path,opts={}){const r=await fetch($('base').value.replace(/\\/$/,'')+path,{...opts,headers:{...auth(),...(opts.headers||{})}});const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);return j}function render(s){$('meta').innerHTML='<p><b>Letzter Lauf:</b> '+(s.lastRunAt||'—')+'</p><p><b>Schedule:</b> '+(s.schedule||'—')+'</p><p><b>Warnungen:</b> '+((s.warnings||[]).join(' | ')||'keine')+'</p>';$('items').innerHTML=(s.approvals||[]).map(a=>'<div class="card"><div class="ok">'+a.brand+' · '+a.kind+'</div><p>'+a.task+'</p><textarea id="n-'+a.id+'" placeholder="Notiz optional"></textarea><button onclick="decide(\\''+a.id+'\\',\\'approve\\')">Freigeben</button><button onclick="decide(\\''+a.id+'\\',\\'reject\\')">Ablehnen</button></div>').join('')||'<p>Keine offenen Freigaben.</p>'}async function load(){render(await req('/status'))}async function decide(id,kind){await req('/'+kind,{method:'POST',body:JSON.stringify({id,note:$('n-'+id).value})});await load()}$('status').onclick=()=>load().catch(e=>alert(e.message));$('run').onclick=async()=>{try{await req('/run-now',{method:'POST'});await load()}catch(e){alert(e.message)}};</script></body></html>`;
+}
+
 function mergeApprovals(existing, incoming) {
   const result = [...existing];
   for (const item of incoming) {
-    const duplicate = result.some((entry) =>
-      entry.status === 'pending' && entry.brand === item.brand && entry.kind === item.kind && entry.task === item.task
-    );
+    const duplicate = result.some((entry) => entry.status === 'pending' && entry.brand === item.brand && entry.kind === item.kind && entry.task === item.task);
     if (!duplicate) result.push(item);
   }
   return result.slice(-200);
@@ -35,20 +37,14 @@ export class GrowthRuntime extends Agent {
   }
 
   async loadZuhauseSignals(warnings) {
-    if (!this.env.BOOKING_WORKER_URL) {
-      warnings.push('BOOKING_WORKER_URL is not configured');
-      return { openNights: 0, source: 'missing' };
-    }
+    if (!this.env.BOOKING_WORKER_URL) { warnings.push('BOOKING_WORKER_URL is not configured'); return { openNights: 0, source: 'missing' }; }
     const response = await fetch(this.env.BOOKING_WORKER_URL, { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error(`Booking worker HTTP ${response.status}`);
     return availabilitySignals(await response.json(), { horizonDays: 30 });
   }
 
   async loadWindisSignals(warnings) {
-    if (!this.env.WINDIS_DATA_URL) {
-      warnings.push('WINDIS_DATA_URL not configured; reviewed repository seed is used');
-      return windisSignals({ partners: WINDIS_PARTNER_SEED, kpis: WINDIS_KPI_SEED });
-    }
+    if (!this.env.WINDIS_DATA_URL) { warnings.push('WINDIS_DATA_URL not configured; reviewed repository seed is used'); return windisSignals({ partners: WINDIS_PARTNER_SEED, kpis: WINDIS_KPI_SEED }); }
     const response = await fetch(this.env.WINDIS_DATA_URL, { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error(`Windis data HTTP ${response.status}`);
     return windisSignals(await response.json());
@@ -82,7 +78,11 @@ export class GrowthRuntime extends Agent {
     if (request.method === 'GET' && url.pathname.endsWith('/status')) return json({ lastRunAt: this.state.lastRunAt, lastResult: this.state.lastResult, warnings: this.state.warnings, approvals: (this.state.approvals || []).filter((item) => item.status === 'pending'), schedule: DAILY_CRON });
     if (request.method === 'POST' && url.pathname.endsWith('/run-now')) return json(await this.dailyRun({ source: 'manual' }));
     if (request.method === 'POST' && (url.pathname.endsWith('/approve') || url.pathname.endsWith('/reject'))) {
-      const body = await request.json(); const decision = url.pathname.endsWith('/approve') ? 'approved' : 'rejected'; const item = this.decideApproval(body.id, decision, body.note || ''); if (!item) return json({ error: 'approval_not_found' }, 404); return json(item);
+      const body = await request.json();
+      const decision = url.pathname.endsWith('/approve') ? 'approved' : 'rejected';
+      const item = this.decideApproval(body.id, decision, body.note || '');
+      if (!item) return json({ error: 'approval_not_found' }, 404);
+      return json(item);
     }
     return json({ error: 'not_found' }, 404);
   }
@@ -92,9 +92,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === '/health') return json({ ok: true, service: 'zab-windis-growth-runtime' });
-    if (url.pathname === '/approval-ui') {
-      return new Response('Approval UI is served from public/index.html in local/static hosting workflows.', { status: 501, headers: { 'Cache-Control': 'no-store' } });
-    }
+    if (url.pathname === '/approval-ui') return new Response(approvalHtml(), { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
     return (await routeAgentRequest(request, env)) || json({ error: 'not_found' }, 404);
   },
 };
