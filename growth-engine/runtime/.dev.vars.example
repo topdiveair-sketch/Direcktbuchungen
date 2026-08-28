@@ -1,0 +1,9 @@
+# Public JSON endpoint of the existing Zuhause-am-Bach Booking worker
+BOOKING_WORKER_URL=https://example.workers.dev
+
+# Optional JSON endpoint with {"partners": [...], "kpis": [...]}
+# If omitted, the runtime uses the reviewed Windis seed snapshot from the repository.
+WINDIS_DATA_URL=
+
+# Protects runtime status, manual runs and approval decisions.
+ADMIN_TOKEN=replace-with-a-long-random-secret

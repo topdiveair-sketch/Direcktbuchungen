@@ -1,0 +1,1 @@
+{"name":"zab-windis-growth-runtime","version":"0.1.0","private":true,"type":"module","engines":{"node":">=24"},"scripts":{"dev":"wrangler dev","deploy":"wrangler deploy","preflight":"node scripts/preflight.mjs","postdeploy":"node scripts/postdeploy-check.mjs"},"dependencies":{"agents":"0.22.0"},"devDependencies":{"wrangler":"latest"}}
