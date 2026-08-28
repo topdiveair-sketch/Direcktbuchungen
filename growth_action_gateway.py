@@ -113,6 +113,7 @@ def growth_channel_health():
         "smtp_configured": bool(smtp["host"] and smtp["user"] and smtp["password"]),
         "publish_endpoint": "/growth/action",
         "outreach_endpoint": "/growth/action",
+        "windis_data_endpoint": "/growth/windis-data",
     }, 200
 
 
@@ -210,3 +211,7 @@ def growth_publication_page(publication_id: int):
     body_html = "<br>".join(html.escape(row["body"]).splitlines())
     page = f"""<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>{html.escape(row['title'])}</title><style>body{{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f4f6f4;color:#132319;margin:0}}main{{max-width:760px;margin:6vh auto;padding:30px;background:#fff;border:1px solid #dde4df;border-radius:18px;box-shadow:0 12px 34px rgba(31,52,39,.07)}}h1{{line-height:1.15}}.meta{{color:#6b776f;font-size:14px}}.copy{{font-size:18px;line-height:1.65;margin:26px 0}}</style></head><body><main><div class=\"meta\">{html.escape(row['brand'])} · {html.escape(row['created_at'])}</div><h1>{html.escape(row['title'])}</h1><div class=\"copy\">{body_html}</div>{cta}</main></body></html>"""
     return Response(page, content_type="text/html; charset=utf-8")
+
+
+# Register the authenticated mutable Windis planning-data routes on the same app.
+import windis_data_gateway  # noqa: E402,F401
