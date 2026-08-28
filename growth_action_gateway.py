@@ -68,6 +68,11 @@ def _smtp_config() -> dict[str, str]:
     }
 
 
+def _smtp_ready() -> bool:
+    cfg = _smtp_config()
+    return bool(cfg["host"] and cfg["user"] and cfg["password"])
+
+
 def _send_mail(recipient: str, subject: str, body: str) -> tuple[bool, str]:
     cfg = _smtp_config()
     if not cfg["host"] or not cfg["user"] or not cfg["password"]:
@@ -112,15 +117,41 @@ import windis_public_gateway  # noqa: E402,F401
 
 @app.get("/health/growth-channels")
 def growth_channel_health():
-    smtp = _smtp_config()
+    with db() as conn:
+        verified = conn.execute(
+            "SELECT COUNT(*) AS n FROM growth_windis_partners WHERE email_verified=1 AND COALESCE(email,'')<>''"
+        ).fetchone()["n"]
+        outreach_count = conn.execute("SELECT COUNT(*) AS n FROM growth_outreach_log").fetchone()["n"]
+        last_outreach = conn.execute(
+            "SELECT status,detail,created_at FROM growth_outreach_log ORDER BY id DESC LIMIT 1"
+        ).fetchone()
     return {
         "ok": True,
         "gateway_token_configured": bool(_gateway_token()),
-        "smtp_configured": bool(smtp["host"] and smtp["user"] and smtp["password"]),
+        "smtp_configured": _smtp_ready(),
+        "verified_recipient_count": int(verified or 0),
+        "outreach_log_count": int(outreach_count or 0),
+        "last_outreach": dict(last_outreach) if last_outreach else None,
         "publish_endpoint": "/growth/action",
         "outreach_endpoint": "/growth/action",
         "windis_data_endpoint": "/growth/windis-planning-data",
     }, 200
+
+
+@app.get("/growth/action/verify")
+def growth_action_verify():
+    """Authenticated, side-effect-free verification for deploy smoke tests."""
+    if not _gateway_token():
+        return jsonify({"error": "growth_webhook_token_not_configured"}), 503
+    if not _authorized():
+        return jsonify({"error": "unauthorized"}), 401
+    recipient_ref = str(request.args.get("recipientRef") or "").strip()
+    recipient = _resolve_verified_recipient(recipient_ref) if recipient_ref else ""
+    return jsonify({
+        "ok": True,
+        "smtpConfigured": _smtp_ready(),
+        "recipientVerified": bool(recipient and _valid_email(recipient)),
+    }), 200
 
 
 @app.post("/growth/action")
