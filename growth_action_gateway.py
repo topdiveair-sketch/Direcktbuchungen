@@ -45,6 +45,18 @@ def _valid_email(value: str) -> bool:
     return bool(addr and "@" in addr and "." in addr.rsplit("@", 1)[-1])
 
 
+def _resolve_verified_recipient(recipient_ref: str) -> str:
+    ref = str(recipient_ref or "").strip()
+    if not ref:
+        return ""
+    with db() as conn:
+        row = conn.execute(
+            "SELECT email FROM growth_windis_partners WHERE partner=? AND email_verified=1",
+            (ref,),
+        ).fetchone()
+    return str(row["email"] or "").strip() if row else ""
+
+
 def _smtp_config() -> dict[str, str]:
     cfg = _settings()
     return {
@@ -141,6 +153,9 @@ def growth_action():
             publication_id = cur.lastrowid
         return jsonify({"ok": True, "published": True, "publicUrl": request.host_url.rstrip("/") + f"/growth/publications/{publication_id}"}), 201
     recipient = str(payload.get("recipient") or "").strip()
+    recipient_ref = str(payload.get("recipientRef") or "").strip()
+    if not recipient and recipient_ref:
+        recipient = _resolve_verified_recipient(recipient_ref)
     subject = str(payload.get("subject") or "Kooperationsanfrage Wilde Wachauer Windis").strip()[:240]
     if not _valid_email(recipient):
         return jsonify({"error": "verified_recipient_required"}), 422
@@ -156,7 +171,7 @@ def growth_action():
             (approval_id, recipient, subject, "sent" if ok else "failed", detail, _now()))
     if not ok:
         return jsonify({"error": detail}), 502
-    return jsonify({"ok": True, "sent": True, "recipient": recipient}), 200
+    return jsonify({"ok": True, "sent": True, "recipientResolved": True}), 200
 
 
 @app.get("/growth/publications")
