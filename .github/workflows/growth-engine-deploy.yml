@@ -92,6 +92,22 @@ jobs:
         env:
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
         run: |
-          curl --fail-with-body --retry 5 --retry-delay 3 -X POST \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            "$RUNTIME_BASE_URL/agents/growth-runtime/main/run-now"
+          set -euo pipefail
+          endpoint="$RUNTIME_BASE_URL/agents/growth-runtime/main/run-now"
+          for attempt in 1 2 3 4 5 6; do
+            http_code=$(curl --silent --show-error -o planning-response.json -w '%{http_code}' -X POST \
+              -H "Authorization: Bearer $ADMIN_TOKEN" \
+              "$endpoint" || true)
+            if [ "$http_code" = "200" ]; then
+              cat planning-response.json
+              exit 0
+            fi
+            echo "Planning attempt $attempt returned HTTP $http_code"
+            cat planning-response.json || true
+            if grep -q 'Durable Object reset because its code was updated' planning-response.json 2>/dev/null && [ "$attempt" -lt 6 ]; then
+              sleep $((attempt * 5))
+              continue
+            fi
+            exit 1
+          done
+          exit 1
