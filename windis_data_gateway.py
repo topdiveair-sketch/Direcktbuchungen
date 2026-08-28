@@ -1,4 +1,8 @@
-"""Authenticated mutable Windis data source for the Growth Runtime."""
+"""Mutable Windis planning data source for the Growth Runtime.
+
+The read feed is public-safe and never exposes contact addresses. Mutations remain
+authenticated with GROWTH_WEBHOOK_TOKEN.
+"""
 
 from __future__ import annotations
 
@@ -9,7 +13,6 @@ from datetime import datetime
 from flask import jsonify, request
 
 from railway_app import app, db
-
 
 PARTNER_SEED = [
     ("A", "Donau Niederoesterreich Tourismus GmbH / Wachau-Nibelungengau-Kremstal", "Tourismus", "regionale Familienmarke und Content fuer Familiengaeste", "Kontakt verifizieren und Erstkontakt senden", "Offen", "2026-08-20"),
@@ -37,12 +40,8 @@ def _now() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
 
-def _token() -> str:
-    return os.environ.get("GROWTH_WEBHOOK_TOKEN", "").strip()
-
-
 def _authorized() -> bool:
-    token = _token()
+    token = os.environ.get("GROWTH_WEBHOOK_TOKEN", "").strip()
     supplied = request.headers.get("Authorization", "")
     expected = f"Bearer {token}" if token else ""
     return bool(token) and hmac.compare_digest(supplied, expected)
@@ -50,8 +49,7 @@ def _authorized() -> bool:
 
 def _init_tables() -> None:
     with db() as conn:
-        conn.executescript(
-            """
+        conn.executescript("""
             CREATE TABLE IF NOT EXISTS growth_windis_partners (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 priority TEXT NOT NULL,
@@ -72,21 +70,15 @@ def _init_tables() -> None:
                 target_dec REAL NOT NULL DEFAULT 0,
                 updated_at TEXT NOT NULL
             );
-            """
-        )
-        count = conn.execute("SELECT COUNT(*) AS n FROM growth_windis_partners").fetchone()["n"]
-        if count == 0:
+        """)
+        if conn.execute("SELECT COUNT(*) AS n FROM growth_windis_partners").fetchone()["n"] == 0:
             conn.executemany(
-                """INSERT INTO growth_windis_partners
-                   (priority,partner,category,approach,next_step,status,target_date,email,email_verified,updated_at)
-                   VALUES(?,?,?,?,?,?,?,'',0,?)""",
+                "INSERT INTO growth_windis_partners(priority,partner,category,approach,next_step,status,target_date,email,email_verified,updated_at) VALUES(?,?,?,?,?,?,?,'',0,?)",
                 [row + (_now(),) for row in PARTNER_SEED],
             )
-        count = conn.execute("SELECT COUNT(*) AS n FROM growth_windis_kpis").fetchone()["n"]
-        if count == 0:
+        if conn.execute("SELECT COUNT(*) AS n FROM growth_windis_kpis").fetchone()["n"] == 0:
             conn.executemany(
-                """INSERT INTO growth_windis_kpis(metric,start_value,target_oct,target_dec,updated_at)
-                   VALUES(?,?,?,?,?)""",
+                "INSERT INTO growth_windis_kpis(metric,start_value,target_oct,target_dec,updated_at) VALUES(?,?,?,?,?)",
                 [row + (_now(),) for row in KPI_SEED],
             )
 
@@ -96,12 +88,9 @@ _init_tables()
 
 @app.get("/growth/windis-data")
 def growth_windis_data():
-    if not _authorized():
-        return jsonify({"error": "unauthorized"}), 401
     with db() as conn:
         partners = conn.execute(
-            """SELECT priority,partner,category,approach,next_step,status,target_date,email,email_verified,updated_at
-               FROM growth_windis_partners ORDER BY priority, target_date, partner"""
+            "SELECT priority,partner,category,approach,next_step,status,target_date,updated_at FROM growth_windis_partners ORDER BY priority,target_date,partner"
         ).fetchall()
         kpis = conn.execute(
             "SELECT metric,start_value,target_oct,target_dec,updated_at FROM growth_windis_kpis ORDER BY metric"
@@ -110,31 +99,15 @@ def growth_windis_data():
         "ok": True,
         "source": "railway-live",
         "updatedAt": _now(),
-        "partners": [
-            {
-                "priority": r["priority"],
-                "partner": r["partner"],
-                "category": r["category"],
-                "approach": r["approach"],
-                "nextStep": r["next_step"],
-                "status": r["status"],
-                "targetDate": r["target_date"],
-                "email": r["email"] or None,
-                "emailVerified": bool(r["email_verified"]),
-                "updatedAt": r["updated_at"],
-            }
-            for r in partners
-        ],
-        "kpis": [
-            {
-                "metric": r["metric"],
-                "start": r["start_value"],
-                "targetOct": r["target_oct"],
-                "targetDec": r["target_dec"],
-                "updatedAt": r["updated_at"],
-            }
-            for r in kpis
-        ],
+        "partners": [{
+            "priority": r["priority"], "partner": r["partner"], "category": r["category"],
+            "approach": r["approach"], "nextStep": r["next_step"], "status": r["status"],
+            "targetDate": r["target_date"], "updatedAt": r["updated_at"]
+        } for r in partners],
+        "kpis": [{
+            "metric": r["metric"], "start": r["start_value"],
+            "targetOct": r["target_oct"], "targetDec": r["target_dec"], "updatedAt": r["updated_at"]
+        } for r in kpis],
     }), 200
 
 
@@ -149,26 +122,14 @@ def growth_windis_partner_upsert():
     email = str(body.get("email") or "").strip()
     email_verified = 1 if body.get("emailVerified") is True and email else 0
     values = (
-        str(body.get("priority") or "B").strip()[:4],
-        partner[:300],
-        str(body.get("category") or "").strip()[:300],
-        str(body.get("approach") or "").strip()[:2000],
-        str(body.get("nextStep") or "").strip()[:2000],
-        str(body.get("status") or "Offen").strip()[:100],
-        str(body.get("targetDate") or "").strip()[:40],
-        email[:320],
-        email_verified,
-        _now(),
+        str(body.get("priority") or "B").strip()[:4], partner[:300],
+        str(body.get("category") or "").strip()[:300], str(body.get("approach") or "").strip()[:2000],
+        str(body.get("nextStep") or "").strip()[:2000], str(body.get("status") or "Offen").strip()[:100],
+        str(body.get("targetDate") or "").strip()[:40], email[:320], email_verified, _now(),
     )
     with db() as conn:
-        conn.execute(
-            """INSERT INTO growth_windis_partners
-               (priority,partner,category,approach,next_step,status,target_date,email,email_verified,updated_at)
-               VALUES(?,?,?,?,?,?,?,?,?,?)
-               ON CONFLICT(partner) DO UPDATE SET
-                 priority=excluded.priority, category=excluded.category, approach=excluded.approach,
-                 next_step=excluded.next_step, status=excluded.status, target_date=excluded.target_date,
-                 email=excluded.email, email_verified=excluded.email_verified, updated_at=excluded.updated_at""",
-            values,
-        )
+        conn.execute("""INSERT INTO growth_windis_partners(priority,partner,category,approach,next_step,status,target_date,email,email_verified,updated_at)
+            VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(partner) DO UPDATE SET priority=excluded.priority,category=excluded.category,
+            approach=excluded.approach,next_step=excluded.next_step,status=excluded.status,target_date=excluded.target_date,
+            email=excluded.email,email_verified=excluded.email_verified,updated_at=excluded.updated_at""", values)
     return jsonify({"ok": True, "partner": partner, "emailVerified": bool(email_verified)}), 200
