@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "mode": "approval-first",
+  "brands": {
+    "zab": {
+      "name": "Zuhause am Bach",
+      "primaryGoal": "direct_bookings",
+      "allowedAutonomousActions": [
+        "analyze_data",
+        "generate_content_brief",
+        "generate_copy_variants",
+        "generate_experiment",
+        "prepare_campaign"
+      ],
+      "approvalRequired": [
+        "publish_content",
+        "send_external_message",
+        "launch_paid_campaign",
+        "increase_ad_budget",
+        "change_booking_logic"
+      ]
+    },
+    "windis": {
+      "name": "Die Wilden Wachauer Windis",
+      "primaryGoal": "brand_sales_partnerships",
+      "allowedAutonomousActions": [
+        "analyze_data",
+        "generate_content_brief",
+        "generate_copy_variants",
+        "generate_partner_brief",
+        "generate_experiment",
+        "prepare_campaign"
+      ],
+      "approvalRequired": [
+        "publish_content",
+        "send_external_message",
+        "launch_paid_campaign",
+        "increase_ad_budget",
+        "commit_partner_offer"
+      ]
+    }
+  }
+}
