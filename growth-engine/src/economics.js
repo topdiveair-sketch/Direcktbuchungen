@@ -6,6 +6,9 @@ const finiteOrNull = (value) => {
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 export function economicScore(action = {}, context = {}) {
+  if (context.assumptionsComplete === false) {
+    return { expectedRevenue: null, expectedCost: null, successProbability: null, expectedContribution: null, roi: null, confidence: 'unknown' };
+  }
   const expectedRevenue = finiteOrNull(action.expectedRevenue ?? context.expectedRevenue);
   const expectedCost = finiteOrNull(action.expectedCost ?? context.expectedCost);
   const rawProbability = finiteOrNull(action.successProbability ?? context.successProbability);
