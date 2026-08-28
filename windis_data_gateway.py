@@ -25,6 +25,13 @@ PARTNER_SEED = [
     ("B", "Fremdenverkehrsverein / Stadtgemeinde Duernstein", "Tourismus", "Duernstein-Geschichte und saisonale Familienaktion", "Kontakt verifizieren und senden", "Offen", "2026-09-01"),
 ]
 
+# Verified against the official Donau Niederösterreich imprint on 2026-08-28.
+# This address is stored server-side and is never returned by the public planning feed.
+VERIFIED_RECIPIENT_SEED = (
+    "Donau Niederoesterreich Tourismus GmbH / Wachau-Nibelungengau-Kremstal",
+    "wachau@donau.com",
+)
+
 KPI_SEED = [
     ("Qualifizierte Partnerkontakte", 0, 15, 30),
     ("Partner-Zusagen / Kooperationen", 0, 3, 6),
@@ -81,6 +88,13 @@ def _init_tables() -> None:
                 "INSERT INTO growth_windis_kpis(metric,start_value,target_oct,target_dec,updated_at) VALUES(?,?,?,?,?)",
                 [row + (_now(),) for row in KPI_SEED],
             )
+        partner, verified_email = VERIFIED_RECIPIENT_SEED
+        conn.execute(
+            """UPDATE growth_windis_partners
+               SET email=?, email_verified=1, updated_at=?
+               WHERE partner=? AND (COALESCE(email,'')='' OR email=?)""",
+            (verified_email, _now(), partner, verified_email),
+        )
 
 
 _init_tables()
