@@ -27,12 +27,23 @@ test('plans direct-booking work and a gated publish proposal when nights are ope
   assert.equal(publish.autonomous, false);
 });
 
-test('plans gated partner outreach only when a Windis opportunity is open', () => {
+test('does not plan Windis outreach without a verified next partner', () => {
   const engine = new GrowthOrchestrator();
-  const idle = engine.plan('windis', { openPartnerActions: 0, priorityAOpen: 0 });
+  const idle = engine.plan('windis', { openPartnerActions: 3, priorityAOpen: 2, nextPartner: null });
   assert.equal(idle.some((item) => item.kind === 'sendExternalMessage'), false);
-  const active = engine.plan('windis', { openPartnerActions: 1, priorityAOpen: 1 });
+});
+
+test('plans gated Windis outreach using only the verified partner reference', () => {
+  const engine = new GrowthOrchestrator();
+  const active = engine.plan('windis', {
+    openPartnerActions: 1,
+    priorityAOpen: 1,
+    nextPartner: { partner: 'Donau Niederoesterreich Tourismus GmbH / Wachau-Nibelungengau-Kremstal', recipientVerified: true },
+  });
   const outreach = active.find((item) => item.kind === 'sendExternalMessage');
+  assert.ok(outreach);
   assert.equal(outreach.approvalRequired, true);
   assert.equal(outreach.autonomous, false);
+  assert.equal(outreach.recipientRef, 'Donau Niederoesterreich Tourismus GmbH / Wachau-Nibelungengau-Kremstal');
+  assert.equal('recipient' in outreach, false);
 });
