@@ -8,6 +8,7 @@
       "requirements.txt",
       "app.py",
       "railway_app.py",
+      "growth_action_gateway.py",
       "payment_hold.py",
       "paypal_checkout.py",
       "booking_notifications.py",
@@ -25,7 +26,7 @@
     ]
   },
   "deploy": {
-    "startCommand": "gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 railway_app:app",
+    "startCommand": "gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 growth_action_gateway:app",
     "healthcheckPath": "/health/live",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
