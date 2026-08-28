@@ -11,6 +11,7 @@ on:
 env:
   BOOKING_WORKER_URL: https://zab-booking-live.topdiveair.workers.dev
   RUNTIME_BASE_URL: https://zab-windis-growth-runtime.topdiveair.workers.dev
+  GROWTH_ACTION_URL: https://web-production-f05a4.up.railway.app/growth/action
 
 jobs:
   deploy:
@@ -29,12 +30,14 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           BOOKING_ICAL_URL: ${{ secrets.BOOKING_ICAL_URL }}
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          CHANNEL_WEBHOOK_TOKEN: ${{ secrets.CHANNEL_WEBHOOK_TOKEN }}
         run: |
           test -n "$CLOUDFLARE_API_TOKEN" || (echo 'Missing CLOUDFLARE_API_TOKEN' && exit 1)
           test -n "$CLOUDFLARE_ACCOUNT_ID" || (echo 'Missing CLOUDFLARE_ACCOUNT_ID' && exit 1)
           test -n "$BOOKING_ICAL_URL" || (echo 'Missing BOOKING_ICAL_URL' && exit 1)
           test -n "$ADMIN_TOKEN" || (echo 'Missing ADMIN_TOKEN' && exit 1)
           test ${#ADMIN_TOKEN} -ge 24 || (echo 'ADMIN_TOKEN must be at least 24 characters' && exit 1)
+          if [ -n "$CHANNEL_WEBHOOK_TOKEN" ]; then test ${#CHANNEL_WEBHOOK_TOKEN} -ge 24 || (echo 'CHANNEL_WEBHOOK_TOKEN must be at least 24 characters' && exit 1); fi
 
       - name: Deploy Booking availability worker
         env:
@@ -53,8 +56,7 @@ jobs:
 
       - name: Verify Booking worker
         run: |
-          curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors \
-            -o booking-worker.json "$BOOKING_WORKER_URL"
+          curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors -o booking-worker.json "$BOOKING_WORKER_URL"
           node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('booking-worker.json','utf8'));if(j.ok!==true||!Array.isArray(j.events))process.exit(1);console.log('Booking worker OK, events:',j.events.length)"
 
       - name: Install runtime dependencies
@@ -74,15 +76,18 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         working-directory: growth-engine/runtime
-        run: npx wrangler deploy --var BOOKING_WORKER_URL:$BOOKING_WORKER_URL --var WINDIS_DATA_URL:${{ secrets.WINDIS_DATA_URL }}
+        run: npx wrangler deploy --var BOOKING_WORKER_URL:$BOOKING_WORKER_URL --var WINDIS_DATA_URL:${{ secrets.WINDIS_DATA_URL }} --var PUBLISH_WEBHOOK_URL:$GROWTH_ACTION_URL --var OUTREACH_WEBHOOK_URL:$GROWTH_ACTION_URL
 
-      - name: Install Growth Runtime admin secret
+      - name: Install Growth Runtime secrets
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          CHANNEL_WEBHOOK_TOKEN: ${{ secrets.CHANNEL_WEBHOOK_TOKEN }}
         working-directory: growth-engine/runtime
-        run: printf '%s' "$ADMIN_TOKEN" | npx wrangler secret put ADMIN_TOKEN
+        run: |
+          printf '%s' "$ADMIN_TOKEN" | npx wrangler secret put ADMIN_TOKEN
+          if [ -n "$CHANNEL_WEBHOOK_TOKEN" ]; then printf '%s' "$CHANNEL_WEBHOOK_TOKEN" | npx wrangler secret put CHANNEL_WEBHOOK_TOKEN; fi
 
       - name: Health check
         working-directory: growth-engine/runtime
@@ -95,19 +100,10 @@ jobs:
           set -euo pipefail
           endpoint="$RUNTIME_BASE_URL/agents/growth-runtime/main/run-now"
           for attempt in 1 2 3 4 5 6; do
-            http_code=$(curl --silent --show-error -o planning-response.json -w '%{http_code}' -X POST \
-              -H "Authorization: Bearer $ADMIN_TOKEN" \
-              "$endpoint" || true)
-            if [ "$http_code" = "200" ]; then
-              cat planning-response.json
-              exit 0
-            fi
-            echo "Planning attempt $attempt returned HTTP $http_code"
-            cat planning-response.json || true
-            if grep -q 'Durable Object reset because its code was updated' planning-response.json 2>/dev/null && [ "$attempt" -lt 6 ]; then
-              sleep $((attempt * 5))
-              continue
-            fi
+            http_code=$(curl --silent --show-error -o planning-response.json -w '%{http_code}' -X POST -H "Authorization: Bearer $ADMIN_TOKEN" "$endpoint" || true)
+            if [ "$http_code" = "200" ]; then cat planning-response.json; exit 0; fi
+            echo "Planning attempt $attempt returned HTTP $http_code"; cat planning-response.json || true
+            if grep -q 'Durable Object reset because its code was updated' planning-response.json 2>/dev/null && [ "$attempt" -lt 6 ]; then sleep $((attempt * 5)); continue; fi
             exit 1
           done
           exit 1
