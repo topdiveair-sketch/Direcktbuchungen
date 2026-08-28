@@ -5,7 +5,7 @@ on:
       - 'growth-engine/**'
       - '.github/workflows/growth-engine-ci.yml'
   push:
-    branches: [growth-engine-v1]
+    branches: [main, growth-engine-v1]
     paths:
       - 'growth-engine/**'
       - '.github/workflows/growth-engine-ci.yml'
