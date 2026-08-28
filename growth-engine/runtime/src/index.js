@@ -18,10 +18,7 @@ function mergeApprovals(existing, incoming) {
   const result = [...existing];
   for (const item of incoming) {
     const duplicate = result.some((entry) =>
-      entry.status === 'pending' &&
-      entry.brand === item.brand &&
-      entry.kind === item.kind &&
-      entry.task === item.task
+      entry.status === 'pending' && entry.brand === item.brand && entry.kind === item.kind && entry.task === item.task
     );
     if (!duplicate) result.push(item);
   }
@@ -29,18 +26,11 @@ function mergeApprovals(existing, incoming) {
 }
 
 export class GrowthRuntime extends Agent {
-  initialState = {
-    lastRunAt: null,
-    lastResult: null,
-    approvals: [],
-    warnings: [],
-  };
+  initialState = { lastRunAt: null, lastResult: null, approvals: [], warnings: [] };
 
   async onStart() {
     const cronSchedules = await this.listSchedules({ type: 'cron' });
-    const exists = cronSchedules.some(
-      (schedule) => schedule.callback === 'dailyRun' && schedule.cron === DAILY_CRON,
-    );
+    const exists = cronSchedules.some((schedule) => schedule.callback === 'dailyRun' && schedule.cron === DAILY_CRON);
     if (!exists) await this.schedule(DAILY_CRON, 'dailyRun', { source: 'scheduler' });
   }
 
@@ -49,9 +39,7 @@ export class GrowthRuntime extends Agent {
       warnings.push('BOOKING_WORKER_URL is not configured');
       return { openNights: 0, source: 'missing' };
     }
-    const response = await fetch(this.env.BOOKING_WORKER_URL, {
-      headers: { Accept: 'application/json' },
-    });
+    const response = await fetch(this.env.BOOKING_WORKER_URL, { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error(`Booking worker HTTP ${response.status}`);
     return availabilitySignals(await response.json(), { horizonDays: 30 });
   }
@@ -61,62 +49,29 @@ export class GrowthRuntime extends Agent {
       warnings.push('WINDIS_DATA_URL not configured; reviewed repository seed is used');
       return windisSignals({ partners: WINDIS_PARTNER_SEED, kpis: WINDIS_KPI_SEED });
     }
-    const response = await fetch(this.env.WINDIS_DATA_URL, {
-      headers: { Accept: 'application/json' },
-    });
+    const response = await fetch(this.env.WINDIS_DATA_URL, { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error(`Windis data HTTP ${response.status}`);
-    const payload = await response.json();
-    return windisSignals(payload);
+    return windisSignals(await response.json());
   }
 
   async dailyRun(payload = { source: 'manual' }) {
     const warnings = [];
     const planner = new DailyPlanner();
-
     let zuhauseSignals;
-    try {
-      zuhauseSignals = await this.loadZuhauseSignals(warnings);
-    } catch (error) {
-      warnings.push(`Zuhause data error: ${error?.message || String(error)}`);
-      zuhauseSignals = { openNights: 0, source: 'error' };
-    }
-
+    try { zuhauseSignals = await this.loadZuhauseSignals(warnings); }
+    catch (error) { warnings.push(`Zuhause data error: ${error?.message || String(error)}`); zuhauseSignals = { openNights: 0, source: 'error' }; }
     let windisSignalsValue;
-    try {
-      windisSignalsValue = await this.loadWindisSignals(warnings);
-    } catch (error) {
-      warnings.push(`Windis data error: ${error?.message || String(error)}`);
-      windisSignalsValue = windisSignals({ partners: WINDIS_PARTNER_SEED, kpis: WINDIS_KPI_SEED });
-    }
-
-    const result = planner.buildDay({
-      zuhauseSignals,
-      windisSignals: windisSignalsValue,
-    });
-
-    const nextState = {
-      ...this.state,
-      lastRunAt: new Date().toISOString(),
-      lastResult: {
-        source: payload?.source || 'unknown',
-        zuhauseSignals,
-        windisSignals: windisSignalsValue,
-        execution: result.execution,
-      },
-      approvals: mergeApprovals(this.state.approvals || [], result.approvalsPending || []),
-      warnings,
-    };
+    try { windisSignalsValue = await this.loadWindisSignals(warnings); }
+    catch (error) { warnings.push(`Windis data error: ${error?.message || String(error)}`); windisSignalsValue = windisSignals({ partners: WINDIS_PARTNER_SEED, kpis: WINDIS_KPI_SEED }); }
+    const result = planner.buildDay({ zuhauseSignals, windisSignals: windisSignalsValue });
+    const nextState = { ...this.state, lastRunAt: new Date().toISOString(), lastResult: { source: payload?.source || 'unknown', zuhauseSignals, windisSignals: windisSignalsValue, execution: result.execution }, approvals: mergeApprovals(this.state.approvals || [], result.approvalsPending || []), warnings };
     this.setState(nextState);
     return nextState.lastResult;
   }
 
   decideApproval(id, decision, note = '') {
     if (!['approved', 'rejected'].includes(decision)) throw new Error('Invalid decision');
-    const approvals = (this.state.approvals || []).map((item) =>
-      item.id === id
-        ? { ...item, status: decision, note, decidedAt: new Date().toISOString() }
-        : item,
-    );
+    const approvals = (this.state.approvals || []).map((item) => item.id === id ? { ...item, status: decision, note, decidedAt: new Date().toISOString() } : item);
     this.setState({ ...this.state, approvals });
     return approvals.find((item) => item.id === id) || null;
   }
@@ -124,29 +79,11 @@ export class GrowthRuntime extends Agent {
   async onRequest(request) {
     const url = new URL(request.url);
     if (!authorized(request, this.env)) return json({ error: 'unauthorized' }, 401);
-
-    if (request.method === 'GET' && url.pathname.endsWith('/status')) {
-      return json({
-        lastRunAt: this.state.lastRunAt,
-        lastResult: this.state.lastResult,
-        warnings: this.state.warnings,
-        approvals: (this.state.approvals || []).filter((item) => item.status === 'pending'),
-        schedule: DAILY_CRON,
-      });
-    }
-
-    if (request.method === 'POST' && url.pathname.endsWith('/run-now')) {
-      return json(await this.dailyRun({ source: 'manual' }));
-    }
-
+    if (request.method === 'GET' && url.pathname.endsWith('/status')) return json({ lastRunAt: this.state.lastRunAt, lastResult: this.state.lastResult, warnings: this.state.warnings, approvals: (this.state.approvals || []).filter((item) => item.status === 'pending'), schedule: DAILY_CRON });
+    if (request.method === 'POST' && url.pathname.endsWith('/run-now')) return json(await this.dailyRun({ source: 'manual' }));
     if (request.method === 'POST' && (url.pathname.endsWith('/approve') || url.pathname.endsWith('/reject'))) {
-      const body = await request.json();
-      const decision = url.pathname.endsWith('/approve') ? 'approved' : 'rejected';
-      const item = this.decideApproval(body.id, decision, body.note || '');
-      if (!item) return json({ error: 'approval_not_found' }, 404);
-      return json(item);
+      const body = await request.json(); const decision = url.pathname.endsWith('/approve') ? 'approved' : 'rejected'; const item = this.decideApproval(body.id, decision, body.note || ''); if (!item) return json({ error: 'approval_not_found' }, 404); return json(item);
     }
-
     return json({ error: 'not_found' }, 404);
   }
 }
@@ -154,8 +91,9 @@ export class GrowthRuntime extends Agent {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname === '/health') {
-      return json({ ok: true, service: 'zab-windis-growth-runtime' });
+    if (url.pathname === '/health') return json({ ok: true, service: 'zab-windis-growth-runtime' });
+    if (url.pathname === '/approval-ui') {
+      return new Response('Approval UI is served from public/index.html in local/static hosting workflows.', { status: 501, headers: { 'Cache-Control': 'no-store' } });
     }
     return (await routeAgentRequest(request, env)) || json({ error: 'not_found' }, 404);
   },
