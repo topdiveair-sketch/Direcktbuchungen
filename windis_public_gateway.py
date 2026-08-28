@@ -14,14 +14,14 @@ def _now() -> str:
 def growth_windis_planning_data():
     with db() as conn:
         partners = conn.execute(
-            "SELECT priority,partner,category,approach,next_step,status,target_date,updated_at FROM growth_windis_partners ORDER BY priority,target_date,partner"
+            "SELECT priority,partner,category,approach,next_step,status,target_date,email_verified,updated_at FROM growth_windis_partners ORDER BY priority,target_date,partner"
         ).fetchall()
         kpis = conn.execute(
             "SELECT metric,start_value,target_oct,target_dec,updated_at FROM growth_windis_kpis ORDER BY metric"
         ).fetchall()
     return jsonify({
         "ok": True,
-        "source": "railway-live-public-safe-v2",
+        "source": "railway-live-public-safe-v3",
         "updatedAt": _now(),
         "partners": [{
             "priority": r["priority"],
@@ -31,6 +31,7 @@ def growth_windis_planning_data():
             "nextStep": r["next_step"],
             "status": r["status"],
             "targetDate": r["target_date"],
+            "recipientVerified": bool(r["email_verified"]),
             "updatedAt": r["updated_at"],
         } for r in partners],
         "kpis": [{
