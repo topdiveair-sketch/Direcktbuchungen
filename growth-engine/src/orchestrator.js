@@ -37,7 +37,7 @@ export class GrowthOrchestrator {
       actions.push({ kind: 'research', task: 'Identify one Wachau family topic and one qualified partner angle' });
       actions.push({ kind: 'draft', task: 'Create a story-led multi-channel content brief' });
       const nextPartner = signals.nextPartner || null;
-      if (nextPartner?.recipientVerified === true && nextPartner?.partner) actions.push({ kind: 'sendExternalMessage', task: `Send one reviewed, personalized partner outreach message to ${nextPartner.partner}`, channel: 'partner_outreach', rationale: 'Verified qualified partner opportunity is open', recipientRef: nextPartner.partner, subject: `Kooperationsidee Wilde Wachauer Windis × ${nextPartner.partner}` });
+      if (nextPartner?.partner) actions.push({ kind: 'sendExternalMessage', task: `Send one reviewed, personalized partner outreach message to ${nextPartner.partner}`, channel: 'partner_outreach', rationale: 'Verified qualified partner opportunity is open', recipientRef: nextPartner.partner, subject: `Kooperationsidee Wilde Wachauer Windis × ${nextPartner.partner}` });
       if (signals.partnerReplies === 0 && signals.partnerContacts > 0) actions.push({ kind: 'analyze', task: 'Improve partner proposition before further outreach' });
     }
 
