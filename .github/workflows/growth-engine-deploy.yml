@@ -25,6 +25,10 @@ jobs:
         with:
           node-version: 24
 
+      - name: Test core growth engine
+        working-directory: growth-engine
+        run: npm test
+
       - name: Validate deployment secrets
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
