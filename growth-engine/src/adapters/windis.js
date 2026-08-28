@@ -2,7 +2,7 @@ export function windisSignals({ partners = [], kpis = [] } = {}) {
   const open = partners.filter((row) => row.status === 'Offen');
   const priorityA = open.filter((row) => row.priority === 'A');
   const overdue = open.filter((row) => row.targetDate && new Date(`${row.targetDate}T23:59:59Z`) < new Date());
-  const qualifiedRecipients = open.filter((row) => row.email && row.emailVerified === true);
+  const qualifiedRecipients = open.filter((row) => row.recipientVerified === true);
   const nextPartner = [...qualifiedRecipients].sort((a,b) => String(a.priority).localeCompare(String(b.priority)) || String(a.targetDate || '').localeCompare(String(b.targetDate || '')))[0] || null;
 
   return {
