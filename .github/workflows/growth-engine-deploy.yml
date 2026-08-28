@@ -12,6 +12,7 @@ env:
   BOOKING_WORKER_URL: https://zab-booking-live.topdiveair.workers.dev
   RUNTIME_BASE_URL: https://zab-windis-growth-runtime.topdiveair.workers.dev
   GROWTH_ACTION_URL: https://web-production-f05a4.up.railway.app/growth/action
+  WINDIS_DATA_URL: https://web-production-f05a4.up.railway.app/growth/windis-planning-data
 
 jobs:
   deploy:
@@ -67,7 +68,7 @@ jobs:
         env:
           BOOKING_WORKER_URL: ${{ env.BOOKING_WORKER_URL }}
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
-          WINDIS_DATA_URL: ${{ secrets.WINDIS_DATA_URL }}
+          WINDIS_DATA_URL: ${{ env.WINDIS_DATA_URL }}
         working-directory: growth-engine/runtime
         run: npm run preflight
 
@@ -76,7 +77,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         working-directory: growth-engine/runtime
-        run: npx wrangler deploy --var BOOKING_WORKER_URL:$BOOKING_WORKER_URL --var WINDIS_DATA_URL:${{ secrets.WINDIS_DATA_URL }} --var PUBLISH_WEBHOOK_URL:$GROWTH_ACTION_URL --var OUTREACH_WEBHOOK_URL:$GROWTH_ACTION_URL
+        run: npx wrangler deploy --var BOOKING_WORKER_URL:$BOOKING_WORKER_URL --var WINDIS_DATA_URL:$WINDIS_DATA_URL --var PUBLISH_WEBHOOK_URL:$GROWTH_ACTION_URL --var OUTREACH_WEBHOOK_URL:$GROWTH_ACTION_URL
 
       - name: Install Growth Runtime secrets
         env:
