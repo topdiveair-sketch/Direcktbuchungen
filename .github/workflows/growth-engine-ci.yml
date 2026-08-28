@@ -4,11 +4,13 @@ on:
     paths:
       - 'growth-engine/**'
       - '.github/workflows/growth-engine-ci.yml'
+      - '.github/workflows/growth-engine-deploy.yml'
   push:
     branches: [growth-engine-v1]
     paths:
       - 'growth-engine/**'
       - '.github/workflows/growth-engine-ci.yml'
+      - '.github/workflows/growth-engine-deploy.yml'
 jobs:
   test:
     runs-on: ubuntu-latest

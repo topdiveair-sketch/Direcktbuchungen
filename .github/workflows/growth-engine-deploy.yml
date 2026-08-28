@@ -95,3 +95,12 @@ jobs:
           curl --fail-with-body --retry 5 --retry-delay 3 -X POST \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             "$RUNTIME_BASE_URL/agents/growth-runtime/main/run-now"
+
+      - name: Verify notification outbox
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -o growth-status.json "$RUNTIME_BASE_URL/agents/growth-runtime/main/status"
+          node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('growth-status.json','utf8'));if(!j.lastRunAt||!Array.isArray(j.notifications)||j.notifications.length<1){console.error('Notification outbox verification failed');process.exit(1)};console.log('Growth notification outbox OK, pending:',j.notifications.length)"
