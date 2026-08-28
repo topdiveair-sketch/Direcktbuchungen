@@ -22,7 +22,7 @@ export async function executeApprovedAction(execution, approval, env = {}) {
   if (!webhook) return { ...execution, status: 'blocked', blockedReason: 'channel_not_configured', updatedAt: now() };
   const message = String(approval.note || execution.reviewedContent || '').trim();
   if (!message) return { ...execution, status: 'blocked', blockedReason: 'reviewed_content_required', updatedAt: now() };
-  if (approval.kind === 'sendExternalMessage' && !approval.recipient) return { ...execution, status: 'blocked', blockedReason: 'verified_recipient_required', updatedAt: now() };
+  if (approval.kind === 'sendExternalMessage' && !approval.recipient && !approval.recipientRef) return { ...execution, status: 'blocked', blockedReason: 'verified_recipient_required', updatedAt: now() };
   try {
     const response = await fetch(webhook, {
       method: 'POST',
@@ -37,6 +37,7 @@ export async function executeApprovedAction(execution, approval, env = {}) {
         approvedAt: approval.decidedAt || null,
         message,
         recipient: approval.recipient || null,
+        recipientRef: approval.recipientRef || null,
         subject: approval.subject || null,
       }),
     });
