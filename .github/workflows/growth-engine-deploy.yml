@@ -53,8 +53,9 @@ jobs:
 
       - name: Verify Booking worker
         run: |
-          response="$(curl --fail-with-body --retry 5 --retry-delay 3 "$BOOKING_WORKER_URL")"
-          printf '%s' "$response" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);if(j.ok!==true||!Array.isArray(j.events))process.exit(1);console.log('Booking worker OK, events:',j.events.length)})"
+          curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors \
+            -o booking-worker.json "$BOOKING_WORKER_URL"
+          node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('booking-worker.json','utf8'));if(j.ok!==true||!Array.isArray(j.events))process.exit(1);console.log('Booking worker OK, events:',j.events.length)"
 
       - name: Install runtime dependencies
         working-directory: growth-engine/runtime
