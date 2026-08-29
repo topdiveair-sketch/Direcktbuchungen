@@ -52,11 +52,13 @@ jobs:
         run: |
           set -euo pipefail
           verify_url="${GROWTH_ACTION_URL}/verify?recipientRef=$(node -p "encodeURIComponent(process.env.WINDIS_RECIPIENT_REF)")"
-          curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors \
+          http_code=$(curl --silent --show-error --retry 2 --retry-delay 2 --retry-all-errors \
             -H "Authorization: Bearer $GROWTH_WEBHOOK_TOKEN" \
-            -o growth-gateway-verify.json "$verify_url"
-          cat growth-gateway-verify.json
-          node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('growth-gateway-verify.json','utf8'));if(j.ok!==true||j.smtpConfigured!==true||j.smtpAuthenticated!==true||j.recipientVerified!==true){console.error(j);process.exit(1)}"
+            -o growth-gateway-verify.json -w '%{http_code}' "$verify_url" || true)
+          echo "Growth gateway verify HTTP $http_code"
+          cat growth-gateway-verify.json || true
+          node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('growth-gateway-verify.json','utf8'));if(j.ok!==true||j.smtpConfigured!==true||j.smtpAuthenticated!==true||j.recipientVerified!==true){console.error('Growth gateway verify failed:',j);process.exit(1)}"
+          test "$http_code" = "200"
 
       - name: Deploy Booking availability worker
         env:
