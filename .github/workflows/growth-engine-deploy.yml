@@ -13,6 +13,7 @@ env:
   RUNTIME_BASE_URL: https://zab-windis-growth-runtime.topdiveair.workers.dev
   GROWTH_ACTION_URL: https://web-production-f05a4.up.railway.app/growth/action
   WINDIS_DATA_URL: https://web-production-f05a4.up.railway.app/growth/windis-planning-data
+  WINDIS_RECIPIENT_REF: Donau Niederoesterreich Tourismus GmbH / Wachau-Nibelungengau-Kremstal
 
 jobs:
   deploy:
@@ -35,14 +36,27 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           BOOKING_ICAL_URL: ${{ secrets.BOOKING_ICAL_URL }}
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
-          CHANNEL_WEBHOOK_TOKEN: ${{ secrets.CHANNEL_WEBHOOK_TOKEN }}
+          GROWTH_WEBHOOK_TOKEN: ${{ secrets.GROWTH_WEBHOOK_TOKEN }}
         run: |
           test -n "$CLOUDFLARE_API_TOKEN" || (echo 'Missing CLOUDFLARE_API_TOKEN' && exit 1)
           test -n "$CLOUDFLARE_ACCOUNT_ID" || (echo 'Missing CLOUDFLARE_ACCOUNT_ID' && exit 1)
           test -n "$BOOKING_ICAL_URL" || (echo 'Missing BOOKING_ICAL_URL' && exit 1)
           test -n "$ADMIN_TOKEN" || (echo 'Missing ADMIN_TOKEN' && exit 1)
           test ${#ADMIN_TOKEN} -ge 24 || (echo 'ADMIN_TOKEN must be at least 24 characters' && exit 1)
-          if [ -n "$CHANNEL_WEBHOOK_TOKEN" ]; then test ${#CHANNEL_WEBHOOK_TOKEN} -ge 24 || (echo 'CHANNEL_WEBHOOK_TOKEN must be at least 24 characters' && exit 1); fi
+          test -n "$GROWTH_WEBHOOK_TOKEN" || (echo 'Missing GROWTH_WEBHOOK_TOKEN' && exit 1)
+          test ${#GROWTH_WEBHOOK_TOKEN} -ge 24 || (echo 'GROWTH_WEBHOOK_TOKEN must be at least 24 characters' && exit 1)
+
+      - name: Verify Railway Growth gateway without sending
+        env:
+          GROWTH_WEBHOOK_TOKEN: ${{ secrets.GROWTH_WEBHOOK_TOKEN }}
+        run: |
+          set -euo pipefail
+          verify_url="${GROWTH_ACTION_URL}/verify?recipientRef=$(node -p "encodeURIComponent(process.env.WINDIS_RECIPIENT_REF)")"
+          curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors \
+            -H "Authorization: Bearer $GROWTH_WEBHOOK_TOKEN" \
+            -o growth-gateway-verify.json "$verify_url"
+          cat growth-gateway-verify.json
+          node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('growth-gateway-verify.json','utf8'));if(j.ok!==true||j.smtpConfigured!==true||j.recipientVerified!==true){console.error(j);process.exit(1)}"
 
       - name: Deploy Booking availability worker
         env:
@@ -88,11 +102,11 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
-          CHANNEL_WEBHOOK_TOKEN: ${{ secrets.CHANNEL_WEBHOOK_TOKEN }}
+          GROWTH_WEBHOOK_TOKEN: ${{ secrets.GROWTH_WEBHOOK_TOKEN }}
         working-directory: growth-engine/runtime
         run: |
           printf '%s' "$ADMIN_TOKEN" | npx wrangler secret put ADMIN_TOKEN
-          if [ -n "$CHANNEL_WEBHOOK_TOKEN" ]; then printf '%s' "$CHANNEL_WEBHOOK_TOKEN" | npx wrangler secret put CHANNEL_WEBHOOK_TOKEN; fi
+          printf '%s' "$GROWTH_WEBHOOK_TOKEN" | npx wrangler secret put CHANNEL_WEBHOOK_TOKEN
 
       - name: Health check
         working-directory: growth-engine/runtime
