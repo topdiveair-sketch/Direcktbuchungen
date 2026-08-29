@@ -1,9 +1,4 @@
-"""Authenticated Growth Cockpit execution gateway for Railway.
-
-Approved publishing actions become public campaign pages. Approved outreach actions
-are sent through the existing Zuhause-am-Bach SMTP configuration. External actions
-are idempotent by approval id and require an explicit reviewed message.
-"""
+"""Authenticated Growth Cockpit execution gateway for Railway."""
 
 from __future__ import annotations
 
@@ -73,23 +68,71 @@ def _smtp_ready() -> bool:
     return bool(cfg["host"] and cfg["user"] and cfg["password"])
 
 
+def _smtp_error_code(exc: Exception) -> str:
+    if isinstance(exc, smtplib.SMTPAuthenticationError):
+        return "smtp_auth_failed"
+    if isinstance(exc, smtplib.SMTPRecipientsRefused):
+        return "smtp_recipient_refused"
+    if isinstance(exc, smtplib.SMTPSenderRefused):
+        return "smtp_sender_refused"
+    if isinstance(exc, smtplib.SMTPConnectError):
+        return "smtp_connect_failed"
+    if isinstance(exc, smtplib.SMTPNotSupportedError):
+        return "smtp_tls_not_supported"
+    if isinstance(exc, TimeoutError):
+        return "smtp_timeout"
+    return f"smtp_error:{type(exc).__name__}"
+
+
+def _smtp_login_check() -> tuple[bool, str]:
+    cfg = _smtp_config()
+    if not _smtp_ready():
+        return False, "smtp_not_configured"
+    try:
+        port = int(cfg["port"] or 587)
+        if port == 465:
+            with smtplib.SMTP_SSL(cfg["host"], port, timeout=20) as server:
+                server.login(cfg["user"], cfg["password"])
+        else:
+            with smtplib.SMTP(cfg["host"], port, timeout=20) as server:
+                server.ehlo()
+                if server.has_extn("starttls"):
+                    server.starttls()
+                    server.ehlo()
+                server.login(cfg["user"], cfg["password"])
+        return True, "smtp_authenticated"
+    except Exception as exc:
+        return False, _smtp_error_code(exc)
+
+
 def _send_mail(recipient: str, subject: str, body: str) -> tuple[bool, str]:
     cfg = _smtp_config()
-    if not cfg["host"] or not cfg["user"] or not cfg["password"]:
+    if not _smtp_ready():
         return False, "smtp_not_configured"
+
     msg = EmailMessage()
     msg["From"] = cfg["sender"] or cfg["user"]
     msg["To"] = recipient
     msg["Subject"] = subject
     msg.set_content(body)
+
     try:
-        with smtplib.SMTP(cfg["host"], int(cfg["port"] or 587), timeout=20) as server:
-            server.starttls()
-            server.login(cfg["user"], cfg["password"])
-            server.send_message(msg)
+        port = int(cfg["port"] or 587)
+        if port == 465:
+            with smtplib.SMTP_SSL(cfg["host"], port, timeout=20) as server:
+                server.login(cfg["user"], cfg["password"])
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(cfg["host"], port, timeout=20) as server:
+                server.ehlo()
+                if server.has_extn("starttls"):
+                    server.starttls()
+                    server.ehlo()
+                server.login(cfg["user"], cfg["password"])
+                server.send_message(msg)
         return True, "sent"
     except Exception as exc:
-        return False, f"smtp_error:{type(exc).__name__}"
+        return False, _smtp_error_code(exc)
 
 
 def _init_growth_tables() -> None:
@@ -110,13 +153,13 @@ def _init_growth_tables() -> None:
 
 _init_growth_tables()
 
-# Register Windis tables and both the legacy mutable route and the new public-safe route.
 import windis_data_gateway  # noqa: E402,F401
 import windis_public_gateway  # noqa: E402,F401
 
 
 @app.get("/health/growth-channels")
 def growth_channel_health():
+    smtp_ok, smtp_detail = _smtp_login_check()
     with db() as conn:
         verified = conn.execute(
             "SELECT COUNT(*) AS n FROM growth_windis_partners WHERE email_verified=1 AND COALESCE(email,'')<>''"
@@ -129,6 +172,8 @@ def growth_channel_health():
         "ok": True,
         "gateway_token_configured": bool(_gateway_token()),
         "smtp_configured": _smtp_ready(),
+        "smtp_authenticated": smtp_ok,
+        "smtp_status": smtp_detail,
         "verified_recipient_count": int(verified or 0),
         "outreach_log_count": int(outreach_count or 0),
         "last_outreach": dict(last_outreach) if last_outreach else None,
@@ -140,18 +185,22 @@ def growth_channel_health():
 
 @app.get("/growth/action/verify")
 def growth_action_verify():
-    """Authenticated, side-effect-free verification for deploy smoke tests."""
     if not _gateway_token():
         return jsonify({"error": "growth_webhook_token_not_configured"}), 503
     if not _authorized():
         return jsonify({"error": "unauthorized"}), 401
+
     recipient_ref = str(request.args.get("recipientRef") or "").strip()
     recipient = _resolve_verified_recipient(recipient_ref) if recipient_ref else ""
-    return jsonify({
-        "ok": True,
+    smtp_ok, smtp_detail = _smtp_login_check()
+    body = {
+        "ok": smtp_ok and bool(recipient and _valid_email(recipient)),
         "smtpConfigured": _smtp_ready(),
+        "smtpAuthenticated": smtp_ok,
+        "smtpStatus": smtp_detail,
         "recipientVerified": bool(recipient and _valid_email(recipient)),
-    }), 200
+    }
+    return jsonify(body), 200 if body["ok"] else 503
 
 
 @app.post("/growth/action")
@@ -160,6 +209,7 @@ def growth_action():
         return jsonify({"error": "growth_webhook_token_not_configured"}), 503
     if not _authorized():
         return jsonify({"error": "unauthorized"}), 401
+
     payload = request.get_json(silent=True) or {}
     approval_id = str(payload.get("approvalId") or "").strip()
     kind = str(payload.get("kind") or "").strip()
@@ -167,39 +217,61 @@ def growth_action():
     message = str(payload.get("message") or "").strip()
     task = str(payload.get("task") or "").strip()
     channel = str(payload.get("channel") or "").strip()
+
     if not approval_id or kind not in {"publish", "sendExternalMessage"}:
         return jsonify({"error": "invalid_action"}), 400
     if not message:
         return jsonify({"error": "reviewed_content_required"}), 422
     if len(message) > 20000:
         return jsonify({"error": "message_too_long"}), 422
+
     if kind == "publish":
         with db() as conn:
-            existing = conn.execute("SELECT id FROM growth_publications WHERE approval_id=?", (approval_id,)).fetchone()
+            existing = conn.execute(
+                "SELECT id FROM growth_publications WHERE approval_id=?", (approval_id,)
+            ).fetchone()
             if existing:
                 public_url = request.host_url.rstrip("/") + f"/growth/publications/{existing['id']}"
                 return jsonify({"ok": True, "idempotent": True, "publicUrl": public_url}), 200
             title = task or "Aktuelle Empfehlung"
-            cur = conn.execute("INSERT INTO growth_publications(approval_id,brand,title,body,channel,created_at) VALUES(?,?,?,?,?,?)", (approval_id, brand or "unknown", title[:240], message, channel, _now()))
+            cur = conn.execute(
+                "INSERT INTO growth_publications(approval_id,brand,title,body,channel,created_at) VALUES(?,?,?,?,?,?)",
+                (approval_id, brand or "unknown", title[:240], message, channel, _now()),
+            )
             publication_id = cur.lastrowid
-        return jsonify({"ok": True, "published": True, "publicUrl": request.host_url.rstrip("/") + f"/growth/publications/{publication_id}"}), 201
+        return jsonify({
+            "ok": True,
+            "published": True,
+            "publicUrl": request.host_url.rstrip("/") + f"/growth/publications/{publication_id}",
+        }), 201
+
     recipient = str(payload.get("recipient") or "").strip()
     recipient_ref = str(payload.get("recipientRef") or "").strip()
     if not recipient and recipient_ref:
         recipient = _resolve_verified_recipient(recipient_ref)
     subject = str(payload.get("subject") or "Kooperationsanfrage Wilde Wachauer Windis").strip()[:240]
+
     if not _valid_email(recipient):
         return jsonify({"error": "verified_recipient_required"}), 422
+
     with db() as conn:
-        existing = conn.execute("SELECT status,detail FROM growth_outreach_log WHERE approval_id=?", (approval_id,)).fetchone()
+        existing = conn.execute(
+            "SELECT status,detail FROM growth_outreach_log WHERE approval_id=?", (approval_id,)
+        ).fetchone()
         if existing and existing["status"] == "sent":
             return jsonify({"ok": True, "idempotent": True, "sent": True}), 200
+
     ok, detail = _send_mail(recipient, subject, message)
     with db() as conn:
-        conn.execute("""INSERT INTO growth_outreach_log(approval_id,recipient,subject,status,detail,created_at)
-            VALUES(?,?,?,?,?,?) ON CONFLICT(approval_id) DO UPDATE SET recipient=excluded.recipient,
-            subject=excluded.subject,status=excluded.status,detail=excluded.detail,created_at=excluded.created_at""",
-            (approval_id, recipient, subject, "sent" if ok else "failed", detail, _now()))
+        conn.execute(
+            """INSERT INTO growth_outreach_log(approval_id,recipient,subject,status,detail,created_at)
+               VALUES(?,?,?,?,?,?)
+               ON CONFLICT(approval_id) DO UPDATE SET recipient=excluded.recipient,
+               subject=excluded.subject,status=excluded.status,detail=excluded.detail,
+               created_at=excluded.created_at""",
+            (approval_id, recipient, subject, "sent" if ok else "failed", detail, _now()),
+        )
+
     if not ok:
         return jsonify({"error": detail}), 502
     return jsonify({"ok": True, "sent": True, "recipientResolved": True}), 200
@@ -208,19 +280,28 @@ def growth_action():
 @app.get("/growth/publications")
 def growth_publications():
     with db() as conn:
-        rows = conn.execute("SELECT id,brand,title,body,channel,created_at FROM growth_publications ORDER BY id DESC LIMIT 50").fetchall()
+        rows = conn.execute(
+            "SELECT id,brand,title,body,channel,created_at FROM growth_publications ORDER BY id DESC LIMIT 50"
+        ).fetchall()
     return jsonify({"ok": True, "publications": [dict(row) for row in rows]}), 200
 
 
 @app.get("/growth/publications/<int:publication_id>")
 def growth_publication_page(publication_id: int):
     with db() as conn:
-        row = conn.execute("SELECT id,brand,title,body,channel,created_at FROM growth_publications WHERE id=?", (publication_id,)).fetchone()
+        row = conn.execute(
+            "SELECT id,brand,title,body,channel,created_at FROM growth_publications WHERE id=?",
+            (publication_id,),
+        ).fetchone()
         settings = {r["key"]: r["value"] for r in conn.execute("SELECT key,value FROM site_settings")}
     if not row:
         return Response("Not found", status=404, content_type="text/plain; charset=utf-8")
+
     booking_url = settings.get("public_base_url", "").strip()
-    cta = f'<p><a href="{html.escape(booking_url, quote=True)}" style="display:inline-block;padding:12px 18px;background:#174b2c;color:#fff;text-decoration:none;border-radius:10px;font-weight:700">Direkt buchen</a></p>' if row["brand"] == "zuhause_am_bach" and booking_url else ""
+    cta = (
+        f'<p><a href="{html.escape(booking_url, quote=True)}" style="display:inline-block;padding:12px 18px;background:#174b2c;color:#fff;text-decoration:none;border-radius:10px;font-weight:700">Direkt buchen</a></p>'
+        if row["brand"] == "zuhause_am_bach" and booking_url else ""
+    )
     body_html = "<br>".join(html.escape(row["body"]).splitlines())
     page = f"""<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>{html.escape(row['title'])}</title><style>body{{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f4f6f4;color:#132319;margin:0}}main{{max-width:760px;margin:6vh auto;padding:30px;background:#fff;border:1px solid #dde4df;border-radius:18px}}h1{{line-height:1.15}}.meta{{color:#6b776f;font-size:14px}}.copy{{font-size:18px;line-height:1.65;margin:26px 0}}</style></head><body><main><div class=\"meta\">{html.escape(row['brand'])} · {html.escape(row['created_at'])}</div><h1>{html.escape(row['title'])}</h1><div class=\"copy\">{body_html}</div>{cta}</main></body></html>"""
     return Response(page, content_type="text/html; charset=utf-8")
