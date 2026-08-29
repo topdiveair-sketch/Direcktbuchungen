@@ -22,10 +22,11 @@ from payment_hold import ALERT_EMAIL, init_payment_hold
 from paypal_checkout import init_paypal_checkout
 from booking_notifications import init_booking_notifications
 from provider_monitor import init_provider_monitor
+from provider_radar import init_provider_radar
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-29-provider-monitor-v1"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-29-provider-radar-v2"
 
 # PayPal callbacks must use the currently active Railway public domain. Railway's
 # own RAILWAY_PUBLIC_DOMAIN wins over a stale manually configured callback URL.
@@ -77,6 +78,7 @@ init_paypal_checkout(
 )
 init_booking_notifications(app, db)
 init_provider_monitor(app, db, require_admin)
+init_provider_radar(app, db, require_admin)
 
 
 # The notification modules historically retried email delivery in global
@@ -174,6 +176,7 @@ def railway_deploy_health():
         "paypal_checkout": bool(app.extensions.get("zab_paypal_checkout_enabled")),
         "paid_guest_email": bool(app.extensions.get("zab_send_paid_guest_confirmation")),
         "provider_monitor": bool(app.extensions.get("zab_provider_monitor_initialized")),
+        "provider_radar": bool(app.extensions.get("zab_provider_radar_initialized")),
         "paypal_checkout_rev": PAYPAL_CHECKOUT_DEPLOY_REV,
         "checkout_base": os.environ.get("PUBLIC_CHECKOUT_BASE_URL", ""),
     }, 200
