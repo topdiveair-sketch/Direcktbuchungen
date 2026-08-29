@@ -26,7 +26,7 @@ from provider_radar import init_provider_radar
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-29-provider-radar-v2"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-29-provider-radar-final-v3"
 
 # PayPal callbacks must use the currently active Railway public domain. Railway's
 # own RAILWAY_PUBLIC_DOMAIN wins over a stale manually configured callback URL.
