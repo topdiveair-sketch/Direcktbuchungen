@@ -81,28 +81,48 @@ def _smtp_error_code(exc: Exception) -> str:
         return "smtp_tls_not_supported"
     if isinstance(exc, TimeoutError):
         return "smtp_timeout"
+    if isinstance(exc, OSError):
+        errno = getattr(exc, "errno", None)
+        return f"smtp_os_error:{errno if errno is not None else 'unknown'}"
     return f"smtp_error:{type(exc).__name__}"
+
+
+def _smtp_ports(cfg: dict[str, str]) -> list[int]:
+    configured = int(cfg.get("port") or 587)
+    ports = [configured]
+    if cfg.get("host", "").lower() in {"smtp.gmail.com", "smtp.googlemail.com"}:
+        for candidate in (587, 465):
+            if candidate not in ports:
+                ports.append(candidate)
+    return ports
+
+
+def _smtp_login_once(cfg: dict[str, str], port: int):
+    if port == 465:
+        server = smtplib.SMTP_SSL(cfg["host"], port, timeout=15)
+    else:
+        server = smtplib.SMTP(cfg["host"], port, timeout=15)
+        server.ehlo()
+        if server.has_extn("starttls"):
+            server.starttls()
+            server.ehlo()
+    server.login(cfg["user"], cfg["password"])
+    return server
 
 
 def _smtp_login_check() -> tuple[bool, str]:
     cfg = _smtp_config()
     if not _smtp_ready():
         return False, "smtp_not_configured"
-    try:
-        port = int(cfg["port"] or 587)
-        if port == 465:
-            with smtplib.SMTP_SSL(cfg["host"], port, timeout=20) as server:
-                server.login(cfg["user"], cfg["password"])
-        else:
-            with smtplib.SMTP(cfg["host"], port, timeout=20) as server:
-                server.ehlo()
-                if server.has_extn("starttls"):
-                    server.starttls()
-                    server.ehlo()
-                server.login(cfg["user"], cfg["password"])
-        return True, "smtp_authenticated"
-    except Exception as exc:
-        return False, _smtp_error_code(exc)
+    failures = []
+    for port in _smtp_ports(cfg):
+        try:
+            server = _smtp_login_once(cfg, port)
+            server.quit()
+            return True, f"smtp_authenticated:{port}"
+        except Exception as exc:
+            failures.append(f"{port}={_smtp_error_code(exc)}")
+    return False, "smtp_all_transports_failed:" + ",".join(failures)
 
 
 def _send_mail(recipient: str, subject: str, body: str) -> tuple[bool, str]:
@@ -116,23 +136,18 @@ def _send_mail(recipient: str, subject: str, body: str) -> tuple[bool, str]:
     msg["Subject"] = subject
     msg.set_content(body)
 
-    try:
-        port = int(cfg["port"] or 587)
-        if port == 465:
-            with smtplib.SMTP_SSL(cfg["host"], port, timeout=20) as server:
-                server.login(cfg["user"], cfg["password"])
+    failures = []
+    for port in _smtp_ports(cfg):
+        try:
+            server = _smtp_login_once(cfg, port)
+            try:
                 server.send_message(msg)
-        else:
-            with smtplib.SMTP(cfg["host"], port, timeout=20) as server:
-                server.ehlo()
-                if server.has_extn("starttls"):
-                    server.starttls()
-                    server.ehlo()
-                server.login(cfg["user"], cfg["password"])
-                server.send_message(msg)
-        return True, "sent"
-    except Exception as exc:
-        return False, _smtp_error_code(exc)
+            finally:
+                server.quit()
+            return True, f"sent:{port}"
+        except Exception as exc:
+            failures.append(f"{port}={_smtp_error_code(exc)}")
+    return False, "smtp_all_transports_failed:" + ",".join(failures)
 
 
 def _init_growth_tables() -> None:
@@ -274,7 +289,7 @@ def growth_action():
 
     if not ok:
         return jsonify({"error": detail}), 502
-    return jsonify({"ok": True, "sent": True, "recipientResolved": True}), 200
+    return jsonify({"ok": True, "sent": True, "recipientResolved": True, "transport": detail}), 200
 
 
 @app.get("/growth/publications")
