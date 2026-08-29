@@ -4,15 +4,18 @@ from __future__ import annotations
 
 import hmac
 import html
+import json
 import os
-import smtplib
 from datetime import datetime
-from email.message import EmailMessage
 from email.utils import parseaddr
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from flask import Response, jsonify, request
 
 from railway_app import app, db
+
+RESEND_API_BASE = "https://api.resend.com"
 
 
 def _now() -> str:
@@ -52,102 +55,98 @@ def _resolve_verified_recipient(recipient_ref: str) -> str:
     return str(row["email"] or "").strip() if row else ""
 
 
-def _smtp_config() -> dict[str, str]:
-    cfg = _settings()
-    return {
-        "host": os.environ.get("SMTP_HOST", "").strip() or cfg.get("smtp_host", "").strip(),
-        "port": os.environ.get("SMTP_PORT", "").strip() or cfg.get("smtp_port", "587").strip(),
-        "user": os.environ.get("SMTP_USER", "").strip() or cfg.get("smtp_user", "").strip(),
-        "password": os.environ.get("SMTP_PASSWORD", "").strip() or cfg.get("smtp_password", "").strip(),
-        "sender": os.environ.get("SMTP_SENDER", "").strip() or cfg.get("smtp_sender", "").strip(),
+def _resend_key() -> str:
+    return os.environ.get("RESEND_API_KEY", "").strip()
+
+
+def _resend_request(method: str, path: str, payload: dict | None = None, idempotency_key: str = "") -> tuple[int, dict]:
+    key = _resend_key()
+    if not key:
+        return 0, {"error": "resend_api_key_not_configured"}
+    headers = {
+        "Authorization": f"Bearer {key}",
+        "Accept": "application/json",
     }
-
-
-def _smtp_ready() -> bool:
-    cfg = _smtp_config()
-    return bool(cfg["host"] and cfg["user"] and cfg["password"])
-
-
-def _smtp_error_code(exc: Exception) -> str:
-    if isinstance(exc, smtplib.SMTPAuthenticationError):
-        return "smtp_auth_failed"
-    if isinstance(exc, smtplib.SMTPRecipientsRefused):
-        return "smtp_recipient_refused"
-    if isinstance(exc, smtplib.SMTPSenderRefused):
-        return "smtp_sender_refused"
-    if isinstance(exc, smtplib.SMTPConnectError):
-        return "smtp_connect_failed"
-    if isinstance(exc, smtplib.SMTPNotSupportedError):
-        return "smtp_tls_not_supported"
-    if isinstance(exc, TimeoutError):
-        return "smtp_timeout"
-    if isinstance(exc, OSError):
-        errno = getattr(exc, "errno", None)
-        return f"smtp_os_error:{errno if errno is not None else 'unknown'}"
-    return f"smtp_error:{type(exc).__name__}"
-
-
-def _smtp_ports(cfg: dict[str, str]) -> list[int]:
-    configured = int(cfg.get("port") or 587)
-    ports = [configured]
-    if cfg.get("host", "").lower() in {"smtp.gmail.com", "smtp.googlemail.com"}:
-        for candidate in (587, 465):
-            if candidate not in ports:
-                ports.append(candidate)
-    return ports
-
-
-def _smtp_login_once(cfg: dict[str, str], port: int):
-    if port == 465:
-        server = smtplib.SMTP_SSL(cfg["host"], port, timeout=15)
-    else:
-        server = smtplib.SMTP(cfg["host"], port, timeout=15)
-        server.ehlo()
-        if server.has_extn("starttls"):
-            server.starttls()
-            server.ehlo()
-    server.login(cfg["user"], cfg["password"])
-    return server
-
-
-def _smtp_login_check() -> tuple[bool, str]:
-    cfg = _smtp_config()
-    if not _smtp_ready():
-        return False, "smtp_not_configured"
-    failures = []
-    for port in _smtp_ports(cfg):
+    data = None
+    if payload is not None:
+        headers["Content-Type"] = "application/json"
+        data = json.dumps(payload).encode("utf-8")
+    if idempotency_key:
+        headers["Idempotency-Key"] = idempotency_key[:256]
+    req = Request(f"{RESEND_API_BASE}{path}", data=data, headers=headers, method=method)
+    try:
+        with urlopen(req, timeout=20) as response:
+            raw = response.read().decode("utf-8")
+            return int(response.status), json.loads(raw) if raw else {}
+    except HTTPError as exc:
+        raw = exc.read().decode("utf-8", errors="replace")
         try:
-            server = _smtp_login_once(cfg, port)
-            server.quit()
-            return True, f"smtp_authenticated:{port}"
-        except Exception as exc:
-            failures.append(f"{port}={_smtp_error_code(exc)}")
-    return False, "smtp_all_transports_failed:" + ",".join(failures)
+            body = json.loads(raw) if raw else {}
+        except json.JSONDecodeError:
+            body = {"message": raw[:500]}
+        return int(exc.code), body
+    except (URLError, TimeoutError, OSError) as exc:
+        return 0, {"error": f"resend_network_error:{type(exc).__name__}"}
 
 
-def _send_mail(recipient: str, subject: str, body: str) -> tuple[bool, str]:
-    cfg = _smtp_config()
-    if not _smtp_ready():
-        return False, "smtp_not_configured"
+def _verified_resend_domains() -> tuple[bool, list[str], str]:
+    status, body = _resend_request("GET", "/domains")
+    if status != 200:
+        detail = body.get("message") or body.get("error") or f"http_{status}"
+        return False, [], f"resend_api_unavailable:{detail}"
+    rows = body.get("data") if isinstance(body, dict) else None
+    if not isinstance(rows, list):
+        rows = []
+    domains = [
+        str(row.get("name") or "").strip()
+        for row in rows
+        if isinstance(row, dict) and str(row.get("status") or "").lower() == "verified" and row.get("name")
+    ]
+    if not domains:
+        return False, [], "resend_no_verified_domain"
+    return True, domains, "resend_ready"
 
-    msg = EmailMessage()
-    msg["From"] = cfg["sender"] or cfg["user"]
-    msg["To"] = recipient
-    msg["Subject"] = subject
-    msg.set_content(body)
 
-    failures = []
-    for port in _smtp_ports(cfg):
-        try:
-            server = _smtp_login_once(cfg, port)
-            try:
-                server.send_message(msg)
-            finally:
-                server.quit()
-            return True, f"sent:{port}"
-        except Exception as exc:
-            failures.append(f"{port}={_smtp_error_code(exc)}")
-    return False, "smtp_all_transports_failed:" + ",".join(failures)
+def _resend_sender() -> tuple[str, str]:
+    explicit = os.environ.get("RESEND_FROM", "").strip()
+    ok, domains, detail = _verified_resend_domains()
+    if not ok:
+        return "", detail
+    if explicit:
+        _, addr = parseaddr(explicit)
+        domain = addr.rsplit("@", 1)[-1].lower() if "@" in addr else ""
+        if domain not in {item.lower() for item in domains}:
+            return "", "resend_from_domain_not_verified"
+        return explicit, "resend_ready"
+    return f"Wilde Wachauer Windis <windis@{domains[0]}>", "resend_ready"
+
+
+def _resend_verify() -> tuple[bool, str, str]:
+    if not _resend_key():
+        return False, "", "resend_api_key_not_configured"
+    sender, detail = _resend_sender()
+    return bool(sender), sender, detail
+
+
+def _send_mail(recipient: str, subject: str, body: str, approval_id: str) -> tuple[bool, str]:
+    sender, detail = _resend_sender()
+    if not sender:
+        return False, detail
+    status, result = _resend_request(
+        "POST",
+        "/emails",
+        {
+            "from": sender,
+            "to": [recipient],
+            "subject": subject,
+            "text": body,
+        },
+        idempotency_key=f"growth-outreach-{approval_id}",
+    )
+    if status in {200, 201} and result.get("id"):
+        return True, f"resend_sent:{result['id']}"
+    error = result.get("message") or result.get("error") or f"http_{status}"
+    return False, f"resend_send_failed:{error}"
 
 
 def _init_growth_tables() -> None:
@@ -174,7 +173,7 @@ import windis_public_gateway  # noqa: E402,F401
 
 @app.get("/health/growth-channels")
 def growth_channel_health():
-    smtp_ok, smtp_detail = _smtp_login_check()
+    resend_ok, sender, resend_detail = _resend_verify()
     with db() as conn:
         verified = conn.execute(
             "SELECT COUNT(*) AS n FROM growth_windis_partners WHERE email_verified=1 AND COALESCE(email,'')<>''"
@@ -186,9 +185,11 @@ def growth_channel_health():
     return {
         "ok": True,
         "gateway_token_configured": bool(_gateway_token()),
-        "smtp_configured": _smtp_ready(),
-        "smtp_authenticated": smtp_ok,
-        "smtp_status": smtp_detail,
+        "mail_transport": "resend_https",
+        "resend_configured": bool(_resend_key()),
+        "resend_ready": resend_ok,
+        "resend_status": resend_detail,
+        "resend_sender_configured": bool(sender),
         "verified_recipient_count": int(verified or 0),
         "outreach_log_count": int(outreach_count or 0),
         "last_outreach": dict(last_outreach) if last_outreach else None,
@@ -207,13 +208,16 @@ def growth_action_verify():
 
     recipient_ref = str(request.args.get("recipientRef") or "").strip()
     recipient = _resolve_verified_recipient(recipient_ref) if recipient_ref else ""
-    smtp_ok, smtp_detail = _smtp_login_check()
+    resend_ok, sender, resend_detail = _resend_verify()
+    recipient_ok = bool(recipient and _valid_email(recipient))
     body = {
-        "ok": smtp_ok and bool(recipient and _valid_email(recipient)),
-        "smtpConfigured": _smtp_ready(),
-        "smtpAuthenticated": smtp_ok,
-        "smtpStatus": smtp_detail,
-        "recipientVerified": bool(recipient and _valid_email(recipient)),
+        "ok": resend_ok and recipient_ok,
+        "transport": "resend_https",
+        "resendConfigured": bool(_resend_key()),
+        "resendReady": resend_ok,
+        "resendStatus": resend_detail,
+        "senderConfigured": bool(sender),
+        "recipientVerified": recipient_ok,
     }
     return jsonify(body), 200 if body["ok"] else 503
 
@@ -276,7 +280,7 @@ def growth_action():
         if existing and existing["status"] == "sent":
             return jsonify({"ok": True, "idempotent": True, "sent": True}), 200
 
-    ok, detail = _send_mail(recipient, subject, message)
+    ok, detail = _send_mail(recipient, subject, message, approval_id)
     with db() as conn:
         conn.execute(
             """INSERT INTO growth_outreach_log(approval_id,recipient,subject,status,detail,created_at)
@@ -289,7 +293,7 @@ def growth_action():
 
     if not ok:
         return jsonify({"error": detail}), 502
-    return jsonify({"ok": True, "sent": True, "recipientResolved": True, "transport": detail}), 200
+    return jsonify({"ok": True, "sent": True, "recipientResolved": True, "transport": "resend_https"}), 200
 
 
 @app.get("/growth/publications")
