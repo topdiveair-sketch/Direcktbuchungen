@@ -1,22 +1,162 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Anbieter-Radar – Zuhause am Bach</title><link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}"><style>
-:root{--g:#13743b;--y:#a66a00;--r:#b52828;--b:#1769aa;--gr:#6d776f;--k:#222}.wrap{max-width:1580px;margin:auto;padding:22px}.head,.actions{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:18px 0}.card,.panel{background:#fff;border:1px solid #dfe6e1;border-radius:16px;padding:16px}.card strong{font-size:25px;display:block}.muted{color:#68756d}.score{font-size:34px!important}.score.green{color:var(--g)}.score.yellow{color:var(--y)}.score.red{color:var(--r)}.scroll{overflow:auto;max-height:720px}.table{width:100%;border-collapse:collapse;min-width:1320px}.table th,.table td{text-align:left;vertical-align:top;border-bottom:1px solid #e8ece9;padding:10px 8px}.table th{font-size:12px;text-transform:uppercase;color:#647069;position:sticky;top:0;background:#fff;z-index:1}.tag{display:inline-block;padding:3px 7px;border-radius:999px;background:#eef3ef;font-size:12px;margin:1px}.dot{width:12px;height:12px;border-radius:50%;display:inline-block}.green .dot{background:var(--g)}.yellow .dot{background:var(--y)}.red .dot{background:var(--r)}.blue .dot{background:var(--b)}.gray .dot{background:var(--gr)}.black .dot{background:var(--k)}.light{display:inline-flex;align-items:center;gap:6px;font-weight:800}.desc{max-width:380px;max-height:105px;overflow:auto;font-size:13px}.review{max-width:330px;max-height:90px;overflow:auto;font-size:12px}.url{max-width:260px;word-break:break-word;font-size:12px}.change{border-left:5px solid var(--y);padding:10px 12px;margin:12px 0;background:#fafbf9;border-radius:0 12px 12px 0}.change.green{border-left-color:var(--g)}.change.red{border-left-color:var(--r)}.change.blue{border-left-color:var(--b)}.change.gray{border-left-color:var(--gr)}.change.read{opacity:.62}.old,.new{font-size:12px;max-height:100px;overflow:auto;white-space:pre-wrap}.old{color:#8a3232}.new{color:#176a39}.country-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}.country{padding:10px;border:1px solid #e1e7e2;border-radius:12px}.country b{font-size:20px;display:block}.two{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}.warn{color:var(--r);font-weight:800}.growth-up{color:var(--g)}.growth-down{color:var(--r)}.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;align-items:end}.settings label{display:flex;flex-direction:column;gap:5px}.discovery-row{display:grid;grid-template-columns:90px 1fr 180px;gap:10px;padding:8px 0;border-bottom:1px solid #eef1ef;font-size:13px}@media(max-width:950px){.two{grid-template-columns:1fr}.table{min-width:1050px}.discovery-row{grid-template-columns:1fr}}
-</style></head><body class="admin-page"><header class="admin-header"><div><strong>Zuhause am Bach</strong><small>Anbieter-Radar</small></div><div><a href="{{ url_for('admin') }}">Verwaltung</a> &nbsp; <a href="{{ url_for('admin_logout') }}">Abmelden</a></div></header><main class="wrap">
-{% with messages=get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
-<div class="head"><div><span class="eyebrow">Vertrieb · Sichtbarkeit · Qualität</span><h1>Anbieter-Radar</h1><p class="muted">Findet täglich neue Anbieter und überwacht Preis, Text, Bewertungen sowie Booking- und Direktbuchungslinks.</p></div><div class="actions"><form method="post" action="{{ url_for('provider_radar_refresh') }}"><button class="btn">Alles prüfen</button></form><form method="post" action="{{ url_for('provider_radar_discover') }}"><button class="btn secondary">Web jetzt durchsuchen</button></form>{% if open_changes %}<form method="post" action="{{ url_for('provider_monitor_acknowledge') }}"><button class="btn secondary">Änderungen gelesen</button></form>{% endif %}</div></div>
-<div class="grid">
-<div class="card"><span class="muted">Direktbuchungs-Score</span><strong class="score {{ 'green' if metrics.score>=75 else ('yellow' if metrics.score>=50 else 'red') }}">{{ metrics.score }}/100</strong><small>Direktlinks · OTA-Abhängigkeit · Text · Preis</small></div>
-<div class="card"><span class="muted">Aktive Drittanbieter</span><strong>{{ metrics.provider_count }}</strong><small>eigene Seite nicht mitgezählt</small></div>
-<div class="card"><span class="muted">Direktlink-Anteil</span><strong>{{ metrics.direct_share }} %</strong><small>{{ metrics.direct_count }} von {{ metrics.provider_count }} Quellen</small></div>
-<div class="card"><span class="muted">Booking-Link-Anteil</span><strong>{{ metrics.booking_share }} %</strong><small>{{ metrics.ota_only_count }} nur Booking/OTA</small></div>
-<div class="card"><span class="muted">Länder / Märkte</span><strong>{{ metrics.countries_count }}</strong><small>inkl. internationale Portale</small></div>
-<div class="card"><span class="muted">Ungelesene Änderungen</span><strong>{{ open_changes }}</strong><small>Ampelbewertung unten</small></div>
-<div class="card"><span class="muted">Anbieter-Zuwachs 7 Tage</span><strong class="{{ 'growth-up' if metrics.growth_7d is not none and metrics.growth_7d>0 else ('growth-down' if metrics.growth_7d is not none and metrics.growth_7d<0 else '') }}">{% if metrics.growth_7d is none %}–{% elif metrics.growth_7d>0 %}+{{ metrics.growth_7d }} %{% else %}{{ metrics.growth_7d }} %{% endif %}</strong><small>1T: {{ '–' if metrics.growth_1d is none else metrics.growth_1d|string+' %' }} · 30T: {{ '–' if metrics.growth_30d is none else metrics.growth_30d|string+' %' }}</small></div>
-<div class="card"><span class="muted">Preisradar</span><strong>Direkt € {{ '%.2f'|format(metrics.direct_price)|replace('.',',') }}</strong><small>{% if metrics.cheapest_price is not none %}günstigster Fremdpreis € {{ '%.2f'|format(metrics.cheapest_price)|replace('.',',') }} · {{ metrics.cheapest_provider }}{% else %}noch kein Fremdpreis lesbar{% endif %}</small></div>
-</div>
-<div class="two"><section class="panel"><h2>Länder- und Marktverteilung</h2><div class="country-grid">{% for country,count in metrics.countries %}<div class="country"><span class="muted">{{ country }}</span><b>{{ count }}</b><small>Quelle{% if count!=1 %}n{% endif %}</small></div>{% endfor %}</div></section><section class="panel"><h2>Discovery</h2><p><strong>Letzte Websuche</strong><br>{{ radar_settings.get('last_discovery') or 'noch nie' }}<br><small>{{ radar_settings.get('last_discovery_result','') }}</small></p><p class="muted">Mit SERPER_API_KEY wird Google genutzt; ohne Schlüssel erfolgt ein kostenloser Best-Effort-Suchlauf über DuckDuckGo.</p></section></div>
-<section class="panel"><h2>Ampel</h2><div class="actions" style="justify-content:flex-start"><span class="light green"><span class="dot"></span>Direktlink</span><span class="light yellow"><span class="dot"></span>Direkt + Booking</span><span class="light red"><span class="dot"></span>nur Booking/OTA</span><span class="light blue"><span class="dot"></span>neu gefunden</span><span class="light black"><span class="dot"></span>weggefallen</span><span class="light gray"><span class="dot"></span>neutral / technisch unklar</span></div></section>
-<section class="panel"><h2>Wer bietet Zuhause am Bach an?</h2><div class="scroll"><table class="table"><thead><tr><th>Ampel</th><th>Anbieter / Land</th><th>Status</th><th>Preis</th><th>Bewertung</th><th>Links</th><th>Text / Fehler</th><th>Neueste Bewertung</th><th>Suchfund</th></tr></thead><tbody>{% for p in listings %}<tr><td><span class="light {{ p.traffic }}"><span class="dot"></span></span></td><td><strong>{{ p.name }}</strong><br><span class="tag">{{ p.category }}</span> <span class="tag">{{ p.country or 'Unbekannt' }}</span>{% if p.auto_discovered %}<br><span class="tag">automatisch gefunden</span>{% endif %}<div class="url"><a href="{{ p.last_rendered_url or p.url }}" target="_blank" rel="noopener">Seite öffnen ↗</a></div></td><td>{% if p.presence_status=='weggefallen' %}<strong class="warn">weggefallen</strong><br><small>{{ p.consecutive_failures }} Fehlprüfungen</small>{% elif p.last_status=='ok' %}<strong style="color:var(--g)">erreichbar</strong>{% elif not p.last_checked %}<span>noch nicht geprüft</span>{% else %}<strong class="warn">{{ p.last_status }}</strong><br><small>{{ p.last_error }}</small>{% endif %}<br><small>{{ p.last_checked }}</small></td><td><strong>{{ p.current_price or '–' }}</strong></td><td><strong>{{ p.current_rating or '–' }}</strong>{% if p.current_review_count %}<br><small>{{ p.current_review_count }} Bewertungen</small>{% endif %}</td><td><span class="tag">Direkt {{ 'JA' if p.direct_link else 'nein' }}</span><br><span class="tag">Booking {{ 'JA' if p.booking_link else 'nein' }}</span></td><td><div class="desc">{{ p.current_description or 'Noch kein Text erfasst.' }}</div>{% if p.alerts %}<div class="warn">⚠ {{ p.alerts|join(', ') }}</div>{% else %}<small>keine bekannte Falschangabe erkannt</small>{% endif %}</td><td>{% if p.latest_review_text or p.latest_review_rating %}<strong>{{ p.latest_review_rating or '–' }}</strong> {{ p.latest_review_date }}<br><small>{{ p.latest_review_author }}</small><div class="review">{{ p.latest_review_text }}</div>{% else %}–{% endif %}</td><td>{% if p.search_rank %}<strong>#{{ p.search_rank }}</strong><br><small>beste Position in Websuche</small>{% else %}–{% endif %}</td></tr>{% endfor %}</tbody></table></div></section>
-<section class="panel"><h2>Änderungen – was genau hat sich geändert?</h2>{% if not changes %}<p class="muted">Noch keine Änderungen erkannt.</p>{% endif %}{% for c in changes %}<div class="change {{ c.severity or 'gray' }} {{ 'read' if c.acknowledged else '' }}"><div class="head"><strong>{{ c.listing_name }} · {{ c.field }}</strong><small>{{ c.changed_at }}</small></div><div class="light {{ c.severity or 'gray' }}"><span class="dot"></span>{{ c.summary or 'Änderung erkannt' }}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:7px"><div><small>Vorher</small><div class="old">{{ c.old_value or '–' }}</div></div><div><small>Nachher</small><div class="new">{{ c.new_value or '–' }}</div></div></div></div>{% endfor %}</section>
-<div class="two"><section class="panel"><h2>Tägliche Web-Entdeckung</h2>{% for d in discoveries %}<div class="discovery-row"><span>#{{ d.rank }} · {{ d.engine }}</span><span><strong>{{ d.title or 'Suchtreffer' }}</strong><br><a href="{{ d.url }}" target="_blank">{{ d.url }}</a></span><span>{{ d.found_at }}{% if d.added %}<br><strong style="color:var(--b)">neu aufgenommen</strong>{% endif %}</span></div>{% endfor %}{% if not discoveries %}<p class="muted">Noch keine Suchdaten.</p>{% endif %}</section><section class="panel"><h2>Fehlerwächter</h2><p><strong>Bad-Referenz:</strong> Exklusives Privatbad außerhalb des Zimmers, über den Gang; ausschließlich für die Zimmergäste und nicht vom Gastgeber oder anderen Gästen benutzt.</p><p><strong>Rot markiert:</strong> Gemeinschaftsbad / shared bathroom sowie „adults only“.</p><p><strong>Direktbuchung:</strong><br><a href="{{ direct_url }}" target="_blank">{{ direct_url }}</a></p></section></div>
-<section class="panel"><h2>Radar-Einstellungen</h2><form class="settings" method="post" action="{{ url_for('provider_radar_settings') }}"><label><span>Täglich neue Anbieter suchen</span><span><input type="checkbox" name="discovery_enabled" {% if radar_settings.get('discovery_enabled','1')=='1' %}checked{% endif %}> aktiv</span></label><label>Websuche alle Stunden<input type="number" name="discovery_hours" min="6" max="168" value="{{ radar_settings.get('discovery_hours','24') }}"></label><label>Weggefallen nach Fehlprüfungen<input type="number" name="failure_threshold" min="2" max="10" value="{{ radar_settings.get('failure_threshold','3') }}"></label><label>Unser Direktpreis €<input type="number" step="0.01" min="1" name="direct_price" value="{{ radar_settings.get('direct_price','101.00') }}"></label><button class="btn">Speichern</button></form></section>
-</main></body></html>
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Anbieter-Radar – Zuhause am Bach</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/provider_radar.css') }}">
+</head>
+<body class="radar-page">
+<header class="radar-top">
+  <div class="radar-top-inner">
+    <div class="radar-brand">
+      <div class="radar-logo">ZAB</div>
+      <div><strong>Zuhause am Bach – Wachau</strong><small>Vertriebs- & Anbieter-Radar</small></div>
+    </div>
+    <nav class="radar-nav"><a href="{{ url_for('admin') }}">Verwaltung</a><a href="{{ direct_url }}" target="_blank" rel="noopener">Direktbuchung ↗</a><a href="{{ url_for('admin_logout') }}">Abmelden</a></nav>
+  </div>
+</header>
+<main class="radar-shell">
+  {% with messages=get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+
+  <section class="radar-hero">
+    <div>
+      <span class="radar-eyebrow">Marktbeobachtung · Sichtbarkeit · Preis · Qualität</span>
+      <h1>Anbieter-Radar</h1>
+      <p class="radar-sub">Tägliche Kontrolle, wo „Zuhause am Bach“ angeboten wird. Das System erkennt neue und weggefallene Anbieter, Preis- und Bewertungsänderungen, Textfehler sowie Booking- und Direktbuchungslinks.</p>
+    </div>
+    <div class="radar-actions">
+      <form method="post" action="{{ url_for('provider_radar_refresh') }}"><button class="radar-btn">↻ Alles prüfen</button></form>
+      <form method="post" action="{{ url_for('provider_radar_discover') }}"><button class="radar-btn secondary">⌕ Web durchsuchen</button></form>
+      {% if open_changes %}<form method="post" action="{{ url_for('provider_monitor_acknowledge') }}"><button class="radar-btn ghost">✓ Änderungen gelesen</button></form>{% endif %}
+    </div>
+  </section>
+
+  <section class="radar-overview">
+    <article class="radar-card metric wide">
+      <span class="radar-label">Direktbuchungs-Score</span>
+      <strong class="radar-value score {{ 'green' if metrics.score>=75 else ('yellow' if metrics.score>=50 else 'red') }}">{{ metrics.score }}/100</strong>
+      <div class="radar-progress {{ 'yellow' if metrics.score<75 and metrics.score>=50 else ('red' if metrics.score<50 else '') }}"><i style="width:{{ metrics.score }}%"></i></div>
+      <span class="radar-meta">Direktlinks, OTA-Abhängigkeit, Preisvorteil, korrekte Inhalte und technische Erreichbarkeit.</span>
+    </article>
+    <article class="radar-card metric"><span class="radar-label">Aktive Drittanbieter</span><strong class="radar-value">{{ metrics.provider_count }}</strong><span class="radar-meta">eigene Direktseite nicht mitgezählt</span></article>
+    <article class="radar-card metric"><span class="radar-label">Direktlink-Anteil</span><strong class="radar-value green">{{ metrics.direct_share }} %</strong><div class="radar-progress"><i style="width:{{ metrics.direct_share }}%"></i></div><span class="radar-meta">{{ metrics.direct_count }} von {{ metrics.provider_count }} Quellen</span></article>
+    <article class="radar-card metric"><span class="radar-label">Booking-Link-Anteil</span><strong class="radar-value {{ 'red' if metrics.booking_share>60 else 'yellow' }}">{{ metrics.booking_share }} %</strong><div class="radar-progress {{ 'red' if metrics.booking_share>60 else 'yellow' }}"><i style="width:{{ metrics.booking_share }}%"></i></div><span class="radar-meta">{{ metrics.ota_only_count }} Quellen nur Booking/OTA</span></article>
+    <article class="radar-card metric"><span class="radar-label">Länder / Märkte</span><strong class="radar-value">{{ metrics.countries_count }}</strong><span class="radar-meta">inklusive internationaler Portale</span></article>
+    <article class="radar-card metric"><span class="radar-label">Offene Änderungen</span><strong class="radar-value {{ 'red' if open_changes else 'green' }}">{{ open_changes }}</strong><span class="radar-meta">noch nicht als gelesen markiert</span></article>
+    <article class="radar-card metric"><span class="radar-label">Anbieter-Zuwachs</span><strong class="radar-value {{ 'green' if metrics.growth_7d is not none and metrics.growth_7d>0 else ('red' if metrics.growth_7d is not none and metrics.growth_7d<0 else '') }}">{% if metrics.growth_7d is none %}–{% elif metrics.growth_7d>0 %}+{{ metrics.growth_7d }} %{% else %}{{ metrics.growth_7d }} %{% endif %}</strong><span class="radar-meta">1 Tag: {{ '–' if metrics.growth_1d is none else metrics.growth_1d|string+' %' }} · 30 Tage: {{ '–' if metrics.growth_30d is none else metrics.growth_30d|string+' %' }}</span></article>
+    <article class="radar-card metric"><span class="radar-label">Preisradar</span><strong class="radar-value">€ {{ '%.2f'|format(metrics.direct_price)|replace('.',',') }}</strong>{% if metrics.cheapest_price is not none %}<span class="radar-meta">Günstigster Fremdpreis: <b class="{{ 'radar-price-alert' if metrics.cheapest_price < metrics.direct_price else '' }}">€ {{ '%.2f'|format(metrics.cheapest_price)|replace('.',',') }}</b> · {{ metrics.cheapest_provider }}</span>{% else %}<span class="radar-meta">Noch kein Fremdpreis zuverlässig lesbar.</span>{% endif %}</article>
+  </section>
+
+  <section class="radar-two">
+    <article class="radar-panel">
+      <div class="radar-panel-head"><h2>Marktverteilung</h2><span class="radar-chip">{{ metrics.countries_count }} Märkte</span></div>
+      <div class="radar-country-list">
+        {% set max_country = metrics.countries[0][1] if metrics.countries else 1 %}
+        {% for country,count in metrics.countries %}
+        <div class="radar-country"><span>{{ country }}</span><div class="radar-country-track"><i style="width:{{ (count * 100 / max_country)|round(0) }}%"></i></div><strong>{{ count }}</strong></div>
+        {% endfor %}
+        {% if not metrics.countries %}<div class="radar-empty">Noch keine Marktdaten.</div>{% endif %}
+      </div>
+    </article>
+    <article class="radar-panel">
+      <div class="radar-panel-head"><h2>Automatik</h2><span class="radar-chip green">läuft</span></div>
+      <div class="radar-ready"><span class="radar-ready-dot"></span><div><strong>Tägliche Anbieter-Suche</strong><div class="radar-small radar-muted">{{ radar_settings.get('last_discovery') or 'erster Lauf steht noch aus' }}</div></div></div>
+      <div class="radar-ready" style="margin-top:12px"><span class="radar-ready-dot"></span><div><strong>Letzter Suchlauf</strong><div class="radar-small radar-muted">{{ radar_settings.get('last_discovery_result','noch nie') }}</div></div></div>
+      <div class="radar-ready warn" style="margin-top:12px"><span class="radar-ready-dot"></span><div><strong>Fallback-Suche aktiv</strong><div class="radar-small radar-muted">Ohne SERPER_API_KEY wird eine kostenlose Best-Effort-Websuche verwendet. Mit Schlüssel wird Google/Serper genutzt.</div></div></div>
+    </article>
+  </section>
+
+  <section class="radar-panel">
+    <div class="radar-panel-head"><h2>Ampel-Logik</h2></div>
+    <div class="radar-status-row">
+      <span class="radar-light green"><span class="radar-dot"></span>Direktlink</span>
+      <span class="radar-light yellow"><span class="radar-dot"></span>Direkt + Booking</span>
+      <span class="radar-light red"><span class="radar-dot"></span>nur Booking/OTA</span>
+      <span class="radar-light blue"><span class="radar-dot"></span>neu gefunden</span>
+      <span class="radar-light black"><span class="radar-dot"></span>weggefallen</span>
+      <span class="radar-light"><span class="radar-dot"></span>neutral / technisch unklar</span>
+    </div>
+  </section>
+
+  <section class="radar-panel">
+    <div class="radar-panel-head">
+      <div><h2>Alle Anbieter</h2><div class="radar-small radar-muted"><span data-radar-visible-count>{{ listings|length }}</span> Treffer in der aktuellen Ansicht</div></div>
+      <div class="radar-toolbar">
+        <input class="radar-search" data-radar-search placeholder="Anbieter, Land, Text oder Preis suchen…">
+        <button type="button" class="radar-filter active" data-radar-filter="all">Alle</button>
+        <button type="button" class="radar-filter" data-radar-filter="green">Direkt</button>
+        <button type="button" class="radar-filter" data-radar-filter="yellow">Gemischt</button>
+        <button type="button" class="radar-filter" data-radar-filter="red">OTA</button>
+        <button type="button" class="radar-filter" data-radar-filter="blue">Neu</button>
+        <button type="button" class="radar-filter" data-radar-filter="black">Weg</button>
+      </div>
+    </div>
+    <div class="radar-table-wrap">
+      <table class="radar-table">
+        <thead><tr><th>Ampel</th><th>Anbieter / Markt</th><th>Status</th><th>Preis</th><th>Bewertung</th><th>Buchungsweg</th><th>Textprüfung</th><th>Neueste Bewertung</th><th>Suchposition</th></tr></thead>
+        <tbody>
+          {% for p in listings %}
+          <tr data-radar-row data-traffic="{{ p.traffic }}" data-search="{{ p.name }} {{ p.category }} {{ p.country }} {{ p.current_price }} {{ p.current_rating }} {{ p.current_description }}">
+            <td><span class="radar-dot {{ p.traffic }}" title="{{ p.traffic }}"></span></td>
+            <td><div class="radar-provider"><div class="radar-provider-main"><strong>{{ p.name }}</strong><div><span class="radar-chip">{{ p.category }}</span><span class="radar-chip">{{ p.country or 'Unbekannt' }}</span>{% if p.auto_discovered %}<span class="radar-chip blue">automatisch gefunden</span>{% endif %}</div><div class="radar-url"><a href="{{ p.last_rendered_url or p.url }}" target="_blank" rel="noopener">{{ p.last_rendered_url or p.url }}</a></div></div></div></td>
+            <td>{% if p.presence_status=='weggefallen' %}<span class="radar-chip red">weggefallen</span><div class="radar-small radar-muted">{{ p.consecutive_failures }} Fehlprüfungen</div>{% elif p.last_status=='ok' %}<span class="radar-chip green">erreichbar</span>{% elif not p.last_checked %}<span class="radar-chip blue">noch nicht geprüft</span>{% else %}<span class="radar-chip yellow">{{ p.last_status }}</span><div class="radar-small radar-muted">{{ p.last_error }}</div>{% endif %}<div class="radar-small radar-muted">{{ p.last_checked or '–' }}</div></td>
+            <td><strong class="{{ 'radar-price-alert' if p.current_price and metrics.direct_price and (p.current_price|replace('€','')|replace(',','.')|trim)|float < metrics.direct_price else '' }}">{{ p.current_price or '–' }}</strong></td>
+            <td><strong>{{ p.current_rating or '–' }}</strong>{% if p.current_review_count %}<div class="radar-small radar-muted">{{ p.current_review_count }} Bewertungen</div>{% endif %}</td>
+            <td>{% if p.direct_link %}<span class="radar-chip green">Direkt JA</span>{% else %}<span class="radar-chip">Direkt nein</span>{% endif %}{% if p.booking_link %}<br><span class="radar-chip red">Booking JA</span>{% else %}<br><span class="radar-chip">Booking nein</span>{% endif %}</td>
+            <td><div class="radar-description">{{ p.current_description or 'Noch kein Text erfasst.' }}</div>{% if p.alerts %}<div class="radar-alert">⚠ {{ p.alerts|join(', ') }}</div>{% else %}<span class="radar-chip green">keine bekannte Falschangabe</span>{% endif %}</td>
+            <td>{% if p.latest_review_text or p.latest_review_rating %}<strong>{{ p.latest_review_rating or '–' }}</strong> <span class="radar-small radar-muted">{{ p.latest_review_date }}</span><div class="radar-small">{{ p.latest_review_author }}</div><div class="radar-review">{{ p.latest_review_text }}</div>{% else %}<span class="radar-muted">–</span>{% endif %}</td>
+            <td>{% if p.search_rank %}<span class="radar-chip blue">#{{ p.search_rank }}</span><div class="radar-small radar-muted">beste Webposition</div>{% else %}<span class="radar-muted">–</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="radar-panel">
+    <div class="radar-panel-head"><div><h2>Änderungsprotokoll</h2><div class="radar-small radar-muted">Was hat sich konkret geändert – mit Ampelbewertung.</div></div></div>
+    <div class="radar-changes">
+      {% for c in changes %}
+      <article class="radar-change {{ c.severity or 'gray' }} {{ 'read' if c.acknowledged else '' }}">
+        <div class="radar-severity"></div>
+        <div><div class="radar-change-title">{{ c.listing_name }}</div><div class="radar-small radar-muted">{{ c.field }} · {{ c.changed_at }}</div></div>
+        <div><span class="radar-chip {{ c.severity or '' }}">{{ c.summary or 'Änderung erkannt' }}</span></div>
+        <div class="radar-before-after"><div class="radar-before"><b>Vorher</b><br>{{ c.old_value or '–' }}</div><div class="radar-after"><b>Nachher</b><br>{{ c.new_value or '–' }}</div></div>
+      </article>
+      {% endfor %}
+      {% if not changes %}<div class="radar-empty">Noch keine Änderungen erkannt. Der erste erfolgreiche Lauf legt den Ausgangsbestand fest.</div>{% endif %}
+    </div>
+  </section>
+
+  <section class="radar-two">
+    <article class="radar-panel">
+      <div class="radar-panel-head"><h2>Tägliche Web-Entdeckung</h2><span class="radar-chip blue">neue Quellen automatisch aufnehmen</span></div>
+      <div class="radar-discovery-list">
+        {% for d in discoveries %}<div class="radar-discovery"><div><b>#{{ d.rank }}</b><br><span class="radar-muted">{{ d.engine }}</span></div><div><strong>{{ d.title or 'Suchtreffer' }}</strong><br><a href="{{ d.url }}" target="_blank" rel="noopener">{{ d.url }}</a>{% if d.added %}<br><span class="radar-chip blue">neu aufgenommen</span>{% endif %}</div><div class="radar-muted">{{ d.found_at }}</div></div>{% endfor %}
+        {% if not discoveries %}<div class="radar-empty">Noch keine Discovery-Daten. Die automatische Suche startet nach dem Deployment selbstständig.</div>{% endif %}
+      </div>
+    </article>
+    <article class="radar-panel">
+      <div class="radar-panel-head"><h2>Inhalts-Referenz</h2></div>
+      <p><b>Bad:</b> Exklusives Privatbad außerhalb des Zimmers, direkt über den Gang; ausschließlich für die Zimmergäste und nicht vom Gastgeber oder anderen Gästen benutzt.</p>
+      <p class="radar-small radar-muted">Rot überwacht werden u. a. „Gemeinschaftsbad“, „shared bathroom“ und „adults only“.</p>
+      <p><b>Direktbuchung:</b><br><a href="{{ direct_url }}" target="_blank" rel="noopener">{{ direct_url }}</a></p>
+    </article>
+  </section>
+
+  <section class="radar-panel">
+    <div class="radar-panel-head"><h2>Radar-Einstellungen</h2><span class="radar-chip green">Installation aktiv</span></div>
+    <form class="radar-settings" method="post" action="{{ url_for('provider_radar_settings') }}">
+      <label class="radar-switch"><input type="checkbox" name="discovery_enabled" {% if radar_settings.get('discovery_enabled','1')=='1' %}checked{% endif %}><span>Täglich neue Anbieter suchen</span></label>
+      <label>Websuche alle Stunden<input type="number" name="discovery_hours" min="6" max="168" value="{{ radar_settings.get('discovery_hours','24') }}"></label>
+      <label>Weggefallen nach Fehlprüfungen<input type="number" name="failure_threshold" min="2" max="10" value="{{ radar_settings.get('failure_threshold','3') }}"></label>
+      <label>Unser Direktpreis €<input type="number" step="0.01" min="1" name="direct_price" value="{{ radar_settings.get('direct_price','101.00') }}"></label>
+      <button class="radar-btn">Einstellungen speichern</button>
+    </form>
+  </section>
+</main>
+<script src="{{ url_for('static',filename='js/provider_radar.js') }}"></script>
+</body>
+</html>
