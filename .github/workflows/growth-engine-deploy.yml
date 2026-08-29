@@ -6,6 +6,9 @@ on:
     paths:
       - 'cloudflare-worker/**'
       - 'growth-engine/**'
+      - 'growth_action_gateway.py'
+      - 'windis_data_gateway.py'
+      - 'windis_public_gateway.py'
       - '.github/workflows/growth-engine-deploy.yml'
 
 env:
