@@ -56,7 +56,7 @@ jobs:
             -H "Authorization: Bearer $GROWTH_WEBHOOK_TOKEN" \
             -o growth-gateway-verify.json "$verify_url"
           cat growth-gateway-verify.json
-          node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('growth-gateway-verify.json','utf8'));if(j.ok!==true||j.smtpConfigured!==true||j.recipientVerified!==true){console.error(j);process.exit(1)}"
+          node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('growth-gateway-verify.json','utf8'));if(j.ok!==true||j.smtpConfigured!==true||j.smtpAuthenticated!==true||j.recipientVerified!==true){console.error(j);process.exit(1)}"
 
       - name: Deploy Booking availability worker
         env:
