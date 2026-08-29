@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Anbieter-Monitor – Zuhause am Bach</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .pm-wrap{max-width:1500px;margin:0 auto;padding:22px}.pm-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}.pm-actions{display:flex;gap:8px;flex-wrap:wrap}.pm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0}.pm-card,.pm-panel{background:#fff;border:1px solid #dfe6e1;border-radius:16px;padding:16px}.pm-card strong{font-size:24px;display:block}.pm-muted{color:#68756d}.pm-table{width:100%;border-collapse:collapse;min-width:1100px}.pm-table th,.pm-table td{text-align:left;vertical-align:top;border-bottom:1px solid #e8ece9;padding:10px 8px}.pm-table th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#647069}.pm-scroll{overflow:auto}.pm-ok{color:#176a39;font-weight:700}.pm-warn{color:#9a5b00;font-weight:700}.pm-bad{color:#a72727;font-weight:700}.pm-tag{display:inline-block;padding:3px 7px;border-radius:999px;background:#eef3ef;font-size:12px;margin:1px}.pm-tag.yes{background:#e0f3e6;color:#145c30}.pm-tag.no{background:#f5e7e7;color:#8d2020}.pm-desc{max-width:430px;max-height:90px;overflow:auto;font-size:13px;line-height:1.35}.pm-url{max-width:260px;word-break:break-word;font-size:12px}.pm-settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end}.pm-settings label{display:flex;flex-direction:column;gap:5px}.pm-change{border-left:4px solid #c98917;padding-left:10px}.pm-change.read{border-left-color:#cfd7d1;opacity:.75}.pm-old,.pm-new{font-size:12px;max-width:440px;max-height:90px;overflow:auto}.pm-old{color:#8a3232}.pm-new{color:#176a39}.pm-link{color:inherit}.pm-new-listing{display:grid;grid-template-columns:1fr 1fr 2fr auto;gap:10px;align-items:end}@media(max-width:800px){.pm-new-listing{grid-template-columns:1fr}.pm-table{min-width:900px}}
+  </style>
+</head>
+<body class="admin-page">
+<header class="admin-header">
+  <div><strong>Zuhause am Bach</strong><small>Anbieter-Monitor</small></div>
+  <div><a href="{{ url_for('admin') }}">Verwaltung</a> &nbsp; <a href="{{ url_for('admin_logout') }}">Abmelden</a></div>
+</header>
+<main class="pm-wrap">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+  {% endwith %}
+
+  <div class="pm-head">
+    <div>
+      <span class="eyebrow">Marktbeobachtung</span>
+      <h1>Anbieter-Monitor</h1>
+      <p class="pm-muted">Beobachtet öffentliche Seiten, auf denen „Zuhause am Bach“ angeboten oder beschrieben wird. Änderungen an Preis, Bewertung, Bewertungsanzahl, Beschreibung sowie Booking- und Direktlinks werden protokolliert.</p>
+    </div>
+    <div class="pm-actions">
+      <form method="post" action="{{ url_for('provider_monitor_run') }}"><button class="btn">Jetzt alle prüfen</button></form>
+      {% if open_changes %}<form method="post" action="{{ url_for('provider_monitor_acknowledge') }}"><button class="btn secondary">Änderungen gelesen</button></form>{% endif %}
+    </div>
+  </div>
+
+  <div class="pm-grid">
+    <div class="pm-card"><span class="pm-muted">Überwachte Quellen</span><strong>{{ listings|selectattr('active','equalto',1)|list|length }}</strong></div>
+    <div class="pm-card"><span class="pm-muted">Ungelesene Änderungen</span><strong>{{ open_changes }}</strong></div>
+    <div class="pm-card"><span class="pm-muted">Letzte Prüfung</span><strong style="font-size:16px">{{ monitor_settings.get('last_run') or 'noch nie' }}</strong><small>{{ monitor_settings.get('last_run_result','') }}</small></div>
+    <div class="pm-card"><span class="pm-muted">Preisprüfung</span><strong style="font-size:16px">{{ monitor_settings.get('price_horizon_days','30') }} Tage voraus</strong><small>1 Nacht · 2 Erwachsene, sofern die Plattform öffentliche Preise liefert</small></div>
+  </div>
+
+  <section class="pm-panel">
+    <h2>Einstellungen</h2>
+    <form class="pm-settings" method="post" action="{{ url_for('provider_monitor_save_settings') }}">
+      <label><span>Automatisch überwachen</span><span><input type="checkbox" name="enabled" {% if monitor_settings.get('enabled','1')=='1' %}checked{% endif %}> aktiv</span></label>
+      <label>Prüfintervall (Minuten)<input type="number" min="60" max="1440" name="interval_minutes" value="{{ monitor_settings.get('interval_minutes','360') }}"></label>
+      <label>Preisdatum in Tagen<input type="number" min="1" max="365" name="price_horizon_days" value="{{ monitor_settings.get('price_horizon_days','30') }}"></label>
+      <label>Alarm-E-Mail<input type="email" name="alert_email" value="{{ monitor_settings.get('alert_email','') }}" placeholder="leer = Unterkunfts-E-Mail"></label>
+      <label><span>E-Mail bei Änderungen</span><span><input type="checkbox" name="alerts_enabled" {% if monitor_settings.get('alerts_enabled','1')=='1' %}checked{% endif %}> aktiv</span></label>
+      <button class="btn">Speichern</button>
+    </form>
+  </section>
+
+  <section class="pm-panel">
+    <h2>Wer bietet Zuhause am Bach an?</h2>
+    <div class="pm-scroll">
+      <table class="pm-table">
+        <thead><tr><th>Anbieter</th><th>Status</th><th>Preis</th><th>Bewertung</th><th>Links</th><th>Beschreibung</th><th>Letzte Prüfung</th><th>Aktion</th></tr></thead>
+        <tbody>
+          {% for p in listings %}
+          <tr>
+            <td><strong>{{ p.name }}</strong><br><span class="pm-tag">{{ p.category }}</span><div class="pm-url"><a class="pm-link" href="{{ p.last_rendered_url or p.url }}" target="_blank" rel="noopener">Seite öffnen ↗</a></div></td>
+            <td>{% if not p.active %}<span class="pm-muted">pausiert</span>{% elif p.last_status=='ok' %}<span class="pm-ok">OK</span>{% elif not p.last_checked %}<span class="pm-warn">noch nicht geprüft</span>{% else %}<span class="pm-bad">{{ p.last_status }}</span><br><small>{{ p.last_error }}</small>{% endif %}</td>
+            <td><strong>{{ p.current_price or '–' }}</strong></td>
+            <td><strong>{{ p.current_rating or '–' }}</strong>{% if p.current_review_count %}<br><small>{{ p.current_review_count }} Bewertungen</small>{% endif %}</td>
+            <td><span class="pm-tag {{ 'yes' if p.booking_link else 'no' }}">Booking {{ 'ja' if p.booking_link else 'nein' }}</span><br><span class="pm-tag {{ 'yes' if p.direct_link else 'no' }}">Direkt {{ 'ja' if p.direct_link else 'nein' }}</span></td>
+            <td><div class="pm-desc">{{ p.current_description or 'Noch keine Beschreibung erfasst.' }}</div></td>
+            <td>{{ p.last_checked or '–' }}{% if p.last_http %}<br><small>HTTP {{ p.last_http }}</small>{% endif %}</td>
+            <td><form method="post" action="{{ url_for('provider_monitor_toggle_listing',listing_id=p.id) }}"><button class="btn secondary">{{ 'Pausieren' if p.active else 'Aktivieren' }}</button></form></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="pm-panel">
+    <h2>Weitere Quelle hinzufügen</h2>
+    <form class="pm-new-listing" method="post" action="{{ url_for('provider_monitor_add_listing') }}">
+      <label>Anbieter<input name="name" placeholder="z. B. Regionalportal" required></label>
+      <label>Kategorie<input name="category" value="Portal"></label>
+      <label>Öffentliche URL<input type="url" name="url" placeholder="https://..." required></label>
+      <button class="btn">Hinzufügen</button>
+    </form>
+    <p class="pm-muted"><small>Direktbuchung zum Vergleich: <a href="{{ direct_url }}" target="_blank">{{ direct_url }}</a></small></p>
+  </section>
+
+  <section class="pm-panel">
+    <h2>Änderungsverlauf</h2>
+    {% if not changes %}<p class="pm-muted">Noch keine Änderungen erkannt. Der erste erfolgreiche Lauf legt nur den Ausgangszustand fest.</p>{% endif %}
+    {% for c in changes %}
+      <div class="pm-change {{ 'read' if c.acknowledged else '' }}" style="margin:14px 0">
+        <strong>{{ c.listing_name }} · {{ c.field }}</strong> <small class="pm-muted">{{ c.changed_at }}</small>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px">
+          <div><small>Vorher</small><div class="pm-old">{{ c.old_value or '–' }}</div></div>
+          <div><small>Nachher</small><div class="pm-new">{{ c.new_value or '–' }}</div></div>
+        </div>
+      </div>
+    {% endfor %}
+  </section>
+</main>
+</body>
+</html>
