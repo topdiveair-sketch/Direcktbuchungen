@@ -1,0 +1,37 @@
+name: Final UI logic cleanup
+
+on:
+  push:
+    paths:
+      - '.github/workflows/final-ui-logic-cleanup.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('href="wachau-routenplaner/">Routenplaner</a>\\n        <a href="wachau-tipps/">', 'href="wachau-routenplaner/">Routenplaner</a>\n        <a href="wachau-tipps/">', 1)
+          old='<div class="direct-booking-trust"><strong>⭐ 9,0/10 – Hervorragend</strong><span>45 Gästebewertungen auf Booking.com</span><small>Direkt buchen zum besten verfügbaren Direktpreis.</small></div>'
+          new='<div class="direct-booking-trust"><strong>Direkt bei den Gastgebern</strong><span>Persönliche Anfrage, transparente Leistungen und Live-Verfügbarkeitsprüfung.</span><small>Ohne Umweg über eine zusätzliche Buchungsplattform.</small></div>'
+          if old not in s:
+              raise SystemExit('Trust block not found')
+          s=s.replace(old,new,1)
+          s=s.replace('      cursor: pointer;\n    }\n    .language-switcher a[aria-current="page"] {', '      cursor: pointer;\n      text-decoration: none;\n    }\n    .language-switcher a[aria-current="page"] {',1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - run: node scripts/check-inline-js.js
+      - run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Clean navigation and stale rating copy"
+          git push
