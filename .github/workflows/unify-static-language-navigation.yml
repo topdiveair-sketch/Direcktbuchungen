@@ -1,0 +1,108 @@
+name: Unify direct booking language navigation
+
+on:
+  push:
+    paths:
+      - '.github/workflows/unify-static-language-navigation.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unify languages and exact totals
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          s = s.replace('.language-switcher button {', '.language-switcher a {', 1)
+          s = s.replace('.language-switcher button.active {', '.language-switcher a[aria-current="page"] {', 1)
+          s = s.replace('.language-switcher button { display:none; }', '.language-switcher a { display:none; }', 1)
+          s = s.replace('text-decoration: none;\n      opacity: .92;', 'text-decoration: none;\n      opacity: .92;', 1)
+
+          old = '''      <div class="language-switcher" aria-label="Sprache wählen">
+        <button type="button" data-lang="de">🇩🇪 DE</button>
+        <button type="button" data-lang="en">🇬🇧 EN</button>
+        <button type="button" data-lang="cs">🇨🇿 CZ</button>
+        <button type="button" data-lang="hu">🇭🇺 HU</button>
+        <button type="button" data-lang="es">🇪🇸 ES</button>
+        <button type="button" data-lang="fr">🇫🇷 FR</button>
+        <label class="sr-only" for="mobileLanguage">Sprache wählen</label>
+        <select id="mobileLanguage" class="mobile-language-select" aria-label="Sprache wählen">
+          <option value="de">🇩🇪 Deutsch</option><option value="en">🇬🇧 English</option><option value="cs">🇨🇿 Čeština</option><option value="hu">🇭🇺 Magyar</option><option value="es">🇪🇸 Español</option><option value="fr">🇫🇷 Français</option>
+        </select>
+      </div>'''
+          new = '''      <div class="language-switcher" aria-label="Sprache wählen">
+        <a href="./" aria-current="page">🇩🇪 DE</a>
+        <a href="en/">🇬🇧 EN</a>
+        <a href="cs/">🇨🇿 CZ</a>
+        <a href="sk/">🇸🇰 SK</a>
+        <a href="hu/">🇭🇺 HU</a>
+        <a href="pl/">🇵🇱 PL</a>
+        <a href="nl/">🇳🇱 NL</a>
+        <label class="sr-only" for="staticLanguage">Sprache wählen</label>
+        <select id="staticLanguage" class="mobile-language-select" aria-label="Sprache wählen" onchange="window.location.href=this.value">
+          <option value="./" selected>🇩🇪 Deutsch</option>
+          <option value="en/">🇬🇧 English</option>
+          <option value="cs/">🇨🇿 Čeština</option>
+          <option value="sk/">🇸🇰 Slovenčina</option>
+          <option value="hu/">🇭🇺 Magyar</option>
+          <option value="pl/">🇵🇱 Polski</option>
+          <option value="nl/">🇳🇱 Nederlands</option>
+        </select>
+      </div>'''
+          if old not in s:
+              raise SystemExit('Language switcher block not found')
+          s = s.replace(old, new, 1)
+
+          old_lang = '''    let currentLang = "de";
+    try {
+      currentLang = localStorage.getItem("zab_lang") || "de";
+    } catch (error) {
+      currentLang = "de";
+    }
+    if (!LANGUAGES[currentLang]) currentLang = "de";'''
+          new_lang = '''    // The root page is the canonical German version. Other languages use
+    // their dedicated static SEO pages instead of client-side translation.
+    let currentLang = "de";'''
+          if old_lang not in s:
+              raise SystemExit('Language initialization block not found')
+          s = s.replace(old_lang, new_lang, 1)
+
+          old_events = '''    document.querySelectorAll("[data-lang]").forEach((button) => {
+      button.addEventListener("click", () => applyLanguage(button.dataset.lang));
+    });
+    document.getElementById("mobileLanguage")?.addEventListener("change", (event) => applyLanguage(event.target.value));
+    applyLanguage(currentLang, false);'''
+          new_events = '''    // Static language navigation is handled by normal links/select navigation.
+    applyLanguage(currentLang, false);'''
+          if old_events not in s:
+              raise SystemExit('Dynamic language event block not found')
+          s = s.replace(old_events, new_events, 1)
+
+          if '      sum = Math.round(sum);' not in s:
+              raise SystemExit('Total rounding anchor not found')
+          s = s.replace('      sum = Math.round(sum);', '      sum = Math.round(sum * 100) / 100;', 1)
+
+          s = s.replace('"dateModified":"2026-08-10"', '"dateModified":"2026-09-02"')
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Validate inline JavaScript
+        run: node scripts/check-inline-js.js
+      - name: Commit changes
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Use static language pages and exact cent totals"
+          git push
