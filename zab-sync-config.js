@@ -93,14 +93,14 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app
     nav.id = "zab-evergreen-languages";
     nav.setAttribute("aria-label", "Internationale Seiten");
     nav.innerHTML = [
-      ['../Direcktbuchungen/', 'DE'],
-      ['en/', 'EN'],
-      ['cs/', 'CZ'],
-      ['sk/', 'SK'],
-      ['hu/', 'HU'],
-      ['pl/', 'PL'],
-      ['nl/', 'NL']
-    ].map(([href,label]) => `<a href="${href}" hreflang="${label === 'DE' ? 'de-AT' : label.toLowerCase()}">${label}</a>`).join('');
+      ['./', 'DE', 'de-AT'],
+      ['en/', 'EN', 'en'],
+      ['cs/', 'CZ', 'cs'],
+      ['sk/', 'SK', 'sk'],
+      ['hu/', 'HU', 'hu'],
+      ['pl/', 'PL', 'pl'],
+      ['nl/', 'NL', 'nl']
+    ].map(([href,label,lang]) => `<a href="${href}" hreflang="${lang}">${label}</a>`).join('');
     const style = document.createElement("style");
     style.textContent = `
       #zab-evergreen-languages{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;width:100%;margin-top:4px}
