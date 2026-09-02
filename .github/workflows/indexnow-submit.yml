@@ -1,0 +1,81 @@
+name: Submit changed pages to IndexNow
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.html'
+      - 'sitemap.xml'
+      - 'robots.txt'
+      - 'llms.txt'
+      - 'zab-sync-config.js'
+      - 'b6a40fb2c8d14f87a1e3f0a526e0bd39.txt'
+      - '.github/workflows/indexnow-submit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Collect public URLs and submit to IndexNow
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import urllib.request
+          import xml.etree.ElementTree as ET
+
+          host = 'topdiveair-sketch.github.io'
+          base = 'https://topdiveair-sketch.github.io/Direcktbuchungen/'
+          key = 'b6a40fb2c8d14f87a1e3f0a526e0bd39'
+          key_location = base + key + '.txt'
+
+          urls = []
+          sitemap = Path('sitemap.xml')
+          if sitemap.exists():
+              try:
+                  root = ET.fromstring(sitemap.read_text(encoding='utf-8'))
+                  ns = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+                  for loc in root.findall('.//sm:loc', ns):
+                      if loc.text and loc.text.startswith(base):
+                          urls.append(loc.text.strip())
+              except Exception as exc:
+                  print('Sitemap parse warning:', exc)
+
+          if not urls:
+              urls = [base]
+              for page in Path('.').rglob('index.html'):
+                  rel = page.parent.as_posix().strip('./')
+                  if rel and not rel.startswith('.github'):
+                      urls.append(base + rel.rstrip('/') + '/')
+
+          # Keep payload conservative and deduplicated.
+          urls = sorted(dict.fromkeys(urls))[:100]
+          payload = json.dumps({
+              'host': host,
+              'key': key,
+              'keyLocation': key_location,
+              'urlList': urls,
+          }).encode('utf-8')
+
+          req = urllib.request.Request(
+              'https://api.indexnow.org/indexnow',
+              data=payload,
+              headers={'Content-Type': 'application/json; charset=utf-8'},
+              method='POST',
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=20) as response:
+                  print('IndexNow status:', response.status)
+                  print('Submitted URLs:', len(urls))
+          except urllib.error.HTTPError as exc:
+              print('IndexNow HTTP status:', exc.code)
+              # 200/202 are success; 4xx/5xx should fail visibly in Actions.
+              raise
+          PY
