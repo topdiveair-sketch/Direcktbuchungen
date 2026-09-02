@@ -240,7 +240,7 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app
     captureAttribution();
     removeUnreleasedRooms();
     scrubReleaseDates();
-    addEvergreenLanguageLinks();
+    document.getElementById("zab-evergreen-languages")?.remove();
     installOneClickInquiry();
 
     const form = document.getElementById("requestForm");
