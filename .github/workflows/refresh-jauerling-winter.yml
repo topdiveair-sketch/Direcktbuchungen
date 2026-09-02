@@ -1,0 +1,82 @@
+name: Refresh Jauerling winter positioning
+
+on:
+  push:
+    paths:
+      - '.github/workflows/refresh-jauerling-winter.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update verified Jauerling winter facts
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          files = [
+              Path('winter-wachau-jauerling/index.html'),
+              Path('skifahren-jauerling-unterkunft-wachau/index.html'),
+          ]
+
+          for path in files:
+              text = path.read_text(encoding='utf-8')
+              original = text
+              text = text.replace(
+                  'Als Direktbuchungs-Mehrwert: später Check-out nach Verfügbarkeit – ohne künstlichen Winterrabatt.',
+                  'Ruhige Winterauszeit für zwei – ohne künstlichen Winterrabatt.'
+              )
+              text = text.replace(
+                  'Der Jauerling bietet laut Betreiber Skibetrieb, Flutlichtskifahren, Skischule und Skiverleih. Öffnung und Angebot sind wetter- und betriebsabhängig.',
+                  'Die Skiarena Jauerling bietet laut Betreiber eine rund 500 m lange Piste, Flutlichtskifahren, Skischule und Skiverleih. Für Kinder gibt es das JAUliland. Öffnung und Angebot sind wetter- und betriebsabhängig.'
+              )
+              text = text.replace(
+                  'Bei ausreichenden Bedingungen und Liftbetrieb bietet der Jauerling Skifahren und Flutlichtbetrieb. Liftstatus und Zeiten bitte direkt beim Betreiber prüfen.',
+                  'Bei ausreichenden Bedingungen und Liftbetrieb bietet die Skiarena Jauerling Skifahren, Flutlichtbetrieb, Skischule und Skiverleih; für Kinder gibt es das JAUliland. Liftstatus und Zeiten bitte direkt beim Betreiber prüfen.'
+              )
+              anchor = '<a href="https://www.jauerling.at/" target="_blank" rel="noopener noreferrer">Jauerling Skiarena – aktuelle Informationen</a>'
+              if anchor in text and 'jauerling.at/piste' not in text:
+                  extra = anchor + '<a href="https://www.jauerling.at/piste" target="_blank" rel="noopener noreferrer">Aktuelle Pisteninfos</a><a href="https://www.jauerling.at/lift/betriebszeiten" target="_blank" rel="noopener noreferrer">Aktuelle Betriebszeiten</a><a href="https://www.jauerling.at/skischule-und-skiverleih" target="_blank" rel="noopener noreferrer">Skischule & Skiverleih</a>'
+                  text = text.replace(anchor, extra, 1)
+              text = text.replace('og:site_name" content="Zuhause am Bach"', 'og:site_name" content="Zuhause am Bach – Wachau"')
+              text = text.replace('<a class="brand" href="../">Zuhause am Bach</a>', '<a class="brand" href="../">Zuhause am Bach – Wachau</a>')
+              if text != original:
+                  path.write_text(text, encoding='utf-8')
+                  print('updated', path)
+
+          PY
+
+      - name: Validate
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for f in ('winter-wachau-jauerling/index.html','skifahren-jauerling-unterkunft-wachau/index.html'):
+              t = Path(f).read_text(encoding='utf-8')
+              assert 'jauerling.at/piste' in t
+              assert 'jauerling.at/lift/betriebszeiten' in t
+              assert 'später Check-out' not in t
+          print('winter validation passed')
+          PY
+
+      - name: Commit
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo 'No changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add winter-wachau-jauerling/index.html skifahren-jauerling-unterkunft-wachau/index.html
+          git commit -m 'Refresh verified Jauerling winter information'
+          git push
