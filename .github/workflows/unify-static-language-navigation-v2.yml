@@ -1,0 +1,25 @@
+name: Unify static language navigation v2
+
+on:
+  push:
+    paths:
+      - '.github/workflows/unify-static-language-navigation-v2.yml'
+      - 'scripts/unify_languages.py'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/unify_languages.py
+      - run: node scripts/check-inline-js.js
+      - run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Use static language pages and exact cent totals"
+          git push
