@@ -1380,30 +1380,6 @@
             <strong>ab 101 EUR pro Nacht</strong>
           </div>
         </article>
-        <article class="room-card future-room" data-future-room hidden>
-          <img width="1200" height="800" loading="lazy" decoding="async" src="images/rooms/marillenzimmer.webp" alt="Marillenzimmer für Wachau-Urlauber bei Zuhause am Bach">
-          <div>
-            <h3>Marillenzimmer</h3>
-            <p>Wachauer Atmosphäre, warme Details und ein ruhiger Rückzugsort.</p>
-            <strong>derzeit noch nicht buchbar</strong>
-          </div>
-        </article>
-        <article class="room-card future-room" data-future-room hidden>
-          <img width="1200" height="800" loading="lazy" decoding="async" src="images/rooms/weinbergzimmer.webp" alt="Weinbergzimmer für Wanderer und Radfahrer in der Wachau">
-          <div>
-            <h3>Weinbergzimmer</h3>
-            <p>Inspiriert von den Weinbergen der Wachau, ideal für Genießer.</p>
-            <strong>derzeit noch nicht buchbar</strong>
-          </div>
-        </article>
-        <article class="room-card future-room" data-future-room hidden>
-          <img width="1200" height="800" loading="lazy" decoding="async" src="images/rooms/donauzimmer.webp" alt="Donauzimmer nahe Donauradweg und Welterbesteig Wachau">
-          <div>
-            <h3>Donauzimmer</h3>
-            <p>Ein freundliches Zimmer mit Bezug zur Donau und zur Wachauer Landschaft.</p>
-            <strong>derzeit noch nicht buchbar</strong>
-          </div>
-        </article>
       </div>
     </section>
 
@@ -1758,7 +1734,7 @@
         "1 Person": "1 host",
         "2 Personen": "2 hosté",
         "Nächte": "Noci",
-        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Aktuálně lze poptat pouze Bachblick. Ostatní pokoje jsou připraveny od 15. 8. 2026, ale zatím nejsou uvolněny.",
+        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Aktuálně lze poptat pouze Bachblick. Ostatní pokoje nejsou v současnosti k dispozici.",
         "Zusatzleistungen": "Doplňkové služby",
         "Frühstück": "Snídaně",
         "12,00 EUR pro Person/Nacht": "12,00 EUR za osobu/noc",
@@ -1874,7 +1850,7 @@
         "1 Person": "1 vendég",
         "2 Personen": "2 vendég",
         "Nächte": "Éjszakák",
-        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Jelenleg csak a Bachblick kérhető. A többi szoba 2026.08.15-től előkészítve, de még nincs felszabadítva.",
+        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Jelenleg csak a Bachblick kérhető. A többi szoba jelenleg nem foglalható.",
         "Zusatzleistungen": "Kiegészítő szolgáltatások",
         "Frühstück": "Reggeli",
         "12,00 EUR pro Person/Nacht": "12,00 EUR személyenként/éjszakánként",
@@ -2724,7 +2700,7 @@
     }
 
     function money(value) {
-      return Math.round(value).toLocaleString(LANGUAGES[currentLang].locale, { maximumFractionDigits: 0 }) + " EUR";
+      return Number(value).toLocaleString(LANGUAGES[currentLang].locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " EUR";
     }
 
     function sameDayArrival() {
@@ -2814,7 +2790,7 @@
         };
       }
       const conflict = blockedCalendarEntry(a, d);
-      if (conflict) {
+      if (conflict && calendarIsFresh()) {
         return {
           state: "blocked",
           text: tr("blocked", { mode: calendarModeLabel(), updated: bookingCalendarUpdated })
@@ -3003,7 +2979,7 @@
       const conflict = room && room.value === "Bachblick"
         ? blockedCalendarEntry(parseDate(arrival.value), parseDate(departure.value))
         : null;
-      if (conflict) {
+      if (conflict && calendarIsFresh()) {
         alert(tr("blocked", { mode: calendarModeLabel(), updated: bookingCalendarUpdated }));
         return;
       }

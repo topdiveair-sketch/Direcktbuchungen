@@ -206,6 +206,8 @@ def init_paypal_checkout(
             adults = max(1, min(2, int(data.get("adults", 2))))
         except Exception as exc:
             raise ValueError("Bitte gültige Reisedaten eingeben.") from exc
+        if room != "Bachblick":
+            raise ValueError("Derzeit ist ausschließlich Bachblick für Direktbuchungen freigegeben.")
         if room not in rooms or departure <= arrival:
             raise ValueError("Bitte gültiges Zimmer sowie An- und Abreise wählen.")
         extras_raw = data.get("extras") if isinstance(data.get("extras"), dict) else {}
