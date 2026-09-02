@@ -1,0 +1,160 @@
+name: Update public contact email
+
+on:
+  push:
+    paths:
+      - '.github/workflows/update-contact-email.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-contact-email:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update public contact address safely
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('.')
+          new = 'Zuhause.am.Bach@outlook.com'
+          old_public = ('topdiveair@gmail.com', 'johannprem@hotmail.com')
+          changed = []
+
+          def write_if_changed(path, before, after):
+              if before != after:
+                  path.write_text(after, encoding='utf-8')
+                  changed.append(str(path))
+
+          # Public HTML: change contact links, displayed contact addresses and
+          # structured-data email fields only. Do NOT change PayPal prose.
+          for path in root.rglob('*.html'):
+              try:
+                  before = path.read_text(encoding='utf-8')
+              except UnicodeDecodeError:
+                  continue
+              after = before
+              for old in old_public:
+                  after = after.replace(f'mailto:{old}', f'mailto:{new}')
+                  after = after.replace(f'>{old}<', f'>{new}<')
+                  after = re.sub(
+                      r'("email"\s*:\s*")' + re.escape(old) + r'(")',
+                      lambda m: m.group(1) + new + m.group(2),
+                      after,
+                      flags=re.I,
+                  )
+              write_if_changed(path, before, after)
+
+          # JavaScript-generated contact links: mailto only; payment addresses
+          # used by PayPal remain untouched.
+          for path in root.rglob('*.js'):
+              try:
+                  before = path.read_text(encoding='utf-8')
+              except UnicodeDecodeError:
+                  continue
+              after = before
+              for old in old_public:
+                  after = after.replace(f'mailto:{old}', f'mailto:{new}')
+              write_if_changed(path, before, after)
+
+          # Machine-readable public contact information.
+          llms = root / 'llms.txt'
+          if llms.exists():
+              before = llms.read_text(encoding='utf-8')
+              after = re.sub(r'(?mi)^(-\s*E-Mail:\s*).+$', r'\1' + new, before)
+              write_if_changed(llms, before, after)
+
+          # Backend: new inquiries and important owner alerts go to the new
+          # Outlook inbox. SMTP/PayPal credentials are deliberately unchanged.
+          notifications = root / 'booking_notifications.py'
+          if notifications.exists():
+              before = notifications.read_text(encoding='utf-8')
+              after = before
+              if 'PUBLIC_CONTACT_EMAIL =' not in after:
+                  after = after.replace(
+                      'PAID_GUEST_SUBJECT = "Buchung bestätigt – Zuhause am Bach"',
+                      'PAID_GUEST_SUBJECT = "Buchung bestätigt – Zuhause am Bach"\nPUBLIC_CONTACT_EMAIL = "' + new + '"',
+                  )
+              after = after.replace(
+                  'owner_email = cfg.get("inquiry_email", "").strip() or cfg.get("email", "").strip() or "topdiveair@gmail.com"',
+                  'owner_email = cfg.get("inquiry_email", "").strip() or PUBLIC_CONTACT_EMAIL',
+              )
+              write_if_changed(notifications, before, after)
+
+          hold = root / 'payment_hold.py'
+          if hold.exists():
+              before = hold.read_text(encoding='utf-8')
+              after = before.replace(
+                  'ALERT_EMAIL = "johannprem@hotmail.com"',
+                  'ALERT_EMAIL = "' + new + '"',
+              )
+              write_if_changed(hold, before, after)
+
+          app = root / 'app.py'
+          if app.exists():
+              before = app.read_text(encoding='utf-8')
+              after = before.replace(
+                  '"email": "topdiveair@gmail.com",',
+                  '"email": "' + new + '",',
+              )
+              write_if_changed(app, before, after)
+
+          # Deployment templates: public email only. SMTP and PayPal variables
+          # intentionally remain on their existing account until separately changed.
+          for name in ('.env.example', '.env.production.template'):
+              path = root / name
+              if not path.exists():
+                  continue
+              before = path.read_text(encoding='utf-8')
+              after = before
+              after = re.sub(r'(?m)^(SITE_EMAIL|ZAB_EMAIL)=.*$', lambda m: m.group(1) + '=' + new, after)
+              write_if_changed(path, before, after)
+
+          print('Changed files:')
+          for item in sorted(set(changed)):
+              print(' -', item)
+          PY
+
+      - name: Validate contact separation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          new = 'Zuhause.am.Bach@outlook.com'
+          html = '\n'.join(
+              p.read_text(encoding='utf-8', errors='ignore')
+              for p in Path('.').rglob('*.html')
+          )
+          assert new in html, 'New contact email not present in public HTML'
+          assert 'mailto:topdiveair@gmail.com' not in html, 'Old Gmail mailto remains in public HTML'
+          assert 'mailto:johannprem@hotmail.com' not in html, 'Old Hotmail mailto remains in public HTML'
+
+          notifications = Path('booking_notifications.py').read_text(encoding='utf-8')
+          assert f'PUBLIC_CONTACT_EMAIL = "{new}"' in notifications
+          hold = Path('payment_hold.py').read_text(encoding='utf-8')
+          assert f'ALERT_EMAIL = "{new}"' in hold
+          print('Public contact email validated; PayPal/SMTP account strings were not bulk-replaced.')
+          PY
+
+      - name: Commit contact update
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo 'No changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Use new Outlook address for public contact and inquiries'
+          git push
