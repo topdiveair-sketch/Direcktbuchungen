@@ -80,7 +80,7 @@
       justify-content: flex-end;
       gap: 8px;
     }
-    .language-switcher button {
+    .language-switcher a {
       min-height: 34px;
       border: 0;
       border-radius: 999px;
@@ -92,7 +92,7 @@
       font-weight: 900;
       cursor: pointer;
     }
-    .language-switcher button.active {
+    .language-switcher a[aria-current="page"] {
       outline: 3px solid rgba(23,107,90,.85);
       background: #fff7d6;
     }
@@ -774,7 +774,7 @@
       .nav { position:relative; padding:8px 12px; min-height:54px; }
       .nav-links { display:none; }
       .language-switcher { position:static; width:100%; justify-content:center; padding:2px 0; }
-      .language-switcher button { display:none; }
+      .language-switcher a { display:none; }
       .mobile-language-select {
         display:block; width:min(100%,210px); min-height:44px; padding:8px 36px 8px 12px;
         border:2px solid rgba(23,107,90,.35); border-radius:999px; background:#fff;
@@ -1056,7 +1056,7 @@
   <script type="application/ld+json">
   {"@context":"https://schema.org","@graph":[
     {"@type":"WebSite","@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#website","name":"Zuhause am Bach","url":"https://topdiveair-sketch.github.io/Direcktbuchungen/","inLanguage":"de-AT"},
-    {"@type":"WebPage","@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#webpage","name":"Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau","url":"https://topdiveair-sketch.github.io/Direcktbuchungen/","isPartOf":{"@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#website"},"about":{"@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#lodging"},"dateModified":"2026-08-10","inLanguage":"de-AT"}
+    {"@type":"WebPage","@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#webpage","name":"Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau","url":"https://topdiveair-sketch.github.io/Direcktbuchungen/","isPartOf":{"@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#website"},"about":{"@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#lodging"},"dateModified":"2026-09-02","inLanguage":"de-AT"}
   ]}
   </script>
 <style id="zab-gepaeckfrei-style">
@@ -1080,15 +1080,22 @@
   <header class="top" id="start">
     <nav class="nav">
       <div class="language-switcher" aria-label="Sprache wählen">
-        <button type="button" data-lang="de">🇩🇪 DE</button>
-        <button type="button" data-lang="en">🇬🇧 EN</button>
-        <button type="button" data-lang="cs">🇨🇿 CZ</button>
-        <button type="button" data-lang="hu">🇭🇺 HU</button>
-        <button type="button" data-lang="es">🇪🇸 ES</button>
-        <button type="button" data-lang="fr">🇫🇷 FR</button>
-        <label class="sr-only" for="mobileLanguage">Sprache wählen</label>
-        <select id="mobileLanguage" class="mobile-language-select" aria-label="Sprache wählen">
-          <option value="de">🇩🇪 Deutsch</option><option value="en">🇬🇧 English</option><option value="cs">🇨🇿 Čeština</option><option value="hu">🇭🇺 Magyar</option><option value="es">🇪🇸 Español</option><option value="fr">🇫🇷 Français</option>
+        <a href="./" aria-current="page">🇩🇪 DE</a>
+        <a href="en/">🇬🇧 EN</a>
+        <a href="cs/">🇨🇿 CZ</a>
+        <a href="sk/">🇸🇰 SK</a>
+        <a href="hu/">🇭🇺 HU</a>
+        <a href="pl/">🇵🇱 PL</a>
+        <a href="nl/">🇳🇱 NL</a>
+        <label class="sr-only" for="staticLanguage">Sprache wählen</label>
+        <select id="staticLanguage" class="mobile-language-select" aria-label="Sprache wählen" onchange="window.location.href=this.value">
+          <option value="./" selected>🇩🇪 Deutsch</option>
+          <option value="en/">🇬🇧 English</option>
+          <option value="cs/">🇨🇿 Čeština</option>
+          <option value="sk/">🇸🇰 Slovenčina</option>
+          <option value="hu/">🇭🇺 Magyar</option>
+          <option value="pl/">🇵🇱 Polski</option>
+          <option value="nl/">🇳🇱 Nederlands</option>
         </select>
       </div>
       <div class="nav-links">
@@ -2564,13 +2571,8 @@
       es: { 0: "Soleado", 1: "Mayormente soleado", 2: "Parcialmente nublado", 3: "Nublado", 45: "Niebla", 48: "Niebla helada", 51: "Llovizna ligera", 53: "Llovizna", 55: "Llovizna fuerte", 61: "Lluvia ligera", 63: "Lluvia", 65: "Lluvia fuerte", 71: "Nieve ligera", 73: "Nieve", 75: "Nieve fuerte", 80: "Chubascos ligeros", 81: "Chubascos", 82: "Chubascos fuertes", 95: "Tormenta", 96: "Tormenta con granizo", 99: "Tormenta fuerte" },
       fr: { 0: "Ensoleillé", 1: "Plutôt ensoleillé", 2: "Partiellement nuageux", 3: "Nuageux", 45: "Brouillard", 48: "Brouillard givrant", 51: "Bruine légère", 53: "Bruine", 55: "Forte bruine", 61: "Pluie légère", 63: "Pluie", 65: "Forte pluie", 71: "Faible neige", 73: "Neige", 75: "Forte neige", 80: "Averses légères", 81: "Averses", 82: "Fortes averses", 95: "Orage", 96: "Orage avec grêle", 99: "Fort orage" }
     };
+    // Root page is German. Other languages use dedicated static SEO pages.
     let currentLang = "de";
-    try {
-      currentLang = localStorage.getItem("zab_lang") || "de";
-    } catch (error) {
-      currentLang = "de";
-    }
-    if (!LANGUAGES[currentLang]) currentLang = "de";
     const staticTextNodes = [];
     const staticAttributes = [];
     let latestWeatherState = null;
@@ -2645,10 +2647,7 @@
     }
 
     captureStaticText();
-    document.querySelectorAll("[data-lang]").forEach((button) => {
-      button.addEventListener("click", () => applyLanguage(button.dataset.lang));
-    });
-    document.getElementById("mobileLanguage")?.addEventListener("change", (event) => applyLanguage(event.target.value));
+    // Static language navigation is handled by normal links/select navigation.
     applyLanguage(currentLang, false);
     const configuredBookingSyncUrl = String(window.ZAB_BOOKING_SYNC_URL || "").replace(/\/+$/, "");
     const hasConfiguredBookingSync = /^https:\/\//i.test(configuredBookingSyncUrl)
@@ -2822,7 +2821,7 @@
         if (unit === "person_night") sum += price * people * n;
         else sum += price;
       }
-      sum = Math.round(sum);
+      sum = Math.round(sum * 100) / 100;
       nights.value = String(n);
       total.textContent = money(sum);
       discountNote.textContent = tr("priceDisclaimer");
