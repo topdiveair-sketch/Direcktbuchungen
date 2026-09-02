@@ -1,0 +1,90 @@
+name: Cleanup stale static data
+
+on:
+  push:
+    paths:
+      - '.github/workflows/cleanup-static-contact-room-data.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cleanup index source
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = s
+
+          # Public contact address: keep PayPal-specific account text untouched.
+          s = s.replace('E-Mail topdiveair@gmail.com.', 'E-Mail Zuhause.am.Bach@outlook.com.')
+          s = s.replace('E-Mail: topdiveair@gmail.com.', 'E-Mail: Zuhause.am.Bach@outlook.com.')
+          s = s.replace('per E-Mail an topdiveair@gmail.com erfolgen.', 'per E-Mail an Zuhause.am.Bach@outlook.com erfolgen.')
+
+          # Remove future room choices entirely from static HTML; Bachblick remains the only public room.
+          s = re.sub(r'\s*<label class="choice future-room" data-future-room hidden>.*?</label>', '', s, flags=re.S)
+
+          # Neutralize stale release-date translations and status strings.
+          replacements = {
+            'The other rooms are prepared from 15/08/2026, but not yet released.': 'Other rooms are currently not bookable.',
+            'Las demás habitaciones estarán preparadas desde el 15/08/2026, pero aún no están liberadas.': 'Las demás habitaciones no están disponibles actualmente.',
+            'Actuellement, seule Bachblick peut être demandée. Les autres chambres sont préparées à partir du 15/08/2026, mais pas encore libérées.': 'Actuellement, seule Bachblick peut être demandée. Les autres chambres ne sont pas disponibles.',
+            'ab 15.08.2026, erst nach Freigabe': 'derzeit nicht buchbar',
+            'from 15/08/2026, after release': 'currently not bookable',
+            'od 15. 8. 2026, po uvolnění': 'zatím nelze rezervovat',
+            '2026.08.15-től, felszabadítás után': 'jelenleg nem foglalható',
+            'desde 15/08/2026, tras liberación': 'actualmente no reservable',
+            'à partir du 15/08/2026, après libération': 'actuellement non réservable',
+            '{room} ist ab 15.08.2026 vorbereitet, aber noch nicht freigegeben.': '{room} ist derzeit nicht buchbar.',
+            '{room} ist erst ab 15.08.2026 buchbar.': '{room} ist derzeit nicht buchbar.',
+            '{room} is prepared from 15/08/2026, but not yet released.': '{room} is currently not bookable.',
+            '{room} is bookable from 15/08/2026.': '{room} is currently not bookable.',
+            '{room} está preparada desde el 15/08/2026, pero aún no liberada.': '{room} no está disponible actualmente.',
+            '{room} se puede reservar desde el 15/08/2026.': '{room} no está disponible actualmente.'
+          }
+          for a,b in replacements.items():
+              s = s.replace(a,b)
+
+          # Public/legal translations: change contact address only where it is a contact/cancellation address.
+          s = s.replace('Phone +43 664 6437526, email topdiveair@gmail.com.', 'Phone +43 664 6437526, email Zuhause.am.Bach@outlook.com.')
+          s = s.replace('Phone: +43 664 6437526, email: topdiveair@gmail.com.', 'Phone: +43 664 6437526, email: Zuhause.am.Bach@outlook.com.')
+          s = s.replace('Cancellations must be made in writing by email to topdiveair@gmail.com.', 'Cancellations must be made in writing by email to Zuhause.am.Bach@outlook.com.')
+          s = s.replace('Telefon +43 664 6437526, e-mail topdiveair@gmail.com.', 'Telefon +43 664 6437526, e-mail Zuhause.am.Bach@outlook.com.')
+          s = s.replace('Telefon: +43 664 6437526, e-mail: topdiveair@gmail.com.', 'Telefon: +43 664 6437526, e-mail: Zuhause.am.Bach@outlook.com.')
+          s = s.replace('Storna musí být provedena písemně e-mailem na topdiveair@gmail.com.', 'Storna musí být provedena písemně e-mailem na Zuhause.am.Bach@outlook.com.')
+          s = s.replace('A lemondásokat írásban, e-mailben kell elküldeni a topdiveair@gmail.com címre.', 'A lemondásokat írásban, e-mailben kell elküldeni a Zuhause.am.Bach@outlook.com címre.')
+
+          if s != old:
+              p.write_text(s, encoding='utf-8')
+          PY
+      - name: Validate cleanup
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s = Path('index.html').read_text(encoding='utf-8')
+          assert 'data-from="2026-08-15"' not in s
+          assert 'ab 15.08.2026, erst nach Freigabe' not in s
+          assert 'E-Mail topdiveair@gmail.com.' not in s
+          assert 'E-Mail: topdiveair@gmail.com.' not in s
+          assert 'per E-Mail an topdiveair@gmail.com erfolgen.' not in s
+          print('Static source cleanup passed')
+          PY
+      - name: Commit
+        shell: bash
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Remove stale room dates and old public contact data'
+          git push
