@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/</loc></url>
+  <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/en/</loc><lastmod>2026-09-02</lastmod></url>
+  <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/cs/</loc><lastmod>2026-09-02</lastmod></url>
+  <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/sk/</loc><lastmod>2026-09-02</lastmod></url>
+  <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/hu/</loc><lastmod>2026-09-02</lastmod></url>
+  <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/pl/</loc><lastmod>2026-09-02</lastmod></url>
+  <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/nl/</loc><lastmod>2026-09-02</lastmod></url>
   <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/unterkunft-wachau-melk-spitz/</loc></url>
   <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/wandern-radfahren-wachau.html</loc></url>
   <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/donauradweg-unterkunft-wachau/</loc></url>
@@ -33,4 +39,5 @@
   <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/wilde-wachauer-windis/pia/</loc></url>
   <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/wilde-wachauer-windis/wachaukarte/</loc><lastmod>2026-08-30</lastmod></url>
   <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/wilde-wachauer-windis/partner/wbu-aggsbach/</loc><lastmod>2026-08-30</lastmod></url>
-  <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/wachau-routenplaner/</loc><lastmod>2026-09-01</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url>\n</urlset>
+  <url><loc>https://topdiveair-sketch.github.io/Direcktbuchungen/wachau-routenplaner/</loc><lastmod>2026-09-01</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url>
+</urlset>
