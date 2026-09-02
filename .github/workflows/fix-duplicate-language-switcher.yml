@@ -1,0 +1,41 @@
+name: Fix duplicate language switcher
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-duplicate-language-switcher.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove duplicate visible language row
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('zab-sync-config.js')
+          s = p.read_text(encoding='utf-8')
+          old = '    addEvergreenLanguageLinks();'
+          new = '    document.getElementById("zab-evergreen-languages")?.remove();'
+          count = s.count(old)
+          if count != 1:
+              raise SystemExit(f'Expected exactly one language injector call, found {count}')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit fix
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add zab-sync-config.js
+          git commit -m "Remove duplicate visible language switcher"
+          git push
