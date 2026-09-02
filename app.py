@@ -182,7 +182,7 @@ def init_db() -> None:
             "google_review_count": "4",
             "google_review_url": "https://www.google.com/maps/search/?api=1&query=Zuhause%20am%20Bach%20-%20Wachau%20Aggsbach%20Markt%2082",
             "phone": "+43 664 6437526",
-            "email": "topdiveair@gmail.com",
+            "email": "Zuhause.am.Bach@outlook.com",
             "address": "Aggsbach Markt 82, 3641 Aggsbach Markt, Oesterreich",
             "public_base_url": "https://topdiveair-sketch.github.io/Gaeste/",
             "smtp_host": "smtp.gmail.com",

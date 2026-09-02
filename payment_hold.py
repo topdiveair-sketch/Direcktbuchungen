@@ -6,7 +6,7 @@ from email.message import EmailMessage
 
 
 HOLD_MINUTES = 10
-ALERT_EMAIL = "johannprem@hotmail.com"
+ALERT_EMAIL = "Zuhause.am.Bach@outlook.com"
 
 
 def init_payment_hold(app, db):

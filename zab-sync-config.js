@@ -171,7 +171,7 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app
       `Nachricht: ${payload.message || 'keine'}`,
       payload.source ? `Quelle: ${payload.source}` : ""
     ].filter(Boolean).join("\n");
-    if (sendEmailLink) sendEmailLink.href = "mailto:topdiveair@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+    if (sendEmailLink) sendEmailLink.href = "mailto:Zuhause.am.Bach@outlook.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
     if (sendWhatsappLink) sendWhatsappLink.href = "https://wa.me/436646437526?text=" + encodeURIComponent(subject + "\n\n" + body);
     if (sendOptions) sendOptions.classList.add("show");
     if (statusBox) {

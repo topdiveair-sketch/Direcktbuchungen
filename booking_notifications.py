@@ -10,6 +10,7 @@ from flask import jsonify, request
 
 
 PAID_GUEST_SUBJECT = "Buchung bestätigt – Zuhause am Bach"
+PUBLIC_CONTACT_EMAIL = "Zuhause.am.Bach@outlook.com"
 
 
 def init_booking_notifications(app, db):
@@ -286,7 +287,7 @@ def init_booking_notifications(app, db):
             "Dies ist eine unverbindliche Anfrage und blockiert das Zimmer noch nicht."
         )
         cfg = settings()
-        owner_email = cfg.get("inquiry_email", "").strip() or cfg.get("email", "").strip() or "topdiveair@gmail.com"
+        owner_email = cfg.get("inquiry_email", "").strip() or PUBLIC_CONTACT_EMAIL
         ok_owner, owner_status = smtp_send(
             owner_email,
             f"[WICHTIG] Neue Direktanfrage: {arrival_text} – {departure_text}",
