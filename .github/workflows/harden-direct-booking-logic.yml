@@ -1,0 +1,84 @@
+name: Harden direct booking logic
+
+on:
+  push:
+    paths:
+      - '.github/workflows/harden-direct-booking-logic.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply booking safety and display fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          # 1) Server-side: PayPal quote/order must accept Bachblick only.
+          p = Path('paypal_checkout.py')
+          s = p.read_text(encoding='utf-8')
+          needle = '''        if room not in rooms or departure <= arrival:\n            raise ValueError("Bitte gültiges Zimmer sowie An- und Abreise wählen.")'''
+          replacement = '''        if room != "Bachblick":\n            raise ValueError("Derzeit ist ausschließlich Bachblick für Direktbuchungen freigegeben.")\n        if room not in rooms or departure <= arrival:\n            raise ValueError("Bitte gültiges Zimmer sowie An- und Abreise wählen.")'''
+          if needle not in s:
+              raise SystemExit('PayPal room validation anchor not found')
+          s = s.replace(needle, replacement, 1)
+          p.write_text(s, encoding='utf-8')
+
+          # 2) Public page: cents, stale-calendar safety, no future-room source cards/dates.
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          old_money = '''      return Math.round(value).toLocaleString(LANGUAGES[currentLang].locale, { maximumFractionDigits: 0 }) + " EUR";'''
+          new_money = '''      return Number(value).toLocaleString(LANGUAGES[currentLang].locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " EUR";'''
+          if old_money not in s:
+              raise SystemExit('Money formatter anchor not found')
+          s = s.replace(old_money, new_money, 1)
+
+          old_avail = '''      if (conflict) {\n        return {\n          state: "blocked",'''
+          new_avail = '''      if (conflict && calendarIsFresh()) {\n        return {\n          state: "blocked",'''
+          if old_avail not in s:
+              raise SystemExit('Availability conflict anchor not found')
+          s = s.replace(old_avail, new_avail, 1)
+
+          old_submit = '''      if (conflict) {\n        alert(tr("blocked", { mode: calendarModeLabel(), updated: bookingCalendarUpdated }));'''
+          new_submit = '''      if (conflict && calendarIsFresh()) {\n        alert(tr("blocked", { mode: calendarModeLabel(), updated: bookingCalendarUpdated }));'''
+          if old_submit not in s:
+              raise SystemExit('Submit conflict anchor not found')
+          s = s.replace(old_submit, new_submit, 1)
+
+          # Remove unreleased room cards from delivered HTML, not only with JavaScript after load.
+          s, removed = re.subn(r'\n\s*<article class="room-card future-room"[^>]*>.*?</article>', '', s, flags=re.S)
+          if removed < 1:
+              raise SystemExit('No future-room cards found to remove')
+
+          # Neutralize old release-date translations that could become visible after language switching.
+          s = s.replace(
+              'Aktuálně lze poptat pouze Bachblick. Ostatní pokoje jsou připraveny od 15. 8. 2026, ale zatím nejsou uvolněny.',
+              'Aktuálně lze poptat pouze Bachblick. Ostatní pokoje nejsou v současnosti k dispozici.'
+          )
+          s = s.replace(
+              'Jelenleg csak a Bachblick kérhető. A többi szoba 2026.08.15-től előkészítve, de még nincs felszabadítva.',
+              'Jelenleg csak a Bachblick kérhető. A többi szoba jelenleg nem foglalható.'
+          )
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Validate JavaScript and Python syntax
+        run: |
+          python -m py_compile paypal_checkout.py
+          node scripts/check-inline-js.js
+      - name: Commit fixes
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add paypal_checkout.py index.html
+          git commit -m "Harden Bachblick booking logic and stale calendar fallback"
+          git push
