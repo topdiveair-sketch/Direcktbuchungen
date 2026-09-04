@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "property": "Zuhause am Bach – Wachau",
+  "updated_at": "2026-09-04",
+  "policy": {
+    "zero_cost_autonomy": true,
+    "max_commission_percent": 10,
+    "no_fixed_fees": true,
+    "no_exclusivity": true,
+    "no_contract_without_approval": true,
+    "no_price_change_without_approval": true
+  },
+  "kpis": {
+    "direct_booking_share_percent": null,
+    "data_trust_score": 36,
+    "reputation": null,
+    "booking_visibility": "startwert_keine_live_rangposition",
+    "baseline_date": "2026-09-03"
+  },
+  "channels": [
+    {"name":"Eigene Direktbuchungsseite","country":"AT/international","type":"direct","status":"live","direct_link":true,"booking_dependent":false,"cost_status":"0 EUR","url":"https://topdiveair-sketch.github.io/Direcktbuchungen/index"},
+    {"name":"Booking.com","country":"international","type":"ota","status":"active","direct_link":false,"booking_dependent":true,"cost_status":"provisionspflichtig","url":""},
+    {"name":"Google Business / Hotels","country":"international","type":"search_meta","status":"present","direct_link":true,"booking_dependent":false,"cost_status":"0 EUR","url":""},
+    {"name":"Donau Niederösterreich","country":"AT","type":"tourism","status":"direct_link_pruefung_angefragt","direct_link":null,"booking_dependent":false,"cost_status":"0 EUR","url":"https://www.donau.com/wachau-nibelungengau-kremstal/unterkunft/zu-hause-am-bach-wachau"},
+    {"name":"Marktgemeinde Aggsbach","country":"AT","type":"regional","status":"present","direct_link":true,"booking_dependent":false,"cost_status":"0 EUR","url":"https://www.aggsbach.gv.at/Zuhause_am_Bach_-_Privatzimmervermietung"},
+    {"name":"NaKole.cz","country":"CZ","type":"cycling_media","status":"outreach_sent","direct_link":null,"booking_dependent":false,"cost_status":"0 EUR","url":""}
+  ],
+  "partners": [
+    {"name":"Austria Radreisen","country":"AT/DE","status":"awaiting_reply","model":"bis 10% nur nach bezahlter Buchung"},
+    {"name":"Szallas.hu / RevNGo","country":"CEE","status":"conditions_requested","model":"Provision unbekannt; keine Aktivierung"},
+    {"name":"Naturpark Jauerling-Wachau","country":"AT","status":"internal_review","model":"kostenlose Partnerschaft angefragt"}
+  ],
+  "pending_approvals": [
+    {"topic":"Szallas.hu / RevNGo","reason":"konkrete Provision, Gebühren und Synchronisation noch offen"}
+  ],
+  "last_actions": [
+    {"date":"2026-09-04","action":"Direktlink-Prüfung bei Donau Niederösterreich angefragt","cost":"0 EUR"},
+    {"date":"2026-09-04","action":"Kostenlose Kooperation mit NaKole.cz angefragt","cost":"0 EUR"},
+    {"date":"2026-09-04","action":"Szallas.hu um konkrete Konditionen gebeten","cost":"0 EUR"}
+  ]
+}
