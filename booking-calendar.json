@@ -3,12 +3,6 @@
   "source": "Booking iCal",
   "events": [
     {
-      "start": "2026-09-05",
-      "end": "2026-09-06",
-      "summary": "CLOSED - Not available",
-      "source": "Booking"
-    },
-    {
       "start": "2026-09-07",
       "end": "2026-09-08",
       "summary": "CLOSED - Not available",
@@ -63,6 +57,6 @@
       "source": "Booking"
     }
   ],
-  "updatedAt": "5.9.2026, 00:37:54",
-  "updatedAtIso": "2026-09-04T22:37:54.120Z"
+  "updatedAt": "6.9.2026, 00:55:51",
+  "updatedAtIso": "2026-09-05T22:55:51.485Z"
 }
