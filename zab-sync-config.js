@@ -242,6 +242,19 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app
     }
   }
 
+  function loadWinterJauerlingPromo() {
+    const path = window.location.pathname || "";
+    const isGermanHome = !/\/(en|cs|sk|hu|pl|nl)\//.test(path);
+    const month = new Date().getMonth() + 1;
+    const winterWindow = month >= 9 || month <= 3;
+    if (!isGermanHome || !winterWindow || document.querySelector('script[src*="winter-jauerling-promo.js"]')) return;
+    const script = document.createElement("script");
+    script.src = "winter-jauerling-promo.js?v=20260906-1";
+    script.defer = true;
+    script.dataset.zabWinterJauerling = "1";
+    document.body.appendChild(script);
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     captureAttribution();
     strengthenStagePositioning();
@@ -249,6 +262,7 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app
     scrubReleaseDates();
     document.getElementById("zab-evergreen-languages")?.remove();
     installOneClickInquiry();
+    loadWinterJauerlingPromo();
 
     const form = document.getElementById("requestForm");
     ["input", "change"].forEach((eventName) => {
