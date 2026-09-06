@@ -15,6 +15,7 @@ ready(function(){
     const form=document.getElementById("requestForm");
     const availability=document.getElementById("availabilityStatus");
     const submitRequest=document.getElementById("submitRequest");
+    const totalField=document.getElementById("total");
     if(!paypalLink||!form) return;
 
     const style=document.createElement("style");
@@ -62,6 +63,41 @@ ready(function(){
       return Math.max(1,Math.min(2,Number(value("adults")||2)));
     }
 
+    function parseLocalDate(text){
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(text||"")) return null;
+      const parts=text.split("-").map(Number);
+      const d=new Date(parts[0],parts[1]-1,parts[2]);
+      return Number.isNaN(d.getTime())?null:d;
+    }
+
+    function ymd(date){
+      const y=date.getFullYear();
+      const m=String(date.getMonth()+1).padStart(2,"0");
+      const d=String(date.getDate()).padStart(2,"0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function enforceValidStay(){
+      const arrival=document.getElementById("arrival");
+      const departure=document.getElementById("departure");
+      if(!arrival||!departure) return;
+      const a=parseLocalDate(arrival.value);
+      if(!a) return;
+      const minDeparture=new Date(a.getTime());
+      minDeparture.setDate(minDeparture.getDate()+1);
+      const minValue=ymd(minDeparture);
+      departure.min=minValue;
+      const d=parseLocalDate(departure.value);
+      if(!d||d<=a) departure.value=minValue;
+    }
+
+    function stayNights(){
+      const a=parseLocalDate(value("arrival"));
+      const d=parseLocalDate(value("departure"));
+      if(!a||!d||d<=a) return 0;
+      return Math.round((d-a)/86400000);
+    }
+
     function updateEtappenjausePrice(){
       const input=document.getElementById("etappenjauseExtra");
       if(!input) return;
@@ -70,6 +106,32 @@ ready(function(){
       input.dataset.unit="once";
       const price=input.closest(".choice")?.querySelector(".price");
       if(price) price.textContent=`+${amount.toFixed(2).replace(".",",")}`;
+    }
+
+    function recalculateVisibleTotal(){
+      if(!totalField) return;
+      const nights=stayNights();
+      if(nights<=0){
+        totalField.textContent="Termin wählen";
+        return;
+      }
+      const adults=etappenAdults();
+      const room=selectedRoom();
+      let sum=Number(room?.dataset.price||0)*nights;
+      for(const extra of form.querySelectorAll('input[name="extra"]:checked')){
+        const price=Number(extra.dataset.price||0);
+        const unit=extra.dataset.unit||"once";
+        if(unit==="person_night") sum+=price*adults*nights;
+        else if(unit==="night") sum+=price*nights;
+        else sum+=price;
+      }
+      totalField.textContent=`${sum.toFixed(2).replace(".",",")} EUR`;
+    }
+
+    function refreshPricing(){
+      enforceValidStay();
+      updateEtappenjausePrice();
+      setTimeout(recalculateVisibleTotal,0);
     }
 
     function installEtappenjause(){
@@ -88,15 +150,12 @@ ready(function(){
     function promoteDirectBookingSurface(){
       const heroEyebrow=document.querySelector(".hero-copy .eyebrow");
       if(heroEyebrow) heroEyebrow.textContent="Direkt buchen ohne Buchungsplattform";
-
       const bookingTitle=document.getElementById("booking-title");
       if(bookingTitle) bookingTitle.textContent="Wachau-Etappe direkt buchen";
-
       const bookingIntro=document.querySelector(".booking-intro");
       if(bookingIntro){
         bookingIntro.textContent="Reisedaten wählen, Live-Verfügbarkeit prüfen und einen freien Termin sicher mit PayPal direkt buchen. Falls Sofortbuchung nicht möglich ist, bleibt die persönliche Anfrage verfügbar.";
       }
-
       const trust=form.closest(".panel")?.querySelector(".direct-booking-trust");
       const trustStrong=trust?.querySelector("strong");
       const trustSpan=trust?.querySelector("span");
@@ -104,14 +163,12 @@ ready(function(){
       if(trustStrong) trustStrong.textContent="Direkt buchen bei den Gastgebern";
       if(trustSpan) trustSpan.textContent="Live-Verfügbarkeit, transparenter Preis und sichere PayPal-Zahlung.";
       if(trustSmall) trustSmall.textContent="Ohne Provision oder Umweg über eine zusätzliche Buchungsplattform.";
-
       const bookingTile=document.querySelector(".quick-tile.book");
       const bookingTileTitle=bookingTile?.querySelector("span");
       const bookingTileSmall=bookingTile?.querySelector("small");
       if(bookingTileTitle) bookingTileTitle.textContent="Direkt buchen";
       if(bookingTileSmall) bookingTileSmall.textContent="Verfügbarkeit live prüfen";
       if(bookingTile) bookingTile.setAttribute("aria-label","Direkt buchen – Verfügbarkeit live prüfen");
-
       if(submitRequest) submitRequest.textContent="Buchungsanfrage senden";
     }
 
@@ -344,16 +401,22 @@ ready(function(){
 
     installEtappenjause();
     promoteDirectBookingSurface();
+    refreshPricing();
 
-    const adultsField=document.getElementById("adults");
-    if(adultsField){
-      adultsField.addEventListener("change",function(){
-        updateEtappenjausePrice();
-      },true);
-      adultsField.addEventListener("input",function(){
-        updateEtappenjausePrice();
-      },true);
-    }
+    form.addEventListener("change",function(event){
+      if(event.target?.id==="arrival") enforceValidStay();
+      refreshPricing();
+      scheduleVerification();
+    },true);
+
+    form.addEventListener("input",function(event){
+      const id=event.target?.id||"";
+      const name=event.target?.name||"";
+      if(["arrival","departure","adults","luggageTransport","etappenjauseExtra"].includes(id)||["room","extra"].includes(name)){
+        refreshPricing();
+        scheduleVerification();
+      }
+    },true);
 
     paypalLink.removeAttribute("target");
     paypalLink.removeAttribute("rel");
@@ -364,13 +427,6 @@ ready(function(){
       hidePayPal("Sofortzahlung wird nach Einrichtung des sicheren PayPal-Checkouts aktiviert. Bis dahin bitte Buchungsanfrage senden.");
       return;
     }
-
-    form.addEventListener("change",scheduleVerification);
-    form.addEventListener("input",function(event){
-      const id=event.target?.id||"";
-      const name=event.target?.name||"";
-      if(["arrival","departure","adults","luggageTransport","etappenjauseExtra"].includes(id)||["room","extra"].includes(name)) scheduleVerification();
-    });
 
     scheduleVerification();
   },0);
