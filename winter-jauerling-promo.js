@@ -1,6 +1,10 @@
 (function(){
   "use strict";
 
+  const CAMPAIGN="winter_jauerling_2026_27";
+  const ATTRIBUTION_KEY="zab_attribution_v1";
+  const METRICS_KEY="zab_winter_metrics_v1";
+
   function isGermanHome(){
     const path=window.location.pathname||"";
     return !/\/(en|cs|sk|hu|pl|nl)\//.test(path) && !/skifahren-jauerling-unterkunft-wachau|winter-wachau-jauerling/.test(path);
@@ -11,7 +15,58 @@
     return month>=9 || month<=3;
   }
 
+  function readJson(storage,key,fallback){
+    try{return JSON.parse(storage.getItem(key)||"")||fallback;}catch(_){return fallback;}
+  }
+
+  function writeJson(storage,key,value){
+    try{storage.setItem(key,JSON.stringify(value));}catch(_){}
+  }
+
+  function markWinterAttribution(source,medium){
+    const existing=readJson(sessionStorage,ATTRIBUTION_KEY,{});
+    writeJson(sessionStorage,ATTRIBUTION_KEY,{
+      source:source||existing.source||"website",
+      medium:medium||existing.medium||"internal",
+      campaign:CAMPAIGN,
+      referrer:existing.referrer||document.referrer||""
+    });
+  }
+
+  function recordWinterEvent(name,details){
+    const data=readJson(localStorage,METRICS_KEY,{events:[],counts:{}});
+    data.counts=data.counts||{};
+    data.counts[name]=(data.counts[name]||0)+1;
+    data.events=Array.isArray(data.events)?data.events:[];
+    data.events.push({
+      event:name,
+      campaign:CAMPAIGN,
+      page:window.location.pathname,
+      at:new Date().toISOString(),
+      details:details||{}
+    });
+    if(data.events.length>200)data.events=data.events.slice(-200);
+    writeJson(localStorage,METRICS_KEY,data);
+
+    try{
+      window.dataLayer=window.dataLayer||[];
+      window.dataLayer.push({event:name,campaign:CAMPAIGN,...(details||{})});
+    }catch(_){}
+  }
+
+  if(typeof window.zabTrack!=="function"){
+    window.zabTrack=function(name,details){recordWinterEvent(name,details);};
+  }
+
+  function inferWinterReturn(){
+    if(/skifahren-jauerling-unterkunft-wachau|winter-wachau-jauerling/i.test(document.referrer||"")){
+      markWinterAttribution("website","winter_landingpage");
+      recordWinterEvent("winter_return_to_booking",{referrer:document.referrer});
+    }
+  }
+
   function installWinterPromo(){
+    inferWinterReturn();
     if(!isGermanHome() || !inWinterCampaignWindow() || document.getElementById("zab-winter-jauerling")) return;
 
     const section=document.createElement("section");
@@ -26,7 +81,7 @@
           <p class="zab-winter-note">Liftbetrieb, Schneelage, Skischule und Verleih bitte immer aktuell direkt beim Jauerling prüfen.</p>
         </div>
         <div class="zab-winter-actions">
-          <a class="zab-winter-primary" href="skifahren-jauerling-unterkunft-wachau/?utm_source=website&utm_medium=internal&utm_campaign=winter_jauerling">Jauerling-Wochenende ansehen</a>
+          <a class="zab-winter-primary" href="skifahren-jauerling-unterkunft-wachau/?utm_source=website&utm_medium=internal&utm_campaign=${CAMPAIGN}">Jauerling-Wochenende ansehen</a>
           <a class="zab-winter-secondary" href="#requestForm">Verfügbarkeit prüfen</a>
         </div>
       </div>`;
@@ -50,6 +105,18 @@
     const main=document.querySelector("main");
     if(main) main.insertAdjacentElement("beforebegin",section);
     else document.body.appendChild(section);
+
+    recordWinterEvent("winter_promo_impression");
+
+    section.querySelector(".zab-winter-primary")?.addEventListener("click",()=>{
+      markWinterAttribution("website","internal");
+      recordWinterEvent("winter_landingpage_click");
+    });
+
+    section.querySelector(".zab-winter-secondary")?.addEventListener("click",()=>{
+      markWinterAttribution("website","winter_booking_cta");
+      recordWinterEvent("winter_booking_cta_click");
+    });
   }
 
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",installWinterPromo,{once:true});
