@@ -52,6 +52,36 @@ ready(function(){
       return /^https:\/\//i.test(apiBase) && !/(PASTE|DEIN|EXAMPLE|RAILWAY-DOMAIN)/i.test(apiBase);
     }
 
+    function promoteDirectBookingSurface(){
+      const heroEyebrow=document.querySelector(".hero-copy .eyebrow");
+      if(heroEyebrow) heroEyebrow.textContent="Direkt buchen ohne Buchungsplattform";
+
+      const bookingTitle=document.getElementById("booking-title");
+      if(bookingTitle) bookingTitle.textContent="Wachau-Etappe direkt buchen";
+
+      const bookingIntro=document.querySelector(".booking-intro");
+      if(bookingIntro){
+        bookingIntro.textContent="Reisedaten wählen, Live-Verfügbarkeit prüfen und einen freien Termin sicher mit PayPal direkt buchen. Falls Sofortbuchung nicht möglich ist, bleibt die persönliche Anfrage verfügbar.";
+      }
+
+      const trust=form.closest(".panel")?.querySelector(".direct-booking-trust");
+      const trustStrong=trust?.querySelector("strong");
+      const trustSpan=trust?.querySelector("span");
+      const trustSmall=trust?.querySelector("small");
+      if(trustStrong) trustStrong.textContent="Direkt buchen bei den Gastgebern";
+      if(trustSpan) trustSpan.textContent="Live-Verfügbarkeit, transparenter Preis und sichere PayPal-Zahlung.";
+      if(trustSmall) trustSmall.textContent="Ohne Provision oder Umweg über eine zusätzliche Buchungsplattform.";
+
+      const bookingTile=document.querySelector(".quick-tile.book");
+      const bookingTileTitle=bookingTile?.querySelector("span");
+      const bookingTileSmall=bookingTile?.querySelector("small");
+      if(bookingTileTitle) bookingTileTitle.textContent="Direkt buchen";
+      if(bookingTileSmall) bookingTileSmall.textContent="Verfügbarkeit live prüfen";
+      if(bookingTile) bookingTile.setAttribute("aria-label","Direkt buchen – Verfügbarkeit live prüfen");
+
+      if(submitRequest) submitRequest.textContent="Buchungsanfrage senden";
+    }
+
     function value(id){ return (document.getElementById(id)?.value||"").trim(); }
     function selectedRoom(){ return form.querySelector('input[name="room"]:checked'); }
     function selectedExtraByValue(name){
@@ -283,6 +313,8 @@ ready(function(){
       hidePayPal("Sofortzahlung wird nach Einrichtung des sicheren PayPal-Checkouts aktiviert. Bis dahin bitte Buchungsanfrage senden.");
       return;
     }
+
+    promoteDirectBookingSurface();
 
     form.addEventListener("change",scheduleVerification);
     form.addEventListener("input",function(event){
