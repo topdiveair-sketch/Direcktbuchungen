@@ -85,35 +85,6 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app
     return current;
   }
 
-  function addEvergreenLanguageLinks() {
-    if (document.getElementById("zab-evergreen-languages")) return;
-    const switcher = document.querySelector(".language-switcher");
-    if (!switcher) return;
-    const nav = document.createElement("div");
-    nav.id = "zab-evergreen-languages";
-    nav.setAttribute("aria-label", "Internationale Seiten");
-    nav.innerHTML = [
-      ['./', 'DE', 'de-AT'],
-      ['en/', 'EN', 'en'],
-      ['cs/', 'CZ', 'cs'],
-      ['sk/', 'SK', 'sk'],
-      ['hu/', 'HU', 'hu'],
-      ['pl/', 'PL', 'pl'],
-      ['nl/', 'NL', 'nl']
-    ].map(([href,label,lang]) => `<a href="${href}" hreflang="${lang}">${label}</a>`).join('');
-    const style = document.createElement("style");
-    style.textContent = `
-      #zab-evergreen-languages{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;width:100%;margin-top:4px}
-      #zab-evergreen-languages a{display:inline-grid;place-items:center;min-width:34px;min-height:30px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.93);color:#17211f;text-decoration:none;font-size:12px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.16)}
-      .zab-room-status{margin-top:6px!important;padding:7px 9px;border-radius:8px;background:#f4f0e8;color:#715725!important;font-size:12px!important;font-weight:800}
-      .zab-direct-send-ok{padding:12px;border-radius:10px;background:#e8f7ef;color:#155f48;font-weight:850}
-      .zab-direct-send-error{padding:12px;border-radius:10px;background:#fff0eb;color:#8c341f;font-weight:850}
-      @media(max-width:640px){#zab-evergreen-languages{justify-content:center;margin:6px 0 2px}}
-    `;
-    document.head.appendChild(style);
-    switcher.appendChild(nav);
-  }
-
   function selectedExtra(form, value) {
     return Array.from(form.querySelectorAll('input[name="extra"]:checked')).some((input) => input.value === value);
   }
@@ -236,8 +207,44 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app
     }, true);
   }
 
+  function strengthenStagePositioning() {
+    const path = window.location.pathname || "";
+    const isGermanHome = !/\/(en|cs|sk|hu|pl|nl)\//.test(path);
+    if (!isGermanHome) return;
+
+    document.title = "Zuhause am Bach – Etappenquartier Wachau | Donauradweg & Welterbesteig";
+
+    const description = document.querySelector('meta[name="description"]');
+    if (description) {
+      description.setAttribute("content", "Persönliches Etappenquartier in Aggsbach Markt in der Wachau – für Donauradweg und Welterbesteig. Fahrrad sicher abstellen, E-Bike laden, Kleidung trocknen, Frühstück und Gepäckservice auf Anfrage.");
+    }
+
+    const desktopTitle = document.querySelector(".desktop-hero-title");
+    if (desktopTitle) desktopTitle.textContent = "Zuhause am Bach – Etappenquartier am Donauradweg & Welterbesteig Wachau";
+
+    const mobileTitle = document.querySelector(".mobile-hero-title");
+    if (mobileTitle) mobileTitle.textContent = "Zuhause am Bach – Etappenquartier am Donauradweg & Welterbesteig";
+
+    const mobileBenefits = document.querySelector(".mobile-hero-benefits");
+    if (mobileBenefits) mobileBenefits.innerHTML = "🚴 Fahrrad sicher · ⚡ E-Bike laden<br>☔ Kleidung trocknen · 🍳 Frühstück · 🥾 Gepäckservice";
+
+    const heroTrust = document.querySelector(".hero-trust");
+    if (heroTrust && !heroTrust.querySelector("[data-zab-dry]")) {
+      const dry = document.createElement("span");
+      dry.dataset.zabDry = "1";
+      dry.textContent = "✓ Kleidung trocknen";
+      heroTrust.appendChild(dry);
+    }
+
+    const bookingIntro = document.querySelector(".booking-intro");
+    if (bookingIntro) {
+      bookingIntro.textContent = "Alles für die nächste Etappe: Fahrrad sicher abstellen, E-Bike laden, Kleidung trocknen, Frühstück wählen und Gepäckservice auf Anfrage. Reisedaten wählen und direkt bei uns anfragen.";
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     captureAttribution();
+    strengthenStagePositioning();
     removeUnreleasedRooms();
     scrubReleaseDates();
     document.getElementById("zab-evergreen-languages")?.remove();
