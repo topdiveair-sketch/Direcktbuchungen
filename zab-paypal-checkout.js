@@ -52,6 +52,39 @@ ready(function(){
       return /^https:\/\//i.test(apiBase) && !/(PASTE|DEIN|EXAMPLE|RAILWAY-DOMAIN)/i.test(apiBase);
     }
 
+    function value(id){ return (document.getElementById(id)?.value||"").trim(); }
+    function selectedRoom(){ return form.querySelector('input[name="room"]:checked'); }
+    function selectedExtraByValue(name){
+      return Array.from(form.querySelectorAll('input[name="extra"]:checked')).some(x=>x.value===name);
+    }
+
+    function etappenAdults(){
+      return Math.max(1,Math.min(2,Number(value("adults")||2)));
+    }
+
+    function updateEtappenjausePrice(){
+      const input=document.getElementById("etappenjauseExtra");
+      if(!input) return;
+      const amount=12.9*etappenAdults();
+      input.dataset.price=String(amount);
+      input.dataset.unit="once";
+      const price=input.closest(".choice")?.querySelector(".price");
+      if(price) price.textContent=`+${amount.toFixed(2).replace(".",",")}`;
+    }
+
+    function installEtappenjause(){
+      if(document.getElementById("etappenjauseExtra")) return;
+      const extras=form.querySelector(".extras");
+      if(!extras) return;
+      const luggage=form.querySelector("#luggageTransport")?.closest(".choice");
+      const label=document.createElement("label");
+      label.className="choice";
+      label.innerHTML='<input id="etappenjauseExtra" type="checkbox" name="extra" value="Etappenjause für unterwegs" data-price="25.8" data-unit="once"><span><strong>Etappenjause für unterwegs</strong><small>12,90 EUR pro Person · Weckerl, Obst, kleine Stärkung und Wasser · bitte bis Vorabend bestellen</small></span><b class="price">+25,80</b>';
+      if(luggage) extras.insertBefore(label,luggage);
+      else extras.appendChild(label);
+      updateEtappenjausePrice();
+    }
+
     function promoteDirectBookingSurface(){
       const heroEyebrow=document.querySelector(".hero-copy .eyebrow");
       if(heroEyebrow) heroEyebrow.textContent="Direkt buchen ohne Buchungsplattform";
@@ -82,12 +115,6 @@ ready(function(){
       if(submitRequest) submitRequest.textContent="Buchungsanfrage senden";
     }
 
-    function value(id){ return (document.getElementById(id)?.value||"").trim(); }
-    function selectedRoom(){ return form.querySelector('input[name="room"]:checked'); }
-    function selectedExtraByValue(name){
-      return Array.from(form.querySelectorAll('input[name="extra"]:checked')).some(x=>x.value===name);
-    }
-
     function setRequestFallback(visible){
       form.classList.remove("zab-booking-blocked");
       form.classList.toggle("zab-paypal-primary",!visible);
@@ -112,6 +139,7 @@ ready(function(){
         extras:{
           breakfast:selectedExtraByValue("Frühstück"),
           jause:selectedExtraByValue("Wachauer Jause"),
+          etappenjause:selectedExtraByValue("Etappenjause für unterwegs"),
           luggage:Boolean(luggage?.checked)
         }
       };
@@ -215,6 +243,10 @@ ready(function(){
         hidePayPal();
         return false;
       }
+      if(data.extras.etappenjause){
+        hidePayPal("Etappenjause ist ausgewählt. Bitte die Buchungsanfrage senden; die Jause wird für die nächste Etappe vorbereitet und separat bestätigt.");
+        return false;
+      }
       if(data.extras.luggage){
         hidePayPal("Gepäcktransport hat einen streckenabhängigen Preis. Bitte Gepäcktransport abwählen und die Übernachtung bezahlen oder zuerst eine Anfrage senden.");
         return false;
@@ -267,6 +299,12 @@ ready(function(){
         if(paypalHint) paypalHint.textContent="Für die Sofortbuchung bitte zuerst Name, E-Mail und Telefonnummer vollständig eintragen.";
         return;
       }
+      if(data.extras.etappenjause){
+        if(paypalHint) paypalHint.textContent="Die Etappenjause wird über die persönliche Buchungsanfrage bestätigt. Bitte dafür die Buchungsanfrage senden.";
+        document.getElementById("etappenjauseExtra")?.focus();
+        setRequestFallback(true);
+        return;
+      }
       if(data.extras.luggage){
         if(paypalHint) paypalHint.textContent="Gepäcktransport hat einen streckenabhängigen Preis. Bitte Gepäcktransport abwählen und die Übernachtung bezahlen oder zuerst eine Anfrage senden.";
         document.getElementById("luggageTransport")?.focus();
@@ -304,6 +342,19 @@ ready(function(){
       }
     }
 
+    installEtappenjause();
+    promoteDirectBookingSurface();
+
+    const adultsField=document.getElementById("adults");
+    if(adultsField){
+      adultsField.addEventListener("change",function(){
+        updateEtappenjausePrice();
+      },true);
+      adultsField.addEventListener("input",function(){
+        updateEtappenjausePrice();
+      },true);
+    }
+
     paypalLink.removeAttribute("target");
     paypalLink.removeAttribute("rel");
     paypalLink.href="#";
@@ -314,13 +365,11 @@ ready(function(){
       return;
     }
 
-    promoteDirectBookingSurface();
-
     form.addEventListener("change",scheduleVerification);
     form.addEventListener("input",function(event){
       const id=event.target?.id||"";
       const name=event.target?.name||"";
-      if(["arrival","departure","adults","luggageTransport"].includes(id)||["room","extra"].includes(name)) scheduleVerification();
+      if(["arrival","departure","adults","luggageTransport","etappenjauseExtra"].includes(id)||["room","extra"].includes(name)) scheduleVerification();
     });
 
     scheduleVerification();
