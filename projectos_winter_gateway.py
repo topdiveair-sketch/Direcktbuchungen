@@ -12,6 +12,7 @@ from winter_analytics_gateway import app, _summary
 from railway_app import db, require_admin
 from direct_booking_metrics import init_direct_booking_metrics
 from market_leader_metrics import init_market_leader_metrics
+from market_leader_scheduler import init_market_leader_scheduler
 
 # Public repository stores only the SHA-256 of the packaged ProjectOS token.
 # The actual high-entropy token is shipped only in the user's local ProjectOS package.
@@ -42,6 +43,7 @@ def _projectos_authorized() -> bool:
 
 _direct_booking_summary = init_direct_booking_metrics(app, db, require_admin)
 _market_leader_summary = init_market_leader_metrics(app, db, require_admin)
+init_market_leader_scheduler(app, db, _market_leader_summary)
 
 
 @app.get("/api/projectos/winter-performance")
@@ -80,4 +82,5 @@ def projectos_winter_health():
         "market_leader_endpoint": "/api/projectos/market-leader-performance",
         "direct_booking_metrics": bool(app.extensions.get("zab_direct_booking_metrics_initialized")),
         "market_leader_metrics": bool(app.extensions.get("zab_market_leader_metrics_initialized")),
+        "market_leader_scheduler": bool(app.extensions.get("zab_market_leader_scheduler_initialized")),
     }, 200
