@@ -17,6 +17,7 @@ public partial class MainWindow : Window
         if(page=="Reisen"||page=="Routenplaner"){new TripManagementWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Verfügbarkeit"||page=="Gepäck"||page=="Kandidaten"){new OperationsWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Stornos"){new CancellationWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
+        if(page=="System"){new SystemWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Dashboard")RefreshDashboard();
     }
 }
