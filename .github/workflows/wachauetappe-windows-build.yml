@@ -20,6 +20,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+      - name: Generate WachauEtappe icon
+        shell: pwsh
+        run: '& "windows\WachauEtappe.Zentrale\tools\New-WachauEtappeIcon.ps1"'
       - name: Restore
         run: dotnet restore windows/WachauEtappe.Zentrale/WachauEtappe.Zentrale.csproj
       - name: Build
