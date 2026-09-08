@@ -1,6 +1,7 @@
 name: WachauEtappe Windows Build
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'windows/WachauEtappe.Zentrale/**'
@@ -25,8 +26,18 @@ jobs:
         run: dotnet build windows/WachauEtappe.Zentrale/WachauEtappe.Zentrale.csproj --configuration Release --no-restore
       - name: Publish Windows x64
         run: dotnet publish windows/WachauEtappe.Zentrale/WachauEtappe.Zentrale.csproj --configuration Release --runtime win-x64 --self-contained true --output artifacts/WachauEtappe-Zentrale
-      - name: Upload artifact
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+      - name: Build Setup.exe
+        shell: pwsh
+        run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "windows\WachauEtappe.Zentrale\installer\WachauEtappe.iss"'
+      - name: Upload portable artifact
         uses: actions/upload-artifact@v4
         with:
           name: WachauEtappe-Zentrale-win-x64
           path: artifacts/WachauEtappe-Zentrale
+      - name: Upload self-installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: WachauEtappe-Zentrale-Setup
+          path: artifacts/installer/WachauEtappe-Zentrale-Setup.exe
