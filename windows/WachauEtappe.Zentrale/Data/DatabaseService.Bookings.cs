@@ -9,6 +9,22 @@ public sealed partial class DatabaseService
     {
         Execute("CREATE TABLE IF NOT EXISTS Bookings(Id TEXT PRIMARY KEY,Reference TEXT NOT NULL UNIQUE,HostId TEXT NOT NULL,StayDate TEXT NOT NULL,Guests INTEGER NOT NULL DEFAULT 1,GuestName TEXT,GuestEmail TEXT,GuestPhone TEXT,Status TEXT NOT NULL DEFAULT 'requested',Price REAL,PaymentMethod TEXT NOT NULL DEFAULT 'host',CreatedUtc TEXT NOT NULL,UpdatedUtc TEXT,Note TEXT)");
         Execute("CREATE INDEX IF NOT EXISTS IX_Bookings_HostDate ON Bookings(HostId,StayDate)");
+        Execute("CREATE TABLE IF NOT EXISTS HostCapacity(HostId TEXT PRIMARY KEY,Units INTEGER NOT NULL DEFAULT 1,UpdatedUtc TEXT)");
+    }
+
+    public int GetHostCapacity(string hostId)
+    {
+        EnsureBookingTables();
+        using var c=new SqliteConnection(ConnectionString); c.Open(); using var q=c.CreateCommand();
+        q.CommandText="SELECT COALESCE((SELECT Units FROM HostCapacity WHERE HostId=@h),1)"; q.Parameters.AddWithValue("@h",hostId);
+        return Math.Max(1,Convert.ToInt32(q.ExecuteScalar()??1));
+    }
+
+    public void SetHostCapacity(string hostId,int units)
+    {
+        EnsureBookingTables();
+        Execute("INSERT INTO HostCapacity(HostId,Units,UpdatedUtc) VALUES(@h,@u,@t) ON CONFLICT(HostId) DO UPDATE SET Units=@u,UpdatedUtc=@t",("@h",hostId),("@u",Math.Max(1,units)),("@t",DateTime.UtcNow.ToString("O")));
+        Audit("host_capacity","Host",hostId,$"units={Math.Max(1,units)}");
     }
 
     public List<BookingSearchResult> SearchBookableHosts(string location,string stayDate,bool requireLuggage=false)
@@ -23,15 +39,13 @@ SELECT h.Id,h.Name,COALESCE(h.Location,''),COALESCE(a.Status,'unknown'),a.Price,
        COALESCE(h.DirectUrl,''),COALESCE(h.Email,''),COALESCE(h.Phone,'')
 FROM Hosts h
 LEFT JOIN Availability a ON a.HostId=h.Id AND a.StayDate=@date
+LEFT JOIN HostCapacity cap ON cap.HostId=h.Id
 WHERE h.Published=1 AND h.Status='verified' AND h.AcceptingBookings=1
   AND h.OneNightVerified=1 AND h.CashAtHostVerified=1
   AND (@luggage=0 OR h.LuggageVerified=1)
   AND (@location='' OR lower(COALESCE(h.Location,'')) LIKE '%'||lower(@location)||'%')
   AND COALESCE(a.Status,'unknown') <> 'blocked'
-  AND NOT EXISTS(
-      SELECT 1 FROM Bookings b
-      WHERE b.HostId=h.Id AND b.StayDate=@date AND b.Status IN ('requested','confirmed')
-  )
+  AND (SELECT COUNT(*) FROM Bookings b WHERE b.HostId=h.Id AND b.StayDate=@date AND b.Status IN ('requested','confirmed')) < COALESCE(cap.Units,1)
 ORDER BY CASE COALESCE(a.Status,'unknown') WHEN 'available' THEN 0 ELSE 1 END,
          CASE WHEN a.Price IS NULL THEN 1 ELSE 0 END,a.Price,h.Name
 """;
@@ -49,6 +63,7 @@ ORDER BY CASE COALESCE(a.Status,'unknown') WHEN 'available' THEN 0 ELSE 1 END,
     public string CreateBooking(string hostId,string stayDate,int guests,string guestName,string guestEmail,string guestPhone,double? price,string note="")
     {
         EnsureBookingTables();
+        using(var c=new SqliteConnection(ConnectionString)){c.Open();using var q=c.CreateCommand();q.CommandText="SELECT (SELECT COUNT(*) FROM Bookings b WHERE b.HostId=@h AND b.StayDate=@d AND b.Status IN ('requested','confirmed')) < COALESCE((SELECT Units FROM HostCapacity WHERE HostId=@h),1)";q.Parameters.AddWithValue("@h",hostId);q.Parameters.AddWithValue("@d",stayDate);if(Convert.ToInt32(q.ExecuteScalar()??0)!=1)throw new InvalidOperationException("Für diesen Gastgeber ist an diesem Datum kein freies Kontingent mehr vorhanden.");}
         var id=Guid.NewGuid().ToString("N");
         var reference=$"WB-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..5].ToUpperInvariant()}";
         Execute("INSERT INTO Bookings(Id,Reference,HostId,StayDate,Guests,GuestName,GuestEmail,GuestPhone,Status,Price,PaymentMethod,CreatedUtc,UpdatedUtc,Note) VALUES(@id,@r,@h,@d,@g,@n,@e,@p,'requested',@price,'host',@u,@u,@note)",
