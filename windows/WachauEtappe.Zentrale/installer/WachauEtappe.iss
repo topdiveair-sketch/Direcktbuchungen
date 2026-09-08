@@ -1,5 +1,5 @@
 #define MyAppName "WachauEtappe Zentrale"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "WachauEtappe"
 #define MyAppExeName "WachauEtappe.Zentrale.exe"
 
@@ -27,15 +27,13 @@ UninstallDisplayIcon={app}\WachauEtappe.ico
 [Languages]
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 
-[Tasks]
-Name: "desktopicon"; Description: "Desktop-Verknüpfung erstellen"; GroupDescription: "Zusätzliche Verknüpfungen:"; Flags: unchecked
-
 [Files]
 Source: "..\..\..\artifacts\WachauEtappe-Zentrale\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\Assets\WachauEtappe.ico"; DestDir: "{app}"; DestName: "WachauEtappe.ico"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\WachauEtappe.ico"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\WachauEtappe.ico"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\WachauEtappe.ico"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "WachauEtappe Zentrale starten"; Flags: nowait postinstall skipifsilent
