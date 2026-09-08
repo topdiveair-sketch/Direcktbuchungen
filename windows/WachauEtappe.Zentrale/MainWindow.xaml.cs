@@ -12,6 +12,7 @@ public partial class MainWindow : Window
         if(sender is not Button button||button.Tag is not string page)return;
         PageTitle.Text=page;
         if(page=="Unterkunft"){new BookingWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
+        if(page=="Buchungen"){new BookingManagementWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Gastgeber"){new HostManagementWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Reisen"||page=="Routenplaner"){new TripManagementWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Verfügbarkeit"||page=="Gepäck"||page=="Kandidaten"){new OperationsWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
