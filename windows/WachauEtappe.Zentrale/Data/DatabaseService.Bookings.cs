@@ -78,6 +78,7 @@ ORDER BY CASE COALESCE(a.Status,'unknown') WHEN 'available' THEN 0 ELSE 1 END,
         Execute("INSERT INTO Bookings(Id,Reference,HostId,StayDate,Guests,GuestName,GuestEmail,GuestPhone,Status,Price,PaymentMethod,CreatedUtc,UpdatedUtc,Note,TripId,TripDayId) VALUES(@id,@r,@h,@d,@g,@n,@e,@p,'requested',@price,'host',@u,@u,@note,@trip,@day)",
             ("@id",id),("@r",reference),("@h",hostId),("@d",stayDate),("@g",Math.Max(1,guests)),("@n",guestName),("@e",guestEmail),("@p",guestPhone),("@price",price),("@u",DateTime.UtcNow.ToString("O")),("@note",note),("@trip",tripId),("@day",tripDayId));
         if(tripDayId is not null) Execute("UPDATE TripDays SET BookingStatus='requested' WHERE Id=@id",("@id",tripDayId));
+        if(!string.IsNullOrWhiteSpace(tripId)) RecalculateTripStatus(tripId);
         Audit("booking_created","Booking",id,reference);
         return reference;
     }
@@ -94,6 +95,7 @@ ORDER BY CASE COALESCE(a.Status,'unknown') WHEN 'available' THEN 0 ELSE 1 END,
             using(var c=new SqliteConnection(ConnectionString)){c.Open();using var q=c.CreateCommand();q.CommandText="SELECT Price FROM Availability WHERE HostId=@h AND StayDate=@d";q.Parameters.AddWithValue("@h",day.HostId);q.Parameters.AddWithValue("@d",day.TravelDate);var value=q.ExecuteScalar();if(value is not null && value!=DBNull.Value)price=Convert.ToDouble(value);}
             try{CreateBooking(day.HostId,day.TravelDate,trip.Guests,trip.GuestName,trip.GuestEmail,trip.GuestPhone,price,$"Reise {trip.Reference} · Tag {day.DayNumber}",trip.Id,day.Id);created++;}catch{failed++;}
         }
+        RecalculateTripStatus(trip.Id);
         Audit("trip_booking_batch","Trip",trip.Id,$"created={created}; skipped={skipped}; failed={failed}");
         return (created,skipped,failed);
     }
@@ -113,8 +115,28 @@ ORDER BY CASE COALESCE(a.Status,'unknown') WHEN 'available' THEN 0 ELSE 1 END,
     {
         EnsureBookingTables();
         Execute("UPDATE Bookings SET Status=@s,UpdatedUtc=@u WHERE Id=@id",("@s",status),("@u",DateTime.UtcNow.ToString("O")),("@id",id));
-        using var c=new SqliteConnection(ConnectionString);c.Open();using var q=c.CreateCommand();q.CommandText="SELECT TripDayId FROM Bookings WHERE Id=@id";q.Parameters.AddWithValue("@id",id);var day=q.ExecuteScalar();
-        if(day is not null && day!=DBNull.Value) Execute("UPDATE TripDays SET BookingStatus=@s WHERE Id=@d",("@s",status),("@d",Convert.ToInt64(day)));
+        string? tripId=null; long? tripDayId=null;
+        using(var c=new SqliteConnection(ConnectionString))
+        {
+            c.Open();using var q=c.CreateCommand();q.CommandText="SELECT TripId,TripDayId FROM Bookings WHERE Id=@id";q.Parameters.AddWithValue("@id",id);using var r=q.ExecuteReader();
+            if(r.Read()){tripId=r.IsDBNull(0)?null:r.GetString(0);tripDayId=r.IsDBNull(1)?null:r.GetInt64(1);}
+        }
+        if(tripDayId is not null) Execute("UPDATE TripDays SET BookingStatus=@s WHERE Id=@d",("@s",status),("@d",tripDayId));
+        if(!string.IsNullOrWhiteSpace(tripId)) RecalculateTripStatus(tripId);
         Audit("booking_status","Booking",id,status);
+    }
+
+    public string RecalculateTripStatus(string tripId)
+    {
+        var total=0;var confirmed=0;var active=0;
+        using(var c=new SqliteConnection(ConnectionString))
+        {
+            c.Open();using var q=c.CreateCommand();
+            q.CommandText="SELECT COUNT(*),SUM(CASE WHEN BookingStatus='confirmed' THEN 1 ELSE 0 END),SUM(CASE WHEN BookingStatus IN ('requested','confirmed') THEN 1 ELSE 0 END) FROM TripDays WHERE TripId=@t";
+            q.Parameters.AddWithValue("@t",tripId);using var r=q.ExecuteReader();if(r.Read()){total=r.GetInt32(0);confirmed=r.IsDBNull(1)?0:r.GetInt32(1);active=r.IsDBNull(2)?0:r.GetInt32(2);}
+        }
+        var status=total==0?"draft":confirmed==total?"confirmed":active>0?"booking":"planned";
+        Execute("UPDATE Trips SET Status=@s,UpdatedUtc=@u WHERE Id=@t AND Status NOT IN ('completed','cancelled')",("@s",status),("@u",DateTime.UtcNow.ToString("O")),("@t",tripId));
+        return status;
     }
 }
