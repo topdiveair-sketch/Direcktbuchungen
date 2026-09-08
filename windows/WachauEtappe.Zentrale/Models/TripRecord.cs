@@ -9,10 +9,13 @@ public sealed class TripRecord
     public string GuestPhone { get; set; } = "";
     public string StartDate { get; set; } = "";
     public string RouteId { get; set; } = "welterbesteig-wachau";
+    public string StartPlace { get; set; } = "Krems";
+    public string EndPlace { get; set; } = "Melk";
     public string Status { get; set; } = "draft";
     public bool LuggageTransfer { get; set; }
     public int Guests { get; set; } = 1;
     public double DailyTargetKm { get; set; } = 18;
+    public double DailyToleranceKm { get; set; } = 4;
 }
 
 public sealed class TripDayRecord
@@ -28,4 +31,16 @@ public sealed class TripDayRecord
     public string HostName { get; set; } = "";
     public string BookingStatus { get; set; } = "open";
     public string LuggageStatus { get; set; } = "none";
+}
+
+public sealed class PlannedStage
+{
+    public int DayNumber { get; set; }
+    public string TravelDate { get; set; } = "";
+    public string FromPlace { get; set; } = "";
+    public string ToPlace { get; set; } = "";
+    public double DistanceKm { get; set; }
+    public string? HostId { get; set; }
+    public string HostName { get; set; } = "";
+    public bool CoverageGap { get; set; }
 }
