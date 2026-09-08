@@ -10,7 +10,8 @@ public sealed class TripRecord
     public string StartDate { get; set; } = "";
     public string RouteId { get; set; } = "welterbesteig-wachau";
     public string StartPlace { get; set; } = "Krems";
-    public string EndPlace { get; set; } = "Melk";
+    // Welterbesteig is a circular 14-stage route. Krems -> Krems means the full loop.
+    public string EndPlace { get; set; } = "Krems";
     public string Status { get; set; } = "draft";
     public bool LuggageTransfer { get; set; }
     public int Guests { get; set; } = 1;
