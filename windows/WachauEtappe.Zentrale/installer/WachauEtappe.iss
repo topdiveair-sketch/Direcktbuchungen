@@ -21,6 +21,8 @@ SolidCompression=yes
 WizardStyle=modern
 UninstallDisplayName={#MyAppName}
 SetupLogging=yes
+SetupIconFile=..\Assets\WachauEtappe.ico
+UninstallDisplayIcon={app}\WachauEtappe.ico
 
 [Languages]
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
@@ -32,8 +34,8 @@ Name: "desktopicon"; Description: "Desktop-Verknüpfung erstellen"; GroupDescrip
 Source: "..\..\..\artifacts\WachauEtappe-Zentrale\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\WachauEtappe.ico"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\WachauEtappe.ico"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "WachauEtappe Zentrale starten"; Flags: nowait postinstall skipifsilent
