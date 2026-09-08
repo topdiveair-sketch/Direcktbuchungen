@@ -5,7 +5,7 @@ namespace WachauEtappe.Zentrale.Services;
 
 public sealed class RoutePlannerService
 {
-    private sealed record Segment(string From,string To,double Km);
+    private sealed record Segment(int Stage,string From,string To,double Km,string? FromBank,string? ToBank);
 
     public List<PlannedStage> Plan(TripRecord trip)
     {
@@ -14,8 +14,11 @@ public sealed class RoutePlannerService
         var startIndex=segments.FindIndex(s=>Eq(s.From,trip.StartPlace));
         var endIndex=segments.FindLastIndex(s=>Eq(s.To,trip.EndPlace));
         if(startIndex<0 || endIndex<startIndex) throw new InvalidOperationException("Start oder Ziel ist in der Route nicht eindeutig gefunden.");
+
+        // Welterbesteig is one complete route made from official stage segments.
+        // Personal walking days may combine adjacent official segments, but never invent a cross-river shortcut.
         var selected=segments.Skip(startIndex).Take(endIndex-startIndex+1).ToList();
-        var hosts=App.Database.GetHosts().Where(h=>h.Published&&h.Status=="verified"&&h.AcceptingBookings&&h.OneNightVerified&&h.CashAtHostVerified&&h.LuggageVerified).ToList();
+        var hosts=App.Database.GetHosts().Where(h=>h.Published&&h.Status=="verified"&&h.AcceptingBookings&&h.OneNightVerified&&h.CashAtHostVerified&&(!trip.LuggageTransfer||h.LuggageVerified)).ToList();
         var stages=new List<PlannedStage>();
         var i=0; var day=1; var date=DateTime.TryParse(trip.StartDate,out var parsed)?parsed:DateTime.Today;
         while(i<selected.Count)
@@ -28,11 +31,27 @@ public sealed class RoutePlannerService
                 if(sum>trip.DailyTargetKm+trip.DailyToleranceKm && j>i) break;
             }
             var km=selected.Skip(i).Take(best-i+1).Sum(s=>s.Km); var to=selected[best].To;
-            var host=hosts.FirstOrDefault(h=>Eq(h.Location,to)||h.Location.Contains(to,StringComparison.OrdinalIgnoreCase)||to.Contains(h.Location,StringComparison.OrdinalIgnoreCase));
+            var requiredBank=selected[best].ToBank ?? BankForPlace(to);
+            var host=hosts.FirstOrDefault(h=>HostMatchesPlaceAndBank(h.Location,to,requiredBank));
             stages.Add(new PlannedStage{DayNumber=day,TravelDate=date.AddDays(day-1).ToString("yyyy-MM-dd"),FromPlace=from,ToPlace=to,DistanceKm=Math.Round(km,2),HostId=host?.Id,HostName=host?.Name??"⚠ Kein freigegebener Gastgeber",CoverageGap=host is null});
             i=best+1;day++;
         }
         return stages;
+    }
+
+    private static bool HostMatchesPlaceAndBank(string hostLocation,string routePlace,string? requiredBank)
+    {
+        var placeMatch=Eq(hostLocation,routePlace)||hostLocation.Contains(routePlace,StringComparison.OrdinalIgnoreCase)||routePlace.Contains(hostLocation,StringComparison.OrdinalIgnoreCase);
+        if(!placeMatch) return false;
+        var hostBank=BankForPlace(hostLocation);
+        return requiredBank is null || hostBank is null || string.Equals(hostBank,requiredBank,StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string? BankForPlace(string place)
+    {
+        if(place.Contains("Aggsbach Markt",StringComparison.OrdinalIgnoreCase)) return "north";
+        if(place.Contains("Aggsbach Dorf",StringComparison.OrdinalIgnoreCase)) return "south";
+        return null;
     }
 
     private static bool Eq(string a,string b)=>string.Equals(a.Trim(),b.Trim(),StringComparison.OrdinalIgnoreCase);
@@ -51,8 +70,11 @@ public sealed class RoutePlannerService
         foreach(var s in segs.EnumerateArray())
         {
             string Get(params string[] names){foreach(var n in names)if(s.TryGetProperty(n,out var v))return v.GetString()??"";return "";}
+            string? GetOptional(params string[] names){foreach(var n in names)if(s.TryGetProperty(n,out var v)&&v.ValueKind==JsonValueKind.String)return v.GetString();return null;}
             double GetKm(){foreach(var n in new[]{"km","distance_km","distance"})if(s.TryGetProperty(n,out var v)&&v.TryGetDouble(out var d))return d;return 0;}
-            var from=Get("from","start","from_place");var to=Get("to","end","to_place");var km=GetKm();if(from!=""&&to!=""&&km>0)list.Add(new Segment(from,to,km));
+            var stage=s.TryGetProperty("stage",out var stageEl)&&stageEl.TryGetInt32(out var stageNo)?stageNo:list.Count+1;
+            var from=Get("from","start","from_place");var to=Get("to","end","to_place");var km=GetKm();
+            if(from!=""&&to!=""&&km>0)list.Add(new Segment(stage,from,to,km,GetOptional("from_bank"),GetOptional("to_bank")));
         }
         return list;
     }
