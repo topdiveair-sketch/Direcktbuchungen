@@ -2,15 +2,22 @@
   "season": 2027,
   "selection_criteria": [
     "direkte Lage am Donauradweg oder Welterbesteig",
-    "persoenlich gefuehrter Betrieb bevorzugt",
-    "mindestens eine Nacht moeglich",
+    "persoenlich gefuehrter Kleinbetrieb bevorzugt, auch 1-2 Zimmer",
+    "eine Nacht muss buchbar sein",
     "sichere Fahrradunterbringung oder wanderfreundliche Infrastruktur",
     "Fruehstueck oder fruehe Verpflegung moeglich",
+    "Gepaecktransport wird auf Wunsch organisiert oder verlaesslich vermittelt",
     "direkter Gastgeberkontakt",
     "transparente Storno- und Zahlungsbedingungen",
     "Bereitschaft zu Barzahlung vor Ort",
     "keine bezahlte Ranking-Bevorzugung"
   ],
+  "must_have": {
+    "one_night_stay": true,
+    "direct_host_contact": true,
+    "cash_payment_at_host": true,
+    "luggage_transfer_support": true
+  },
   "candidates": [
     {
       "name": "Gaestehaus Huber",
@@ -18,7 +25,7 @@
       "routes": ["Donauradweg", "Welterbesteig Wachau"],
       "priority": "A",
       "status": "research",
-      "reason": "Direkt am Donauradweg und Welterbesteig, Fahrradunterstellplatz, Fruehstueck, persoenlich gefuehrt."
+      "reason": "Direkt am Donauradweg und Welterbesteig, Fahrradunterstellplatz, Fruehstueck, persoenlich gefuehrt. Ein-Nacht-Regel und Gepaecktransport noch verbindlich pruefen."
     },
     {
       "name": "Gaestehaus Meyer",
@@ -26,7 +33,7 @@
       "routes": ["Welterbesteig Wachau", "Donauradweg"],
       "priority": "A",
       "status": "research",
-      "reason": "Kleines Gaestehaus im Etappenort Weissenkirchen; guter Fit fuer Direktbuchungsmodell."
+      "reason": "Kleines Gaestehaus im Etappenort Weissenkirchen; guter Fit fuer Direktbuchungsmodell. Ein-Nacht-Regel und Gepaecktransport noch verbindlich pruefen."
     },
     {
       "name": "Pension Gaestehaus Heller",
@@ -34,7 +41,7 @@
       "routes": ["Welterbesteig Wachau", "Donauradweg"],
       "priority": "A",
       "status": "research",
-      "reason": "Kleine Pension im Kerngebiet der Wachau; relevant fuer Wander- und Radgaeste."
+      "reason": "Kleine Pension im Kerngebiet der Wachau; relevant fuer Wander- und Radgaeste. Ein-Nacht-Regel und Gepaecktransport noch verbindlich pruefen."
     },
     {
       "name": "Pension Marillenhof",
@@ -42,7 +49,7 @@
       "routes": ["Welterbesteig Wachau", "Donauradweg"],
       "priority": "A",
       "status": "research",
-      "reason": "Kleine Pension in wichtigem Etappen- und Zielort Melk."
+      "reason": "Kleine Pension in wichtigem Etappen- und Zielort Melk. Ein-Nacht-Regel und Gepaecktransport noch verbindlich pruefen."
     },
     {
       "name": "Fruehstueckspension Haus Barbara",
@@ -50,7 +57,7 @@
       "routes": ["Donauradweg"],
       "priority": "B",
       "status": "research",
-      "reason": "Bett+Bike-Pool; Fruehstueckspension mit klarer Radzielgruppe."
+      "reason": "Bett+Bike-Pool; Fruehstueckspension mit klarer Radzielgruppe. Ein-Nacht-Regel und Gepaecktransport noch verbindlich pruefen."
     },
     {
       "name": "Das WeinQuadrat Boutique Stay",
@@ -58,7 +65,7 @@
       "routes": ["Donauradweg", "Welterbesteig Wachau"],
       "priority": "B",
       "status": "research",
-      "reason": "Bett+Bike-zertifiziert und stark im Wachau-Kernmarkt; eher hochwertiger Referenzbetrieb."
+      "reason": "Bett+Bike-zertifiziert und stark im Wachau-Kernmarkt; eher hochwertiger Referenzbetrieb. Ein-Nacht-Regel und Gepaecktransport noch verbindlich pruefen."
     },
     {
       "name": "Donau-Rad-Hotel Wachauerhof",
@@ -66,7 +73,7 @@
       "routes": ["Donauradweg"],
       "priority": "B",
       "status": "research",
-      "reason": "Klare Radpositionierung; interessant fuer spaetere Ausdehnung entlang der Donau."
+      "reason": "Klare Radpositionierung; interessant fuer spaetere Ausdehnung entlang der Donau. Ein-Nacht-Regel und Gepaecktransport noch verbindlich pruefen."
     },
     {
       "name": "Gartenhotel Pfeffel / Hotel & Weingut",
@@ -74,7 +81,7 @@
       "routes": ["Donauradweg", "Welterbesteig Wachau"],
       "priority": "C",
       "status": "research",
-      "reason": "Bett+Bike und exzellente Lage, aber groesserer Betrieb; eher fuer Phase 2."
+      "reason": "Bett+Bike und exzellente Lage, aber groesserer Betrieb; eher fuer Phase 2. Ein-Nacht-Regel und Gepaecktransport noch verbindlich pruefen."
     }
   ]
 }
