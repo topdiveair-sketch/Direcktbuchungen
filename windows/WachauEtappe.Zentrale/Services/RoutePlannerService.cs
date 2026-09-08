@@ -11,13 +11,31 @@ public sealed class RoutePlannerService
     {
         var segments=LoadSegments(trip.RouteId);
         if(segments.Count==0) throw new InvalidOperationException("Keine Routendaten gefunden.");
-        var startIndex=segments.FindIndex(s=>Eq(s.From,trip.StartPlace));
-        var endIndex=segments.FindLastIndex(s=>Eq(s.To,trip.EndPlace));
-        if(startIndex<0 || endIndex<startIndex) throw new InvalidOperationException("Start oder Ziel ist in der Route nicht eindeutig gefunden.");
 
-        // Welterbesteig is one complete route made from official stage segments.
-        // Personal walking days may combine adjacent official segments, but never invent a cross-river shortcut.
-        var selected=segments.Skip(startIndex).Take(endIndex-startIndex+1).ToList();
+        var startIndex=segments.FindIndex(s=>Eq(s.From,trip.StartPlace));
+        if(startIndex<0) throw new InvalidOperationException("Startort ist in der Route nicht eindeutig gefunden.");
+
+        List<Segment> selected;
+        if(Eq(trip.StartPlace,trip.EndPlace))
+        {
+            // Complete circular route: rotate the official stages so the selected start is first,
+            // then include every stage exactly once. For Krems -> Krems this is all 14 stages.
+            selected=segments.Skip(startIndex).Concat(segments.Take(startIndex)).ToList();
+        }
+        else
+        {
+            // Follow the official route direction. If the destination lies before the start in the
+            // stored list, wrap around instead of incorrectly rejecting the south-bank half.
+            var relativeEnd=Enumerable.Range(0,segments.Count)
+                .Select(offset=>(Index:(startIndex+offset)%segments.Count,Offset:offset))
+                .FirstOrDefault(x=>Eq(segments[x.Index].To,trip.EndPlace));
+            if(!Eq(segments[relativeEnd.Index].To,trip.EndPlace))
+                throw new InvalidOperationException("Zielort ist in der Route nicht eindeutig gefunden.");
+            selected=Enumerable.Range(0,relativeEnd.Offset+1)
+                .Select(offset=>segments[(startIndex+offset)%segments.Count])
+                .ToList();
+        }
+
         var hosts=App.Database.GetHosts().Where(h=>h.Published&&h.Status=="verified"&&h.AcceptingBookings&&h.OneNightVerified&&h.CashAtHostVerified&&(!trip.LuggageTransfer||h.LuggageVerified)).ToList();
         var stages=new List<PlannedStage>();
         var i=0; var day=1; var date=DateTime.TryParse(trip.StartDate,out var parsed)?parsed:DateTime.Today;
