@@ -15,18 +15,18 @@ function New-IconPng([int]$Size) {
   $green = [System.Drawing.Color]::FromArgb(23,61,50)
   $gold  = [System.Drawing.Color]::FromArgb(220,176,73)
   $white = [System.Drawing.Color]::White
-
-  $g.FillEllipse((New-Object System.Drawing.SolidBrush $green), 2, 2, $Size-4, $Size-4)
+  $bgBrush = New-Object System.Drawing.SolidBrush $green
+  $g.FillEllipse($bgBrush, 2, 2, $Size-4, $Size-4)
 
   $pen = New-Object System.Drawing.Pen $gold, ([Math]::Max(2,$Size/18))
   $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
   $pen.EndCap   = [System.Drawing.Drawing2D.LineCap]::Round
-  $pts = @(
-    (New-Object System.Drawing.PointF ($Size*0.18),($Size*0.70)),
-    (New-Object System.Drawing.PointF ($Size*0.36),($Size*0.42)),
-    (New-Object System.Drawing.PointF ($Size*0.50),($Size*0.58)),
-    (New-Object System.Drawing.PointF ($Size*0.70),($Size*0.28)),
-    (New-Object System.Drawing.PointF ($Size*0.83),($Size*0.43))
+  [System.Drawing.Point[]]$pts = @(
+    (New-Object System.Drawing.Point ([int]($Size*0.18)),([int]($Size*0.70))),
+    (New-Object System.Drawing.Point ([int]($Size*0.36)),([int]($Size*0.42))),
+    (New-Object System.Drawing.Point ([int]($Size*0.50)),([int]($Size*0.58))),
+    (New-Object System.Drawing.Point ([int]($Size*0.70)),([int]($Size*0.28))),
+    (New-Object System.Drawing.Point ([int]($Size*0.83)),([int]($Size*0.43)))
   )
   $g.DrawLines($pen,$pts)
 
@@ -42,7 +42,7 @@ function New-IconPng([int]$Size) {
   $ms = New-Object System.IO.MemoryStream
   $bmp.Save($ms,[System.Drawing.Imaging.ImageFormat]::Png)
   $bytes = $ms.ToArray()
-  $g.Dispose(); $bmp.Dispose(); $font.Dispose(); $brush.Dispose(); $pen.Dispose(); $sf.Dispose(); $ms.Dispose()
+  $g.Dispose(); $bmp.Dispose(); $font.Dispose(); $brush.Dispose(); $bgBrush.Dispose(); $pen.Dispose(); $sf.Dispose(); $ms.Dispose()
   return $bytes
 }
 
