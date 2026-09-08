@@ -4,17 +4,23 @@
     "currency": "EUR",
     "payment_principle": "cash_at_host",
     "commission_model": "host_defined_minimal_fee",
-    "quality_model": "manual_approval"
+    "quality_model": "manual_approval",
+    "operator_controlled": true,
+    "platform_holds_funds": false,
+    "platform_stores_cards": false
   },
   "hosts": [
     {
       "id": "zuhause-am-bach",
       "name": "Zuhause am Bach – Wachau",
       "status": "verified",
+      "published": true,
+      "accepting_bookings": true,
+      "operator_note": "Pilotbetrieb und Referenzbetrieb",
       "routes": ["Donauradweg", "Welterbesteig Wachau"],
       "location": "Aggsbach Markt",
       "country": "AT",
-      "direct_url": "https://topdiveair-sketch.github.io/Direcktbuchungen/?utm_source=donau-steig-direkt&utm_medium=platform&utm_campaign=direct_booking#requestForm",
+      "direct_url": "https://topdiveair-sketch.github.io/Direcktbuchungen/",
       "email": "Zuhause.am.Bach@outlook.com",
       "phone": "+43 664 6437526",
       "features": [
