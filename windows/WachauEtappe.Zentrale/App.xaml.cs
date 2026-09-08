@@ -11,7 +11,9 @@ public partial class App : Application
     {
         Database = new DatabaseService();
         Database.Initialize();
+        try{Database.AutoBackup();}catch{}
         new SeedImporter(Database).ImportAll();
+        Database.EnsureBookingTables();
         base.OnStartup(e);
     }
 }
