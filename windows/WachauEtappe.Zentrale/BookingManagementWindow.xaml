@@ -1,0 +1,6 @@
+<Window x:Class="WachauEtappe.Zentrale.BookingManagementWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="WachauEtappe · Buchungszentrale" Height="760" Width="1200" WindowStartupLocation="CenterOwner" Background="#F4F1E8">
+<Grid Margin="24"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+<StackPanel><TextBlock Text="Buchungszentrale" FontSize="28" FontWeight="Bold" Foreground="#173D32"/><TextBlock Text="Anfragen bestätigen, ablehnen oder stornieren. Zahlung bleibt direkt beim Gastgeber." Foreground="#64736D" Margin="0,4,0,16"/></StackPanel>
+<DataGrid Grid.Row="1" x:Name="BookingsGrid" AutoGenerateColumns="True" IsReadOnly="True" SelectionMode="Single" Margin="0,0,0,14"/>
+<WrapPanel Grid.Row="2"><Button Content="Bestätigen" Click="Confirm_Click" Padding="14,8" Margin="0,0,8,0"/><Button Content="Ablehnen" Click="Decline_Click" Padding="14,8" Margin="0,0,8,0"/><Button Content="Stornieren" Click="Cancel_Click" Padding="14,8" Margin="0,0,8,0"/><Button Content="Aktualisieren" Click="Refresh_Click" Padding="14,8"/></WrapPanel>
+</Grid></Window>
