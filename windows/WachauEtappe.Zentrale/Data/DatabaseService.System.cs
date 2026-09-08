@@ -11,6 +11,19 @@ public sealed partial class DatabaseService
         Audit("database_backup","System",null,targetPath);
     }
 
+    public string AutoBackup(int retentionDays=30)
+    {
+        var folder=Path.Combine(Path.GetDirectoryName(DatabasePath)??Environment.CurrentDirectory,"Backups");
+        Directory.CreateDirectory(folder);
+        var target=Path.Combine(folder,$"wachauetappe-{DateTime.Today:yyyyMMdd}.db");
+        if(!File.Exists(target)) File.Copy(DatabasePath,target,true);
+        foreach(var file in Directory.EnumerateFiles(folder,"wachauetappe-*.db"))
+        {
+            try{if(File.GetLastWriteTimeUtc(file)<DateTime.UtcNow.AddDays(-Math.Max(7,retentionDays)))File.Delete(file);}catch{}
+        }
+        return target;
+    }
+
     public void RestoreFrom(string sourcePath)
     {
         if(!File.Exists(sourcePath)) throw new FileNotFoundException("Backup-Datei nicht gefunden.",sourcePath);
