@@ -1,0 +1,80 @@
+{
+  "season": 2027,
+  "selection_criteria": [
+    "direkte Lage am Donauradweg oder Welterbesteig",
+    "persoenlich gefuehrter Betrieb bevorzugt",
+    "mindestens eine Nacht moeglich",
+    "sichere Fahrradunterbringung oder wanderfreundliche Infrastruktur",
+    "Fruehstueck oder fruehe Verpflegung moeglich",
+    "direkter Gastgeberkontakt",
+    "transparente Storno- und Zahlungsbedingungen",
+    "Bereitschaft zu Barzahlung vor Ort",
+    "keine bezahlte Ranking-Bevorzugung"
+  ],
+  "candidates": [
+    {
+      "name": "Gaestehaus Huber",
+      "location": "St. Michael",
+      "routes": ["Donauradweg", "Welterbesteig Wachau"],
+      "priority": "A",
+      "status": "research",
+      "reason": "Direkt am Donauradweg und Welterbesteig, Fahrradunterstellplatz, Fruehstueck, persoenlich gefuehrt."
+    },
+    {
+      "name": "Gaestehaus Meyer",
+      "location": "Weissenkirchen in der Wachau",
+      "routes": ["Welterbesteig Wachau", "Donauradweg"],
+      "priority": "A",
+      "status": "research",
+      "reason": "Kleines Gaestehaus im Etappenort Weissenkirchen; guter Fit fuer Direktbuchungsmodell."
+    },
+    {
+      "name": "Pension Gaestehaus Heller",
+      "location": "Weissenkirchen in der Wachau",
+      "routes": ["Welterbesteig Wachau", "Donauradweg"],
+      "priority": "A",
+      "status": "research",
+      "reason": "Kleine Pension im Kerngebiet der Wachau; relevant fuer Wander- und Radgaeste."
+    },
+    {
+      "name": "Pension Marillenhof",
+      "location": "Melk",
+      "routes": ["Welterbesteig Wachau", "Donauradweg"],
+      "priority": "A",
+      "status": "research",
+      "reason": "Kleine Pension in wichtigem Etappen- und Zielort Melk."
+    },
+    {
+      "name": "Fruehstueckspension Haus Barbara",
+      "location": "Poechlarn",
+      "routes": ["Donauradweg"],
+      "priority": "B",
+      "status": "research",
+      "reason": "Bett+Bike-Pool; Fruehstueckspension mit klarer Radzielgruppe."
+    },
+    {
+      "name": "Das WeinQuadrat Boutique Stay",
+      "location": "Weissenkirchen in der Wachau",
+      "routes": ["Donauradweg", "Welterbesteig Wachau"],
+      "priority": "B",
+      "status": "research",
+      "reason": "Bett+Bike-zertifiziert und stark im Wachau-Kernmarkt; eher hochwertiger Referenzbetrieb."
+    },
+    {
+      "name": "Donau-Rad-Hotel Wachauerhof",
+      "location": "Marbach an der Donau",
+      "routes": ["Donauradweg"],
+      "priority": "B",
+      "status": "research",
+      "reason": "Klare Radpositionierung; interessant fuer spaetere Ausdehnung entlang der Donau."
+    },
+    {
+      "name": "Gartenhotel Pfeffel / Hotel & Weingut",
+      "location": "Duernstein",
+      "routes": ["Donauradweg", "Welterbesteig Wachau"],
+      "priority": "C",
+      "status": "research",
+      "reason": "Bett+Bike und exzellente Lage, aber groesserer Betrieb; eher fuer Phase 2."
+    }
+  ]
+}
