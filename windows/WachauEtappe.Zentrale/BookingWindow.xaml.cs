@@ -31,8 +31,15 @@ public partial class BookingWindow : Window
         }
         var date=(DateBox.SelectedDate??DateTime.Today).ToString("yyyy-MM-dd");
         _=int.TryParse(GuestsBox.Text,out var guests); if(guests<1) guests=1;
-        var reference=App.Database.CreateBooking(host.HostId,date,guests,GuestNameBox.Text.Trim(),GuestEmailBox.Text.Trim(),GuestPhoneBox.Text.Trim(),host.Price,"Unterkunftssuche WachauEtappe Zentrale");
-        MessageBox.Show($"Reservierung {reference} wurde als Anfrage angelegt.\nZahlung: direkt beim Gastgeber.","WachauEtappe");
+        try
+        {
+            var reference=App.Database.CreateBooking(host.HostId,date,guests,GuestNameBox.Text.Trim(),GuestEmailBox.Text.Trim(),GuestPhoneBox.Text.Trim(),host.Price,"Unterkunftssuche WachauEtappe Zentrale");
+            MessageBox.Show($"Reservierung {reference} wurde als Anfrage angelegt.\nZahlung: direkt beim Gastgeber.","WachauEtappe");
+        }
+        catch(InvalidOperationException ex)
+        {
+            MessageBox.Show(ex.Message,"Kontingent nicht mehr verfügbar",MessageBoxButton.OK,MessageBoxImage.Information);
+        }
         Search_Click(sender,e);
     }
 }
