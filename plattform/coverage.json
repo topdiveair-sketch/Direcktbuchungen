@@ -1,0 +1,27 @@
+{
+  "season": 2027,
+  "route": "Welterbesteig Wachau",
+  "goal": "Mindestens 2-3 geeignete 1-Nacht-Gastgeber pro moeglichem Etappenziel",
+  "locations": [
+    {"location":"Krems","status":"partial","candidates":["Privatzimmer Fam. Laistler"],"need":2},
+    {"location":"Dürnstein","status":"gap","candidates":[],"need":2},
+    {"location":"Weißenkirchen","status":"good","candidates":["Gästehaus Meyer","Gästezimmer Ottmann","Pension Gästehaus Heller"],"need":0},
+    {"location":"Spitz","status":"gap","candidates":[],"need":2},
+    {"location":"Mühldorf","status":"gap","candidates":[],"need":2},
+    {"location":"Maria Laach","status":"partial","candidates":["Romana Wiener / Urlaub am Jauerling"],"need":2},
+    {"location":"Aggsbach Markt","status":"good","candidates":["Zuhause am Bach – Wachau","Goldene Wachau - Privatzimmer"],"need":1},
+    {"location":"Emmersdorf","status":"partial","candidates":["Gästehaus Wachau"],"need":2},
+    {"location":"Melk","status":"good","candidates":["Privatzimmer Langthaler","Pension Marillenhof"],"need":1},
+    {"location":"Aggsbach Dorf","status":"gap","candidates":[],"need":2},
+    {"location":"Hofarnsdorf","status":"partial","candidates":["Privatzimmer Fuchsbauer"],"need":2},
+    {"location":"Rossatz","status":"partial","candidates":["Landhaus Rossatz","Haus Annemarie"],"need":2},
+    {"location":"Unterbergern","status":"partial","candidates":["Gästehaus Fries","ferien-wohnen Cornelia Lendl"],"need":2},
+    {"location":"Mautern","status":"gap","candidates":[],"need":2}
+  ],
+  "nearby_support_pool": [
+    {"name":"e2 Privatzimmer - Eva Exenberger","location":"Maria Langegg","use_for":["Unterbergern","Maria Laach"],"status":"research"},
+    {"name":"Payers Blumenhof","location":"Oberbergern","use_for":["Unterbergern"],"status":"research"},
+    {"name":"Privatzimmer König","location":"Oberarnsdorf","use_for":["Hofarnsdorf","Rossatz"],"status":"research"},
+    {"name":"Familie Pammer","location":"Bacharnsdorf","use_for":["Hofarnsdorf"],"status":"research"}
+  ]
+}
