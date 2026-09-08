@@ -7,21 +7,27 @@
       "source": "Donau Niederösterreich",
       "loop": true,
       "total_km": 179.3,
+      "stage_count": 14,
+      "description": "Gesamtroute Welterbesteig Wachau mit 14 offiziellen Etappen. Die persönliche Mehrtagestour wird aus diesen Etappenabschnitten anhand der Tagesleistung berechnet.",
+      "places": {
+        "Aggsbach Markt": {"danube_bank":"north"},
+        "Aggsbach Dorf": {"danube_bank":"south"}
+      },
       "segments": [
-        {"from":"Krems","to":"Dürnstein","km":12.40},
-        {"from":"Dürnstein","to":"Weißenkirchen","km":16.38},
-        {"from":"Weißenkirchen","to":"Spitz","km":10.53},
-        {"from":"Spitz","to":"Mühldorf","km":10.95},
-        {"from":"Mühldorf","to":"Maria Laach","km":13.34},
-        {"from":"Maria Laach","to":"Aggsbach Markt","km":7.17},
-        {"from":"Aggsbach Markt","to":"Emmersdorf","km":14.74},
-        {"from":"Emmersdorf","to":"Melk","km":10.05},
-        {"from":"Melk","to":"Aggsbach Dorf","km":15.70},
-        {"from":"Aggsbach Dorf","to":"Hofarnsdorf","km":17.04},
-        {"from":"Hofarnsdorf","to":"Rossatz","km":16.81},
-        {"from":"Rossatz","to":"Unterbergern","km":13.90},
-        {"from":"Unterbergern","to":"Mautern","km":13.04},
-        {"from":"Mautern","to":"Krems","km":3.91}
+        {"stage":1,"from":"Krems","to":"Dürnstein","km":12.40},
+        {"stage":2,"from":"Dürnstein","to":"Weißenkirchen","km":16.38},
+        {"stage":3,"from":"Weißenkirchen","to":"Spitz","km":10.53},
+        {"stage":4,"from":"Spitz","to":"Mühldorf","km":10.95},
+        {"stage":5,"from":"Mühldorf","to":"Maria Laach","km":13.34},
+        {"stage":6,"from":"Maria Laach","to":"Aggsbach Markt","km":7.17,"to_bank":"north"},
+        {"stage":7,"from":"Aggsbach Markt","to":"Emmersdorf","km":14.74,"from_bank":"north"},
+        {"stage":8,"from":"Emmersdorf","to":"Melk","km":10.05},
+        {"stage":9,"from":"Melk","to":"Aggsbach Dorf","km":15.70,"to_bank":"south"},
+        {"stage":10,"from":"Aggsbach Dorf","to":"Hofarnsdorf","km":17.04,"from_bank":"south"},
+        {"stage":11,"from":"Hofarnsdorf","to":"Rossatz","km":16.81},
+        {"stage":12,"from":"Rossatz","to":"Unterbergern","km":13.90},
+        {"stage":13,"from":"Unterbergern","to":"Mautern","km":13.04},
+        {"stage":14,"from":"Mautern","to":"Krems","km":3.91}
       ]
     }
   ]
