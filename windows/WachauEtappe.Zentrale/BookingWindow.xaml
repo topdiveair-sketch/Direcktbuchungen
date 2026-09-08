@@ -1,0 +1,16 @@
+<Window x:Class="WachauEtappe.Zentrale.BookingWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="WachauEtappe · Unterkunft suchen" Height="800" Width="1240" WindowStartupLocation="CenterOwner" Background="#F4F1E8">
+<Grid Margin="24"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+<StackPanel><TextBlock Text="Unterkunft suchen &amp; buchen" FontSize="28" FontWeight="Bold" Foreground="#173D32"/><TextBlock Text="Direkte Gastgeber, 1 Nacht möglich, Zahlung beim Gastgeber." Foreground="#64736D" Margin="0,4,0,16"/></StackPanel>
+<Border Grid.Row="1" Background="White" CornerRadius="12" Padding="16" Margin="0,0,0,14"><WrapPanel>
+<TextBox x:Name="LocationBox" Width="180" Margin="0,0,8,0" ToolTip="Ort" Text="Krems"/>
+<DatePicker x:Name="DateBox" Width="150" Margin="0,0,8,0"/>
+<TextBox x:Name="GuestsBox" Width="80" Text="2" Margin="0,0,8,0" ToolTip="Personen"/>
+<CheckBox x:Name="LuggageBox" Content="Gepäcktransport nötig" VerticalAlignment="Center" Margin="0,0,16,0"/>
+<Button Content="Suchen" Click="Search_Click" Padding="18,8"/>
+</WrapPanel></Border>
+<DataGrid Grid.Row="2" x:Name="ResultsGrid" AutoGenerateColumns="True" IsReadOnly="True" SelectionMode="Single" Margin="0,0,0,14"/>
+<Border Grid.Row="3" Background="White" CornerRadius="12" Padding="16"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+<StackPanel Grid.Column="0"><WrapPanel><TextBox x:Name="GuestNameBox" Width="180" Margin="0,0,8,0" ToolTip="Gastname"/><TextBox x:Name="GuestEmailBox" Width="220" Margin="0,0,8,0" ToolTip="E-Mail"/><TextBox x:Name="GuestPhoneBox" Width="160" ToolTip="Telefon"/></WrapPanel><TextBlock Text="Die Reservierung wird als Anfrage angelegt. Bezahlung erfolgt direkt beim Gastgeber." Foreground="#64736D" Margin="0,8,0,0"/></StackPanel>
+<Button Grid.Column="1" Content="Reservierung anlegen" Click="CreateBooking_Click" Padding="18,9" Margin="18,0,0,0"/>
+</Grid></Border>
+</Grid></Window>
