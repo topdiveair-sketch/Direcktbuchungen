@@ -1,0 +1,44 @@
+{
+  "platform": {
+    "name": "Donau & Steig Direkt",
+    "currency": "EUR",
+    "payment_principle": "cash_at_host",
+    "commission_model": "host_defined_minimal_fee",
+    "quality_model": "manual_approval"
+  },
+  "hosts": [
+    {
+      "id": "zuhause-am-bach",
+      "name": "Zuhause am Bach – Wachau",
+      "status": "verified",
+      "routes": ["Donauradweg", "Welterbesteig Wachau"],
+      "location": "Aggsbach Markt",
+      "country": "AT",
+      "direct_url": "https://topdiveair-sketch.github.io/Direcktbuchungen/?utm_source=donau-steig-direkt&utm_medium=platform&utm_campaign=direct_booking#requestForm",
+      "email": "Zuhause.am.Bach@outlook.com",
+      "phone": "+43 664 6437526",
+      "features": [
+        "Fahrrad sicher unterstellen",
+        "E-Bike laden",
+        "Frühstück optional",
+        "Gepäcktransport auf Anfrage",
+        "Persönliche Gastgeber",
+        "Barzahlung beim Gastgeber"
+      ],
+      "payment": {
+        "stay": "cash_at_host",
+        "guarantee_mode": "deposit_by_bank_transfer",
+        "guarantee_percent": 20,
+        "platform_holds_funds": false,
+        "platform_stores_cards": false
+      },
+      "cancellation": {
+        "free_until_days_before_arrival": 7,
+        "six_to_two_days_percent": 30,
+        "under_48h_percent": 70,
+        "no_show": "first_night_100_percent",
+        "resale_relief": true
+      }
+    }
+  ]
+}
