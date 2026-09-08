@@ -8,4 +8,15 @@
     <AssemblyName>WachauEtappe.Zentrale</AssemblyName>
     <RootNamespace>WachauEtappe.Zentrale</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\plattform\hosts.json" Link="Seed\hosts.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\plattform\candidates.json" Link="Seed\candidates.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\plattform\routes.json" Link="Seed\routes.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\plattform\coverage.json" Link="Seed\coverage.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
