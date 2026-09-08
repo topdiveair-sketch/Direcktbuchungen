@@ -1,142 +1,23 @@
 {
   "season": 2027,
-  "selection_criteria": [
-    "direkte Lage am Donauradweg oder Welterbesteig",
-    "persoenlich gefuehrter Kleinbetrieb bevorzugt, auch 1-2 Zimmer",
-    "eine Nacht muss buchbar sein",
-    "sichere Fahrradunterbringung oder wanderfreundliche Infrastruktur",
-    "Fruehstueck oder fruehe Verpflegung moeglich",
-    "Gepaecktransport wird auf Wunsch organisiert oder verlaesslich vermittelt",
-    "direkter Gastgeberkontakt",
-    "transparente Storno- und Zahlungsbedingungen",
-    "Bereitschaft zu Barzahlung vor Ort",
-    "keine bezahlte Ranking-Bevorzugung"
-  ],
-  "must_have": {
-    "one_night_stay": true,
-    "direct_host_contact": true,
-    "cash_payment_at_host": true,
-    "luggage_transfer_support": true
-  },
-  "status_legend": {
-    "pilot_shortlist": "fachlich sehr passend; Pflichtkriterien noch persoenlich bestaetigen",
-    "verify_must_haves": "guter Kandidat, aber mindestens ein Pflichtkriterium noch offen",
-    "phase_2": "spaeter pruefen; fuer ersten Pilot nicht priorisiert"
-  },
+  "selection_criteria": ["direkte Lage am Donauradweg oder Welterbesteig","persoenlich gefuehrter Kleinbetrieb bevorzugt, ideal 1-5 Zimmer","eine Nacht muss buchbar sein","sichere Fahrradunterbringung oder wanderfreundliche Infrastruktur","Fruehstueck oder fruehe Verpflegung moeglich","Gepaecktransport wird auf Wunsch organisiert oder verlaesslich vermittelt","direkter Gastgeberkontakt","transparente Storno- und Zahlungsbedingungen","Bereitschaft zu Barzahlung vor Ort","keine bezahlte Ranking-Bevorzugung"],
+  "must_have": {"one_night_stay":true,"direct_host_contact":true,"cash_payment_at_host":true,"luggage_transfer_support":true},
+  "status_legend": {"pilot_shortlist":"fachlich sehr passend; Pflichtkriterien noch persoenlich bestaetigen","verify_must_haves":"guter Kandidat, aber mindestens ein Pflichtkriterium noch offen","phase_2":"spaeter pruefen; fuer ersten Pilot nicht priorisiert"},
   "candidates": [
-    {
-      "name": "Gaestehaus Meyer",
-      "location": "Weissenkirchen in der Wachau",
-      "routes": ["Welterbesteig Wachau", "Donauradweg"],
-      "priority": "A1",
-      "status": "pilot_shortlist",
-      "fit_score": 9,
-      "known": {
-        "family_run": true,
-        "small_scale": true,
-        "breakfast": true,
-        "bike_storage": true,
-        "ebike_charging": true,
-        "direct_contact": true
-      },
-      "verify": ["eine Nacht buchbar", "Barzahlung vor Ort", "Gepaecktransport organisierbar/vermittelbar"],
-      "reason": "Familiengefuehrtes Gaestehaus mit vier Doppelzimmern, Fruehstueck, sicherem Fahrradabstellraum und E-Bike-Ladestation nahe Donauradweg."
-    },
-    {
-      "name": "Gaestehaus Huber",
-      "location": "St. Michael",
-      "routes": ["Donauradweg", "Welterbesteig Wachau"],
-      "priority": "A1",
-      "status": "pilot_shortlist",
-      "fit_score": 9,
-      "known": {
-        "family_run": true,
-        "route_direct": true,
-        "breakfast": true,
-        "bike_storage": true,
-        "direct_contact": true
-      },
-      "verify": ["Zimmeranzahl", "eine Nacht buchbar", "Barzahlung vor Ort", "Gepaecktransport organisierbar/vermittelbar"],
-      "reason": "Persoenlich gefuehrter Familienbetrieb direkt am Donauradweg und Welterbesteig mit Fahrradunterstellplatz und Fruehstueck."
-    },
-    {
-      "name": "Fruehstueckspension Haus Barbara",
-      "location": "Poechlarn",
-      "routes": ["Donauradweg"],
-      "priority": "A2",
-      "status": "pilot_shortlist",
-      "fit_score": 8,
-      "known": {
-        "family_run": true,
-        "route_direct": true,
-        "breakfast": true,
-        "bike_storage": true,
-        "direct_contact": true
-      },
-      "verify": ["eine Nacht buchbar", "Barzahlung vor Ort", "Gepaecktransport organisierbar/vermittelbar"],
-      "reason": "Familiaer gefuehrte Fruehstueckspension direkt am Donauradweg mit trockenem, sicherem Fahrradraum und klarer Radzielgruppe."
-    },
-    {
-      "name": "Pension Marillenhof",
-      "location": "Melk",
-      "routes": ["Welterbesteig Wachau", "Donauradweg"],
-      "priority": "A2",
-      "status": "verify_must_haves",
-      "fit_score": 7,
-      "known": {
-        "family_run": true,
-        "small_scale": true,
-        "breakfast": true,
-        "direct_contact": true
-      },
-      "verify": ["eine Nacht buchbar", "Barzahlung vor Ort", "Fahrradunterbringung", "Gepaecktransport organisierbar/vermittelbar"],
-      "reason": "Kleine, familiaer gefuehrte Pension in Melk mit Biofruehstueck; sehr guter Etappenort, aber Rad- und Gepaeckservice noch offen."
-    },
-    {
-      "name": "Pension Gaestehaus Heller",
-      "location": "Weissenkirchen in der Wachau",
-      "routes": ["Welterbesteig Wachau", "Donauradweg"],
-      "priority": "B1",
-      "status": "verify_must_haves",
-      "fit_score": 7,
-      "known": {
-        "breakfast": true,
-        "bike_storage": true,
-        "direct_contact": true,
-        "card_payment_listed": true
-      },
-      "verify": ["persoenliche Fuehrung", "eine Nacht buchbar", "Barzahlung vor Ort", "Gepaecktransport organisierbar/vermittelbar"],
-      "reason": "Guter Rad-/Wanderfit mit Fahrradabstellraum und Fruehstueck. Kartenzahlung ist gelistet; Barzahlung und weitere Pflichtkriterien muessen geklaert werden."
-    },
-    {
-      "name": "Das WeinQuadrat Boutique Stay",
-      "location": "Weissenkirchen in der Wachau",
-      "routes": ["Donauradweg", "Welterbesteig Wachau"],
-      "priority": "B2",
-      "status": "phase_2",
-      "fit_score": 6,
-      "verify": ["eine Nacht buchbar", "Barzahlung vor Ort", "Gepaecktransport organisierbar/vermittelbar"],
-      "reason": "Guter Standort und Radbezug, aber fuer den ersten Pilot weniger passend als kleinere Privatquartiere."
-    },
-    {
-      "name": "Donau-Rad-Hotel Wachauerhof",
-      "location": "Marbach an der Donau",
-      "routes": ["Donauradweg"],
-      "priority": "B2",
-      "status": "phase_2",
-      "fit_score": 6,
-      "verify": ["eine Nacht buchbar", "Barzahlung vor Ort", "Gepaecktransport organisierbar/vermittelbar"],
-      "reason": "Starke Radpositionierung, aber groesser und weniger passend zum Kernfokus auf kleine persoenliche Gastgeber."
-    },
-    {
-      "name": "Gartenhotel Pfeffel / Hotel & Weingut",
-      "location": "Duernstein",
-      "routes": ["Donauradweg", "Welterbesteig Wachau"],
-      "priority": "C",
-      "status": "phase_2",
-      "fit_score": 4,
-      "verify": ["eine Nacht buchbar", "Barzahlung vor Ort", "Gepaecktransport organisierbar/vermittelbar"],
-      "reason": "Sehr gute Lage, aber fuer die Gruendungsphase zu gross und nicht Kernzielgruppe der Plattform."
-    }
+    {"name":"Gaestezimmer Veronika Machherndl","location":"Woesendorf","routes":["Donauradweg","Welterbesteig Wachau"],"priority":"A1","status":"pilot_shortlist","fit_score":10,"known":{"small_scale":true,"rooms":3,"route_direct":true,"bike_storage":true,"direct_contact":true},"verify":["eine Nacht buchbar","Fruehstueck","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar"],"reason":"Nur drei Gaestezimmer, direkt am Donauradweg, Fahrradabstellraum und Lage am Wachauer Routennetz; entspricht dem gewuenschten Kleinvermieterprofil sehr stark."},
+    {"name":"Gaestehaus Denk","location":"Woesendorf","routes":["Donauradweg","Welterbesteig Wachau"],"priority":"A1","status":"pilot_shortlist","fit_score":9,"known":{"small_scale":true,"route_near":true,"breakfast":true,"bike_storage":true,"direct_contact":true},"verify":["Zimmeranzahl","eine Nacht buchbar","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar"],"reason":"Gaestehaus am Fuss des Welterbesteigs und nahe Donauradweg, Fruehstueck und Fahrradkeller; sehr guter Doppelzielgruppen-Fit."},
+    {"name":"Gaestehaus Meyer","location":"Weissenkirchen in der Wachau","routes":["Welterbesteig Wachau","Donauradweg"],"priority":"A1","status":"pilot_shortlist","fit_score":9,"known":{"family_run":true,"small_scale":true,"breakfast":true,"bike_storage":true,"ebike_charging":true,"direct_contact":true},"verify":["eine Nacht buchbar","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar"],"reason":"Familiengefuehrtes Gaestehaus mit vier Doppelzimmern, Fruehstueck, sicherem Fahrradabstellraum und E-Bike-Ladestation nahe Donauradweg."},
+    {"name":"Gaestehaus Huber","location":"St. Michael","routes":["Donauradweg","Welterbesteig Wachau"],"priority":"A1","status":"pilot_shortlist","fit_score":9,"known":{"family_run":true,"route_direct":true,"breakfast":true,"bike_storage":true,"direct_contact":true},"verify":["Zimmeranzahl","eine Nacht buchbar","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar"],"reason":"Familie Gerhard und Martina Huber; direkt am Donauradweg und Welterbesteig, Fahrradunterstellplatz und reichhaltiges Fruehstueck."},
+    {"name":"Gaestezimmer Ottmann","location":"Weissenkirchen in der Wachau","routes":["Donauradweg","Welterbesteig Wachau"],"priority":"A2","status":"verify_must_haves","fit_score":8,"known":{"small_scale":true,"direct_contact":true},"verify":["Zimmeranzahl","eine Nacht buchbar","Fruehstueck","Fahrradunterbringung","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar"],"reason":"Als Gaestezimmer/Privatunterkunft besonders interessant fuer den Kernfokus; operative Pflichtkriterien muessen direkt abgefragt werden."},
+    {"name":"Privatzimmer Fam. Laistler","location":"Krems an der Donau","routes":["Donauradweg","Welterbesteig Wachau"],"priority":"A2","status":"verify_must_haves","fit_score":8,"known":{"small_scale":true,"bike_focus":true,"bike_storage":true,"direct_contact":true},"verify":["eine Nacht buchbar","Fruehstueck","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar"],"reason":"Privatzimmer nahe Donauradweg mit ueberdachter Fahrradunterbringung; wichtiger Start-/Zielort Krems."},
+    {"name":"Fruehstueckspension Haus Barbara","location":"Poechlarn","routes":["Donauradweg"],"priority":"A2","status":"pilot_shortlist","fit_score":8,"known":{"family_run":true,"route_direct":true,"breakfast":true,"bike_storage":true,"direct_contact":true},"verify":["eine Nacht buchbar","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar"],"reason":"Familiaer gefuehrte Fruehstueckspension direkt am Donauradweg mit trockenem, sicherem Fahrradraum."},
+    {"name":"Privatzimmer Langthaler","location":"Melk","routes":["Donauradweg","Welterbesteig Wachau"],"priority":"A2","status":"verify_must_haves","fit_score":8,"known":{"small_scale":true,"direct_contact":true},"verify":["eine Nacht buchbar","Fruehstueck","Fahrradunterbringung","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar","Entfernung zur Route"],"reason":"Kleine Bed-and-Breakfast-/Privatzimmer-Struktur im wichtigen Etappenort Melk; gute Alternative zu groesseren Pensionen."},
+    {"name":"Pension Marillenhof","location":"Melk","routes":["Welterbesteig Wachau","Donauradweg"],"priority":"B1","status":"verify_must_haves","fit_score":7,"known":{"family_run":true,"small_scale":true,"breakfast":true,"direct_contact":true},"verify":["eine Nacht buchbar","Barzahlung vor Ort","Fahrradunterbringung","Gepaecktransport organisierbar/vermittelbar"],"reason":"Kleine familiaer gefuehrte Pension in Melk; guter Etappenort, aber Pflichtservices noch offen."},
+    {"name":"Pension Gaestehaus Heller","location":"Weissenkirchen in der Wachau","routes":["Welterbesteig Wachau","Donauradweg"],"priority":"B1","status":"verify_must_haves","fit_score":7,"known":{"family_run":true,"rooms":11,"breakfast":true,"bike_storage":true,"direct_contact":true},"verify":["eine Nacht buchbar","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar"],"reason":"Sehr persoenlich von Familie Heller gefuehrt, direkt am Donauradweg und nahe Welterbesteig; mit 11 Zimmern groesser als unser Ideal, aber fachlich passend."},
+    {"name":"Goldene Wachau - Privatzimmer","location":"Aggsbach Markt","routes":["Donauradweg","Welterbesteig Wachau"],"priority":"B1","status":"verify_must_haves","fit_score":7,"known":{"small_scale":true,"direct_contact":true},"verify":["eine Nacht buchbar","Fruehstueck","Fahrradunterbringung","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar","Bereitschaft zur Plattformpartnerschaft"],"reason":"Privatzimmer im strategisch wichtigen Aggsbach Markt; kann neben Zuhause am Bach eine notwendige Kapazitaetsalternative schaffen."},
+    {"name":"Gaestehaus Wachau","location":"Leiben/Emmersdorf Umgebung","routes":["Donauradweg"],"priority":"B2","status":"verify_must_haves","fit_score":6,"known":{"route_direct":true,"bike_storage":true,"breakfast_optional":true,"direct_contact":true},"verify":["eine Nacht buchbar","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar"],"reason":"Direkt am Donauradweg, versperrbarer Fahrradraum und Fruehstueck auf Wunsch; Ferienwohnungsstruktur ist fuer Ein-Nacht-Gaeste noch zu klaeren."},
+    {"name":"Das WeinQuadrat Boutique Stay","location":"Weissenkirchen in der Wachau","routes":["Donauradweg","Welterbesteig Wachau"],"priority":"C","status":"phase_2","fit_score":6,"verify":["eine Nacht buchbar","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar"],"reason":"Guter Standort, aber fuer den Pilot weniger passend als kleine Privatquartiere."},
+    {"name":"Donau-Rad-Hotel Wachauerhof","location":"Marbach an der Donau","routes":["Donauradweg"],"priority":"C","status":"phase_2","fit_score":5,"verify":["eine Nacht buchbar","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar"],"reason":"Starke Radpositionierung, aber groesser und weniger passend zum Kernfokus."},
+    {"name":"Gartenhotel Pfeffel / Hotel & Weingut","location":"Duernstein","routes":["Donauradweg","Welterbesteig Wachau"],"priority":"C","status":"phase_2","fit_score":4,"verify":["eine Nacht buchbar","Barzahlung vor Ort","Gepaecktransport organisierbar/vermittelbar"],"reason":"Sehr gute Lage, aber nicht Kernzielgruppe der Gruendungsphase."}
   ]
 }
