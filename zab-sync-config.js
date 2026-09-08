@@ -173,7 +173,7 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app
       const oldText = submit.textContent;
       submit.disabled = true;
       submit.setAttribute("aria-busy", "true");
-      submit.textContent = "Anfrage wird direkt gesendet …";
+      submit.textContent = "Direktbuchung wird vorbereitet …";
       const statusBox = document.getElementById("status");
       try {
         const response = await fetch(API_BASE + "/api/inquiry", {
@@ -193,10 +193,10 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app
         document.getElementById("sendOptions")?.classList.remove("show");
         if (statusBox) {
           statusBox.className = "status show zab-direct-send-ok";
-          statusBox.textContent = "✓ Ihre Anfrage wurde direkt an Zuhause am Bach übermittelt. Sie ist noch keine verbindliche Buchung; wir bestätigen sie persönlich.";
+          statusBox.textContent = "✓ Ihre Buchungsanfrage wurde direkt übermittelt. Sobald wir sie persönlich bestätigen, ist Ihre Buchung verbindlich.";
           statusBox.scrollIntoView({behavior:"smooth",block:"center"});
         }
-        submit.textContent = "✓ Anfrage direkt übermittelt";
+        submit.textContent = "✓ Buchungsanfrage übermittelt";
       } catch (error) {
         showLegacyFallback(payload, error.message || "Direktversand nicht erreichbar. Bitte E-Mail oder WhatsApp verwenden.");
         submit.disabled = false;
@@ -212,21 +212,21 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app
     const isGermanHome = !/\/(en|cs|sk|hu|pl|nl)\//.test(path);
     if (!isGermanHome) return;
 
-    document.title = "Zuhause am Bach – Etappenquartier Wachau | Donauradweg & Welterbesteig";
+    document.title = "Zuhause am Bach – Direkt buchen in der Wachau | Donauradweg & Welterbesteig";
 
     const description = document.querySelector('meta[name="description"]');
     if (description) {
-      description.setAttribute("content", "Persönliches Etappenquartier in Aggsbach Markt in der Wachau – für Donauradweg und Welterbesteig. Fahrrad sicher abstellen, E-Bike laden, Kleidung trocknen, Frühstück und Gepäckservice auf Anfrage.");
+      description.setAttribute("content", "Zuhause am Bach in Aggsbach Markt direkt buchen: Direktpreis, Live-Verfügbarkeit, sichere Fahrradunterbringung, E-Bike laden, Frühstück und persönliche Wachau-Tipps.");
     }
 
     const desktopTitle = document.querySelector(".desktop-hero-title");
-    if (desktopTitle) desktopTitle.textContent = "Zuhause am Bach – Etappenquartier am Donauradweg & Welterbesteig Wachau";
+    if (desktopTitle) desktopTitle.textContent = "Zuhause am Bach – direkt bei den Gastgebern buchen";
 
     const mobileTitle = document.querySelector(".mobile-hero-title");
-    if (mobileTitle) mobileTitle.textContent = "Zuhause am Bach – Etappenquartier am Donauradweg & Welterbesteig";
+    if (mobileTitle) mobileTitle.textContent = "Zuhause am Bach – direkt buchen";
 
     const mobileBenefits = document.querySelector(".mobile-hero-benefits");
-    if (mobileBenefits) mobileBenefits.innerHTML = "🚴 Fahrrad sicher · ⚡ E-Bike laden<br>☔ Kleidung trocknen · 🍳 Frühstück · 🥾 Gepäckservice";
+    if (mobileBenefits) mobileBenefits.innerHTML = "✓ Direktpreis · ✓ Live-Verfügbarkeit<br>🚴 Fahrrad sicher · ⚡ E-Bike laden · 🍳 Frühstück";
 
     const heroTrust = document.querySelector(".hero-trust");
     if (heroTrust && !heroTrust.querySelector("[data-zab-dry]")) {
@@ -238,8 +238,54 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app
 
     const bookingIntro = document.querySelector(".booking-intro");
     if (bookingIntro) {
-      bookingIntro.textContent = "Alles für die nächste Etappe: Fahrrad sicher abstellen, E-Bike laden, Kleidung trocknen, Frühstück wählen und Gepäckservice auf Anfrage. Reisedaten wählen und direkt bei uns anfragen.";
+      bookingIntro.textContent = "Reisedaten wählen, Live-Verfügbarkeit prüfen und Ihren Direktpreis sehen. Bei eindeutig freiem Termin können Sie direkt bezahlen; die persönliche Bestätigung macht die Buchung verbindlich.";
     }
+  }
+
+  function optimizeDirectBookingCopy() {
+    const path = window.location.pathname || "";
+    if (/\/(en|cs|sk|hu|pl|nl)\//.test(path)) return;
+
+    const bookingTitle = document.getElementById("booking-title");
+    if (bookingTitle) bookingTitle.textContent = "Verfügbarkeit prüfen & direkt buchen";
+
+    const kicker = document.querySelector(".booking-kicker");
+    if (kicker) kicker.textContent = "Direktpreis · Live-Verfügbarkeit · Persönliche Bestätigung";
+
+    const directTrust = document.querySelector(".direct-booking-trust");
+    if (directTrust) {
+      const strong = directTrust.querySelector("strong");
+      const span = directTrust.querySelector("span");
+      const small = directTrust.querySelector("small");
+      if (strong) strong.textContent = "Direkt bei Zuhause am Bach";
+      if (span) span.textContent = "Reisedaten prüfen, transparenten Direktpreis sehen und bei freiem Termin direkt bezahlen.";
+      if (small) small.textContent = "Ohne Umweg über eine zusätzliche Buchungsplattform.";
+    }
+
+    const directBoxTitle = document.getElementById("zab-direct-title");
+    if (directBoxTitle) directBoxTitle.textContent = "Ihr direkter Weg zur Buchung";
+    const directBox = document.getElementById("zab-direct-box");
+    const directBoxText = directBox?.querySelector("p");
+    if (directBoxText) directBoxText.textContent = "1. Reisedaten wählen. 2. Live-Verfügbarkeit und Direktpreis prüfen. 3. Bei freiem Termin direkt bezahlen. 4. Persönliche Buchungsbestätigung erhalten.";
+
+    const submit = document.getElementById("submitRequest");
+    if (submit && !submit.disabled && !/^✓/.test(submit.textContent || "")) submit.textContent = "Verfügbarkeit prüfen & Direktpreis sichern";
+
+    const status = document.getElementById("status");
+    if (status && !status.classList.contains("show")) status.textContent = "Ihre Anfrage wird direkt an uns übermittelt. Verbindlich wird die Buchung mit unserer persönlichen Bestätigung.";
+
+    const sendTitle = document.getElementById("sendOptionsTitle");
+    if (sendTitle) sendTitle.textContent = "Buchungsanfrage vorbereitet";
+    const sendText = document.getElementById("sendOptionsText");
+    if (sendText) sendText.textContent = "Falls der Direktversand nicht klappt, wählen Sie hier E-Mail oder WhatsApp.";
+
+    const directAdvantagesTitle = document.getElementById("direkt-vorteile-title");
+    if (directAdvantagesTitle) directAdvantagesTitle.textContent = "Direkt buchen – transparent und persönlich";
+    const directAdvantages = document.querySelector("#direkt-vorteile .section-head p");
+    if (directAdvantages) directAdvantages.textContent = "Reisedaten und Zimmer wählen, Direktpreis prüfen und ohne zusätzliche Buchungsplattform direkt mit Zuhause am Bach buchen.";
+
+    const heroEyebrow = document.querySelector(".hero-copy .eyebrow");
+    if (heroEyebrow) heroEyebrow.textContent = "Direktpreis statt Plattform-Umweg";
   }
 
   function loadWinterJauerlingPromo() {
@@ -263,6 +309,8 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app
     document.getElementById("zab-evergreen-languages")?.remove();
     installOneClickInquiry();
     loadWinterJauerlingPromo();
+    optimizeDirectBookingCopy();
+    setTimeout(optimizeDirectBookingCopy, 0);
 
     const form = document.getElementById("requestForm");
     ["input", "change"].forEach((eventName) => {
@@ -271,13 +319,14 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app
         setTimeout(() => {
           removeUnreleasedRooms();
           scrubReleaseDates();
+          optimizeDirectBookingCopy();
         }, 0);
       });
     });
 
     document.querySelectorAll("[data-lang], #mobileLanguage").forEach((element) => {
-      element.addEventListener("click", () => setTimeout(() => { removeUnreleasedRooms(); scrubReleaseDates(); }, 0));
-      element.addEventListener("change", () => setTimeout(() => { removeUnreleasedRooms(); scrubReleaseDates(); }, 0));
+      element.addEventListener("click", () => setTimeout(() => { removeUnreleasedRooms(); scrubReleaseDates(); optimizeDirectBookingCopy(); }, 0));
+      element.addEventListener("change", () => setTimeout(() => { removeUnreleasedRooms(); scrubReleaseDates(); optimizeDirectBookingCopy(); }, 0));
     });
 
     /* index.html laedt das Checkout-Script bereits. Nur als Fallback nachladen. */
