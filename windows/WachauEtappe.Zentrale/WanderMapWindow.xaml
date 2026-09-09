@@ -1,7 +1,6 @@
 <Window x:Class="WachauEtappe.Zentrale.WanderMapWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="WachauEtappe · Wanderkarte" Height="900" Width="1450" MinHeight="720" MinWidth="1150"
         WindowStartupLocation="CenterOwner" Background="#F4F1E8">
     <Grid Margin="22">
@@ -9,7 +8,7 @@
         <DockPanel Grid.Row="0">
             <StackPanel DockPanel.Dock="Left">
                 <TextBlock Text="Wanderkarte &amp; Gastgeberbelegung" FontSize="28" FontWeight="Bold" Foreground="#173D32"/>
-                <TextBlock Text="Welterbesteig Wachau · Routen, Zimmer, Betten und Telefonnummern auf einen Blick" Foreground="#64736D" Margin="0,4,0,0"/>
+                <TextBlock Text="Offline in der WachauEtappe-Zentrale · kein Edge- oder Browserzugriff erforderlich" Foreground="#64736D" Margin="0,4,0,0"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <TextBlock Text="Datum" VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -22,14 +21,27 @@
             <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
             <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="8">
                 <Grid>
-                    <wv2:WebView2 x:Name="MapView"/>
+                    <Border Background="#F8FAF7" CornerRadius="8" ClipToBounds="True">
+                        <Viewbox Stretch="Uniform">
+                            <Canvas x:Name="MapCanvas" Width="920" Height="650" Background="#F8FAF7" MouseLeftButtonDown="MapCanvas_MouseLeftButtonDown"/>
+                        </Viewbox>
+                    </Border>
                     <Border VerticalAlignment="Top" HorizontalAlignment="Left" Margin="14" Background="#EEFFFFFF" CornerRadius="8" Padding="10">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="●" Foreground="#248A3D" FontSize="18"/><TextBlock Text=" frei" Margin="2,0,12,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="●" Foreground="#D68616" FontSize="18"/><TextBlock Text=" wenig frei" Margin="2,0,12,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="●" Foreground="#C93030" FontSize="18"/><TextBlock Text=" besetzt" Margin="2,0,12,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="●" Foreground="#7A8580" FontSize="18"/><TextBlock Text=" nicht gemeldet" Margin="2,0,0,0" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="●" Foreground="#248A3D" FontSize="18"/><TextBlock Text=" frei" Margin="2,0,12,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="●" Foreground="#D68616" FontSize="18"/><TextBlock Text=" wenig frei" Margin="2,0,12,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="●" Foreground="#C93030" FontSize="18"/><TextBlock Text=" besetzt" Margin="2,0,12,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="●" Foreground="#7A8580" FontSize="18"/><TextBlock Text=" nicht gemeldet" Margin="2,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                <TextBlock Text="━━" Foreground="#173D32" FontWeight="Bold"/><TextBlock Text=" Nordufer" Margin="4,0,14,0"/>
+                                <TextBlock Text="━━" Foreground="#315D7A" FontWeight="Bold"/><TextBlock Text=" Südufer" Margin="4,0,0,0"/>
+                            </StackPanel>
                         </StackPanel>
+                    </Border>
+                    <Border VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="14" Background="#EEFFFFFF" CornerRadius="8" Padding="10">
+                        <TextBlock Text="Karte ist eine geografische Betriebsübersicht der WachauEtappe-Zentrale. Marker anklicken für Gastgeberdetails." Foreground="#64736D" FontSize="11"/>
                     </Border>
                 </Grid>
             </Border>
@@ -40,8 +52,11 @@
                     <StackPanel Grid.Row="0">
                         <TextBlock Text="Unterkünfte" FontSize="20" FontWeight="SemiBold" Foreground="#173D32"/>
                         <TextBlock x:Name="SummaryText" Foreground="#64736D" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        <Border x:Name="SelectedHostPanel" Background="#EEF5F1" CornerRadius="8" Padding="10" Margin="0,10,0,0" Visibility="Collapsed">
+                            <TextBlock x:Name="SelectedHostText" TextWrapping="Wrap"/>
+                        </Border>
                     </StackPanel>
-                    <DataGrid x:Name="HostGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                    <DataGrid x:Name="HostGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionChanged="HostGrid_SelectionChanged">
                         <DataGrid.Columns>
                             <DataGridTemplateColumn Header="" Width="30"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Text="●" FontSize="20" HorizontalAlignment="Center"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Foreground" Value="#7A8580"/><Style.Triggers><DataTrigger Binding="{Binding StatusColor}" Value="green"><Setter Property="Foreground" Value="#248A3D"/></DataTrigger><DataTrigger Binding="{Binding StatusColor}" Value="orange"><Setter Property="Foreground" Value="#D68616"/></DataTrigger><DataTrigger Binding="{Binding StatusColor}" Value="red"><Setter Property="Foreground" Value="#C93030"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                             <DataGridTextColumn Header="Gastgeber" Binding="{Binding Name}" Width="*"/>
