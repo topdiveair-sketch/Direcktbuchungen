@@ -169,6 +169,7 @@ _init_growth_tables()
 
 import windis_data_gateway  # noqa: E402,F401
 import windis_public_gateway  # noqa: E402,F401
+import guest_booking_gateway  # noqa: E402,F401
 
 
 @app.get("/health/growth-channels")
