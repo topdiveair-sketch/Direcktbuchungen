@@ -19,6 +19,13 @@ public sealed partial class DatabaseService
         Execute("INSERT OR IGNORE INTO BillingSettings(Key,Value) VALUES('seller_iban','')");
     }
 
+    private void RefreshInvoiceDueStates()
+    {
+        EnsureBillingTables();
+        var today=DateTime.Today.ToString("yyyy-MM-dd");
+        Execute("UPDATE PartnerInvoices SET Status='overdue' WHERE Status='open' AND DueDate<@d",("@d",today));
+    }
+
     public Dictionary<string,string> GetBillingSettings()
     {
         EnsureBillingTables();
@@ -67,12 +74,12 @@ public sealed partial class DatabaseService
 
     public List<Dictionary<string,object?>> GetPartnerInvoices()
     {
-        EnsureBillingTables();var rows=new List<Dictionary<string,object?>>();using var c=new SqliteConnection(ConnectionString);c.Open();using var q=c.CreateCommand();q.CommandText="SELECT i.Id,i.InvoiceNo,h.Name AS Host,COALESCE(h.Email,''),i.PeriodFrom,i.PeriodTo,i.NetAmount,i.VatRate,i.VatAmount,i.GrossAmount,i.Status,i.DueDate,COUNT(x.Id) AS Bookings FROM PartnerInvoices i JOIN Hosts h ON h.Id=i.HostId LEFT JOIN PartnerInvoiceItems x ON x.InvoiceId=i.Id GROUP BY i.Id ORDER BY i.CreatedUtc DESC";using var r=q.ExecuteReader();while(r.Read())rows.Add(new Dictionary<string,object?>{{"Id",r.GetString(0)},{"Rechnung",r.GetString(1)},{"Gastgeber",r.GetString(2)},{"E-Mail",r.GetString(3)},{"Zeitraum",$"{r.GetString(4)} – {r.GetString(5)}"},{"Buchungen",r.GetInt32(12)},{"Netto",r.GetDouble(6)},{"USt %",r.GetDouble(7)},{"USt",r.GetDouble(8)},{"Brutto",r.GetDouble(9)},{"Status",r.GetString(10)},{"Fällig",r.GetString(11)}});return rows;
+        RefreshInvoiceDueStates();var rows=new List<Dictionary<string,object?>>();using var c=new SqliteConnection(ConnectionString);c.Open();using var q=c.CreateCommand();q.CommandText="SELECT i.Id,i.InvoiceNo,h.Name AS Host,COALESCE(h.Email,''),i.PeriodFrom,i.PeriodTo,i.NetAmount,i.VatRate,i.VatAmount,i.GrossAmount,i.Status,i.DueDate,COUNT(x.Id) AS Bookings FROM PartnerInvoices i JOIN Hosts h ON h.Id=i.HostId LEFT JOIN PartnerInvoiceItems x ON x.InvoiceId=i.Id GROUP BY i.Id ORDER BY CASE i.Status WHEN 'overdue' THEN 0 WHEN 'open' THEN 1 ELSE 2 END,i.DueDate,i.CreatedUtc DESC";using var r=q.ExecuteReader();while(r.Read()){var status=r.GetString(10) switch{"paid"=>"bezahlt","overdue"=>"überfällig",_=>"offen"};rows.Add(new Dictionary<string,object?>{{"Id",r.GetString(0)},{"Rechnung",r.GetString(1)},{"Gastgeber",r.GetString(2)},{"E-Mail",r.GetString(3)},{"Zeitraum",$"{r.GetString(4)} – {r.GetString(5)}"},{"Buchungen",r.GetInt32(12)},{"Netto",r.GetDouble(6)},{"USt %",r.GetDouble(7)},{"USt",r.GetDouble(8)},{"Brutto",r.GetDouble(9)},{"Status",status},{"Fällig",r.GetString(11)}});}return rows;
     }
 
     public Dictionary<string,object?>? GetPartnerInvoice(string invoiceId)
     {
-        EnsureBillingTables();using var c=new SqliteConnection(ConnectionString);c.Open();using var q=c.CreateCommand();q.CommandText="SELECT i.Id,i.InvoiceNo,i.HostId,h.Name,COALESCE(h.Email,''),COALESCE(h.Location,''),i.PeriodFrom,i.PeriodTo,i.NetAmount,i.VatRate,i.VatAmount,i.GrossAmount,i.Status,i.DueDate FROM PartnerInvoices i JOIN Hosts h ON h.Id=i.HostId WHERE i.Id=@id";q.Parameters.AddWithValue("@id",invoiceId);using var r=q.ExecuteReader();if(!r.Read())return null;return new Dictionary<string,object?>{{"Id",r.GetString(0)},{"InvoiceNo",r.GetString(1)},{"HostId",r.GetString(2)},{"HostName",r.GetString(3)},{"HostEmail",r.GetString(4)},{"HostLocation",r.GetString(5)},{"PeriodFrom",r.GetString(6)},{"PeriodTo",r.GetString(7)},{"Net",r.GetDouble(8)},{"VatRate",r.GetDouble(9)},{"Vat",r.GetDouble(10)},{"Gross",r.GetDouble(11)},{"Status",r.GetString(12)},{"DueDate",r.GetString(13)}};
+        RefreshInvoiceDueStates();using var c=new SqliteConnection(ConnectionString);c.Open();using var q=c.CreateCommand();q.CommandText="SELECT i.Id,i.InvoiceNo,i.HostId,h.Name,COALESCE(h.Email,''),COALESCE(h.Location,''),i.PeriodFrom,i.PeriodTo,i.NetAmount,i.VatRate,i.VatAmount,i.GrossAmount,i.Status,i.DueDate FROM PartnerInvoices i JOIN Hosts h ON h.Id=i.HostId WHERE i.Id=@id";q.Parameters.AddWithValue("@id",invoiceId);using var r=q.ExecuteReader();if(!r.Read())return null;return new Dictionary<string,object?>{{"Id",r.GetString(0)},{"InvoiceNo",r.GetString(1)},{"HostId",r.GetString(2)},{"HostName",r.GetString(3)},{"HostEmail",r.GetString(4)},{"HostLocation",r.GetString(5)},{"PeriodFrom",r.GetString(6)},{"PeriodTo",r.GetString(7)},{"Net",r.GetDouble(8)},{"VatRate",r.GetDouble(9)},{"Vat",r.GetDouble(10)},{"Gross",r.GetDouble(11)},{"Status",r.GetString(12)},{"DueDate",r.GetString(13)}};
     }
 
     public List<Dictionary<string,object?>> GetPartnerInvoiceItems(string invoiceId)
