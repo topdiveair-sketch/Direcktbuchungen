@@ -32,6 +32,20 @@
     </div>
 
     <section class="card">
+      <div class="section-head"><div><span class="eyebrow">BOOKING.COM</span><h2>Booking-Kalender verbinden</h2></div><span id="calendarBadge" class="calendar-badge">nicht verbunden</span></div>
+      <p>Hinterlegen Sie den Booking.com-iCal-Exportlink. Bereits belegte Nächte werden automatisch in WachauEtappe gesperrt.</p>
+      <form id="calendarForm" class="form-grid single">
+        <label>Booking.com iCal-Link<input id="bookingIcalUrl" type="url" inputmode="url" placeholder="https://…booking.com/…" required></label>
+        <div class="button-row">
+          <button class="primary" type="submit">Verbinden & synchronisieren</button>
+          <button id="calendarSyncBtn" class="ghost" type="button">Jetzt synchronisieren</button>
+          <button id="calendarDisconnectBtn" class="ghost danger" type="button">Verbindung trennen</button>
+        </div>
+      </form>
+      <p id="calendarStatus" class="status"></p>
+    </section>
+
+    <section class="card">
       <div class="section-head"><div><span class="eyebrow">VERFÜGBARKEIT</span><h2>Zeitraum freigeben oder sperren</h2></div><button id="refreshBtn" class="ghost" type="button">Aktualisieren</button></div>
       <form id="availabilityForm" class="form-grid">
         <label>Von<input id="fromDate" type="date" required></label>
@@ -49,7 +63,7 @@
 
     <section class="card">
       <div class="section-head"><div><span class="eyebrow">ÜBERSICHT</span><h2>Meine nächsten Verfügbarkeiten</h2></div></div>
-      <div class="table-wrap"><table><thead><tr><th>Datum</th><th>Status</th><th>frei</th><th>Preis</th><th>Frühstück</th><th>Gepäck</th></tr></thead><tbody id="availabilityRows"></tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>Datum</th><th>Status</th><th>frei</th><th>Preis</th><th>Frühstück</th><th>Gepäck</th><th>Quelle</th></tr></thead><tbody id="availabilityRows"></tbody></table></div>
     </section>
   </section>
 </main>
