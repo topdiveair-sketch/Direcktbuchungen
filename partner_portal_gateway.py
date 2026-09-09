@@ -44,6 +44,9 @@ def init_tables():
         CREATE INDEX IF NOT EXISTS ix_we_partner_availability_date
           ON wachauetappe_partner_availability(stay_date,status,rooms_free);
         """)
+        cols={r[1] for r in c.execute("PRAGMA table_info(wachauetappe_partner_accounts)").fetchall()}
+        if 'last_login_at' not in cols:
+            c.execute("ALTER TABLE wachauetappe_partner_accounts ADD COLUMN last_login_at TEXT DEFAULT ''")
 init_tables()
 
 def partner_host_id():
@@ -65,6 +68,8 @@ def admin_ok():
 @app.route('/api/partner/availability',methods=['OPTIONS'])
 @app.route('/api/partner/availability/range',methods=['OPTIONS'])
 @app.route('/api/partner/provision',methods=['OPTIONS'])
+@app.route('/api/partner/disable',methods=['OPTIONS'])
+@app.route('/api/partner/admin-status',methods=['OPTIONS'])
 @app.route('/api/hosts/search',methods=['OPTIONS'])
 def partner_options(): return options()
 
@@ -75,7 +80,9 @@ def partner_login():
     if not row or str(row['email']).lower()!=email or not hmac.compare_digest(str(row['access_code_hash']),sha(code)):
         return cors(jsonify({'error':'Zugangsdaten nicht korrekt'})),401
     token=secrets.token_urlsafe(32);expires=(datetime.now()+timedelta(days=30)).isoformat(timespec='seconds')
-    with db() as c: c.execute("INSERT INTO wachauetappe_partner_sessions(token_hash,host_id,expires_at,created_at) VALUES(?,?,?,?)",(sha(token),host_id,expires,now()))
+    with db() as c:
+        c.execute("INSERT INTO wachauetappe_partner_sessions(token_hash,host_id,expires_at,created_at) VALUES(?,?,?,?)",(sha(token),host_id,expires,now()))
+        c.execute("UPDATE wachauetappe_partner_accounts SET last_login_at=?,updated_at=? WHERE host_id=?",(now(),now(),host_id))
     return cors(jsonify({'ok':True,'token':token,'expiresAt':expires})),200
 
 @app.get('/api/partner/me')
@@ -121,6 +128,25 @@ def partner_provision():
     rooms=max(1,min(100,int(p.get('roomsTotal') or 1)))
     with db() as c:c.execute("""INSERT INTO wachauetappe_partner_accounts(host_id,name,location,email,access_code_hash,active,rooms_total,updated_at) VALUES(?,?,?,?,?,1,?,?) ON CONFLICT(host_id) DO UPDATE SET name=excluded.name,location=excluded.location,email=excluded.email,access_code_hash=excluded.access_code_hash,active=1,rooms_total=excluded.rooms_total,updated_at=excluded.updated_at""",(host_id,name,location,email,sha(code),rooms,now()))
     return cors(jsonify({'ok':True,'hostId':host_id})),201
+
+@app.post('/api/partner/disable')
+def partner_disable():
+    if not admin_ok():return cors(jsonify({'error':'unauthorized'})),401
+    p=request.get_json(silent=True) or {};host_id=str(p.get('hostId') or '').strip()
+    if not host_id:return cors(jsonify({'error':'host_id_required'})),422
+    with db() as c:
+        c.execute("UPDATE wachauetappe_partner_accounts SET active=0,updated_at=? WHERE host_id=?",(now(),host_id))
+        c.execute("DELETE FROM wachauetappe_partner_sessions WHERE host_id=?",(host_id,))
+    return cors(jsonify({'ok':True,'hostId':host_id,'active':False})),200
+
+@app.get('/api/partner/admin-status')
+def partner_admin_status():
+    if not admin_ok():return cors(jsonify({'error':'unauthorized'})),401
+    host_id=str(request.args.get('hostId') or '').strip()
+    with db() as c:
+        row=c.execute("SELECT host_id,name,location,email,active,rooms_total,updated_at,COALESCE(last_login_at,'') AS last_login_at FROM wachauetappe_partner_accounts WHERE host_id=?",(host_id,)).fetchone()
+    if not row:return cors(jsonify({'exists':False,'hostId':host_id})),200
+    return cors(jsonify({'exists':True,'hostId':row['host_id'],'name':row['name'],'location':row['location'],'email':row['email'],'active':bool(row['active']),'roomsTotal':row['rooms_total'],'updatedAt':row['updated_at'],'lastLoginAt':row['last_login_at']})),200
 
 @app.get('/api/hosts/search')
 def public_host_search():
