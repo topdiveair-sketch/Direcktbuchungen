@@ -9,7 +9,7 @@
     {"location":"Spitz","status":"gap","candidates":[],"need":2},
     {"location":"Mühldorf","status":"gap","candidates":[],"need":2},
     {"location":"Maria Laach","status":"partial","candidates":["Romana Wiener / Urlaub am Jauerling"],"need":2},
-    {"location":"Aggsbach Markt","status":"good","candidates":["Zuhause am Bach – Wachau","Goldene Wachau - Privatzimmer"],"need":1},
+    {"location":"Aggsbach Markt","status":"partial","candidates":["Zuhause am Bach – Wachau"],"need":2,"excluded":["Goldene Wachau - Privatzimmer","Gerstbauer"]},
     {"location":"Emmersdorf","status":"partial","candidates":["Gästehaus Wachau"],"need":2},
     {"location":"Melk","status":"good","candidates":["Privatzimmer Langthaler","Pension Marillenhof"],"need":1},
     {"location":"Aggsbach Dorf","status":"gap","candidates":[],"need":2},
