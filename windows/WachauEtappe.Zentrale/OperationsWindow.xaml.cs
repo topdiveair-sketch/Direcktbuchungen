@@ -9,6 +9,10 @@ using WachauEtappe.Zentrale.Services;
 namespace WachauEtappe.Zentrale;
 public partial class OperationsWindow:Window
 {
+ private const decimal LuggagePricePerPiece=25m;
+ private const decimal MinimumDailyLuggageRevenue=125m;
+ private const string LuggageReadyBy="08:00";
+
  public OperationsWindow(){InitializeComponent();Loaded+=(_,_)=>LoadAll();}
  private void LoadAll(){HostBox.ItemsSource=App.Database.GetHosts().Where(h=>h.Published).ToList();StayDate.SelectedDate=DateTime.Today;EndDate.SelectedDate=DateTime.Today;DispatchDate.SelectedDate=DateTime.Today;AvailabilityBox.SelectedIndex=0;LuggageStatusBox.SelectedIndex=0;RefreshTables();RefreshDispatch();}
  private void RefreshTables(){AvailabilityGrid.ItemsSource=App.Database.QueryRows("SELECT a.StayDate,h.Name AS Gastgeber,a.Status,a.Price,a.Note FROM Availability a LEFT JOIN Hosts h ON h.Id=a.HostId ORDER BY a.StayDate,h.Name");LuggageGrid.ItemsSource=App.Database.QueryRows("SELECT l.Id,t.Reference,d.DayNumber,d.TravelDate,h1.Name AS Abholung,h2.Name AS Ziel,l.Status,l.Provider,l.Note FROM LuggageTransfers l JOIN Trips t ON t.Id=l.TripId LEFT JOIN TripDays d ON d.Id=l.TripDayId LEFT JOIN Hosts h1 ON h1.Id=l.PickupHostId LEFT JOIN Hosts h2 ON h2.Id=l.DropoffHostId ORDER BY d.TravelDate,t.Reference");PriorityGrid.ItemsSource=App.Database.GetCoveragePriorities().Select(x=>new{Ort=x.Location,FehlendeGastgeber=x.Need,Kandidaten=x.CandidateCount,Prioritaet=x.Need>=2?"HOCH":"NORMAL"}).ToList();}
@@ -43,6 +47,11 @@ public partial class OperationsWindow:Window
   var day=(DispatchDate.SelectedDate??DateTime.Today).ToString("yyyy-MM-dd");
   var guests=DailyDispatchService.GetGuestPositions(day);GuestPositionGrid.ItemsSource=guests;
   var plan=DailyDispatchService.BuildLuggageRoute(day);OptimizedLuggageGrid.ItemsSource=plan.Stops;
-  DispatchSummary.Text=$"{day} · {guests.Count} gebuchte Gast-Etappe(n) · {plan.Stops.Count} Gepäckstopp(s) · geschätzte direkte Fahrstrecke ca. {plan.EstimatedKm:0.0} km · {plan.StartEnd}";
+  var pieces=plan.Stops.Select(x=>x.TransferId).Distinct().Count();
+  var revenue=pieces*LuggagePricePerPiece;
+  var economics=revenue>=MinimumDailyLuggageRevenue
+      ? $"✓ Mindestumsatz erreicht ({revenue:0} €)"
+      : $"⚠ unter internem Tagesziel ({revenue:0} € von {MinimumDailyLuggageRevenue:0} €)";
+  DispatchSummary.Text=$"{day} · Bereitstellung bis {LuggageReadyBy} Uhr · {guests.Count} gebuchte Gast-Etappe(n) · {pieces} Gepäckstück(e) à {LuggagePricePerPiece:0} € · {plan.Stops.Count} Stopp(s) · {economics} · geschätzte direkte Fahrstrecke ca. {plan.EstimatedKm:0.0} km · {plan.StartEnd}";
  }
 }
