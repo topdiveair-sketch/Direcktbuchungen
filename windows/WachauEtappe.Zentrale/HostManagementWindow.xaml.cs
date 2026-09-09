@@ -39,14 +39,16 @@ public partial class HostManagementWindow : Window
         HostIdText.Text = $"ID: {selected.Id} · Status: {selected.Status}";
         PartnerHostIdBox.Text = selected.Id;
         NameBox.Text=selected.Name; LocationBox.Text=selected.Location;
-        EmailBox.Text=selected.Email; PhoneBox.Text=selected.Phone; UrlBox.Text=selected.DirectUrl; CapacityBox.Text=App.Database.GetHostCapacity(selected.Id).ToString();
+        EmailBox.Text=selected.Email; PhoneBox.Text=selected.Phone; UrlBox.Text=selected.DirectUrl;
+        CapacityBox.Text=App.Database.GetHostCapacity(selected.Id).ToString();
+        BedsBox.Text=App.Database.GetHostBeds(selected.Id).ToString();
         OneNightCheck.IsChecked=selected.OneNightVerified; CashCheck.IsChecked=selected.CashAtHostVerified; LuggageCheck.IsChecked=selected.LuggageVerified; AcceptingCheck.IsChecked=selected.AcceptingBookings;
         StatusText.Text = selected.Published ? "✓ Öffentlich freigegeben" : "Noch nicht öffentlich freigegeben";
         PartnerCodeBox.Text=""; PartnerStatusText.Text="Online-Partnerstatus noch nicht geprüft.";
     }
 
     private void ApplyForm(){ if(selected is null) return; selected.Name=NameBox.Text.Trim(); selected.Location=LocationBox.Text.Trim(); selected.Email=EmailBox.Text.Trim(); selected.Phone=PhoneBox.Text.Trim(); selected.DirectUrl=UrlBox.Text.Trim(); selected.OneNightVerified=OneNightCheck.IsChecked==true; selected.CashAtHostVerified=CashCheck.IsChecked==true; selected.LuggageVerified=LuggageCheck.IsChecked==true; selected.AcceptingBookings=AcceptingCheck.IsChecked==true; }
-    private void SaveCapacity(){if(selected is null)return;_ = int.TryParse(CapacityBox.Text,out var units);App.Database.SetHostCapacity(selected.Id,Math.Max(1,units));}
+    private void SaveCapacity(){if(selected is null)return;_ = int.TryParse(CapacityBox.Text,out var rooms);_ = int.TryParse(BedsBox.Text,out var beds);rooms=Math.Max(1,rooms);beds=Math.Max(1,beds);App.Database.SetHostCapacityAndBeds(selected.Id,rooms,beds);}
     private void Save_Click(object sender, RoutedEventArgs e){ if(selected is null) return; ApplyForm(); App.Database.SaveHost(selected); SaveCapacity(); StatusText.Text="✓ Änderungen lokal gespeichert und protokolliert."; LoadHosts(); }
 
     private void Publish_Click(object sender, RoutedEventArgs e)
