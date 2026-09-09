@@ -1,0 +1,180 @@
+{
+  "season": 2027,
+  "strategy": {
+    "positioning": "WachauEtappe vermittelt individuell geplante Etappen direkt zu persoenlich gefuehrten Gastgebern. Der Gast bezahlt die Unterkunft direkt beim Gastgeber. Wir wollen bewusst weg von grossen Vermittlungsplattformen und mehr Wertschoepfung bei regionalen Gastgebern und WachauEtappe halten.",
+    "priority_order": ["Privatzimmer", "kleine Gaestehaeuser", "Fruehstueckspensionen", "Gasthaeuser", "Hotels nur als Lueckenfueller"],
+    "payment": "direkt beim Gastgeber",
+    "packages": "optional spaeter; nicht Kernprodukt",
+    "founding_offer": "0 EUR Grundgebuehr in der Startphase; nur erfolgsabhaengige Vermittlungsgebuehr nach bestaetigter Buchung",
+    "must_confirm_before_activation": [
+      "eine Nacht buchbar",
+      "direkter Gastgeberkontakt",
+      "Zahlung direkt beim Gastgeber",
+      "Preis und Verfuegbarkeit pflegbar",
+      "Gepaeckannahme oder verlaessliche Uebergabe organisierbar"
+    ]
+  },
+  "outreach_order": [
+    {
+      "location": "Duernstein",
+      "priority": 1,
+      "need": 2,
+      "candidates": [
+        {
+          "name": "Gaestezimmer Rolea",
+          "type": "Gaestezimmer",
+          "address": "Duernstein 115, 3601 Duernstein",
+          "phone": "+43 2711 20407",
+          "fit": "sehr hoch",
+          "verify": ["eine Nacht", "Fruehstueck", "Direktzahlung", "Gepaeck"],
+          "source": "Google Business / aktueller Unterkunftseintrag"
+        },
+        {
+          "name": "Weinbau & Gaestezimmer Georg Edlinger im Dinstlhof",
+          "type": "Gaestezimmer beim Weinbaubetrieb",
+          "address": "Unterloiben 6, 3601 Duernstein",
+          "phone": "+43 2732 70600",
+          "fit": "sehr hoch",
+          "verify": ["eine Nacht", "Fruehstueck", "Direktzahlung", "Gepaeck"],
+          "source": "Google Business / aktueller Unterkunftseintrag"
+        },
+        {
+          "name": "Gaestezimmer Schmelz",
+          "type": "Gaestezimmer",
+          "address": "Unterloiben 87, 3601 Duernstein",
+          "phone": "+43 2732 78159",
+          "fit": "hoch",
+          "verify": ["eine Nacht", "Fruehstueck", "Direktzahlung", "Gepaeck"],
+          "source": "Google Business / aktueller Unterkunftseintrag"
+        }
+      ]
+    },
+    {
+      "location": "Spitz",
+      "priority": 1,
+      "need": 2,
+      "candidates": [
+        {
+          "name": "Familie Gebetsberger",
+          "type": "Privatzimmer / Weingut",
+          "address": "Hauptstrasse 34, 3620 Spitz",
+          "email": "wein@weingut-gebetsberger.at",
+          "phone": "+43 2713 2096",
+          "fit": "sehr hoch",
+          "verify": ["eine Nacht", "Fruehstueck", "Direktzahlung", "Gepaeck"],
+          "source": "Offizielle Unterkunftsliste Spitz"
+        },
+        {
+          "name": "Haus Machhoerndl",
+          "type": "Privatzimmer",
+          "address": "Gaertnerweg 4, 3620 Spitz",
+          "email": "haus.machhoerndl@gmx.at",
+          "phone": "+43 2713 2400",
+          "fit": "sehr hoch",
+          "verify": ["eine Nacht", "Fruehstueck", "Direktzahlung", "Gepaeck"],
+          "source": "Offizielle Unterkunftsliste Spitz"
+        },
+        {
+          "name": "Haus Winzerin",
+          "type": "Privatzimmer",
+          "address": "Hinterweg 11, 3620 Spitz",
+          "email": "haus@winzerin-spitz.at",
+          "phone": "+43 2713 2938",
+          "fit": "sehr hoch",
+          "verify": ["eine Nacht", "Fruehstueck", "Direktzahlung", "Gepaeck"],
+          "source": "Offizielle Unterkunftsliste Spitz"
+        },
+        {
+          "name": "Gaestehaus Martin",
+          "type": "Gaestehaus",
+          "address": "Ottenschlaegerstrasse 34, 3620 Spitz",
+          "email": "kontakt@martin-spitz.at",
+          "phone": "+43 676 5635982",
+          "fit": "hoch",
+          "verify": ["eine Nacht", "Direktzahlung", "Gepaeck"],
+          "source": "Offizielle Unterkunftsliste Spitz"
+        }
+      ]
+    },
+    {
+      "location": "Aggsbach Dorf",
+      "priority": 1,
+      "need": 2,
+      "candidates": [
+        {
+          "name": "Haus Birgit",
+          "type": "private Ferienwohnungen",
+          "address": "Aggsbach 75, 3641 Aggsbach",
+          "email": "hedi.kienberger@aon.at",
+          "phone": "+43 664 1287525",
+          "fit": "mittel bis hoch",
+          "known": ["Fahrradgarage", "100 m zur Donau"],
+          "verify": ["eine Nacht", "Zimmer statt nur Ferienwohnung", "Fruehstueck", "Direktzahlung", "Gepaeck"],
+          "source": "Marktgemeinde Aggsbach Unterkunftsverzeichnis"
+        },
+        {
+          "name": "Haus Donaublick",
+          "type": "private Unterkunft",
+          "address": "Aggsbach 139, 3641 Aggsbach",
+          "email": "hedi.kienberger@aon.at",
+          "phone": "+43 664 1287525",
+          "fit": "mittel",
+          "verify": ["eine Nacht", "Zimmerangebot", "Fruehstueck", "Direktzahlung", "Gepaeck"],
+          "source": "Marktgemeinde Aggsbach Unterkunftsverzeichnis"
+        },
+        {
+          "name": "Schrutz Gertrude",
+          "type": "Privatunterkunft",
+          "address": "Willendorf 63, 3641 Aggsbach",
+          "phone": "+43 2712 556",
+          "fit": "mittel",
+          "verify": ["aktiver Betrieb 2027", "eine Nacht", "Fruehstueck", "Direktzahlung", "Gepaeck"],
+          "source": "Marktgemeinde Aggsbach Unterkunftsverzeichnis"
+        }
+      ]
+    },
+    {
+      "location": "Mautern",
+      "priority": 1,
+      "need": 2,
+      "candidates": [
+        {
+          "name": "Ad vineas Gaestehaus Nikolaihof",
+          "type": "Gaestehaus / Fruehstueckspension",
+          "address": "Kainzstrasse 14, 3512 Mautern",
+          "email": "wohnen@nikolaihof.at",
+          "phone": "+43 676 4331828",
+          "fit": "hoch",
+          "verify": ["eine Nacht", "Direktzahlung", "Gepaeck", "kleines Kontingent fuer WachauEtappe"],
+          "source": "Offizielles Unterkunftsverzeichnis Mautern"
+        }
+      ]
+    },
+    {
+      "location": "Emmersdorf",
+      "priority": 2,
+      "need": 2,
+      "candidates": [
+        {
+          "name": "Franz Langthaler",
+          "type": "Gasthof mit hoechstens acht Gaestebetten",
+          "address": "Poemling 14, 3644 Emmersdorf/Donau",
+          "email": "gasthaus.langthaler@aon.at",
+          "fit": "hoch fuer zweite Prioritaetsstufe",
+          "verify": ["eine Nacht", "Fruehstueck", "Direktzahlung", "Gepaeck"],
+          "source": "Marktgemeinde Emmersdorf Unterkunftsverzeichnis"
+        },
+        {
+          "name": "Larisa-Adelina Serban-Colesnicov",
+          "type": "freies Beherbergungsgewerbe bis 10 Betten",
+          "address": "Donaulaende 1, 3644 Emmersdorf an der Donau",
+          "fit": "hoch",
+          "verify": ["Betriebsname", "Kontakt", "eine Nacht", "Fruehstueck", "Direktzahlung", "Gepaeck"],
+          "source": "Marktgemeinde Emmersdorf Unterkunftsverzeichnis"
+        }
+      ]
+    }
+  ],
+  "research_gaps": ["Muehldorf", "Maria Laach", "Hofarnsdorf", "Rossatz", "Unterbergern", "Krems zusaetzliche Privatzimmer", "Melk zusaetzliche Privatzimmer"],
+  "outreach_message_core": "WachauEtappe sucht fuer 2027 persoenlich gefuehrte Gruendungspartner entlang des Welterbesteigs. Der Gast bezahlt die Unterkunft direkt bei Ihnen. In der Startphase gibt es keine Grund- oder Aufnahmegebuehr; verrechnet wird nur bei tatsaechlich bestaetigter Vermittlung. Besonders wichtig sind auch einzelne Naechte sowie Wanderer und Radfahrer mit optionalem Gepaecktransport."
+}
