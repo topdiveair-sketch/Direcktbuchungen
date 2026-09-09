@@ -4,12 +4,13 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using WachauEtappe.Zentrale.Models;
+using WachauEtappe.Zentrale.Services;
 
 namespace WachauEtappe.Zentrale;
 public partial class OperationsWindow:Window
 {
  public OperationsWindow(){InitializeComponent();Loaded+=(_,_)=>LoadAll();}
- private void LoadAll(){HostBox.ItemsSource=App.Database.GetHosts().Where(h=>h.Published).ToList();StayDate.SelectedDate=DateTime.Today;EndDate.SelectedDate=DateTime.Today;AvailabilityBox.SelectedIndex=0;LuggageStatusBox.SelectedIndex=0;RefreshTables();}
+ private void LoadAll(){HostBox.ItemsSource=App.Database.GetHosts().Where(h=>h.Published).ToList();StayDate.SelectedDate=DateTime.Today;EndDate.SelectedDate=DateTime.Today;DispatchDate.SelectedDate=DateTime.Today;AvailabilityBox.SelectedIndex=0;LuggageStatusBox.SelectedIndex=0;RefreshTables();RefreshDispatch();}
  private void RefreshTables(){AvailabilityGrid.ItemsSource=App.Database.QueryRows("SELECT a.StayDate,h.Name AS Gastgeber,a.Status,a.Price,a.Note FROM Availability a LEFT JOIN Hosts h ON h.Id=a.HostId ORDER BY a.StayDate,h.Name");LuggageGrid.ItemsSource=App.Database.QueryRows("SELECT l.Id,t.Reference,d.DayNumber,d.TravelDate,h1.Name AS Abholung,h2.Name AS Ziel,l.Status,l.Provider,l.Note FROM LuggageTransfers l JOIN Trips t ON t.Id=l.TripId LEFT JOIN TripDays d ON d.Id=l.TripDayId LEFT JOIN Hosts h1 ON h1.Id=l.PickupHostId LEFT JOIN Hosts h2 ON h2.Id=l.DropoffHostId ORDER BY d.TravelDate,t.Reference");PriorityGrid.ItemsSource=App.Database.GetCoveragePriorities().Select(x=>new{Ort=x.Location,FehlendeGastgeber=x.Need,Kandidaten=x.CandidateCount,Prioritaet=x.Need>=2?"HOCH":"NORMAL"}).ToList();}
  private void SaveAvailability_Click(object sender,RoutedEventArgs e){if(HostBox.SelectedItem is not HostRecord h||StayDate.SelectedDate is not DateTime from)return;var to=EndDate.SelectedDate??from;var status=(AvailabilityBox.SelectedItem as ComboBoxItem)?.Content?.ToString()??"unknown";double? price=double.TryParse(PriceBox.Text.Replace(',','.'),NumberStyles.Any,CultureInfo.InvariantCulture,out var p)?p:null;var count=App.Database.SetAvailabilityRange(h.Id,from,to,status,price);AvailabilityStatusText.Text=$"✓ {count} Tag(e) für {h.Name} gespeichert.";RefreshTables();}
  private async void LoadOnlinePartners_Click(object sender,RoutedEventArgs e)
@@ -32,7 +33,16 @@ public partial class OperationsWindow:Window
   }
   catch(Exception ex){PartnerOnlineStatus.Text=$"Fehler: {ex.Message}";}
  }
- private void RebuildLuggage_Click(object sender,RoutedEventArgs e){foreach(var t in App.Database.GetTrips().Where(x=>x.LuggageTransfer&&x.Status!="cancelled"&&x.Status!="completed"))App.Database.RebuildLuggageChain(t.Id);RefreshTables();MessageBox.Show("Gepäckketten wurden neu berechnet.");}
+ private void RebuildLuggage_Click(object sender,RoutedEventArgs e){foreach(var t in App.Database.GetTrips().Where(x=>x.LuggageTransfer&&x.Status!="cancelled"&&x.Status!="completed"))App.Database.RebuildLuggageChain(t.Id);RefreshTables();RefreshDispatch();MessageBox.Show("Gepäckketten wurden neu berechnet.");}
  private void LuggageGrid_SelectionChanged(object sender,SelectionChangedEventArgs e){if(LuggageGrid.SelectedItem is not Dictionary<string,object?> row)return;ProviderBox.Text=Convert.ToString(row.GetValueOrDefault("Provider"))??"";LuggageNoteBox.Text=Convert.ToString(row.GetValueOrDefault("Note"))??"";var status=Convert.ToString(row.GetValueOrDefault("Status"))??"requested";foreach(var item in LuggageStatusBox.Items.OfType<ComboBoxItem>())if(string.Equals(item.Content?.ToString(),status,StringComparison.OrdinalIgnoreCase)){LuggageStatusBox.SelectedItem=item;break;}}
- private void SaveLuggage_Click(object sender,RoutedEventArgs e){if(LuggageGrid.SelectedItem is not Dictionary<string,object?> row||row.GetValueOrDefault("Id") is null)return;var id=Convert.ToInt64(row["Id"]);var status=(LuggageStatusBox.SelectedItem as ComboBoxItem)?.Content?.ToString()??"requested";App.Database.UpdateLuggageTransfer(id,ProviderBox.Text.Trim(),status,LuggageNoteBox.Text.Trim());LuggageStatusText.Text="✓ Gepäcktransport gespeichert.";RefreshTables();}
+ private void SaveLuggage_Click(object sender,RoutedEventArgs e){if(LuggageGrid.SelectedItem is not Dictionary<string,object?> row||row.GetValueOrDefault("Id") is null)return;var id=Convert.ToInt64(row["Id"]);var status=(LuggageStatusBox.SelectedItem as ComboBoxItem)?.Content?.ToString()??"requested";App.Database.UpdateLuggageTransfer(id,ProviderBox.Text.Trim(),status,LuggageNoteBox.Text.Trim());LuggageStatusText.Text="✓ Gepäcktransport gespeichert.";RefreshTables();RefreshDispatch();}
+ private void DispatchDate_SelectedDateChanged(object sender,SelectionChangedEventArgs e){if(IsLoaded)RefreshDispatch();}
+ private void OptimizeDispatch_Click(object sender,RoutedEventArgs e){foreach(var t in App.Database.GetTrips().Where(x=>x.LuggageTransfer&&x.Status!="cancelled"&&x.Status!="completed"))App.Database.RebuildLuggageChain(t.Id);RefreshTables();RefreshDispatch();}
+ private void RefreshDispatch()
+ {
+  var day=(DispatchDate.SelectedDate??DateTime.Today).ToString("yyyy-MM-dd");
+  var guests=DailyDispatchService.GetGuestPositions(day);GuestPositionGrid.ItemsSource=guests;
+  var plan=DailyDispatchService.BuildLuggageRoute(day);OptimizedLuggageGrid.ItemsSource=plan.Stops;
+  DispatchSummary.Text=$"{day} · {guests.Count} gebuchte Gast-Etappe(n) · {plan.Stops.Count} Gepäckstopp(s) · geschätzte direkte Fahrstrecke ca. {plan.EstimatedKm:0.0} km · {plan.StartEnd}";
+ }
 }
