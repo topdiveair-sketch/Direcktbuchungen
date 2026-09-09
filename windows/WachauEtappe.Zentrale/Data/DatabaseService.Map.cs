@@ -10,6 +10,9 @@ public sealed partial class DatabaseService
         EnsureBookingTables();
         using var c=new SqliteConnection(ConnectionString); c.Open();
         EnsureColumn(c,"HostCapacity","Beds","INTEGER NOT NULL DEFAULT 2");
+        EnsureColumn(c,"Availability","RoomsFree","INTEGER");
+        EnsureColumn(c,"Availability","Source","TEXT");
+        EnsureColumn(c,"Availability","UpdatedUtc","TEXT");
     }
 
     public int GetHostBeds(string hostId)
@@ -30,6 +33,44 @@ public sealed partial class DatabaseService
         Audit("host_capacity","Host",hostId,$"rooms={rooms}; beds={beds}");
     }
 
+    public void UpsertOnlinePartnerAvailability(string hostId,string name,string location,int roomsTotal,string stayDate,string status,int roomsFree,double? price,bool bookingBlocked,string updatedAt)
+    {
+        EnsureMapTables();
+        roomsTotal=Math.Max(1,roomsTotal);
+        roomsFree=Math.Max(0,Math.Min(roomsTotal,roomsFree));
+        status=(status??"unknown").Trim().ToLowerInvariant();
+        if(bookingBlocked || status is "full" or "closed" or "blocked") { status="full"; roomsFree=0; }
+
+        using var c=new SqliteConnection(ConnectionString); c.Open(); using var tx=c.BeginTransaction();
+        using(var h=c.CreateCommand())
+        {
+            h.Transaction=tx;
+            h.CommandText="""
+INSERT INTO Hosts(Id,Name,Location,Status,Published,AcceptingBookings,DirectUrl,Email,Phone,RawJson,UpdatedUtc,OneNightVerified,CashAtHostVerified,LuggageVerified)
+VALUES(@id,@n,@l,'verified',1,1,'','','','{}',@u,1,1,0)
+ON CONFLICT(Id) DO UPDATE SET Name=@n,Location=@l,Published=1,AcceptingBookings=1,UpdatedUtc=@u
+""";
+            h.Parameters.AddWithValue("@id",hostId);h.Parameters.AddWithValue("@n",name);h.Parameters.AddWithValue("@l",location);h.Parameters.AddWithValue("@u",DateTime.UtcNow.ToString("O"));h.ExecuteNonQuery();
+        }
+        using(var cap=c.CreateCommand())
+        {
+            cap.Transaction=tx;
+            cap.CommandText="INSERT INTO HostCapacity(HostId,Units,Beds,UpdatedUtc) VALUES(@h,@r,@b,@u) ON CONFLICT(HostId) DO UPDATE SET Units=@r,UpdatedUtc=@u";
+            cap.Parameters.AddWithValue("@h",hostId);cap.Parameters.AddWithValue("@r",roomsTotal);cap.Parameters.AddWithValue("@b",Math.Max(2,roomsTotal*2));cap.Parameters.AddWithValue("@u",DateTime.UtcNow.ToString("O"));cap.ExecuteNonQuery();
+        }
+        using(var a=c.CreateCommand())
+        {
+            a.Transaction=tx;
+            a.CommandText="""
+INSERT INTO Availability(HostId,StayDate,Status,Price,Note,RoomsFree,Source,UpdatedUtc)
+VALUES(@h,@d,@s,@p,@n,@r,'partner-online',@u)
+ON CONFLICT(HostId,StayDate) DO UPDATE SET Status=@s,Price=@p,Note=@n,RoomsFree=@r,Source='partner-online',UpdatedUtc=@u
+""";
+            a.Parameters.AddWithValue("@h",hostId);a.Parameters.AddWithValue("@d",stayDate);a.Parameters.AddWithValue("@s",status);a.Parameters.AddWithValue("@p",(object?)price??DBNull.Value);a.Parameters.AddWithValue("@n",bookingBlocked?"Booking.com Kalender: belegt":"Partnerportal synchronisiert");a.Parameters.AddWithValue("@r",roomsFree);a.Parameters.AddWithValue("@u",string.IsNullOrWhiteSpace(updatedAt)?DateTime.UtcNow.ToString("O"):updatedAt);a.ExecuteNonQuery();
+        }
+        tx.Commit();
+    }
+
     public List<MapHostStatus> GetMapHostStatuses(string stayDate)
     {
         EnsureMapTables();
@@ -38,7 +79,7 @@ public sealed partial class DatabaseService
         q.CommandText="""
 SELECT h.Id,h.Name,COALESCE(h.Location,''),COALESCE(h.Phone,''),
        COALESCE(cap.Units,1),COALESCE(cap.Beds,COALESCE(cap.Units,1)*2),
-       COALESCE(a.Status,'unknown'),
+       COALESCE(a.Status,'unknown'),a.RoomsFree,COALESCE(a.Source,''),
        (SELECT COUNT(*) FROM Bookings b WHERE b.HostId=h.Id AND b.StayDate=@d AND b.Status IN ('requested','confirmed')) AS UsedRooms,
        COALESCE((SELECT SUM(b.Guests) FROM Bookings b WHERE b.HostId=h.Id AND b.StayDate=@d AND b.Status IN ('requested','confirmed')),0) AS UsedBeds
 FROM Hosts h
@@ -53,11 +94,19 @@ ORDER BY h.Location,h.Name
         {
             var rooms=Math.Max(1,r.GetInt32(4)); var beds=Math.Max(1,r.GetInt32(5));
             var availability=r.GetString(6).Trim().ToLowerInvariant();
-            var usedRooms=Math.Max(0,r.GetInt32(7)); var usedBeds=Math.Max(0,r.GetInt32(8));
-            var freeRooms=Math.Max(0,rooms-usedRooms); var freeBeds=Math.Max(0,beds-usedBeds);
+            var reportedRooms=r.IsDBNull(7)?(int?)null:Math.Max(0,r.GetInt32(7));
+            var source=r.GetString(8);
+            var usedRooms=Math.Max(0,r.GetInt32(9)); var usedBeds=Math.Max(0,r.GetInt32(10));
+            var freeRooms=reportedRooms.HasValue && source=="partner-online" ? Math.Min(rooms,reportedRooms.Value) : Math.Max(0,rooms-usedRooms);
+            var freeBeds=Math.Max(0,beds-usedBeds);
+            if(reportedRooms.HasValue && source=="partner-online" && rooms>0)
+            {
+                var bedsPerRoom=Math.Max(1,(int)Math.Ceiling((double)beds/rooms));
+                freeBeds=Math.Min(beds,freeRooms*bedsPerRoom);
+            }
             if(availability is "blocked" or "full" or "closed"){freeRooms=0;freeBeds=0;}
             var color="gray"; var label="Nicht gemeldet";
-            if(freeRooms==0 || freeBeds==0){color="red";label="Besetzt";}
+            if(availability is "blocked" or "full" or "closed" || freeRooms==0 || freeBeds==0){color="red";label="Besetzt";}
             else if(availability is "available" or "free")
             {
                 color=(freeRooms==1 || freeBeds<=2)?"orange":"green";
