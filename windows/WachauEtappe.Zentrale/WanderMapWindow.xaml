@@ -1,19 +1,19 @@
 <Window x:Class="WachauEtappe.Zentrale.WanderMapWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="WachauEtappe · Wanderkarte" Height="900" Width="1450" MinHeight="720" MinWidth="1150"
+        Title="WachauEtappe · OpenStreetMap Wanderkarte" Height="900" Width="1450" MinHeight="720" MinWidth="1150"
         WindowStartupLocation="CenterOwner" Background="#F4F1E8">
     <Grid Margin="22">
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="16"/><RowDefinition Height="*"/></Grid.RowDefinitions>
         <DockPanel Grid.Row="0">
             <StackPanel DockPanel.Dock="Left">
-                <TextBlock Text="Wanderkarte &amp; Gastgeberbelegung" FontSize="28" FontWeight="Bold" Foreground="#173D32"/>
-                <TextBlock Text="Offline in der WachauEtappe-Zentrale · kein Edge- oder Browserzugriff erforderlich" Foreground="#64736D" Margin="0,4,0,0"/>
+                <TextBlock Text="OpenStreetMap Wanderkarte &amp; Gastgeberbelegung" FontSize="28" FontWeight="Bold" Foreground="#173D32"/>
+                <TextBlock Text="Welterbesteig Wachau · exakter OSM-Wegverlauf (Relation 1309244) · ohne Edge/WebView" Foreground="#64736D" Margin="0,4,0,0"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <TextBlock Text="Datum" VerticalAlignment="Center" Margin="0,0,8,0"/>
                 <DatePicker x:Name="StayDatePicker" Width="150" SelectedDateChanged="StayDatePicker_SelectedDateChanged"/>
-                <Button Content="Aktualisieren" Click="Refresh_Click" Padding="14,8" Margin="10,0,0,0"/>
+                <Button Content="Karte aktualisieren" Click="Refresh_Click" Padding="14,8" Margin="10,0,0,0"/>
             </StackPanel>
         </DockPanel>
 
@@ -21,12 +21,12 @@
             <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
             <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="8">
                 <Grid>
-                    <Border Background="#F8FAF7" CornerRadius="8" ClipToBounds="True">
+                    <Border Background="#E9EEE9" CornerRadius="8" ClipToBounds="True">
                         <Viewbox Stretch="Uniform">
-                            <Canvas x:Name="MapCanvas" Width="920" Height="650" Background="#F8FAF7" MouseLeftButtonDown="MapCanvas_MouseLeftButtonDown"/>
+                            <Canvas x:Name="MapCanvas" Width="920" Height="650" Background="#E9EEE9" MouseLeftButtonDown="MapCanvas_MouseLeftButtonDown"/>
                         </Viewbox>
                     </Border>
-                    <Border VerticalAlignment="Top" HorizontalAlignment="Left" Margin="14" Background="#EEFFFFFF" CornerRadius="8" Padding="10">
+                    <Border VerticalAlignment="Top" HorizontalAlignment="Left" Margin="14" Background="#F2FFFFFF" CornerRadius="8" Padding="10">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="●" Foreground="#248A3D" FontSize="18"/><TextBlock Text=" frei" Margin="2,0,12,0" VerticalAlignment="Center"/>
@@ -35,13 +35,15 @@
                                 <TextBlock Text="●" Foreground="#7A8580" FontSize="18"/><TextBlock Text=" nicht gemeldet" Margin="2,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                <TextBlock Text="━━" Foreground="#173D32" FontWeight="Bold"/><TextBlock Text=" Nordufer" Margin="4,0,14,0"/>
-                                <TextBlock Text="━━" Foreground="#315D7A" FontWeight="Bold"/><TextBlock Text=" Südufer" Margin="4,0,0,0"/>
+                                <TextBlock Text="━━" Foreground="#C62828" FontWeight="Bold"/><TextBlock Text=" Welterbesteig (OSM)" Margin="4,0,14,0"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
-                    <Border VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="14" Background="#EEFFFFFF" CornerRadius="8" Padding="10">
-                        <TextBlock Text="Karte ist eine geografische Betriebsübersicht der WachauEtappe-Zentrale. Marker anklicken für Gastgeberdetails." Foreground="#64736D" FontSize="11"/>
+                    <Border VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="14" Background="#F2FFFFFF" CornerRadius="8" Padding="10">
+                        <StackPanel>
+                            <TextBlock x:Name="MapStatusText" Text="OpenStreetMap wird geladen …" Foreground="#475650" FontSize="11" FontWeight="SemiBold"/>
+                            <TextBlock Text="© OpenStreetMap-Mitwirkende · ODbL · Gastgebermarker anklicken für Details" Foreground="#64736D" FontSize="10" Margin="0,3,0,0"/>
+                        </StackPanel>
                     </Border>
                 </Grid>
             </Border>
