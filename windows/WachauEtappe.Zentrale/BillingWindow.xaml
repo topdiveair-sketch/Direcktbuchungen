@@ -1,0 +1,25 @@
+<Window x:Class="WachauEtappe.Zentrale.BillingWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="WachauEtappe · Abrechnung" Height="860" Width="1260" WindowStartupLocation="CenterOwner" Background="#F4F1E8">
+<Grid Margin="24"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+<StackPanel Grid.Row="0"><TextBlock Text="Partner-Abrechnung" FontSize="28" FontWeight="Bold" Foreground="#173D32"/><TextBlock Text="Bestätigte Aufenthalte automatisch monatlich abrechnen. Der Gast bezahlt weiterhin direkt beim Gastgeber." Foreground="#64736D" Margin="0,4,0,16"/></StackPanel>
+<Border Grid.Row="1" Background="White" CornerRadius="12" Padding="18" Margin="0,0,0,16"><StackPanel>
+<Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+<StackPanel Grid.Column="0" Margin="0,0,8,0"><TextBlock Text="Von"/><DatePicker x:Name="FromDate" Margin="0,4,0,0"/></StackPanel>
+<StackPanel Grid.Column="1" Margin="8,0"><TextBlock Text="Bis"/><DatePicker x:Name="ToDate" Margin="0,4,0,0"/></StackPanel>
+<StackPanel Grid.Column="2" Margin="8,0"><TextBlock Text="Gebühr netto / Buchung (€)"/><TextBox x:Name="FeeBox" Margin="0,4,0,0" Padding="8"/></StackPanel>
+<StackPanel Grid.Column="3" Margin="8,0"><TextBlock Text="USt %"/><TextBox x:Name="VatBox" Margin="0,4,0,0" Padding="8"/></StackPanel>
+<StackPanel Grid.Column="4" Margin="8,0,0,0"><TextBlock Text="Zahlungsziel Tage"/><TextBox x:Name="DaysBox" Margin="0,4,0,0" Padding="8"/></StackPanel></Grid>
+<WrapPanel Margin="0,14,0,0"><Button Content="Einstellungen speichern" Click="SaveSettings_Click" Padding="14,8" Margin="0,0,8,0"/><Button Content="Abrechnung erzeugen" Click="Generate_Click" Padding="14,8" Margin="0,0,8,0" Background="#173D32" Foreground="White"/><Button Content="Aktualisieren" Click="Refresh_Click" Padding="14,8"/></WrapPanel>
+<TextBlock x:Name="StatusText" Margin="0,12,0,0" TextWrapping="Wrap" Foreground="#397356"/>
+<Expander Header="Rechnungssteller / Bankdaten" Margin="0,14,0,0"><Grid Margin="0,10,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+<StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8"><TextBlock Text="Name / Firma"/><TextBox x:Name="SellerNameBox" Padding="8" Margin="0,4,0,0"/></StackPanel>
+<StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,0,8"><TextBlock Text="UID / Steuernummer"/><TextBox x:Name="VatIdBox" Padding="8" Margin="0,4,0,0"/></StackPanel>
+<StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,0"><TextBlock Text="Anschrift"/><TextBox x:Name="SellerAddressBox" Padding="8" Margin="0,4,0,0"/></StackPanel>
+<StackPanel Grid.Row="1" Grid.Column="1" Margin="8,0,0,0"><TextBlock Text="IBAN"/><TextBox x:Name="IbanBox" Padding="8" Margin="0,4,0,0"/></StackPanel>
+</Grid></Expander>
+</StackPanel></Border>
+<Border Grid.Row="2" Background="White" CornerRadius="12" Padding="18"><Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+<TextBlock Text="Rechnungen" FontSize="20" FontWeight="SemiBold" Foreground="#173D32"/>
+<DataGrid x:Name="InvoiceGrid" Grid.Row="1" Margin="0,12,0,12" AutoGenerateColumns="True" IsReadOnly="True" SelectionMode="Single"/>
+<WrapPanel Grid.Row="2" HorizontalAlignment="Right"><Button Content="Rechnung öffnen" Click="OpenInvoice_Click" Padding="14,8" Margin="0,0,8,0"/><Button Content="Als bezahlt markieren" Click="Paid_Click" Padding="14,8" Background="#397356" Foreground="White"/></WrapPanel>
+</Grid></Border>
+</Grid></Window>
