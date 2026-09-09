@@ -1,0 +1,14 @@
+<Window x:Class="WachauEtappe.Zentrale.BookingEditWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="WachauEtappe · Buchung" Height="620" Width="720" WindowStartupLocation="CenterOwner" Background="#F4F1E8">
+<Grid Margin="24"><Border Background="White" CornerRadius="12" Padding="22"><ScrollViewer><StackPanel>
+<TextBlock x:Name="TitleText" Text="Buchung" FontSize="26" FontWeight="Bold" Foreground="#173D32"/>
+<TextBlock x:Name="ReferenceText" Foreground="#718079" Margin="0,3,0,18"/>
+<TextBlock Text="Gastgeber"/><ComboBox x:Name="HostBox" DisplayMemberPath="Name" Margin="0,4,0,10" Height="34"/>
+<Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+<StackPanel Margin="0,0,8,0"><TextBlock Text="Datum"/><DatePicker x:Name="StayDateBox" Margin="0,4,0,10"/><TextBlock Text="Personen"/><TextBox x:Name="GuestsBox" Text="1" Margin="0,4,0,10"/></StackPanel>
+<StackPanel Grid.Column="1" Margin="8,0,0,0"><TextBlock Text="Preis EUR"/><TextBox x:Name="PriceBox" Margin="0,4,0,10"/><TextBlock Text="Status"/><ComboBox x:Name="StatusBox" Margin="0,4,0,10"><ComboBoxItem Content="requested"/><ComboBoxItem Content="confirmed"/><ComboBoxItem Content="declined"/><ComboBoxItem Content="cancelled"/></ComboBox></StackPanel></Grid>
+<TextBlock Text="Gast"/><TextBox x:Name="GuestNameBox" Margin="0,4,0,10"/>
+<Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><StackPanel Margin="0,0,8,0"><TextBlock Text="E-Mail"/><TextBox x:Name="EmailBox" Margin="0,4,0,10"/></StackPanel><StackPanel Grid.Column="1" Margin="8,0,0,0"><TextBlock Text="Telefon"/><TextBox x:Name="PhoneBox" Margin="0,4,0,10"/></StackPanel></Grid>
+<TextBlock Text="Notiz"/><TextBox x:Name="NoteBox" Margin="0,4,0,16" Height="70" AcceptsReturn="True" TextWrapping="Wrap"/>
+<TextBlock Text="Zahlung erfolgt direkt beim Gastgeber." Foreground="#64736D" Margin="0,0,0,16"/>
+<StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><Button Content="Abbrechen" Click="Cancel_Click" Padding="16,8" Margin="0,0,8,0"/><Button Content="Speichern" Click="Save_Click" Padding="18,8" Background="#397356" Foreground="White"/></StackPanel>
+</StackPanel></ScrollViewer></Border></Grid></Window>
