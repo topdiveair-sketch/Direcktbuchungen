@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#173D32">
+  <title>WachauEtappe Partnerportal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="mark">WE</span><div><strong>WachauEtappe</strong><small>Partnerportal</small></div></div>
+  <button id="logoutBtn" class="ghost" hidden>Abmelden</button>
+</header>
+<main>
+  <section id="loginView" class="card login-card">
+    <span class="eyebrow">PARTNERZUGANG</span>
+    <h1>Zimmer einfach freigeben.</h1>
+    <p>Pflegen Sie freie Zimmer, Preis, Frühstück und Gepäckoption. Änderungen werden sofort für WachauEtappe übernommen.</p>
+    <form id="loginForm" class="form-grid single">
+      <label>Betriebs-ID<input id="hostId" autocomplete="username" required></label>
+      <label>E-Mail<input id="email" type="email" autocomplete="email" required></label>
+      <label>Partner-Code<input id="accessCode" type="password" autocomplete="current-password" required></label>
+      <button class="primary" type="submit">Anmelden</button>
+      <p id="loginStatus" class="status"></p>
+    </form>
+  </section>
+
+  <section id="portalView" hidden>
+    <div class="hero-card">
+      <div><span class="eyebrow">MEIN BETRIEB</span><h1 id="hostName">Partnerbetrieb</h1><p id="hostLocation"></p></div>
+      <div class="legend"><span><b class="dot free"></b> frei</span><span><b class="dot full"></b> belegt</span></div>
+    </div>
+
+    <section class="card">
+      <div class="section-head"><div><span class="eyebrow">VERFÜGBARKEIT</span><h2>Zeitraum freigeben oder sperren</h2></div><button id="refreshBtn" class="ghost" type="button">Aktualisieren</button></div>
+      <form id="availabilityForm" class="form-grid">
+        <label>Von<input id="fromDate" type="date" required></label>
+        <label>Bis<input id="toDate" type="date" required></label>
+        <label>Status<select id="status"><option value="free">Frei</option><option value="full">Belegt</option><option value="closed">Geschlossen</option></select></label>
+        <label>Freie Zimmer<input id="roomsFree" type="number" min="0" value="1" required></label>
+        <label>Preis pro Zimmer / Nacht (€)<input id="price" type="number" min="0" step="0.01" required></label>
+        <label>Frühstück<select id="breakfastMode"><option value="included">inklusive</option><option value="extra">gegen Aufpreis</option><option value="none">ohne Frühstück</option></select></label>
+        <label>Frühstück Aufpreis (€)<input id="breakfastPrice" type="number" min="0" step="0.01" value="0"></label>
+        <label class="check"><input id="luggage" type="checkbox"><span>Gepäcktransport / Gepäckübergabe möglich</span></label>
+        <button class="primary wide" type="submit">Zeitraum speichern</button>
+      </form>
+      <p id="saveStatus" class="status"></p>
+    </section>
+
+    <section class="card">
+      <div class="section-head"><div><span class="eyebrow">ÜBERSICHT</span><h2>Meine nächsten Verfügbarkeiten</h2></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Datum</th><th>Status</th><th>frei</th><th>Preis</th><th>Frühstück</th><th>Gepäck</th></tr></thead><tbody id="availabilityRows"></tbody></table></div>
+    </section>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
