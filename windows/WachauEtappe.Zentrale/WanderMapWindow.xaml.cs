@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using WachauEtappe.Zentrale.Models;
+using IOPath = System.IO.Path;
 
 namespace WachauEtappe.Zentrale;
 
@@ -165,9 +166,9 @@ public partial class WanderMapWindow : Window
     {
         try
         {
-            var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WachauEtappe", "MapCache", z.ToString(), x.ToString());
+            var folder = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WachauEtappe", "MapCache", z.ToString(), x.ToString());
             Directory.CreateDirectory(folder);
-            var path = Path.Combine(folder, $"{y}.png");
+            var path = IOPath.Combine(folder, $"{y}.png");
             byte[] bytes;
             if (File.Exists(path) && DateTime.UtcNow - File.GetLastWriteTimeUtc(path) < TimeSpan.FromDays(30))
             {
@@ -197,9 +198,9 @@ public partial class WanderMapWindow : Window
     private async Task EnsureOsmRouteAsync(bool forceReload)
     {
         if (_osmRoute is not null && !forceReload) return;
-        var cacheFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WachauEtappe", "MapCache");
+        var cacheFolder = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WachauEtappe", "MapCache");
         Directory.CreateDirectory(cacheFolder);
-        var cachePath = Path.Combine(cacheFolder, $"welterbesteig-relation-{WelterbesteigRelationId}.json");
+        var cachePath = IOPath.Combine(cacheFolder, $"welterbesteig-relation-{WelterbesteigRelationId}.json");
 
         try
         {
@@ -217,7 +218,6 @@ public partial class WanderMapWindow : Window
         }
         catch
         {
-            // Cached geometry is used below.
         }
 
         try
@@ -235,7 +235,6 @@ public partial class WanderMapWindow : Window
         }
         catch
         {
-            // Fall through to simplified route.
         }
 
         _osmRoute = new List<List<GeoPoint>> { FallbackRoute.ToList() };
