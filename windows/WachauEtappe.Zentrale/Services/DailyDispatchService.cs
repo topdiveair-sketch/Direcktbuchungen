@@ -61,28 +61,28 @@ ORDER BY t.Reference,l.Id
         while(done.Count<transfers.Count)
         {
             var options=new List<ActionPoint>();
-            foreach(var t in transfers)
+            foreach(var transfer in transfers)
             {
-                if(done.Contains(t.Id))continue;
-                if(pendingPickups.Contains(t.Id))
+                if(done.Contains(transfer.Id))continue;
+                if(pendingPickups.Contains(transfer.Id))
                 {
-                    var c=Resolve(t.PickupLocation);
-                    if(c.ok)options.Add(new ActionPoint(t,true,c.lat,c.lon));
+                    var c=Resolve(transfer.PickupLocation);
+                    if(c.ok)options.Add(new ActionPoint(transfer,true,c.lat,c.lon));
                 }
-                else if(picked.Contains(t.Id))
+                else if(picked.Contains(transfer.Id))
                 {
-                    var c=Resolve(t.DropLocation);
-                    if(c.ok)options.Add(new ActionPoint(t,false,c.lat,c.lon));
+                    var c=Resolve(transfer.DropLocation);
+                    if(c.ok)options.Add(new ActionPoint(transfer,false,c.lat,c.lon));
                 }
             }
             if(options.Count==0)break;
             var next=options.OrderBy(x=>Haversine(current.lat,current.lon,x.Lat,x.Lon)).First();
             var leg=Haversine(current.lat,current.lon,next.Lat,next.Lon);km+=leg;current=(next.Lat,next.Lon);
-            var t=next.Transfer;
-            if(next.IsPickup){pendingPickups.Remove(t.Id);picked.Add(t.Id);}else{picked.Remove(t.Id);done.Add(t.Id);}
-            result.Add(new LuggageRouteStop(seq++,next.IsPickup?"ABHOLEN":"ZUSTELLEN",t.Id,t.Reference,t.Guest,
-                next.IsPickup?t.PickupLocation:t.DropLocation,next.IsPickup?t.PickupName:t.DropName,next.IsPickup?t.PickupPhone:t.DropPhone,
-                t.PickupName,t.DropName,Math.Round(leg,1),t.Status));
+            var currentTransfer=next.Transfer;
+            if(next.IsPickup){pendingPickups.Remove(currentTransfer.Id);picked.Add(currentTransfer.Id);}else{picked.Remove(currentTransfer.Id);done.Add(currentTransfer.Id);}
+            result.Add(new LuggageRouteStop(seq++,next.IsPickup?"ABHOLEN":"ZUSTELLEN",currentTransfer.Id,currentTransfer.Reference,currentTransfer.Guest,
+                next.IsPickup?currentTransfer.PickupLocation:currentTransfer.DropLocation,next.IsPickup?currentTransfer.PickupName:currentTransfer.DropName,next.IsPickup?currentTransfer.PickupPhone:currentTransfer.DropPhone,
+                currentTransfer.PickupName,currentTransfer.DropName,Math.Round(leg,1),currentTransfer.Status));
         }
         var home=Haversine(current.lat,current.lon,AggsbachMarktLat,AggsbachMarktLon);if(result.Count>0)km+=home;
         return new LuggageRoutePlan(result,Math.Round(km,1),"Aggsbach Markt → Tour → Aggsbach Markt");
