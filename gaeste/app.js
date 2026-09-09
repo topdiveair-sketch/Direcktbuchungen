@@ -80,12 +80,22 @@ async function searchHosts(){
 function renderHosts(results,date,guests){
   const box=$('stayResult');
   if(!results.length){box.innerHTML='<div class="empty"><strong>Noch kein freigegebener Gastgeber verfügbar.</strong><br>Dieser Ort wird als Partnerlücke für WachauEtappe behandelt.</div>';return}
-  box.innerHTML=results.map(h=>`<article class="host-card"><span class="eyebrow">GEPRÜFTER PARTNER</span><h3>${esc(h.name)}</h3><div class="location">${esc(h.location||'')}</div><div class="chips"><span class="chip">1 Nacht</span><span class="chip">Direktzahlung</span>${(h.features||[]).slice(0,3).map(f=>`<span class="chip">${esc(f)}</span>`).join('')}</div>${h.price!=null?`<p><strong>ab € ${Number(h.price).toFixed(2)}</strong></p>`:'<p>Preis wird vom Gastgeber bestätigt.</p>'}<div class="host-actions"><button class="btn primary" type="button" data-book='${encodeURIComponent(JSON.stringify({hostId:h.hostId||h.id,name:h.name,location:h.location,date,guests,price:h.price??null,email:h.email||'',phone:h.phone||''}))}'>Anfragen</button>${h.directUrl?`<a class="btn secondary" href="${esc(h.directUrl)}" target="_blank" rel="noopener">Direktseite</a>`:''}</div></article>`).join('');
+  box.innerHTML=results.map(h=>`<article class="host-card"><span class="eyebrow">GEPRÜFTER PARTNER</span><h3>${esc(h.name)}</h3><div class="location">${esc(h.location||'')}</div><div class="chips"><span class="chip">1 Nacht</span><span class="chip">Direktzahlung</span>${(h.features||[]).slice(0,3).map(f=>`<span class="chip">${esc(f)}</span>`).join('')}</div>${h.price!=null?`<p><strong>ab € ${Number(h.price).toFixed(2)}</strong></p>`:'<p>Preis wird vom Gastgeber bestätigt.</p>'}<div class="host-actions"><button class="btn primary" type="button" data-book='${encodeURIComponent(JSON.stringify({hostId:h.hostId||h.id,name:h.name,location:h.location,date,guests,price:h.price??null,email:h.email||'',phone:h.phone||''}))}'>Diesen Gastgeber anfragen</button>${h.directUrl?`<a class="btn secondary" href="${esc(h.directUrl)}" target="_blank" rel="noopener">Gastgeber ansehen</a>`:''}</div></article>`).join('');
   box.querySelectorAll('[data-book]').forEach(btn=>btn.addEventListener('click',()=>openBooking(JSON.parse(decodeURIComponent(btn.dataset.book)))));
 }
 
-function openBooking(data){activeBooking=data;$('bookingHostId').value=data.hostId;$('bookingDate').value=data.date;$('bookingGuests').value=data.guests;$('bookingSummary').textContent=`${data.name} · ${data.location} · ${data.date}`;$('bookingModal').hidden=false;document.body.style.overflow='hidden';setBookingState('',false)}
-function closeBooking(){$('bookingModal').hidden=true;document.body.style.overflow='';activeBooking=null}
+function openBooking(data){
+  if(!data||!data.hostId||!data.name)return;
+  activeBooking=data;
+  $('bookingHostId').value=data.hostId;
+  $('bookingDate').value=data.date;
+  $('bookingGuests').value=data.guests;
+  $('bookingSummary').textContent=`Du fragst jetzt ${data.name} in ${data.location} für ${data.date} an.`;
+  $('bookingModal').hidden=false;
+  document.body.style.overflow='hidden';
+  setBookingState('',false);
+}
+function closeBooking(){$('bookingModal').hidden=true;$('bookingModal').style.display='none';document.body.style.overflow='';activeBooking=null}
 
 function setBookingState(message,isError=false){
   let status=$('bookingStatus');
@@ -95,7 +105,7 @@ function setBookingState(message,isError=false){
 }
 
 async function submitBooking(e){
-  e.preventDefault(); if(!activeBooking)return;
+  e.preventDefault(); if(!activeBooking){setBookingState('Bitte zuerst einen Gastgeber auswählen.',true);return;}
   const submit=e.submitter||$('bookingForm').querySelector('button[type="submit"]');
   const payload={hostId:activeBooking.hostId,stayDate:activeBooking.date,guests:Number($('bookingGuests').value||1),guestName:$('guestName').value.trim(),guestEmail:$('guestEmail').value.trim(),guestPhone:$('guestPhone').value.trim(),note:$('bookingNote').value.trim(),price:activeBooking.price??null,paymentMethod:'host'};
   submit.disabled=true;const oldText=submit.textContent;submit.textContent='Wird gesendet …';setBookingState('Buchungsanfrage wird sicher übertragen …');
@@ -119,5 +129,7 @@ $('closeModal').addEventListener('click',closeBooking);
 $('bookingModal').addEventListener('click',e=>{if(e.target===$('bookingModal'))closeBooking()});
 $('route').addEventListener('change',initPlaces);
 
+// A booking form must never be visible before the guest has explicitly selected a host.
+closeBooking();
 const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);$('startDate').value=iso(tomorrow);$('stayDate').value=iso(tomorrow);
 loadData().catch(err=>{console.error(err);alert('WachauEtappe konnte die Routendaten nicht laden.')});
