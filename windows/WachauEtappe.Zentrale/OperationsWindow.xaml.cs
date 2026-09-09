@@ -15,7 +15,40 @@ public partial class OperationsWindow:Window
 
  public OperationsWindow(){InitializeComponent();Loaded+=(_,_)=>LoadAll();}
  private void LoadAll(){HostBox.ItemsSource=App.Database.GetHosts().Where(h=>h.Published).ToList();StayDate.SelectedDate=DateTime.Today;EndDate.SelectedDate=DateTime.Today;DispatchDate.SelectedDate=DateTime.Today;AvailabilityBox.SelectedIndex=0;LuggageStatusBox.SelectedIndex=0;RefreshTables();RefreshDispatch();}
- private void RefreshTables(){AvailabilityGrid.ItemsSource=App.Database.QueryRows("SELECT a.StayDate,h.Name AS Gastgeber,a.Status,a.Price,a.Note FROM Availability a LEFT JOIN Hosts h ON h.Id=a.HostId ORDER BY a.StayDate,h.Name");LuggageGrid.ItemsSource=App.Database.QueryRows("SELECT l.Id,t.Reference,d.DayNumber,d.TravelDate,h1.Name AS Abholung,h2.Name AS Ziel,l.Status,l.Provider,l.Note FROM LuggageTransfers l JOIN Trips t ON t.Id=l.TripId LEFT JOIN TripDays d ON d.Id=l.TripDayId LEFT JOIN Hosts h1 ON h1.Id=l.PickupHostId LEFT JOIN Hosts h2 ON h2.Id=l.DropoffHostId ORDER BY d.TravelDate,t.Reference");PriorityGrid.ItemsSource=App.Database.GetCoveragePriorities().Select(x=>new{Ort=x.Location,FehlendeGastgeber=x.Need,Kandidaten=x.CandidateCount,Prioritaet=x.Need>=2?"HOCH":"NORMAL"}).ToList();}
+ private void RefreshTables(){AvailabilityGrid.ItemsSource=App.Database.QueryRows("SELECT a.StayDate,h.Name AS Gastgeber,a.Status,a.Price,a.Note FROM Availability a LEFT JOIN Hosts h ON h.Id=a.HostId ORDER BY a.StayDate,h.Name");LuggageGrid.ItemsSource=App.Database.QueryRows("SELECT l.Id,t.Reference,d.DayNumber,d.TravelDate,h1.Name AS Abholung,h2.Name AS Ziel,l.Status,l.Provider,l.Note FROM LuggageTransfers l JOIN Trips t ON t.Id=l.TripId LEFT JOIN TripDays d ON d.Id=l.TripDayId LEFT JOIN Hosts h1 ON h1.Id=l.PickupHostId LEFT JOIN Hosts h2 ON h2.Id=l.DropoffHostId ORDER BY d.TravelDate,t.Reference");PriorityGrid.ItemsSource=App.Database.GetCoveragePriorities().Select(x=>new{Ort=x.Location,FehlendeGastgeber=x.Need,Kandidaten=x.CandidateCount,Prioritaet=x.Need>=2?"HOCH":"NORMAL"}).ToList();RefreshPartnerNetwork();}
+ private void RefreshPartnerNetwork()
+ {
+  var hosts=App.Database.GetHosts();
+  var candidates=App.Database.GetCandidates();
+  var points=new[]{
+   new{Ort="Krems",Suchbegriffe=new[]{"krems"}},
+   new{Ort="Dürnstein / Unterloiben",Suchbegriffe=new[]{"dürnstein","duernstein","unterloiben"}},
+   new{Ort="Weißenkirchen / Wösendorf",Suchbegriffe=new[]{"weißenkirchen","weissenkirchen","wösendorf","woesendorf"}},
+   new{Ort="Spitz",Suchbegriffe=new[]{"spitz"}},
+   new{Ort="Mühldorf",Suchbegriffe=new[]{"mühldorf","muehldorf"}},
+   new{Ort="Maria Laach",Suchbegriffe=new[]{"maria laach"}},
+   new{Ort="Aggsbach Markt",Suchbegriffe=new[]{"aggsbach markt"}},
+   new{Ort="Melk",Suchbegriffe=new[]{"melk"}},
+   new{Ort="Aggsbach Dorf",Suchbegriffe=new[]{"aggsbach dorf"}},
+   new{Ort="Arnsdorf / Hofarnsdorf",Suchbegriffe=new[]{"arnsdorf","hofarnsdorf","oberarnsdorf","bacharnsdorf"}},
+   new{Ort="Rossatz",Suchbegriffe=new[]{"rossatz"}},
+   new{Ort="Unterbergern / Mautern",Suchbegriffe=new[]{"unterbergern","mautern"}}
+  };
+  const int ziel=2;
+  var rows=points.Select(p=>
+  {
+   bool Match(string location)=>p.Suchbegriffe.Any(s=>(location??"").Contains(s,StringComparison.OrdinalIgnoreCase));
+   var active=hosts.Count(h=>h.Published&&h.AcceptingBookings&&h.OneNightVerified&&h.CashAtHostVerified&&Match(h.Location));
+   var cand=candidates.Count(c=>Match(c.Location)&&!string.Equals(c.Status,"rejected",StringComparison.OrdinalIgnoreCase));
+   var fehlt=Math.Max(0,ziel-active);
+   var prioritaet=fehlt>=2?"KRITISCH":fehlt==1?"HOCH":"OK";
+   return new{Ort=p.Ort,ZielPartner=ziel,AktivePartner=active,Fehlend=fehlt,Kandidaten=cand,Prioritaet=prioritaet};
+  }).ToList();
+  PartnerNetworkGrid.ItemsSource=rows;
+  var covered=rows.Count(r=>r.Fehlend==0);
+  var totalMissing=rows.Sum(r=>r.Fehlend);
+  PartnerNetworkSummary.Text=$"{covered}/{rows.Count} strategische Punkte vollständig abgedeckt · noch {totalMissing} verlässliche Partner bis zum Zielnetz (2 je Punkt).";
+ }
  private void SaveAvailability_Click(object sender,RoutedEventArgs e){if(HostBox.SelectedItem is not HostRecord h||StayDate.SelectedDate is not DateTime from)return;var to=EndDate.SelectedDate??from;var status=(AvailabilityBox.SelectedItem as ComboBoxItem)?.Content?.ToString()??"unknown";double? price=double.TryParse(PriceBox.Text.Replace(',','.'),NumberStyles.Any,CultureInfo.InvariantCulture,out var p)?p:null;var count=App.Database.SetAvailabilityRange(h.Id,from,to,status,price);AvailabilityStatusText.Text=$"✓ {count} Tag(e) für {h.Name} gespeichert.";RefreshTables();}
  private async void LoadOnlinePartners_Click(object sender,RoutedEventArgs e)
  {
