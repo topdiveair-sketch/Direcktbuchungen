@@ -1,6 +1,7 @@
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
+using System.Xml.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -17,9 +18,11 @@ public partial class WanderMapWindow : Window
     private List<MapHostStatus> _hosts = new();
     private List<List<GeoPoint>>? _osmRoute;
     private bool _osmRouteIsExact;
+    private string _routeSource = "";
 
     private const long WelterbesteigRelationId = 1309244;
-    private const int Zoom = 11;
+    private const string OfficialGpxUrl = "https://imxplatform-cust-noew.fsn1.your-objectstorage.com/media/gpx_addressbase_36233.gpx";
+    private const int Zoom = 13;
     private const double MinLat = 48.195;
     private const double MaxLat = 48.440;
     private const double MinLon = 15.285;
@@ -63,7 +66,7 @@ public partial class WanderMapWindow : Window
 
     private static HttpClient CreateHttpClient()
     {
-        var h = new HttpClient { Timeout = TimeSpan.FromSeconds(25) };
+        var h = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
         h.DefaultRequestHeaders.UserAgent.ParseAdd("WachauEtappe-Zentrale/1.0 (contact: topdiveair@gmail.com)");
         return h;
     }
@@ -88,7 +91,7 @@ public partial class WanderMapWindow : Window
         SummaryText.Text = $"{date} · {green} frei · {orange} wenig frei · {red} besetzt · {gray} nicht gemeldet";
         SelectedHostPanel.Visibility = Visibility.Collapsed;
 
-        MapStatusText.Text = "OpenStreetMap und Welterbesteig werden geladen …";
+        MapStatusText.Text = "Hochauflösende OpenStreetMap und offizieller Welterbesteig werden geladen …";
         MapCanvas.Children.Clear();
 
         await DrawOpenStreetMapTilesAsync();
@@ -98,8 +101,8 @@ public partial class WanderMapWindow : Window
         foreach (var h in _hosts.Where(x => x.HasCoordinates)) DrawHost(h);
 
         MapStatusText.Text = _osmRouteIsExact
-            ? $"OpenStreetMap · Welterbesteig Relation {WelterbesteigRelationId} · genauer OSM-Wegverlauf geladen"
-            : "OpenStreetMap-Weg derzeit nicht abrufbar · vereinfachte Ersatzlinie wird angezeigt";
+            ? $"OpenStreetMap Zoom {Zoom} · {_routeSource} · genauer Wegverlauf geladen"
+            : "OpenStreetMap · genaue Route derzeit nicht abrufbar · vereinfachte Ersatzlinie wird angezeigt";
     }
 
     private void ConfigureProjection()
@@ -198,9 +201,46 @@ public partial class WanderMapWindow : Window
     private async Task EnsureOsmRouteAsync(bool forceReload)
     {
         if (_osmRoute is not null && !forceReload) return;
+
         var cacheFolder = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WachauEtappe", "MapCache");
         Directory.CreateDirectory(cacheFolder);
-        var cachePath = IOPath.Combine(cacheFolder, $"welterbesteig-relation-{WelterbesteigRelationId}.json");
+        var officialCache = IOPath.Combine(cacheFolder, "welterbesteig-official-gpx.json");
+        var osmCache = IOPath.Combine(cacheFolder, $"welterbesteig-relation-{WelterbesteigRelationId}.json");
+
+        try
+        {
+            var gpx = await Http.GetStringAsync(OfficialGpxUrl);
+            var segments = ParseGpxGeometry(gpx);
+            if (segments.Count > 0 && segments.Sum(s => s.Count) > 500)
+            {
+                _osmRoute = segments;
+                _osmRouteIsExact = true;
+                _routeSource = "offizieller GPX-Track Donau Niederösterreich";
+                await File.WriteAllTextAsync(officialCache, JsonSerializer.Serialize(segments));
+                return;
+            }
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            if (File.Exists(officialCache))
+            {
+                var cached = JsonSerializer.Deserialize<List<List<GeoPoint>>>(await File.ReadAllTextAsync(officialCache));
+                if (cached is { Count: > 0 } && cached.Sum(s => s.Count) > 500)
+                {
+                    _osmRoute = cached;
+                    _osmRouteIsExact = true;
+                    _routeSource = "offizieller GPX-Track (lokaler Cache)";
+                    return;
+                }
+            }
+        }
+        catch
+        {
+        }
 
         try
         {
@@ -212,7 +252,8 @@ public partial class WanderMapWindow : Window
             {
                 _osmRoute = segments;
                 _osmRouteIsExact = true;
-                await File.WriteAllTextAsync(cachePath, JsonSerializer.Serialize(segments));
+                _routeSource = $"OpenStreetMap Relation {WelterbesteigRelationId}";
+                await File.WriteAllTextAsync(osmCache, JsonSerializer.Serialize(segments));
                 return;
             }
         }
@@ -222,13 +263,14 @@ public partial class WanderMapWindow : Window
 
         try
         {
-            if (File.Exists(cachePath))
+            if (File.Exists(osmCache))
             {
-                var cached = JsonSerializer.Deserialize<List<List<GeoPoint>>>(await File.ReadAllTextAsync(cachePath));
+                var cached = JsonSerializer.Deserialize<List<List<GeoPoint>>>(await File.ReadAllTextAsync(osmCache));
                 if (cached is { Count: > 0 } && cached.Sum(s => s.Count) > 100)
                 {
                     _osmRoute = cached;
                     _osmRouteIsExact = true;
+                    _routeSource = $"OpenStreetMap Relation {WelterbesteigRelationId} (Cache)";
                     return;
                 }
             }
@@ -239,6 +281,36 @@ public partial class WanderMapWindow : Window
 
         _osmRoute = new List<List<GeoPoint>> { FallbackRoute.ToList() };
         _osmRouteIsExact = false;
+        _routeSource = "vereinfachte Ersatzroute";
+    }
+
+    private static List<List<GeoPoint>> ParseGpxGeometry(string gpx)
+    {
+        var result = new List<List<GeoPoint>>();
+        var doc = XDocument.Parse(gpx);
+
+        var segments = doc.Descendants().Where(x => x.Name.LocalName == "trkseg").ToList();
+        foreach (var seg in segments)
+        {
+            var points = seg.Elements().Where(x => x.Name.LocalName == "trkpt")
+                .Select(ParseGpxPoint).Where(x => x is not null).Select(x => x!).ToList();
+            if (points.Count > 1) result.Add(points);
+        }
+
+        if (result.Count == 0)
+        {
+            var routePoints = doc.Descendants().Where(x => x.Name.LocalName is "rtept" or "trkpt")
+                .Select(ParseGpxPoint).Where(x => x is not null).Select(x => x!).ToList();
+            if (routePoints.Count > 1) result.Add(routePoints);
+        }
+        return result;
+    }
+
+    private static GeoPoint? ParseGpxPoint(XElement element)
+    {
+        if (!double.TryParse(element.Attribute("lat")?.Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var lat)) return null;
+        if (!double.TryParse(element.Attribute("lon")?.Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var lon)) return null;
+        return new GeoPoint(lat, lon);
     }
 
     private static List<List<GeoPoint>> ParseOverpassGeometry(string json)
