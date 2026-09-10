@@ -2657,12 +2657,14 @@
     const LIVE_BOOKING_API_URL = hasConfiguredBookingSync
       ? configuredBookingSyncUrl + "/availability"
       : "";
-    const LIVE_PRICE_API_URL = "";
+    const LIVE_PRICE_API_URL = "https://web-production-907d68.up.railway.app/api/direct-price";
     const OTHER_ROOMS_RELEASED = window.SHOW_ADDITIONAL_ROOMS === true;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
     let bookingCalendarUpdated = "10.9.2026, 19:19:56";
     let bookingCalendarUpdatedIso = "2026-09-10T17:19:56.266Z";
     let bookingCalendarMode = "offline";
+    let liveDirectPriceQuote = null;
+    let liveDirectPriceQuoteKey = "";
     let liveBookingCalendarLoaded = true;
     let liveBookingCalendarPending = false;
     
@@ -2813,7 +2815,11 @@
       const people = Number(adults.value || 1);
       const room = selectedRoom();
       const roomPrice = room ? Math.round(Number(room.dataset.price || 0)) : 0;
-      const roomTotal = n * roomPrice;
+      const currentQuoteKey = room ? [room.value, arrival.value, departure.value].join("|") : "";
+      const hasLiveQuote = liveDirectPriceQuote && liveDirectPriceQuoteKey === currentQuoteKey;
+      const roomTotal = hasLiveQuote
+        ? Number(liveDirectPriceQuote.room_total_eur || 0)
+        : n * roomPrice;
       let sum = roomTotal;
       for (const extra of selectedExtras()) {
         const price = Number(extra.dataset.price || 0);
@@ -2860,16 +2866,42 @@
     }
 
     async function loadLivePrices() {
-      if (!LIVE_PRICE_API_URL) {
+      const room = selectedRoom();
+      const n = nightCount();
+      if (!LIVE_PRICE_API_URL || !room || n < 1 || !arrival.value || !departure.value) {
+        liveDirectPriceQuote = null;
+        liveDirectPriceQuoteKey = "";
+        const label = room ? room.closest(".choice").querySelector("b.price") : null;
+        if (label && room && room.value === "Bachblick") label.textContent = "ab 99 EUR";
         calculate();
         return;
       }
+
+      const quoteKey = [room.value, arrival.value, departure.value].join("|");
       try {
-        const response = await fetch(LIVE_PRICE_API_URL, { cache: "no-store" });
+        const params = new URLSearchParams({
+          room: room.value,
+          arrival: arrival.value,
+          departure: departure.value
+        });
+        const response = await fetch(LIVE_PRICE_API_URL + "?" + params.toString(), { cache: "no-store" });
         if (!response.ok) throw new Error("HTTP " + response.status);
         const payload = await response.json();
-        applyLivePrices(payload);
+        if (!payload.ok || typeof payload.room_total_eur !== "number") throw new Error("Ungueltige Preisdaten");
+        liveDirectPriceQuote = payload;
+        liveDirectPriceQuoteKey = quoteKey;
+
+        const label = room.closest(".choice").querySelector("b.price");
+        if (label) {
+          if (payload.night_count === 1 && payload.nights && payload.nights[0]) {
+            label.textContent = money(payload.nights[0].price_eur) + " / Nacht";
+          } else {
+            label.textContent = money(payload.room_total_eur) + " / " + payload.night_count + " Nächte";
+          }
+        }
       } catch (error) {
+        liveDirectPriceQuote = null;
+        liveDirectPriceQuoteKey = "";
         console.warn("Live-Preise konnten nicht geladen werden.", error);
       }
       calculate();
@@ -2951,7 +2983,10 @@
     });
     form.addEventListener("change", function(event) {
       if (["arrival", "departure", "room"].includes(event.target.name)) {
+        liveDirectPriceQuote = null;
+        liveDirectPriceQuoteKey = "";
         loadLiveBookingCalendar();
+        loadLivePrices();
       } else {
         calculate();
       }
