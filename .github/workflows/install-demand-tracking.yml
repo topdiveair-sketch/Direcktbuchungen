@@ -1,0 +1,56 @@
+name: Install demand tracking
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/install-demand-tracking.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: install-demand-tracking
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add tracker script and booking horizon
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          tag='<script src="demand-tracking.js" defer></script>'
+          if tag not in s:
+              marker='</body>'
+              if marker not in s:
+                  raise SystemExit('body end not found')
+              s=s.replace(marker, '  '+tag+'\n'+marker, 1)
+          # Keep selectable dates inside the configured pricing horizon.
+          s=s.replace('id="arrival" name="arrival" type="date" required', 'id="arrival" name="arrival" type="date" max="2027-12-31" required')
+          s=s.replace('id="departure" name="departure" type="date" required', 'id="departure" name="departure" type="date" max="2028-01-01" required')
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Validate tracker installation
+        run: |
+          grep -q 'demand-tracking.js' index.html
+          node --check demand-tracking.js
+      - name: Commit safely
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Enable demand funnel tracking on public booking page'
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git fetch origin main
+            git rebase origin/main
+          done
+          exit 1
