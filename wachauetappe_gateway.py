@@ -17,12 +17,22 @@ import guest_booking_gateway  # noqa: F401,E402
 import partner_portal_gateway  # noqa: F401,E402
 
 
-@app.get("/health/wachauetappe-production")
+def _has_live_state_route() -> bool:
+    return any(rule.rule == "/api/central/live-state" for rule in app.url_map.iter_rules())
+
+
+@app.get("/health/wachauetappe_production")
 def wachauetappe_production_health():
+    live_ok = _has_live_state_route()
     return {
-        "ok": True,
+        "ok": live_ok,
         "gateway": "wachauetappe_gateway",
         "guest_bookings": True,
         "partner_portal": True,
-        "live_central_state": True,
-    }, 200
+        "live_central_state": live_ok,
+    }, 200 if live_ok else 503
+
+# Keep the older human-readable health URL too.
+@app.get("/health/wachauetappe-production")
+def wachauetappe_production_health_legacy():
+    return wachauetappe_production_health()
