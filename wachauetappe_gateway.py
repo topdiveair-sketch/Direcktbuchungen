@@ -8,9 +8,14 @@ All operational APIs share the same Flask app and Railway database:
 - existing growth/winter/ProjectOS endpoints
 """
 
-# projectos_winter_gateway already initializes the central live-state gateway on
-# the shared Flask app. Import it once and do not register those routes twice.
-from projectos_winter_gateway import app  # noqa: F401
+# Load the dynamic direct-pricing bridge before the Railway/app stack. This
+# patches the shared pricing and PayPal checkout hooks for the configured
+# 14.09.2026-31.12.2027 pricing window while preserving legacy pricing outside it.
+import pricing_2027_gateway  # noqa: F401,E402
+
+# projectos_winter_gateway initializes the central live-state gateway on the
+# shared Flask app. Import it once and do not register those routes twice.
+from projectos_winter_gateway import app  # noqa: F401,E402
 
 # Importing these modules registers their routes on that same app instance.
 import guest_booking_gateway  # noqa: F401,E402
@@ -30,6 +35,7 @@ def wachauetappe_production_health():
         "guest_bookings": True,
         "partner_portal": True,
         "live_central_state": live_ok,
+        "dynamic_direct_pricing": True,
     }, 200 if live_ok else 503
 
 # Keep the older human-readable health URL too.
