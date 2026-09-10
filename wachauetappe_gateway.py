@@ -9,6 +9,8 @@ All operational APIs share the same Flask app and Railway database:
 - privacy-light demand and conversion analytics for ZAB OS
 """
 
+import hmac
+import os
 from datetime import date, timedelta
 
 from flask import request
@@ -61,6 +63,14 @@ def _pricing_self_check() -> tuple[bool, dict[str, float | None]]:
     return rates == expected, rates
 
 
+def _desktop_admin_ok() -> bool:
+    expected = os.environ.get("ADMIN_PASSWORD", "")
+    supplied = request.headers.get("X-Admin-Password", "")
+    if not expected or not supplied:
+        return False
+    return hmac.compare_digest(str(expected), str(supplied))
+
+
 @app.route("/api/direct-price", methods=["GET", "OPTIONS"])
 def public_direct_price():
     """Public, date-aware room quote used by the static GitHub Pages frontend."""
@@ -108,6 +118,24 @@ def public_direct_price():
     }, 200, _cors_headers()
 
 
+@app.get("/api/central/demand-summary")
+def central_demand_summary():
+    """Authenticated JSON funnel summary for RAINsoft CENTRAL desktop clients."""
+    if not _desktop_admin_ok():
+        return {"ok": False, "error": "unauthorized"}, 401
+    summary = app.extensions.get("zab_demand_analytics_summary")
+    if not callable(summary):
+        return {"ok": False, "error": "analytics_unavailable"}, 503
+    try:
+        days = max(1, min(int(request.args.get("days", "30")), 3650))
+    except (TypeError, ValueError):
+        days = 30
+    payload = dict(summary(days))
+    payload["ok"] = True
+    payload["source"] = "zab-demand-analytics"
+    return payload, 200, {"Cache-Control": "no-store"}
+
+
 @app.get("/health/wachauetappe_production")
 def wachauetappe_production_health():
     live_ok = _has_live_state_route()
@@ -115,7 +143,8 @@ def wachauetappe_production_health():
     price_api_ok = any(rule.rule == "/api/direct-price" for rule in app.url_map.iter_rules())
     analytics_ok = any(rule.rule == "/api/demand-event" for rule in app.url_map.iter_rules())
     os_analytics_ok = any(rule.rule == "/os/nachfrage" for rule in app.url_map.iter_rules())
-    ok = live_ok and pricing_ok and price_api_ok and analytics_ok and os_analytics_ok
+    central_demand_ok = any(rule.rule == "/api/central/demand-summary" for rule in app.url_map.iter_rules())
+    ok = live_ok and pricing_ok and price_api_ok and analytics_ok and os_analytics_ok and central_demand_ok
     return {
         "ok": ok,
         "gateway": "wachauetappe_gateway",
@@ -126,6 +155,7 @@ def wachauetappe_production_health():
         "public_direct_price_api": price_api_ok,
         "demand_analytics_api": analytics_ok,
         "zab_os_demand_dashboard": os_analytics_ok,
+        "rainsoft_central_demand_api": central_demand_ok,
         "pricing_rates": pricing_rates,
     }, 200 if ok else 503
 
