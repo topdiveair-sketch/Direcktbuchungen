@@ -45,6 +45,37 @@
         "no_show": "first_night_100_percent",
         "resale_relief": true
       }
+    },
+    {
+      "id": "pferdehof-jauerling",
+      "name": "Pferdehof Jauerling",
+      "status": "partner_confirmed_pending_terms",
+      "published": false,
+      "accepting_bookings": false,
+      "operator_note": "Positive Partnerzusage vom 10.09.2026. Eine Nacht, Frühstück und kleine Abendverpflegung für Wanderer bestätigt. Direktpreis, Frühstückskonditionen, Kapazität und Gepäckannahme noch offen; bis zur Klärung nicht live buchbar.",
+      "routes": ["Welterbesteig Wachau"],
+      "location": "Maria Laach",
+      "country": "AT",
+      "address": "Nonnersdorf 1, 3643 Maria Laach am Jauerling",
+      "latitude": 48.312820,
+      "longitude": 15.307708,
+      "accommodation_type": "Biobauernhof mit Ferienwohnungen",
+      "direct_url": "https://www.pferdehof-jauerling.at/",
+      "email": "info@pferdehof-jauerling.at",
+      "phone": "+43 664 5483343",
+      "contact_person": "Lisa Kranzer",
+      "features": [
+        "1 Nacht möglich",
+        "Frühstück möglich",
+        "Kleine Abendverpflegung für Wanderer auf Anfrage",
+        "Ferienwohnungen für 4 bis 5 Personen",
+        "Voll ausgestattete Küche",
+        "Biobauernhof im Naturpark Jauerling",
+        "Wandern",
+        "Reitunterricht",
+        "Parkplatz",
+        "Internetanschluss"
+      ]
     }
   ]
 }
