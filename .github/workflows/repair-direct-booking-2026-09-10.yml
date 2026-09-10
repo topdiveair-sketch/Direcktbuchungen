@@ -1,0 +1,112 @@
+name: Repair direct booking 2026-09-10
+
+on:
+  push:
+    paths:
+      - '.github/workflows/repair-direct-booking-2026-09-10.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: repair-direct-booking-2026-09-10
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply targeted repairs
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p=Path('railway_app.py')
+          s=p.read_text()
+          s=s.replace('import urllib.request\n', 'import urllib.request\nfrom datetime import timedelta\n')
+          s=s.replace('from provider_radar import init_provider_radar\n', 'from provider_radar import init_provider_radar\nfrom pricing_2027 import nightly_direct_rate\n')
+          s=s.replace('os.environ.get("PUBLIC_BACHBLICK_NIGHTLY_PRICE", "101.00")', 'os.environ.get("PUBLIC_BACHBLICK_NIGHTLY_PRICE", "99.00")')
+          old='''    nights = max(0, (departure - arrival).days)\n    room_total = round(PUBLIC_BACHBLICK_NIGHTLY_PRICE * nights, 2)\n'''
+          new='''    nights = max(0, (departure - arrival).days)\n    dynamic_rates = []\n    current = arrival\n    while current < departure:\n        nightly = nightly_direct_rate(current)\n        if nightly is None:\n            dynamic_rates = []\n            break\n        dynamic_rates.append(float(nightly))\n        current += timedelta(days=1)\n    room_total = round(\n        sum(dynamic_rates) if dynamic_rates else PUBLIC_BACHBLICK_NIGHTLY_PRICE * nights,\n        2,\n    )\n'''
+          if old not in s:
+              raise SystemExit('railway price block not found')
+          p.write_text(s.replace(old,new))
+
+          p=Path('provider_radar.py')
+          s=p.read_text()
+          s=s.replace('os.environ.get("PUBLIC_BACHBLICK_NIGHTLY_PRICE","101.00") or "101.00"', 'os.environ.get("PUBLIC_BACHBLICK_NIGHTLY_PRICE","99.00") or "99.00"')
+          s=s.replace('cfg().get("direct_price","101")', 'cfg().get("direct_price","99")')
+          s=s.replace('except Exception: return 101.0', 'except Exception: return 99.0')
+          s=s.replace('request.form.get("direct_price","101")', 'request.form.get("direct_price","99")')
+          s=s.replace('except ValueError: dp=101', 'except ValueError: dp=99')
+          needle='''        defaults={"discovery_enabled":"1","discovery_hours":"24","last_discovery":"","last_discovery_result":"noch nie","failure_threshold":"3","direct_price":os.environ.get("PUBLIC_BACHBLICK_NIGHTLY_PRICE","99.00") or "99.00"}\n'''
+          if needle not in s:
+              raise SystemExit('provider radar defaults not found')
+          s=s.replace(needle, needle + '''        # Migrate only the historical untouched 101 EUR fallback. Explicitly configured prices stay unchanged.\n        c.execute("UPDATE provider_radar_settings SET value='99.00' WHERE key='direct_price' AND value IN ('101','101.0','101.00')")\n''')
+          p.write_text(s)
+
+          p=Path('templates/provider_radar.html')
+          p.write_text(p.read_text().replace("radar_settings.get('direct_price','101.00')", "radar_settings.get('direct_price','99.00')"))
+
+          repls={
+            'winter-wachau-jauerling/index.html':[('ab 101 EUR/Nacht','ab 99 EUR/Nacht'),('<strong>101 €</strong>','<strong>ab 99 €</strong>'),('<strong>202 €</strong>','<strong>ab 198 €</strong>')],
+            'winter-wachau-jauerling-en/index.html':[('<strong>€101</strong>','<strong>from €99</strong>'),('<strong>€202</strong>','<strong>from €198</strong>')],
+            'zimni-wachau-jauerling-cz/index.html':[('<strong>101 €</strong>','<strong>od 99 €</strong>'),('<strong>202 €</strong>','<strong>od 198 €</strong>')],
+            'zimna-wachau-jauerling-sk/index.html':[('<strong>101 €</strong>','<strong>od 99 €</strong>'),('<strong>202 €</strong>','<strong>od 198 €</strong>')],
+            'teli-wachau-jauerling-hu/index.html':[('<strong>101 €</strong>','<strong>99 €-tól</strong>'),('<strong>202 €</strong>','<strong>198 €-tól</strong>')],
+            'zima-wachau-jauerling-pl/index.html':[('<strong>101 €</strong>','<strong>od 99 €</strong>'),('<strong>202 €</strong>','<strong>od 198 €</strong>')],
+          }
+          for fn,pairs in repls.items():
+              p=Path(fn); s=p.read_text()
+              for a,b in pairs:
+                  if a not in s:
+                      raise SystemExit(f'missing expected text in {fn}: {a}')
+                  s=s.replace(a,b)
+              p.write_text(s)
+
+          p=Path('scripts/test-conversion-contract.js')
+          s=p.read_text()
+          old='''for (const room of ["bachblick", "marillenzimmer", "weinbergzimmer", "donauzimmer"]) {\n  assert(html.includes(`images/rooms/${room}.webp`), `${room}.webp fehlt`);\n}\n'''
+          new='''assert(html.includes("images/rooms/bachblick.webp"), "bachblick.webp fehlt");\nfor (const room of ["marillenzimmer", "weinbergzimmer", "donauzimmer"]) {\n  assert(!html.includes(`images/rooms/${room}.webp`), `${room}.webp darf aktuell nicht auf der Buchungsseite angeboten werden`);\n}\n'''
+          if old not in s:
+              raise SystemExit('conversion room contract not found')
+          p.write_text(s.replace(old,new))
+
+          p=Path('scripts/test-seo-site.mjs')
+          s=p.read_text()
+          old="assert.match(home,/Zuhause am Bach \\| Unterkunft Donauradweg & Welterbesteig Wachau/,'Startseite: Ziel-Title fehlt');"
+          new="assert.match(home,/Zuhause am Bach – Wachau \\| Donauradweg & Welterbesteig/,'Startseite: Ziel-Title fehlt');"
+          if old not in s:
+              raise SystemExit('SEO title contract not found')
+          p.write_text(s.replace(old,new))
+          PY
+      - name: Run direct-booking verification
+        shell: bash
+        run: |
+          python -m pip install -q pytest
+          python -m compileall -q .
+          pytest -q
+          node scripts/check-inline-js.js
+          node scripts/test-price-cents.js
+          node scripts/test-conversion-contract.js
+          node scripts/check-local-assets.js
+          node scripts/test-seo-site.mjs
+          ! grep -RIn '101' railway_app.py templates/provider_radar.html winter-wachau-jauerling winter-wachau-jauerling-en zimni-wachau-jauerling-cz zimna-wachau-jauerling-sk teli-wachau-jauerling-hu zima-wachau-jauerling-pl
+      - name: Commit verified repair
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add railway_app.py provider_radar.py templates/provider_radar.html \
+            winter-wachau-jauerling/index.html winter-wachau-jauerling-en/index.html \
+            zimni-wachau-jauerling-cz/index.html zimna-wachau-jauerling-sk/index.html \
+            teli-wachau-jauerling-hu/index.html zima-wachau-jauerling-pl/index.html \
+            scripts/test-conversion-contract.js scripts/test-seo-site.mjs
+          git commit -m 'Repair direct booking pricing and regression checks'
+          git push origin HEAD:repair-direct-booking-2026-09-10
