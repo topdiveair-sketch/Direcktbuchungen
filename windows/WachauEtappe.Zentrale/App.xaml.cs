@@ -1,5 +1,6 @@
 using System.Windows;
 using WachauEtappe.Zentrale.Data;
+using WachauEtappe.Zentrale.Services;
 
 namespace WachauEtappe.Zentrale;
 
@@ -11,8 +12,20 @@ public partial class App : Application
     {
         Database = new DatabaseService();
         Database.Initialize();
-        try{Database.AutoBackup();}catch{}
-        new SeedImporter(Database).ImportAll();
+        try { Database.AutoBackup(); } catch { }
+
+        var seedImporter = new SeedImporter(Database);
+        seedImporter.ImportAll();
+
+        try
+        {
+            new RemoteHostSyncService(Database).SyncAsync().GetAwaiter().GetResult();
+        }
+        catch
+        {
+            // Offline oder temporär nicht erreichbar: lokaler Datenbestand bleibt nutzbar.
+        }
+
         Database.EnsureBookingTables();
         Database.EnsureBillingTables();
         base.OnStartup(e);
