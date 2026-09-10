@@ -78,35 +78,45 @@ ON CONFLICT(HostId,StayDate) DO UPDATE SET Status=@s,Price=@p,Note=@n,RoomsFree=
         using var c=new SqliteConnection(ConnectionString); c.Open(); using var q=c.CreateCommand();
         q.CommandText="""
 SELECT h.Id,h.Name,COALESCE(h.Location,''),COALESCE(h.Phone,''),
-       COALESCE(cap.Units,1),COALESCE(cap.Beds,COALESCE(cap.Units,1)*2),
+       cap.Units,cap.Beds,
        COALESCE(a.Status,'unknown'),a.RoomsFree,COALESCE(a.Source,''),
        (SELECT COUNT(*) FROM Bookings b WHERE b.HostId=h.Id AND b.StayDate=@d AND b.Status IN ('requested','confirmed')) AS UsedRooms,
-       COALESCE((SELECT SUM(b.Guests) FROM Bookings b WHERE b.HostId=h.Id AND b.StayDate=@d AND b.Status IN ('requested','confirmed')),0) AS UsedBeds
+       COALESCE((SELECT SUM(b.Guests) FROM Bookings b WHERE b.HostId=h.Id AND b.StayDate=@d AND b.Status IN ('requested','confirmed')),0) AS UsedBeds,
+       COALESCE(h.Status,''),h.Published,h.AcceptingBookings
 FROM Hosts h
 LEFT JOIN HostCapacity cap ON cap.HostId=h.Id
 LEFT JOIN Availability a ON a.HostId=h.Id AND a.StayDate=@d
-WHERE h.Published=1
+WHERE h.Published=1 OR h.Status='partner_confirmed_pending_terms'
 ORDER BY h.Location,h.Name
 """;
         q.Parameters.AddWithValue("@d",stayDate);
         using var r=q.ExecuteReader();
         while(r.Read())
         {
-            var rooms=Math.Max(1,r.GetInt32(4)); var beds=Math.Max(1,r.GetInt32(5));
+            var hostStatus=r.GetString(11).Trim().ToLowerInvariant();
+            var pendingPartner=hostStatus=="partner_confirmed_pending_terms";
+            var hasCapacity=!r.IsDBNull(4);
+            var rooms=hasCapacity?Math.Max(1,r.GetInt32(4)):0;
+            var beds=!r.IsDBNull(5)?Math.Max(1,r.GetInt32(5)):(hasCapacity?rooms*2:0);
             var availability=r.GetString(6).Trim().ToLowerInvariant();
             var reportedRooms=r.IsDBNull(7)?(int?)null:Math.Max(0,r.GetInt32(7));
             var source=r.GetString(8);
             var usedRooms=Math.Max(0,r.GetInt32(9)); var usedBeds=Math.Max(0,r.GetInt32(10));
-            var freeRooms=reportedRooms.HasValue && source=="partner-online" ? Math.Min(rooms,reportedRooms.Value) : Math.Max(0,rooms-usedRooms);
-            var freeBeds=Math.Max(0,beds-usedBeds);
-            if(reportedRooms.HasValue && source=="partner-online" && rooms>0)
+            var freeRooms=hasCapacity?(reportedRooms.HasValue && source=="partner-online" ? Math.Min(rooms,reportedRooms.Value) : Math.Max(0,rooms-usedRooms)):0;
+            var freeBeds=hasCapacity?Math.Max(0,beds-usedBeds):0;
+            if(hasCapacity && reportedRooms.HasValue && source=="partner-online" && rooms>0)
             {
                 var bedsPerRoom=Math.Max(1,(int)Math.Ceiling((double)beds/rooms));
                 freeBeds=Math.Min(beds,freeRooms*bedsPerRoom);
             }
             if(availability is "blocked" or "full" or "closed"){freeRooms=0;freeBeds=0;}
             var color="gray"; var label="Nicht gemeldet";
-            if(availability is "blocked" or "full" or "closed" || freeRooms==0 || freeBeds==0){color="red";label="Besetzt";}
+            if(pendingPartner)
+            {
+                color="gray";
+                label="Partner bestätigt · Konditionen offen";
+            }
+            else if(availability is "blocked" or "full" or "closed" || (hasCapacity && (freeRooms==0 || freeBeds==0))){color="red";label="Besetzt";}
             else if(availability is "available" or "free")
             {
                 color=(freeRooms==1 || freeBeds<=2)?"orange":"green";
