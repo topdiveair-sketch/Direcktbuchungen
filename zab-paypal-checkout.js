@@ -226,6 +226,10 @@ ready(function(){
       if(heading) heading.textContent=text;
     }
 
+    function localCalendarBlocked(){
+      return Boolean(availability && availability.classList.contains("blocked"));
+    }
+
     function hidePayPal(message=""){
       verifiedSignature="";
       form.classList.remove("zab-paypal-primary","zab-booking-blocked");
@@ -264,6 +268,10 @@ ready(function(){
     }
 
     function showAvailable(data,result){
+      if(localCalendarBlocked()){
+        showBlocked("Der Booking-Kalender sperrt diesen Zeitraum. Eine Backend-Frei-Meldung darf diese Sperre nicht überschreiben.");
+        return false;
+      }
       form.classList.remove("zab-booking-blocked");
       setRequestFallback(false);
       verifiedSignature=quoteSignature(data);
@@ -298,6 +306,10 @@ ready(function(){
       }
       if(!validDates(data)){
         hidePayPal();
+        return false;
+      }
+      if(localCalendarBlocked()){
+        showBlocked("Der Booking-Kalender sperrt diesen Zeitraum. Bitte einen anderen Termin wählen.");
         return false;
       }
       if(data.extras.etappenjause){
@@ -348,6 +360,10 @@ ready(function(){
       event.preventDefault();
       event.stopImmediatePropagation();
       const data=payload();
+      if(localCalendarBlocked()){
+        showBlocked("Der Booking-Kalender sperrt diesen Zeitraum. Bitte einen anderen Termin wählen.");
+        return;
+      }
       const missing=missingCustomer(data);
       if(missing){
         missing.focus();
