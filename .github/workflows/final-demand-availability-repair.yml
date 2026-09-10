@@ -1,0 +1,75 @@
+name: Final demand and availability repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/final-demand-availability-repair.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: final-demand-availability-repair
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Use refreshed Booking calendar and safe legacy floor
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old='''const LIVE_BOOKING_API_URL = hasConfiguredBookingSync\n      ? configuredBookingSyncUrl + "/availability"\n      : "";'''
+          new='''const LIVE_BOOKING_API_URL = hasConfiguredBookingSync\n      ? configuredBookingSyncUrl + "/availability"\n      : "booking-calendar.json";'''
+          if old in s:
+              s=s.replace(old,new,1)
+          elif new not in s:
+              raise SystemExit('booking calendar source block not found')
+
+          old_button='''        : (hasValidDates ? tr("unavailableButton") : tr("chooseDatesButton"));'''
+          new_button='''        : (hasValidDates && availability.state !== "blocked"\n          ? (currentLang === "de" ? "Preis wird geprüft …" : "Price is being checked …")\n          : (hasValidDates ? tr("unavailableButton") : tr("chooseDatesButton")));'''
+          if old_button in s:
+              s=s.replace(old_button,new_button,1)
+          elif new_button not in s:
+              raise SystemExit('submit button block not found')
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('app.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('''"Bachblick": {\n        "price": 75.0,''','''"Bachblick": {\n        "price": 99.0,''',1)
+          s=s.replace('''price_defaults={"Bachblick":(75,85,95),''','''price_defaults={"Bachblick":(99,109,119),''',1)
+          marker='''        for r,p in price_defaults.items(): conn.execute("INSERT OR IGNORE INTO room_prices VALUES(?,?,?,?)",(r,*p))'''
+          replacement=marker+'''\n        conn.execute("UPDATE room_prices SET standard=99, weekend=109, high=119 WHERE room='Bachblick' AND standard<99")'''
+          if replacement not in s:
+              if marker not in s: raise SystemExit('price defaults migration marker not found')
+              s=s.replace(marker,replacement,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Validate syntax and invariants
+        run: |
+          python -m py_compile app.py demand_analytics.py wachauetappe_gateway.py
+          node --check demand-tracking.js
+          grep -q ': "booking-calendar.json";' index.html
+          grep -q 'demand-tracking.js' index.html
+          grep -q '"price": 99.0' app.py
+      - name: Commit safely
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html app.py
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Use live Booking calendar and enforce 99 EUR legacy floor'
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git fetch origin main
+            git rebase origin/main
+          done
+          exit 1
