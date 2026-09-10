@@ -1,0 +1,33 @@
+name: Package Zuhause am Bach OS v117.7
+
+on:
+  push:
+    paths:
+      - '.github/workflows/package-zab-os-v117-7.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+      - name: Create v117.7 package
+        shell: bash
+        run: |
+          rm -rf package
+          mkdir -p package/Zuhause-am-Bach-OS-v117.7
+          rsync -a --exclude '.git' --exclude 'package' ./ package/Zuhause-am-Bach-OS-v117.7/
+          printf '%s\n' 'Zuhause am Bach OS v117.7' 'Build source: GitHub main' "Commit: $GITHUB_SHA" > package/Zuhause-am-Bach-OS-v117.7/VERSION.txt
+          cd package
+          zip -r Zuhause-am-Bach-OS-v117.7.zip Zuhause-am-Bach-OS-v117.7
+      - name: Upload v117.7 package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zuhause-am-Bach-OS-v117.7
+          path: package/Zuhause-am-Bach-OS-v117.7.zip
+          if-no-files-found: error
+          retention-days: 30
