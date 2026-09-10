@@ -2660,8 +2660,8 @@
     const LIVE_PRICE_API_URL = "";
     const OTHER_ROOMS_RELEASED = window.SHOW_ADDITIONAL_ROOMS === true;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
-    let bookingCalendarUpdated = "10.9.2026, 08:22:43";
-    let bookingCalendarUpdatedIso = "2026-09-10T06:22:43.143Z";
+    let bookingCalendarUpdated = "10.9.2026, 08:26:26";
+    let bookingCalendarUpdatedIso = "2026-09-10T06:26:26.752Z";
     let bookingCalendarMode = "offline";
     let liveBookingCalendarLoaded = true;
     let liveBookingCalendarPending = false;
@@ -2789,7 +2789,7 @@
         };
       }
       const conflict = blockedCalendarEntry(a, d);
-      if (conflict && calendarIsFresh()) {
+      if (conflict) {
         return {
           state: "blocked",
           text: tr("blocked", { mode: calendarModeLabel(), updated: bookingCalendarUpdated })
@@ -2978,7 +2978,7 @@
       const conflict = room && room.value === "Bachblick"
         ? blockedCalendarEntry(parseDate(arrival.value), parseDate(departure.value))
         : null;
-      if (conflict && calendarIsFresh()) {
+      if (conflict) {
         alert(tr("blocked", { mode: calendarModeLabel(), updated: bookingCalendarUpdated }));
         return;
       }
