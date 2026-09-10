@@ -1137,10 +1137,10 @@
             <h3 class="form-block-title"><b>1</b> Reisedaten auswählen</h3>
             <div class="form-grid">
             <label>Anreise
-              <input id="arrival" name="arrival" type="date" required>
+              <input id="arrival" name="arrival" type="date" max="2027-12-31" required>
             </label>
             <label>Abreise
-              <input id="departure" name="departure" type="date" required>
+              <input id="departure" name="departure" type="date" max="2028-01-01" required>
             </label>
             <label>Personen
               <select id="adults" name="adults" required>
@@ -3267,5 +3267,6 @@
   <script src="zab-guest-price.js?v=20260813-3" defer></script>
   <script src="zab-conversion.js?v=20260814-1" defer></script>
   <script src="zab-paypal-checkout.js?v=20260910-1" defer></script>
+  <script src="demand-tracking.js" defer></script>
 </body>
 </html>
