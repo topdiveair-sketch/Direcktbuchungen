@@ -60,11 +60,9 @@ jobs:
           elif new_change not in s:
               raise SystemExit('form change handler not found')
 
-          # Keep deployment entrypoints consistent.
           proc = Path('Procfile')
           proc.write_text('web: gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 wachauetappe_gateway:app\n', encoding='utf-8')
 
-          # Safety checks: no stale fixed 101 price, live endpoint present, dynamic quote used.
           if 'data-price="101"' in s or '>101 EUR<' in s or 'ab 101 EUR pro Nacht' in s:
               raise SystemExit('stale 101 EUR value remains in index.html')
           if 'web-production-907d68.up.railway.app/api/direct-price' not in s:
@@ -80,9 +78,9 @@ jobs:
           python - <<'PY'
           import re, pathlib, subprocess, tempfile
           s = pathlib.Path('index.html').read_text(encoding='utf-8')
-          scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', s, flags=re.S|re.I)
-          for i, code in enumerate(scripts):
-              if not code.strip() or 'application/ld+json' in code[:100]:
+          scripts = re.findall(r'<script([^>]*)>(.*?)</script>', s, flags=re.S|re.I)
+          for attrs, code in scripts:
+              if not code.strip() or 'application/ld+json' in attrs.lower():
                   continue
               with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8') as f:
                   f.write(code)
