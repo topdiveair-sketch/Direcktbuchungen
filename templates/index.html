@@ -76,7 +76,7 @@
         <section class="booking-services" aria-label="Zusatzleistungen">
           <div class="service-heading">
             <span>Auf Wunsch gleich dazu</span>
-            <strong>Fr?hst?ck, Wachauer Jause und Gep?cktransport</strong>
+            <strong>Frühstück, Wachauer Jause und Gepäcktransport</strong>
           </div>
           <div class="extras-grid featured-extras">
             {% for key in ['breakfast', 'jause', 'luggage'] %}
@@ -86,7 +86,7 @@
                 <input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}">
                 <span>
                   <strong>{{ item.label }}</strong>
-                  <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} ? {% if item.unit=='person_night' %}pro Person/Nacht{% elif item.unit=='night' %}pro Nacht{% else %}einmalig{% endif %}</small>
+                  <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} € {% if item.unit=='person_night' %}pro Person/Nacht{% elif item.unit=='night' %}pro Nacht{% else %}einmalig{% endif %}</small>
                 </span>
               </label>
               {% endif %}
@@ -111,7 +111,10 @@
               <small>{{ info.description }}</small>
               <span class="room-features">Doppelbett · eigenes Bad · WLAN · ruhige Lage</span>
             </span>
-            <span class="room-price"><strong>{{ '%.0f'|format(info.price) }} €</strong><small>pro Nacht</small></span>
+            <span class="room-price">
+              {% if room == 'Bachblick' %}<strong>ab 99 €</strong>{% else %}<strong>{{ '%.0f'|format(info.price) }} €</strong>{% endif %}
+              <small>pro Nacht</small>
+            </span>
             <span class="room-check">✓</span>
           </label>
           {% endfor %}
@@ -120,7 +123,7 @@
         <div id="priceBreakdown" class="price-breakdown"></div>
 
         <div class="total-row">
-          <span>Gesamtpreis <small>(inkl. gew?hlter Extras)</small></span>
+          <span>Gesamtpreis <small>(inkl. gewählter Extras)</small></span>
           <strong id="totalPrice">0 €</strong>
         </div>
 
