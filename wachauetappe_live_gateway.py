@@ -5,6 +5,7 @@ state into its local SQLite database only as an offline cache.
 """
 from __future__ import annotations
 
+import hmac
 import json
 import os
 from datetime import date, datetime, timedelta
@@ -13,20 +14,15 @@ from pathlib import Path
 from flask import jsonify, request
 
 
-def init_wachauetappe_live(app, db, require_admin):
+def init_wachauetappe_live(app, db, require_admin=None):
     def now() -> str:
         return datetime.now().isoformat(timespec="seconds")
 
     def admin_ok() -> bool:
-        # Keep exactly the same credential contract as the existing partner admin API.
-        try:
-            require_admin()
-            return True
-        except Exception:
-            expected = os.environ.get("ADMIN_PASSWORD", "")
-            supplied = request.headers.get("X-Admin-Password", "")
-            import hmac
-            return bool(expected) and hmac.compare_digest(expected, supplied)
+        # Same explicit credential contract as partner_portal_gateway.py.
+        expected = os.environ.get("ADMIN_PASSWORD", "")
+        supplied = request.headers.get("X-Admin-Password", "")
+        return bool(expected) and hmac.compare_digest(expected, supplied)
 
     def unauthorized():
         return jsonify({"ok": False, "error": "unauthorized"}), 401
@@ -178,8 +174,11 @@ def init_wachauetappe_live(app, db, require_admin):
             return jsonify({"ok": False, "error": "host_id_required"}), 422
         name = str(p.get("name") or host_id).strip()[:200]
         location = str(p.get("location") or "").strip()[:160]
-        rooms = max(0, min(500, int(p.get("roomsTotal") or 0)))
-        beds = max(0, min(2000, int(p.get("bedsTotal") or 0)))
+        try:
+            rooms = max(0, min(500, int(p.get("roomsTotal") or 0)))
+            beds = max(0, min(2000, int(p.get("bedsTotal") or 0)))
+        except (TypeError, ValueError):
+            return jsonify({"ok": False, "error": "invalid_capacity"}), 422
         stamp = now()
         with db() as c:
             c.execute(
@@ -212,7 +211,6 @@ def init_wachauetappe_live(app, db, require_admin):
                     rooms,beds,json.dumps(p,ensure_ascii=False),stamp,
                 ),
             )
-            # Keep the partner account identity/capacity aligned when an account exists.
             c.execute(
                 """UPDATE wachauetappe_partner_accounts
                    SET name=?,location=?,email=?,rooms_total=CASE WHEN ?>0 THEN ? ELSE rooms_total END,
