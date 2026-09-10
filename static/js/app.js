@@ -110,16 +110,17 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
   try {
     const response = await fetch("/api/availability", {method:"POST", body:fd});
     const data = await response.json();
+    const status = data.status || (data.available === true ? "free" : data.available === false ? "blocked" : "unknown");
     result.textContent = data.message;
-    result.className = data.status === "free" ? "availability-result ok" : data.status === "unknown" ? "availability-result unknown" : "availability-result bad";
-    track(`availability_result_${data.status}`);
-    if (data.status === "free" || data.status === "unknown") {
+    result.className = status === "free" ? "availability-result ok" : status === "unknown" ? "availability-result unknown" : "availability-result bad";
+    track(`availability_result_${status}`);
+    if (status === "free" || status === "unknown") {
       guestArea.classList.remove("hidden");
       checkoutOpen = true;
       track("checkout_started");
-      bookingSubmit.textContent = data.status === "free" ? "JETZT DIREKT BUCHEN" : "VERFÜGBARKEIT PERSÖNLICH ANFRAGEN";
-      stickyLabel.textContent = data.status === "free" ? "Jetzt direkt buchen" : "Persönlich anfragen";
-      stickyCta.textContent = data.status === "free" ? "Buchen" : "Anfragen";
+      bookingSubmit.textContent = status === "free" ? "JETZT DIREKT BUCHEN" : "VERFÜGBARKEIT PERSÖNLICH ANFRAGEN";
+      stickyLabel.textContent = status === "free" ? "Jetzt direkt buchen" : "Persönlich anfragen";
+      stickyCta.textContent = status === "free" ? "Buchen" : "Anfragen";
       totalPrice.textContent=euro(data.total); if(data.breakdown){let h=`<div><span>Zimmer</span><strong>${euro(data.breakdown.room_total)}</strong></div>`;data.breakdown.extras.forEach(x=>h+=`<div><span>${x.label}</span><strong>${euro(x.amount)}</strong></div>`);data.breakdown.discounts.forEach(x=>h+=`<div class="discount-line"><span>${x.label} (${x.percent}%)</span><strong>− ${euro(x.amount)}</strong></div>`);priceBreakdown.innerHTML=h;}
     } else {
       guestArea.classList.add("hidden");
