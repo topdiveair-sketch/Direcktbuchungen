@@ -2835,9 +2835,11 @@
       availabilityStatus.className = "availability-status " + availability.state;
       availabilityStatus.textContent = availability.text;
       const hasValidDates = n > 0;
-      // A stale or temporarily unavailable calendar must not prevent a non-binding
-      // request. Only a confirmed conflict blocks the form.
-      const canSubmit = hasValidDates && availability.state !== "blocked";
+      const currentQuoteKeyForSubmit = room ? [room.value, arrival.value, departure.value].join("|") : "";
+      const hasConfirmedLivePrice = Boolean(liveDirectPriceQuote && liveDirectPriceQuoteKey === currentQuoteKeyForSubmit);
+      // Never submit a priced request using the 99 EUR fallback. The fallback is
+      // display-only; selected dates require a confirmed server-side quote.
+      const canSubmit = hasValidDates && availability.state !== "blocked" && hasConfirmedLivePrice;
       submitRequest.disabled = !canSubmit;
       submitRequest.textContent = canSubmit
         ? (availability.state === "ok" ? tr("requestButton") : tr("requestButtonPending"))
@@ -3022,6 +3024,12 @@
       // blockiert den Versand.
       if (availability.state === "blocked") {
         alert(availability.text);
+        return;
+      }
+      await loadLivePrices();
+      const submitQuoteKey = room ? [room.value, arrival.value, departure.value].join("|") : "";
+      if (!liveDirectPriceQuote || liveDirectPriceQuoteKey !== submitQuoteKey) {
+        alert("Der aktuelle Direktpreis konnte nicht geladen werden. Bitte versuchen Sie es erneut.");
         return;
       }
       const sum = calculate();
