@@ -32,7 +32,7 @@
                                 <TextBlock Text="●" Foreground="#248A3D" FontSize="18"/><TextBlock Text=" frei" Margin="2,0,12,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="●" Foreground="#D68616" FontSize="18"/><TextBlock Text=" wenig frei" Margin="2,0,12,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="●" Foreground="#C93030" FontSize="18"/><TextBlock Text=" besetzt" Margin="2,0,12,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="●" Foreground="#7A8580" FontSize="18"/><TextBlock Text=" nicht gemeldet" Margin="2,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="●" Foreground="#7A8580" FontSize="18"/><TextBlock Text=" nicht gemeldet / Konditionen offen" Margin="2,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                                 <TextBlock Text="━━" Foreground="#C62828" FontWeight="Bold"/><TextBlock Text=" Welterbesteig (OSM)" Margin="4,0,14,0"/>
@@ -62,14 +62,15 @@
                         <DataGrid.Columns>
                             <DataGridTemplateColumn Header="" Width="30"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Text="●" FontSize="20" HorizontalAlignment="Center"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Foreground" Value="#7A8580"/><Style.Triggers><DataTrigger Binding="{Binding StatusColor}" Value="green"><Setter Property="Foreground" Value="#248A3D"/></DataTrigger><DataTrigger Binding="{Binding StatusColor}" Value="orange"><Setter Property="Foreground" Value="#D68616"/></DataTrigger><DataTrigger Binding="{Binding StatusColor}" Value="red"><Setter Property="Foreground" Value="#C93030"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                             <DataGridTextColumn Header="Gastgeber" Binding="{Binding Name}" Width="*"/>
-                            <DataGridTextColumn Header="Ort" Binding="{Binding Location}" Width="115"/>
-                            <DataGridTextColumn Header="Zimmer" Binding="{Binding RoomsFree}" Width="60"/>
-                            <DataGridTextColumn Header="Betten" Binding="{Binding BedsFree}" Width="60"/>
-                            <DataGridTextColumn Header="Telefon" Binding="{Binding Phone}" Width="125"/>
+                            <DataGridTextColumn Header="Ort" Binding="{Binding Location}" Width="100"/>
+                            <DataGridTextColumn Header="Status" Binding="{Binding DisplayStatus}" Width="155"/>
+                            <DataGridTextColumn Header="Zimmer" Binding="{Binding RoomsFree}" Width="55"/>
+                            <DataGridTextColumn Header="Betten" Binding="{Binding BedsFree}" Width="55"/>
+                            <DataGridTextColumn Header="Telefon" Binding="{Binding Phone}" Width="120"/>
                         </DataGrid.Columns>
                     </DataGrid>
                     <DockPanel Grid.Row="3" Margin="0,12,0,0">
-                        <TextBlock Text="Zimmer/Betten zeigen freie Kapazität für das gewählte Datum." Foreground="#64736D" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                        <TextBlock Text="Bestätigte Partner mit noch offenen Konditionen werden grau angezeigt; Zimmer/Betten bleiben bis zur Kapazitätsbestätigung 0." Foreground="#64736D" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap"/>
                         <Button DockPanel.Dock="Right" Content="Telefon kopieren" Click="CopyPhone_Click" Padding="12,7" Margin="10,0,0,0"/>
                     </DockPanel>
                 </Grid>
