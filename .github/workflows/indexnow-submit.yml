@@ -28,6 +28,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import json
+          import urllib.error
           import urllib.request
           import xml.etree.ElementTree as ET
 
@@ -55,7 +56,6 @@ jobs:
                   if rel and not rel.startswith('.github'):
                       urls.append(base + rel.rstrip('/') + '/')
 
-          # Keep payload conservative and deduplicated.
           urls = sorted(dict.fromkeys(urls))[:100]
           payload = json.dumps({
               'host': host,
@@ -67,7 +67,10 @@ jobs:
           req = urllib.request.Request(
               'https://api.indexnow.org/indexnow',
               data=payload,
-              headers={'Content-Type': 'application/json; charset=utf-8'},
+              headers={
+                  'Content-Type': 'application/json; charset=utf-8',
+                  'User-Agent': 'Zuhause-am-Bach-IndexNow/1.0',
+              },
               method='POST',
           )
           try:
@@ -75,7 +78,10 @@ jobs:
                   print('IndexNow status:', response.status)
                   print('Submitted URLs:', len(urls))
           except urllib.error.HTTPError as exc:
-              print('IndexNow HTTP status:', exc.code)
-              # 200/202 are success; 4xx/5xx should fail visibly in Actions.
-              raise
+              # IndexNow is an optional external SEO notification. A provider-side
+              # rejection must not mark an otherwise healthy site deployment red.
+              body = exc.read().decode('utf-8', errors='replace')[:500]
+              print(f'IndexNow warning: HTTP {exc.code}; submission skipped. {body}')
+          except urllib.error.URLError as exc:
+              print(f'IndexNow warning: provider unreachable; submission skipped. {exc}')
           PY
