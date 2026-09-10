@@ -137,7 +137,9 @@ def init_provider_radar(app,db,require_admin):
         CREATE TABLE IF NOT EXISTS provider_radar_discovery(id INTEGER PRIMARY KEY AUTOINCREMENT,query TEXT NOT NULL,engine TEXT NOT NULL,rank INTEGER NOT NULL,title TEXT DEFAULT '',url TEXT NOT NULL,canonical_url TEXT NOT NULL,found_at TEXT NOT NULL,added INTEGER NOT NULL DEFAULT 0,UNIQUE(query,canonical_url));
         CREATE TABLE IF NOT EXISTS provider_radar_reviews(listing_id INTEGER PRIMARY KEY,fingerprint TEXT DEFAULT '',rating TEXT DEFAULT '',review_date TEXT DEFAULT '',author TEXT DEFAULT '',review_text TEXT DEFAULT '',checked_at TEXT DEFAULT '');
         """)
-        defaults={"discovery_enabled":"1","discovery_hours":"24","last_discovery":"","last_discovery_result":"noch nie","failure_threshold":"3","direct_price":os.environ.get("PUBLIC_BACHBLICK_NIGHTLY_PRICE","101.00") or "101.00"}
+        defaults={"discovery_enabled":"1","discovery_hours":"24","last_discovery":"","last_discovery_result":"noch nie","failure_threshold":"3","direct_price":os.environ.get("PUBLIC_BACHBLICK_NIGHTLY_PRICE","99.00") or "99.00"}
+        # Migrate only the historical untouched 101 EUR fallback. Explicitly configured prices stay unchanged.
+        c.execute("UPDATE provider_radar_settings SET value='99.00' WHERE key='direct_price' AND value IN ('101','101.0','101.00')")
         for k,v in defaults.items(): c.execute("INSERT OR IGNORE INTO provider_radar_settings(key,value) VALUES(?,?)",(k,v))
         if not c.execute("SELECT 1 FROM provider_monitor_listings WHERE url LIKE '%airbnb.com/rooms/1747752971503065378%' LIMIT 1").fetchone():
             c.execute("INSERT INTO provider_monitor_listings(name,category,url,active,created_at,country,first_seen,presence_status) VALUES('Airbnb','OTA',?,1,?,'International',?,'aktiv')",(AIRBNB_URL,_now(),_now()))
@@ -149,8 +151,8 @@ def init_provider_radar(app,db,require_admin):
     def setcfg(k,v):
         with db() as c: c.execute("INSERT INTO provider_radar_settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",(k,str(v)))
     def direct_price():
-        try: return float(cfg().get("direct_price","101").replace(",","."))
-        except Exception: return 101.0
+        try: return float(cfg().get("direct_price","99").replace(",","."))
+        except Exception: return 99.0
 
     def classify_change(field,old,new):
         o,n=str(old or ""),str(new or "")
@@ -294,8 +296,8 @@ def init_provider_radar(app,db,require_admin):
         if not require_admin(): return redirect(url_for("admin_login"))
         from flask import request
         setcfg("discovery_enabled","1" if request.form.get("discovery_enabled")=="on" else "0"); setcfg("discovery_hours",max(6,min(168,int(request.form.get("discovery_hours","24") or 24)))); setcfg("failure_threshold",max(2,min(10,int(request.form.get("failure_threshold","3") or 3))))
-        try: dp=max(1,float(str(request.form.get("direct_price","101")).replace(",",".")))
-        except ValueError: dp=101
+        try: dp=max(1,float(str(request.form.get("direct_price","99")).replace(",",".")))
+        except ValueError: dp=99
         setcfg("direct_price",f"{dp:.2f}"); flash("Radar-Einstellungen gespeichert.","success"); return redirect(url_for("provider_radar_dashboard"))
 
     @app.get("/health/provider-radar")

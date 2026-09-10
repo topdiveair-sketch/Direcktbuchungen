@@ -152,7 +152,7 @@
       <label class="radar-switch"><input type="checkbox" name="discovery_enabled" {% if radar_settings.get('discovery_enabled','1')=='1' %}checked{% endif %}><span>Täglich neue Anbieter suchen</span></label>
       <label>Websuche alle Stunden<input type="number" name="discovery_hours" min="6" max="168" value="{{ radar_settings.get('discovery_hours','24') }}"></label>
       <label>Weggefallen nach Fehlprüfungen<input type="number" name="failure_threshold" min="2" max="10" value="{{ radar_settings.get('failure_threshold','3') }}"></label>
-      <label>Unser Direktpreis €<input type="number" step="0.01" min="1" name="direct_price" value="{{ radar_settings.get('direct_price','101.00') }}"></label>
+      <label>Unser Direktpreis €<input type="number" step="0.01" min="1" name="direct_price" value="{{ radar_settings.get('direct_price','99.00') }}"></label>
       <button class="radar-btn">Einstellungen speichern</button>
     </form>
   </section>

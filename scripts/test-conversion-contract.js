@@ -5,8 +5,9 @@ const path = require("path");
 const html = fs.readFileSync(path.resolve(__dirname, "..", "index.html"), "utf8");
 const luggageCalculator = fs.readFileSync(path.resolve(__dirname, "..", "zab-guest-price.js"), "utf8");
 
-for (const room of ["bachblick", "marillenzimmer", "weinbergzimmer", "donauzimmer"]) {
-  assert(html.includes(`images/rooms/${room}.webp`), `${room}.webp fehlt`);
+assert(html.includes("images/rooms/bachblick.webp"), "bachblick.webp fehlt");
+for (const room of ["marillenzimmer", "weinbergzimmer", "donauzimmer"]) {
+  assert(!html.includes(`images/rooms/${room}.webp`), `${room}.webp darf aktuell nicht auf der Buchungsseite angeboten werden`);
 }
 
 for (const event of [

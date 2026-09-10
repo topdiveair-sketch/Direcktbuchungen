@@ -5,6 +5,7 @@ import json
 import os
 import urllib.error
 import urllib.request
+from datetime import timedelta
 
 from flask import request
 
@@ -23,6 +24,7 @@ from paypal_checkout import init_paypal_checkout
 from booking_notifications import init_booking_notifications
 from provider_monitor import init_provider_monitor
 from provider_radar import init_provider_radar
+from pricing_2027 import nightly_direct_rate
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
@@ -42,7 +44,7 @@ else:
 os.environ["PUBLIC_CHECKOUT_BASE_URL"] = _clean_checkout_base
 
 PUBLIC_BACHBLICK_NIGHTLY_PRICE = float(
-    os.environ.get("PUBLIC_BACHBLICK_NIGHTLY_PRICE", "101.00")
+    os.environ.get("PUBLIC_BACHBLICK_NIGHTLY_PRICE", "99.00")
 )
 
 
@@ -53,7 +55,19 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
         return breakdown
 
     nights = max(0, (departure - arrival).days)
-    room_total = round(PUBLIC_BACHBLICK_NIGHTLY_PRICE * nights, 2)
+    dynamic_rates = []
+    current = arrival
+    while current < departure:
+        nightly = nightly_direct_rate(current)
+        if nightly is None:
+            dynamic_rates = []
+            break
+        dynamic_rates.append(float(nightly))
+        current += timedelta(days=1)
+    room_total = round(
+        sum(dynamic_rates) if dynamic_rates else PUBLIC_BACHBLICK_NIGHTLY_PRICE * nights,
+        2,
+    )
     extras_total = round(
         sum(float(line.get("amount", 0) or 0) for line in breakdown.get("extras", [])),
         2,
