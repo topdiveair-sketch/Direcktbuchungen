@@ -12,6 +12,8 @@ public partial class MainWindow : Window
     private async Task SyncLiveStateAsync()
     {
         DatabaseStatus.Text="● WachauEtappe Live-Daten werden synchronisiert …";
+        if(LiveCentralSyncService.IsConfigured)
+            await HostLivePushService.PushPendingAsync(App.Database);
         var result=await LiveCentralSyncService.SyncAsync(App.Database,DateTime.Today.AddDays(-14),DateTime.Today.AddDays(365));
         DatabaseStatus.Text=result.Success
             ?$"● Live · {result.Hosts} Gastgeber · {result.Bookings} Buchungen · {result.Availability} Verfügbarkeiten"
