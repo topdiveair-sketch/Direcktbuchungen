@@ -119,6 +119,11 @@ function updateHtmlFallback(events, updatedAt, updatedAtIso) {
     `const BACHBLICK_BOOKING_BLOCKS = [\n${renderFallbackBlocks(events)}\n    ];`
   );
 
+  // A known Booking/iCal conflict must remain blocked even if the freshness
+  // timestamp later expires. Freshness is only required to positively confirm
+  // availability, never to discard an already known blocked period.
+  html = html.replace(/if \(conflict && calendarIsFresh\(\)\)/g, "if (conflict)");
+
   if (html === original) return false;
   fs.writeFileSync(indexPath, html, "utf8");
   return true;
@@ -144,9 +149,6 @@ async function main() {
     updatedAtIso: now.toISOString()
   };
 
-  // A successful fetch is itself important freshness information. Always persist
-  // the timestamp, even when the event list did not change, so the frontend can
-  // distinguish a freshly checked unchanged calendar from a stale calendar.
   fs.writeFileSync(calendarPath, JSON.stringify(payload, null, 2) + "\n", "utf8");
   updateHtmlFallback(events, payload.updatedAt, payload.updatedAtIso);
   console.log(`Kalender erfolgreich geprüft: ${events.length} belegt/geschlossen, ${payload.updatedAt}`);
