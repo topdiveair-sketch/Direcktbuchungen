@@ -94,18 +94,6 @@ async function fetchIcal(url, source) {
   throw lastError;
 }
 
-function stableCalendar(payload) {
-  return {
-    room: payload.room,
-    source: payload.source,
-    events: payload.events
-  };
-}
-
-function sameCalendarData(left, right) {
-  return Boolean(left) && JSON.stringify(stableCalendar(left)) === JSON.stringify(stableCalendar(right));
-}
-
 function renderFallbackBlocks(events) {
   return events
     .map((event) => `      { start: "${event.start}", end: "${event.end}" }`)
@@ -147,43 +135,21 @@ async function main() {
   events.sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end) || a.source.localeCompare(b.source));
 
   const calendarPath = path.join(process.cwd(), "booking-calendar.json");
-  let previous = null;
-  if (fs.existsSync(calendarPath)) {
-    try {
-      previous = JSON.parse(fs.readFileSync(calendarPath, "utf8"));
-    } catch (error) {
-      console.warn(`Bestehender Kalender konnte nicht gelesen werden: ${error.message}`);
-    }
-  }
-
-  const next = {
-    room: "Bachblick",
-    source: GOOGLE_ICAL_URLS.length ? "Booking iCal + Google Calendar iCal" : "Booking iCal",
-    events
-  };
-
-  if (sameCalendarData(previous, next)) {
-    const htmlChanged = updateHtmlFallback(
-      events,
-      previous.updatedAt || "",
-      previous.updatedAtIso || ""
-    );
-    console.log(htmlChanged
-      ? `Kalenderdaten unverändert; HTML-Fallback wurde repariert (${events.length} Einträge).`
-      : `Kalender unverändert: ${events.length} belegt/geschlossen; keine Dateiänderung.`);
-    return;
-  }
-
   const now = new Date();
   const payload = {
-    ...next,
+    room: "Bachblick",
+    source: GOOGLE_ICAL_URLS.length ? "Booking iCal + Google Calendar iCal" : "Booking iCal",
+    events,
     updatedAt: now.toLocaleString("de-AT", { timeZone: "Europe/Vienna" }),
     updatedAtIso: now.toISOString()
   };
 
+  // A successful fetch is itself important freshness information. Always persist
+  // the timestamp, even when the event list did not change, so the frontend can
+  // distinguish a freshly checked unchanged calendar from a stale calendar.
   fs.writeFileSync(calendarPath, JSON.stringify(payload, null, 2) + "\n", "utf8");
   updateHtmlFallback(events, payload.updatedAt, payload.updatedAtIso);
-  console.log(`Kalender aktualisiert: ${events.length} belegt/geschlossen, ${payload.updatedAt}`);
+  console.log(`Kalender erfolgreich geprüft: ${events.length} belegt/geschlossen, ${payload.updatedAt}`);
 }
 
 main().catch((error) => {
