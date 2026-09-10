@@ -6,6 +6,7 @@ All operational APIs share the same Flask app and Railway database:
 - partner portal / availability
 - central live state for Windows
 - existing growth/winter/ProjectOS endpoints
+- privacy-light demand and conversion analytics for ZAB OS
 """
 
 from datetime import date, timedelta
@@ -25,7 +26,10 @@ from projectos_winter_gateway import app  # noqa: F401,E402
 # Importing these modules registers their routes on that same app instance.
 import guest_booking_gateway  # noqa: F401,E402
 import partner_portal_gateway  # noqa: F401,E402
+import app as legacy_app  # noqa: E402
+from demand_analytics import init_demand_analytics  # noqa: E402
 
+init_demand_analytics(app, legacy_app.db, legacy_app.require_admin)
 
 PUBLIC_SITE_ORIGIN = "https://topdiveair-sketch.github.io"
 
@@ -109,7 +113,9 @@ def wachauetappe_production_health():
     live_ok = _has_live_state_route()
     pricing_ok, pricing_rates = _pricing_self_check()
     price_api_ok = any(rule.rule == "/api/direct-price" for rule in app.url_map.iter_rules())
-    ok = live_ok and pricing_ok and price_api_ok
+    analytics_ok = any(rule.rule == "/api/demand-event" for rule in app.url_map.iter_rules())
+    os_analytics_ok = any(rule.rule == "/os/nachfrage" for rule in app.url_map.iter_rules())
+    ok = live_ok and pricing_ok and price_api_ok and analytics_ok and os_analytics_ok
     return {
         "ok": ok,
         "gateway": "wachauetappe_gateway",
@@ -118,6 +124,8 @@ def wachauetappe_production_health():
         "live_central_state": live_ok,
         "dynamic_direct_pricing": pricing_ok,
         "public_direct_price_api": price_api_ok,
+        "demand_analytics_api": analytics_ok,
+        "zab_os_demand_dashboard": os_analytics_ok,
         "pricing_rates": pricing_rates,
     }, 200 if ok else 503
 
