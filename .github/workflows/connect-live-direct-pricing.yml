@@ -1,0 +1,103 @@
+name: Connect public booking page to live direct pricing
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/connect-live-direct-pricing.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Connect date-aware Railway pricing
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          old = 'const LIVE_PRICE_API_URL = "";'
+          new = 'const LIVE_PRICE_API_URL = "https://web-production-907d68.up.railway.app/api/direct-price";'
+          if old not in s and new not in s:
+              raise SystemExit('LIVE_PRICE_API_URL marker not found')
+          s = s.replace(old, new)
+
+          marker = 'let bookingCalendarMode = "offline";'
+          addition = '''let bookingCalendarMode = "offline";\n    let liveDirectPriceQuote = null;\n    let liveDirectPriceQuoteKey = "";'''
+          if 'let liveDirectPriceQuote = null;' not in s:
+              if marker not in s:
+                  raise SystemExit('pricing state marker not found')
+              s = s.replace(marker, addition, 1)
+
+          old_calc = '''const roomPrice = room ? Math.round(Number(room.dataset.price || 0)) : 0;\n      const roomTotal = n * roomPrice;\n      let sum = roomTotal;'''
+          new_calc = '''const roomPrice = room ? Math.round(Number(room.dataset.price || 0)) : 0;\n      const currentQuoteKey = room ? [room.value, arrival.value, departure.value].join("|") : "";\n      const hasLiveQuote = liveDirectPriceQuote && liveDirectPriceQuoteKey === currentQuoteKey;\n      const roomTotal = hasLiveQuote\n        ? Number(liveDirectPriceQuote.room_total_eur || 0)\n        : n * roomPrice;\n      let sum = roomTotal;'''
+          if old_calc in s:
+              s = s.replace(old_calc, new_calc, 1)
+          elif new_calc not in s:
+              raise SystemExit('calculate() pricing block not found')
+
+          start = s.find('    async function loadLivePrices() {')
+          end = s.find('\n    function buildMailBody(sum) {', start)
+          if start < 0 or end < 0:
+              raise SystemExit('loadLivePrices function boundaries not found')
+          replacement = '''    async function loadLivePrices() {\n      const room = selectedRoom();\n      const n = nightCount();\n      if (!LIVE_PRICE_API_URL || !room || n < 1 || !arrival.value || !departure.value) {\n        liveDirectPriceQuote = null;\n        liveDirectPriceQuoteKey = "";\n        const label = room ? room.closest(".choice").querySelector("b.price") : null;\n        if (label && room && room.value === "Bachblick") label.textContent = "ab 99 EUR";\n        calculate();\n        return;\n      }\n\n      const quoteKey = [room.value, arrival.value, departure.value].join("|");\n      try {\n        const params = new URLSearchParams({\n          room: room.value,\n          arrival: arrival.value,\n          departure: departure.value\n        });\n        const response = await fetch(LIVE_PRICE_API_URL + "?" + params.toString(), { cache: "no-store" });\n        if (!response.ok) throw new Error("HTTP " + response.status);\n        const payload = await response.json();\n        if (!payload.ok || typeof payload.room_total_eur !== "number") throw new Error("Ungueltige Preisdaten");\n        liveDirectPriceQuote = payload;\n        liveDirectPriceQuoteKey = quoteKey;\n\n        const label = room.closest(".choice").querySelector("b.price");\n        if (label) {\n          if (payload.night_count === 1 && payload.nights && payload.nights[0]) {\n            label.textContent = money(payload.nights[0].price_eur) + " / Nacht";\n          } else {\n            label.textContent = money(payload.room_total_eur) + " / " + payload.night_count + " Nächte";\n          }\n        }\n      } catch (error) {\n        liveDirectPriceQuote = null;\n        liveDirectPriceQuoteKey = "";\n        console.warn("Live-Preise konnten nicht geladen werden.", error);\n      }\n      calculate();\n    }\n'''
+          s = s[:start] + replacement + s[end:]
+
+          old_change = '''if (["arrival", "departure", "room"].includes(event.target.name)) {\n        loadLiveBookingCalendar();\n      } else {\n        calculate();\n      }'''
+          new_change = '''if (["arrival", "departure", "room"].includes(event.target.name)) {\n        liveDirectPriceQuote = null;\n        liveDirectPriceQuoteKey = "";\n        loadLiveBookingCalendar();\n        loadLivePrices();\n      } else {\n        calculate();\n      }'''
+          if old_change in s:
+              s = s.replace(old_change, new_change, 1)
+          elif new_change not in s:
+              raise SystemExit('form change handler not found')
+
+          # Keep deployment entrypoints consistent.
+          proc = Path('Procfile')
+          proc.write_text('web: gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 wachauetappe_gateway:app\n', encoding='utf-8')
+
+          # Safety checks: no stale fixed 101 price, live endpoint present, dynamic quote used.
+          if 'data-price="101"' in s or '>101 EUR<' in s or 'ab 101 EUR pro Nacht' in s:
+              raise SystemExit('stale 101 EUR value remains in index.html')
+          if 'web-production-907d68.up.railway.app/api/direct-price' not in s:
+              raise SystemExit('live direct price endpoint missing')
+          if 'liveDirectPriceQuote.room_total_eur' not in s:
+              raise SystemExit('date-aware quote not used by calculate()')
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Validate inline JavaScript
+        run: |
+          python - <<'PY'
+          import re, pathlib, subprocess, tempfile
+          s = pathlib.Path('index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', s, flags=re.S|re.I)
+          for i, code in enumerate(scripts):
+              if not code.strip() or 'application/ld+json' in code[:100]:
+                  continue
+              with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8') as f:
+                  f.write(code)
+                  name=f.name
+              subprocess.run(['node','--check',name], check=True)
+          PY
+
+      - name: Commit live pricing connection
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html Procfile
+          if git diff --cached --quiet; then
+            echo 'No changes needed.'
+            exit 0
+          fi
+          git commit -m 'Use date-aware Railway prices in public booking form'
+          git push
