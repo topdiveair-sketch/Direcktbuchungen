@@ -33,7 +33,7 @@ for(const file of htmlFiles){
 }
 const home=fs.readFileSync(path.join(root,'index.html'),'utf8');
 assert.doesNotMatch(home,/5\s*%|5 Prozent|Bestpreis|Sofortzahlung/i,'Startseite: alte Preisvergleichs- oder Sofortzahlungsaussage gefunden');
-assert.match(home,/Zuhause am Bach \| Unterkunft Donauradweg & Welterbesteig Wachau/,'Startseite: Ziel-Title fehlt');
+assert.match(home,/Zuhause am Bach – Wachau \| Donauradweg & Welterbesteig/,'Startseite: Ziel-Title fehlt');
 assert.match(home,/Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau/,'Startseite: Ziel-H1 fehlt');
 assert.match(home,/images\/aggsbach-markt-luftbild\.webp/,'Startseite: optimiertes Hero-Bild fehlt');
 const sitemap=fs.readFileSync(path.join(root,'sitemap.xml'),'utf8');
