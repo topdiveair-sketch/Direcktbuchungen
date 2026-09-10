@@ -45,6 +45,26 @@ jobs:
             (
               'zab-paypal-checkout.js?v=20260826-2',
               'zab-paypal-checkout.js?v=20260826-3'
+            ),
+            (
+              '<title>Zuhause am Bach – Wachau | Donauradweg & Welterbesteig</title>',
+              '<title>Zuhause am Bach – Etappenquartier Wachau | Donauradweg & Welterbesteig</title>'
+            ),
+            (
+              '<meta name="description" content="Ruhig übernachten in Aggsbach Markt in der Wachau – ideal für Radfahrer am Donauradweg und Wanderer am Welterbesteig. Frühstück, Fahrradgarage und persönliche Wachau-Tipps.">',
+              '<meta name="description" content="Etappenquartier in Aggsbach Markt in der Wachau – ruhig übernachten am Donauradweg und Welterbesteig. Direkt buchen mit Live-Verfügbarkeit, Frühstück, Fahrradgarage und persönlichen Wachau-Tipps.">'
+            ),
+            (
+              '<span class="desktop-hero-title">Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau</span><span class="mobile-hero-title">Zuhause am Bach – Basislager am Donauradweg & Welterbesteig</span>',
+              '<span class="desktop-hero-title">Zuhause am Bach – Etappenquartier & Unterkunft am Donauradweg und Welterbesteig Wachau</span><span class="mobile-hero-title">Zuhause am Bach – Etappenquartier am Donauradweg & Welterbesteig</span>'
+            ),
+            (
+              '<div class="direct-booking-trust"><strong>Direkt bei den Gastgebern</strong><span>Persönliche Anfrage, transparente Leistungen und Live-Verfügbarkeitsprüfung.</span><small>Ohne Umweg über eine zusätzliche Buchungsplattform.</small></div><div class="booking-progress">',
+              '<div class="direct-booking-trust"><strong>Direkt bei den Gastgebern</strong><span>Persönliche Anfrage, transparente Leistungen und Live-Verfügbarkeitsprüfung.</span><span class="booking-benefits">Alles für die nächste Etappe: Fahrrad sicher, E-Bike laden, Frühstück und Gepäckservice auf Anfrage.</span><small>Ohne Umweg über eine zusätzliche Buchungsplattform.</small></div><div class="booking-progress">'
+            ),
+            (
+              '<div class="booking-progress"><span>1 · Reisedaten</span><span>2 · Zimmer</span><span>3 · Kontakt</span></div>',
+              '<div class="booking-progress"><span>1 · Reisedaten</span><span>2 · Zimmer</span><span>3 · Kontakt & direkt buchen</span></div>'
             )
           ]
 
@@ -68,5 +88,5 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add index.html
-          git commit -m "Unify PayPal booking UI and wording"
+          git commit -m "ProjectOS: Direktbuchungs-Conversion schärfen"
           git push
