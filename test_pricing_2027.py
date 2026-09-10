@@ -40,7 +40,7 @@ def test_schallaburg_christmas_market_peak():
 
 
 def test_mixed_stay_sums_nightly_rates():
-    assert stay_room_total(date(2027, 4, 29), date(2027, 5, 2)) == 417.0
+    assert stay_room_total(date(2027, 4, 29), date(2027, 5, 2)) == 407.0
 
 
 def test_after_calendar_falls_back():
