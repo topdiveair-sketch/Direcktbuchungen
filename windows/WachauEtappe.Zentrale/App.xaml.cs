@@ -53,7 +53,10 @@ public partial class App : Application
             // hosts.json bleibt nur Bootstrap/Fallback. Railway ist danach führend.
             await new RemoteHostSyncService(Database).SyncAsync();
             if (LiveCentralSyncService.IsConfigured)
+            {
+                await HostLivePushService.PushPendingAsync(Database);
                 await LiveCentralSyncService.SyncAsync(Database);
+            }
         }
         catch (Exception ex)
         {
@@ -70,7 +73,13 @@ public partial class App : Application
         _liveSyncTimer.Tick += async (_, _) =>
         {
             if (!LiveCentralSyncService.IsConfigured) return;
-            try { await LiveCentralSyncService.SyncAsync(Database); }
+            try
+            {
+                // Lokale Bedieneränderungen zuerst hochladen, dann zentralen Stand
+                // zurückholen. So kann ein Live-Pull keine ungesendete Änderung überschreiben.
+                await HostLivePushService.PushPendingAsync(Database);
+                await LiveCentralSyncService.SyncAsync(Database);
+            }
             catch (Exception ex) { WriteStartupError(ex, "live-sync"); }
         };
         _liveSyncTimer.Start();
