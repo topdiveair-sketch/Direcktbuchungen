@@ -1,8 +1,9 @@
-"""2027 direct-booking pricing bridge.
+"""Direct-booking pricing bridge from 14 September 2026 through 2027.
 
-This module activates the 2027 nightly rate calendar before Railway imports the
-checkout stack. It keeps public price quotes, booking storage and PayPal checkout
-on the same price source while preserving the legacy pricing model outside 2027.
+This module activates the configured nightly rate calendar before Railway imports
+the checkout stack. It keeps public price quotes, booking storage and PayPal
+checkout on the same price source while preserving legacy pricing outside the
+configured active window.
 """
 
 from __future__ import annotations
@@ -22,9 +23,7 @@ def price_breakdown_2027(room, arrival, departure, adults, chosen, coupon_code="
         room, arrival, departure, adults, chosen, coupon_code
     )
 
-    # The 2027 calendar governs the directly marketed Bachblick room. Other
-    # rooms and dates outside 2027 retain the application's existing pricing.
-    if room != "Bachblick" or arrival.year != 2027 or departure <= arrival:
+    if room != "Bachblick" or departure <= arrival:
         return breakdown
 
     current = arrival
@@ -36,9 +35,8 @@ def price_breakdown_2027(room, arrival, departure, adults, chosen, coupon_code="
         room_total += float(nightly)
         current += timedelta(days=1)
 
-    # Rates in pricing-2027.json are FINAL DIRECT RATES. Legacy percentage
-    # discounts are not stacked on top, otherwise the 99 EUR floor could fall
-    # below 99 EUR (for example through the old 3% direct-booking discount).
+    # Configured rates are FINAL DIRECT RATES. Legacy percentage discounts are
+    # not stacked on top, so the 99 EUR floor remains a real guest price floor.
     extras_total = round(
         sum(float(line.get("amount", 0) or 0) for line in breakdown.get("extras", [])),
         2,
@@ -49,7 +47,7 @@ def price_breakdown_2027(room, arrival, departure, adults, chosen, coupon_code="
         "room_total": round(room_total, 2),
         "discounts": [],
         "total": round(room_total + extras_total, 2),
-        "pricing_model": "direct-2027-event-calendar",
+        "pricing_model": "direct-event-calendar-2026-2027",
     }
 
 
@@ -62,11 +60,7 @@ def _init_paypal_checkout_2027(
     room_available_in_conn,
     sync_room,
 ):
-    """Ensure PayPal uses the same dynamic 2027 price as the booking API.
-
-    railway_app historically replaces Bachblick with one fixed nightly price.
-    Supplying price_breakdown_2027 here removes that divergence for checkout.
-    """
+    """Ensure PayPal uses the same dynamic direct price as the booking API."""
     return _original_init_paypal_checkout(
         app,
         db,
