@@ -24,15 +24,16 @@ def _contains(day: date, row: dict) -> bool:
 
 
 def nightly_direct_rate(day: date) -> float | None:
-    """Return the final direct-booking room rate for one 2027 night.
+    """Return the final direct-booking room rate for one configured night.
 
     Date overrides have priority over the seasonal weekday/weekend grid.
-    The configured minimum price is enforced defensively.
-    Returns None outside the configured year so the caller can fall back to
-    the application's existing pricing model.
+    The configured minimum price is enforced defensively. Dates outside the
+    configured active window return None so callers can use legacy pricing.
     """
     cfg = pricing_config()
-    if day.year != int(cfg["year"]):
+    active_start = _parse(cfg["active_start"])
+    active_end = _parse(cfg["active_end"])
+    if not active_start <= day <= active_end:
         return None
 
     floor = float(cfg["minimum_direct_price_eur"])
@@ -50,7 +51,7 @@ def nightly_direct_rate(day: date) -> float | None:
 
 
 def stay_room_total(arrival: date, departure: date) -> float:
-    """Calculate room-only total from the 2027 direct rate grid."""
+    """Calculate room-only total from the configured direct rate grid."""
     if departure <= arrival:
         raise ValueError("departure must be after arrival")
 
@@ -59,7 +60,7 @@ def stay_room_total(arrival: date, departure: date) -> float:
     while current < departure:
         nightly = nightly_direct_rate(current)
         if nightly is None:
-            raise ValueError("stay contains a date outside the 2027 pricing calendar")
+            raise ValueError("stay contains a date outside the configured pricing calendar")
         total += nightly
         current += timedelta(days=1)
     return round(total, 2)
