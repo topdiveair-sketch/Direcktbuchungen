@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "property": "Zuhause am Bach - Wachau",
+  "room": "Bachblick",
+  "year": 2027,
+  "currency": "EUR",
+  "price_basis": "room_per_night",
+  "occupancy": "up_to_2_guests",
+  "final_direct_prices": true,
+  "minimum_direct_price_eur": 99,
+  "notes": [
+    "Rates are final direct-booking room rates before optional extras and local taxes.",
+    "Do not apply the existing 3 percent direct-booking discount again to these 2027 rates.",
+    "Unconfirmed recurring events are kept in watchlist and do not currently raise prices."
+  ],
+  "tiers": {
+    "weak": 99,
+    "soft": 109,
+    "normal": 119,
+    "strong": 129,
+    "event": 139,
+    "peak": 149
+  },
+  "season_ranges": [
+    {"start": "2027-01-01", "end": "2027-03-19", "sun_thu": 99, "fri_sat": 109, "reason": "winter_low_demand"},
+    {"start": "2027-03-20", "end": "2027-04-11", "sun_thu": 109, "fri_sat": 119, "reason": "easter_and_apricot_blossom_window"},
+    {"start": "2027-04-12", "end": "2027-04-30", "sun_thu": 109, "fri_sat": 119, "reason": "spring_wachau"},
+    {"start": "2027-05-01", "end": "2027-05-31", "sun_thu": 119, "fri_sat": 129, "reason": "wine_spring_and_holiday_demand"},
+    {"start": "2027-06-01", "end": "2027-06-30", "sun_thu": 119, "fri_sat": 129, "reason": "early_summer_and_solstice"},
+    {"start": "2027-07-01", "end": "2027-08-31", "sun_thu": 119, "fri_sat": 129, "reason": "summer_high_season"},
+    {"start": "2027-09-01", "end": "2027-09-30", "sun_thu": 119, "fri_sat": 129, "reason": "wine_autumn_and_hiking"},
+    {"start": "2027-10-01", "end": "2027-10-31", "sun_thu": 109, "fri_sat": 119, "reason": "autumn_shoulders"},
+    {"start": "2027-11-01", "end": "2027-12-16", "sun_thu": 99, "fri_sat": 109, "reason": "late_autumn_low_demand"},
+    {"start": "2027-12-17", "end": "2027-12-19", "sun_thu": 119, "fri_sat": 129, "reason": "schallaburg_christmas_market_confirmed"},
+    {"start": "2027-12-20", "end": "2027-12-31", "sun_thu": 109, "fri_sat": 119, "reason": "christmas_new_year_period"}
+  ],
+  "date_overrides": [
+    {"start": "2027-03-26", "end": "2027-03-29", "price_eur": 129, "label": "Easter weekend"},
+    {"start": "2027-04-30", "end": "2027-05-02", "price_eur": 139, "label": "Wachauer Weinfruehling - confirmed 1-2 May"},
+    {"start": "2027-05-05", "end": "2027-05-09", "price_eur": 129, "label": "Ascension bridge weekend"},
+    {"start": "2027-05-14", "end": "2027-05-17", "price_eur": 129, "label": "Pentecost weekend"},
+    {"start": "2027-05-26", "end": "2027-05-30", "price_eur": 129, "label": "Corpus Christi bridge weekend"},
+    {"start": "2027-06-18", "end": "2027-06-20", "price_eur": 149, "label": "Sonnenwende Wachau - confirmed 19 June"},
+    {"start": "2027-06-25", "end": "2027-06-27", "price_eur": 139, "label": "Sonnenwende Nibelungengau - confirmed 26 June"},
+    {"start": "2027-08-13", "end": "2027-08-15", "price_eur": 139, "label": "Assumption weekend"},
+    {"start": "2027-10-22", "end": "2027-10-26", "price_eur": 129, "label": "National Day extended-stay window"},
+    {"start": "2027-12-17", "end": "2027-12-19", "price_eur": 129, "label": "Schallaburg Christmas market - confirmed"}
+  ],
+  "watchlist_not_priced_yet": [
+    {"event": "WACHAUmarathon 2027", "expected_period": "September", "action_when_confirmed": "set event weekend to 139-149 EUR depending on pickup"},
+    {"event": "Spitzer Marillenkirtag 2027", "expected_period": "July", "action_when_confirmed": "set event weekend to 139 EUR"},
+    {"event": "Alles Marille Krems 2027", "expected_period": "July", "action_when_confirmed": "set strongest nights to 129-139 EUR"},
+    {"event": "Sommerspiele Melk 2027", "expected_period": "summer", "action_when_confirmed": "use 129 EUR only on high-demand performance weekends"},
+    {"event": "Glatt & Verkehrt 2027", "expected_period": "July", "action_when_confirmed": "set strongest Krems weekends to 129-139 EUR"}
+  ],
+  "revenue_rules": {
+    "floor_eur": 99,
+    "raise_if_occupancy_next_30_days_percent_gte": [
+      {"occupancy": 50, "add_eur": 10},
+      {"occupancy": 70, "add_eur": 20},
+      {"occupancy": 85, "add_eur": 30}
+    ],
+    "last_room_event_policy": "Do not discount confirmed event dates merely to chase occupancy.",
+    "direct_vs_booking_policy": "Keep direct rate attractive but retain most commission savings as margin."
+  },
+  "source_status": {
+    "confirmed_2027_events_used": [
+      "Wachauer Weinfruehling 1-2 May 2027",
+      "Sonnenwende Wachau 19 June 2027",
+      "Sonnenwende Nibelungengau 26 June 2027",
+      "Schallaburg Christmas market 17-19 December 2027"
+    ],
+    "official_2027_holiday_calendar_used": true,
+    "weather_dependent_apricot_blossom": "priced as a broad seasonal window; exact bloom timing must be reviewed in March 2027"
+  }
+}
