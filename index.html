@@ -2656,7 +2656,7 @@
       && !/(PASTE-YOUR-WORKER|DEIN-NAME)/i.test(configuredBookingSyncUrl);
     const LIVE_BOOKING_API_URL = hasConfiguredBookingSync
       ? configuredBookingSyncUrl + "/availability"
-      : "";
+      : "booking-calendar.json";
     const LIVE_PRICE_API_URL = "https://web-production-907d68.up.railway.app/api/direct-price";
     const OTHER_ROOMS_RELEASED = window.SHOW_ADDITIONAL_ROOMS === true;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
@@ -2843,7 +2843,9 @@
       submitRequest.disabled = !canSubmit;
       submitRequest.textContent = canSubmit
         ? (availability.state === "ok" ? tr("requestButton") : tr("requestButtonPending"))
-        : (hasValidDates ? tr("unavailableButton") : tr("chooseDatesButton"));
+        : (hasValidDates && availability.state !== "blocked"
+          ? (currentLang === "de" ? "Preis wird geprüft …" : "Price is being checked …")
+          : (hasValidDates ? tr("unavailableButton") : tr("chooseDatesButton")));
       arrival.setCustomValidity(availability.state === "blocked" ? availability.text : "");
       departure.setCustomValidity(availability.state === "blocked" ? availability.text : "");
       // PayPal visibility and checkout state are controlled exclusively by zab-paypal-checkout.js.

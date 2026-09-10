@@ -74,7 +74,7 @@ BREAKFAST_PRICE = 12.0
 
 ROOMS = {
     "Bachblick": {
-        "price": 75.0,
+        "price": 99.0,
         "available_from": date(2020, 1, 1),
         "image": "bachblick.jpg",
         "description": "Doppelzimmer mit Blick auf den Bach. Gemütlich, ruhig und zum Wohlfühlen.",
@@ -236,8 +236,9 @@ def init_db() -> None:
                     "UPDATE ical_settings SET import_url=? WHERE room=?",
                     (import_url, room),
                 )
-        price_defaults={"Bachblick":(75,85,95),"Marillenzimmer":(90,100,110),"Weinbergzimmer":(90,100,110),"Donauzimmer":(90,100,110)}
+        price_defaults={"Bachblick":(99,109,119),"Marillenzimmer":(90,100,110),"Weinbergzimmer":(90,100,110),"Donauzimmer":(90,100,110)}
         for r,p in price_defaults.items(): conn.execute("INSERT OR IGNORE INTO room_prices VALUES(?,?,?,?)",(r,*p))
+        conn.execute("UPDATE room_prices SET standard=99, weekend=109, high=119 WHERE room='Bachblick' AND standard<99")
         for row in [("last_minute",1,10,0,3),("early_bird",0,5,0,60),("three_nights",1,5,3,0),("five_nights",1,8,5,0),("seven_nights",1,12,7,0),("direct_booking",1,3,0,0)]: conn.execute("INSERT OR IGNORE INTO discounts VALUES(?,?,?,?,?)",row)
         for row in [("breakfast","Frühstück",12,"person_night",1),("jause","Wachauer Jause",29.9,"booking",1),("luggage","Gepäcktransport",15,"booking",1),("dog","Hund",10,"night",1),("baby_bed","Babybett",8,"booking",1)]: conn.execute("INSERT OR IGNORE INTO extras VALUES(?,?,?,?,?)",row)
         conn.execute("UPDATE extras SET price=15 WHERE key='luggage' AND ABS(price - 25) < 0.001")
