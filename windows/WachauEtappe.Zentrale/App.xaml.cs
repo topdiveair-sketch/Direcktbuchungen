@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using System.Windows.Threading;
 using WachauEtappe.Zentrale.Data;
 using WachauEtappe.Zentrale.Services;
 
@@ -8,6 +9,7 @@ namespace WachauEtappe.Zentrale;
 public partial class App : Application
 {
     public static DatabaseService Database { get; private set; } = null!;
+    private DispatcherTimer? _liveSyncTimer;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -36,24 +38,42 @@ public partial class App : Application
             return;
         }
 
-        // Zuerst die WPF-Oberfläche vollständig starten. Die Online-Synchronisierung
-        // darf den UI-Thread niemals blockieren oder den Programmstart verhindern.
+        // Zuerst die WPF-Oberfläche vollständig starten. Kein Netzwerkzugriff darf
+        // den UI-Thread blockieren oder den Programmstart verhindern.
         base.OnStartup(e);
 
-        _ = SyncRemoteHostsSafeAsync();
+        _ = InitialOnlineSyncSafeAsync();
+        StartLiveSyncTimer();
     }
 
-    private async Task SyncRemoteHostsSafeAsync()
+    private async Task InitialOnlineSyncSafeAsync()
     {
         try
         {
+            // hosts.json bleibt nur Bootstrap/Fallback. Railway ist danach führend.
             await new RemoteHostSyncService(Database).SyncAsync();
+            if (LiveCentralSyncService.IsConfigured)
+                await LiveCentralSyncService.SyncAsync(Database);
         }
         catch (Exception ex)
         {
-            // Remote-Sync ist Komfortfunktion: lokal muss die Zentrale immer weiterlaufen.
-            WriteStartupError(ex, "remote-host-sync");
+            WriteStartupError(ex, "initial-online-sync");
         }
+    }
+
+    private void StartLiveSyncTimer()
+    {
+        _liveSyncTimer = new DispatcherTimer(DispatcherPriority.Background)
+        {
+            Interval = TimeSpan.FromSeconds(30)
+        };
+        _liveSyncTimer.Tick += async (_, _) =>
+        {
+            if (!LiveCentralSyncService.IsConfigured) return;
+            try { await LiveCentralSyncService.SyncAsync(Database); }
+            catch (Exception ex) { WriteStartupError(ex, "live-sync"); }
+        };
+        _liveSyncTimer.Start();
     }
 
     private static void WriteStartupError(Exception ex, string area = "startup")
