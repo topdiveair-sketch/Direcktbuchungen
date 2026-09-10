@@ -1,12 +1,19 @@
 using System.Windows;
+using WachauEtappe.Zentrale.Services;
 
 namespace WachauEtappe.Zentrale;
 
 public partial class BookingManagementWindow : Window
 {
-    public BookingManagementWindow(){InitializeComponent();Loaded+=(_,_)=>Refresh();}
+    public BookingManagementWindow(){InitializeComponent();Loaded+=async (_,_)=>{await SyncAndRefreshAsync();};}
 
     private void Refresh()=>BookingsGrid.ItemsSource=App.Database.GetBookings();
+
+    private async Task SyncAndRefreshAsync()
+    {
+        if(LiveCentralSyncService.IsConfigured) await LiveCentralSyncService.SyncAsync(App.Database);
+        Refresh();
+    }
 
     private string? SelectedId()
     {
@@ -15,10 +22,20 @@ public partial class BookingManagementWindow : Window
         return null;
     }
 
-    private void SetStatus(string status)
+    private async Task SetStatusAsync(string status)
     {
         var id=SelectedId(); if(string.IsNullOrWhiteSpace(id)) return;
-        App.Database.SetBookingStatus(id,status); Refresh();
+        var booking=App.Database.GetBooking(id); if(booking is null)return;
+        App.Database.SetBookingStatus(id,status);
+        Refresh();
+        if(booking.Reference.StartsWith("WE-",StringComparison.OrdinalIgnoreCase))
+        {
+            var ok=await LiveCentralSyncService.PushBookingStatusAsync(booking.Reference,status);
+            if(!ok)
+                MessageBox.Show("Status wurde lokal gespeichert, konnte aber noch nicht an die Live-Zentrale übertragen werden. Der nächste Live-Abgleich bleibt möglich.","WachauEtappe Live",MessageBoxButton.OK,MessageBoxImage.Warning);
+            else
+                await SyncAndRefreshAsync();
+        }
     }
 
     private void New_Click(object sender,RoutedEventArgs e)
@@ -45,8 +62,8 @@ public partial class BookingManagementWindow : Window
         App.Database.DeleteBooking(id);Refresh();
     }
 
-    private void Confirm_Click(object sender,RoutedEventArgs e)=>SetStatus("confirmed");
-    private void Decline_Click(object sender,RoutedEventArgs e)=>SetStatus("declined");
-    private void Cancel_Click(object sender,RoutedEventArgs e)=>SetStatus("cancelled");
-    private void Refresh_Click(object sender,RoutedEventArgs e)=>Refresh();
+    private async void Confirm_Click(object sender,RoutedEventArgs e)=>await SetStatusAsync("confirmed");
+    private async void Decline_Click(object sender,RoutedEventArgs e)=>await SetStatusAsync("declined");
+    private async void Cancel_Click(object sender,RoutedEventArgs e)=>await SetStatusAsync("cancelled");
+    private async void Refresh_Click(object sender,RoutedEventArgs e)=>await SyncAndRefreshAsync();
 }
