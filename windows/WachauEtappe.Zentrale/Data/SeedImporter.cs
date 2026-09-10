@@ -19,8 +19,13 @@ public sealed class SeedImporter(DatabaseService db)
     private void ImportHosts()
     {
         if (!File.Exists(SeedPath("hosts.json"))) return;
-        using var doc = JsonDocument.Parse(File.ReadAllText(SeedPath("hosts.json")));
-        if (!doc.RootElement.TryGetProperty("hosts", out var hosts)) return;
+        ImportHostsJson(File.ReadAllText(SeedPath("hosts.json")));
+    }
+
+    public void ImportHostsJson(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        if (!doc.RootElement.TryGetProperty("hosts", out var hosts) || hosts.ValueKind != JsonValueKind.Array) return;
         foreach (var h in hosts.EnumerateArray())
         {
             var id = Text(h, "id") ?? Guid.NewGuid().ToString("N");
