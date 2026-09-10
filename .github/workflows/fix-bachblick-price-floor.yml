@@ -1,0 +1,86 @@
+name: Apply Bachblick 99 EUR display floor
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-bachblick-price-floor.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace stale 101 EUR Bachblick display values
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              'data-price="101"': 'data-price="99"',
+              '>101 EUR</b>': '>ab 99 EUR</b>',
+              'ab 101 EUR pro Nacht': 'ab 99 EUR pro Nacht',
+              'from 101 EUR per night': 'from 99 EUR per night',
+              'od 101 EUR za noc': 'od 99 EUR za noc',
+              '101 EUR-tól éjszakánként': '99 EUR-tól éjszakánként',
+              'desde 101 EUR por noche': 'desde 99 EUR por noche',
+              'à partir de 101 EUR par nuit': 'à partir de 99 EUR par nuit',
+              'Direktpreis: 101 EUR pro Nacht': 'Direktpreis: ab 99 EUR pro Nacht',
+              'Direktpreis 101 EUR pro Nacht': 'Direktpreis ab 99 EUR pro Nacht',
+          }
+
+          changed_files = []
+          root = Path('index.html')
+          before_root = root.read_text(encoding='utf-8')
+
+          for path in Path('.').rglob('*.html'):
+              if '.git' in path.parts:
+                  continue
+              text = path.read_text(encoding='utf-8')
+              original = text
+              for old, new in replacements.items():
+                  text = text.replace(old, new)
+              if text != original:
+                  path.write_text(text, encoding='utf-8')
+                  changed_files.append(str(path))
+
+          after_root = root.read_text(encoding='utf-8')
+          required = [
+              'name="room" value="Bachblick" data-price="99"',
+              'ab 99 EUR',
+              'ab 99 EUR pro Nacht',
+          ]
+          missing = [item for item in required if item not in after_root]
+          if missing:
+              raise SystemExit('Required 99 EUR markers missing after replacement: ' + ', '.join(missing))
+          if 'name="room" value="Bachblick" data-price="101"' in after_root:
+              raise SystemExit('Stale Bachblick data-price=101 still present')
+          if 'ab 101 EUR pro Nacht' in after_root:
+              raise SystemExit('Stale Bachblick 101 EUR room-card text still present')
+          if before_root == after_root:
+              raise SystemExit('Root index.html was not changed; expected stale 101 EUR markers')
+
+          print('Changed files:')
+          for path in changed_files:
+              print(' -', path)
+          PY
+      - name: Validate inline JavaScript
+        run: node scripts/check-inline-js.js
+      - name: Commit corrected price display
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add '*.html' '**/*.html' 2>/dev/null || true
+          git add index.html
+          git commit -m "Show Bachblick from 99 EUR across public pages"
+          git push
