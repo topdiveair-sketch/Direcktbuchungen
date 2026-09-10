@@ -1,3 +1,4 @@
+# One-time safety patch trigger
 name: Fix booking safety
 
 on:
