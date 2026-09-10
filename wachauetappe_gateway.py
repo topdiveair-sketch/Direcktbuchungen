@@ -8,19 +8,13 @@ All operational APIs share the same Flask app and Railway database:
 - existing growth/winter/ProjectOS endpoints
 """
 
-# Import the broad existing gateway chain first. It resolves to the single Flask
-# app instance created in railway_app/app.py.
+# projectos_winter_gateway already initializes the central live-state gateway on
+# the shared Flask app. Import it once and do not register those routes twice.
 from projectos_winter_gateway import app  # noqa: F401
-from railway_app import db, require_admin  # noqa: E402
 
 # Importing these modules registers their routes on that same app instance.
 import guest_booking_gateway  # noqa: F401,E402
 import partner_portal_gateway  # noqa: F401,E402
-from wachauetappe_live_gateway import init_wachauetappe_live  # noqa: E402
-
-# Explicitly register the central live-state routes. This must happen in the
-# production entrypoint; merely importing the module does not register them.
-init_wachauetappe_live(app, db, require_admin)
 
 
 @app.get("/health/wachauetappe-production")
