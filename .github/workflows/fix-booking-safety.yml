@@ -1,0 +1,120 @@
+name: Fix booking safety
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-booking-safety.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-booking-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository laden
+        uses: actions/checkout@v4
+
+      - name: PayPal-Checkout gegen bekannte Booking-Sperren absichern
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          js_path = Path('zab-paypal-checkout.js')
+          js = js_path.read_text(encoding='utf-8')
+
+          old = '''    function checkoutHeading(text){
+      const heading=paypalBox?.querySelector("strong");
+      if(heading) heading.textContent=text;
+    }
+'''
+          new = '''    function checkoutHeading(text){
+      const heading=paypalBox?.querySelector("strong");
+      if(heading) heading.textContent=text;
+    }
+
+    function localCalendarBlocked(){
+      return Boolean(availability && availability.classList.contains("blocked"));
+    }
+'''
+          if old not in js:
+              raise SystemExit('checkoutHeading-Anker nicht gefunden')
+          js = js.replace(old, new, 1)
+
+          old = '''    function showAvailable(data,result){
+      form.classList.remove("zab-booking-blocked");
+'''
+          new = '''    function showAvailable(data,result){
+      if(localCalendarBlocked()){
+        showBlocked("Der Booking-Kalender sperrt diesen Zeitraum. Eine Backend-Frei-Meldung darf diese Sperre nicht überschreiben.");
+        return false;
+      }
+      form.classList.remove("zab-booking-blocked");
+'''
+          if old not in js:
+              raise SystemExit('showAvailable-Anker nicht gefunden')
+          js = js.replace(old, new, 1)
+
+          old = '''      if(!validDates(data)){
+        hidePayPal();
+        return false;
+      }
+      if(data.extras.etappenjause){
+'''
+          new = '''      if(!validDates(data)){
+        hidePayPal();
+        return false;
+      }
+      if(localCalendarBlocked()){
+        showBlocked("Der Booking-Kalender sperrt diesen Zeitraum. Bitte einen anderen Termin wählen.");
+        return false;
+      }
+      if(data.extras.etappenjause){
+'''
+          if old not in js:
+              raise SystemExit('verifyAvailability-Anker nicht gefunden')
+          js = js.replace(old, new, 1)
+
+          old = '''      const data=payload();
+      const missing=missingCustomer(data);
+'''
+          new = '''      const data=payload();
+      if(localCalendarBlocked()){
+        showBlocked("Der Booking-Kalender sperrt diesen Zeitraum. Bitte einen anderen Termin wählen.");
+        return;
+      }
+      const missing=missingCustomer(data);
+'''
+          if old not in js:
+              raise SystemExit('startCheckout-Anker nicht gefunden')
+          js = js.replace(old, new, 1)
+
+          js_path.write_text(js, encoding='utf-8')
+
+          index_path = Path('index.html')
+          html = index_path.read_text(encoding='utf-8')
+          old_src = 'zab-paypal-checkout.js?v=20260826-3'
+          new_src = 'zab-paypal-checkout.js?v=20260910-1'
+          if old_src not in html and new_src not in html:
+              raise SystemExit('PayPal-Script-Referenz nicht gefunden')
+          html = html.replace(old_src, new_src)
+          index_path.write_text(html, encoding='utf-8')
+          PY
+
+      - name: JavaScript prüfen
+        run: node --check zab-paypal-checkout.js
+
+      - name: Fix speichern
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo 'Keine Änderung erforderlich.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add zab-paypal-checkout.js index.html
+          git commit -m 'Prevent backend from overriding Booking blocks'
+          git push
