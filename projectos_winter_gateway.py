@@ -16,7 +16,7 @@ from market_leader_scheduler import init_market_leader_scheduler
 from wachauetappe_live_gateway import init_wachauetappe_live
 
 # Deployment marker: card + PayPal checkout preparation, 2026-09-13.
-CHECKOUT_DEPLOY_REV = "2026-09-13-card-plus-paypal-v1"
+CHECKOUT_DEPLOY_REV = "2026-09-13-card-plus-paypal-v2"
 
 # Public repository stores only the SHA-256 of the packaged ProjectOS token.
 # The actual high-entropy token is shipped only in the user's local ProjectOS package.
