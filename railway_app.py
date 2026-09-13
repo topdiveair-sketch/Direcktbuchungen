@@ -5,9 +5,10 @@ import json
 import os
 import urllib.error
 import urllib.request
-from datetime import timedelta
+from datetime import date, timedelta
+from email.utils import parseaddr
 
-from flask import request
+from flask import jsonify, request
 
 from app import (
     app,
@@ -28,7 +29,7 @@ from pricing_2027 import nightly_direct_rate
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-13-paypal-unified-card-v2"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-13-paypal-unified-card-v3"
 
 # Checkout callbacks must use the currently active Railway public domain. Railway's
 # own RAILWAY_PUBLIC_DOMAIN wins over a stale manually configured callback URL.
@@ -93,6 +94,46 @@ init_paypal_checkout(
 init_booking_notifications(app, db)
 init_provider_monitor(app, db, require_admin)
 init_provider_radar(app, db, require_admin)
+
+
+@app.before_request
+def validate_public_paypal_payload():
+    """Enforce critical checkout rules on the server, independent of browser JS."""
+    if request.method != "POST" or request.path not in {"/api/paypal/quote", "/api/paypal/create-order"}:
+        return None
+
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"ok": False, "message": "Ungültige Buchungsdaten."}), 400
+
+    try:
+        arrival = parse_date(str(payload.get("arrival", "")))
+        departure = parse_date(str(payload.get("departure", "")))
+    except Exception:
+        return jsonify({"ok": False, "message": "Bitte gültige Reisedaten eingeben."}), 400
+
+    if arrival < date.today():
+        return jsonify({"ok": False, "message": "Die Anreise darf nicht in der Vergangenheit liegen."}), 400
+    if departure <= arrival:
+        return jsonify({"ok": False, "message": "Die Abreise muss nach der Anreise liegen."}), 400
+
+    extras = payload.get("extras") if isinstance(payload.get("extras"), dict) else {}
+    if extras.get("etappenjause"):
+        return jsonify({
+            "ok": False,
+            "message": "Die Etappenjause wird separat bestätigt und kann nicht automatisch über PayPal abgeschlossen werden.",
+        }), 400
+
+    if request.path == "/api/paypal/create-order":
+        email = str(payload.get("email", "")).strip()
+        _, parsed_email = parseaddr(email)
+        if not parsed_email or parsed_email != email or "@" not in parsed_email:
+            return jsonify({"ok": False, "message": "Bitte eine gültige E-Mail-Adresse eingeben."}), 400
+        phone_digits = "".join(ch for ch in str(payload.get("phone", "")) if ch.isdigit())
+        if len(phone_digits) < 6:
+            return jsonify({"ok": False, "message": "Bitte eine gültige Telefonnummer eingeben."}), 400
+
+    return None
 
 
 # The notification modules historically retried email delivery in global
