@@ -352,6 +352,8 @@ def init_paypal_checkout(
                         "payment_source": {
                             "paypal": {
                                 "experience_context": {
+                                    "brand_name": "Zuhause am Bach",
+                                    "locale": "de-AT",
                                     "return_url": f"{base}/paypal/return?booking={booking_id}",
                                     "cancel_url": f"{base}/paypal/cancel?booking={booking_id}",
                                     "landing_page": "GUEST_CHECKOUT",
@@ -373,6 +375,12 @@ def init_paypal_checkout(
                 )
                 if not order_id or not approval_url:
                     raise RuntimeError("PayPal hat keinen Freigabelink geliefert.")
+                from urllib.parse import urlparse, parse_qs
+                parsed_approval = urlparse(approval_url)
+                approval_host = parsed_approval.netloc.lower()
+                approval_token = (parse_qs(parsed_approval.query).get("token") or [""])[0]
+                if not approval_host.endswith("paypal.com") or "checkoutnow" not in parsed_approval.path.lower() or approval_token != order_id:
+                    raise RuntimeError("PayPal hat keinen gültigen Checkout-Link für diesen Auftrag geliefert.")
                 with db() as conn:
                     conn.execute(
                         "UPDATE bookings SET paypal_order_id=?,payment_error='' WHERE id=?",
