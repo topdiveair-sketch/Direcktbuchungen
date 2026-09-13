@@ -108,3 +108,140 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ready, { once: true });
   else ready();
 })();
+
+/* Conversion UX 2026-09-13: keep direct booking visible and reduce booking friction.
+   Additive only: no price, calendar or payment logic is changed here. */
+(function () {
+  "use strict";
+
+  function enhanceConversion() {
+    if (document.getElementById("zab-conversion-ux-20260913")) return;
+
+    const style = document.createElement("style");
+    style.id = "zab-conversion-ux-20260913";
+    style.textContent = `
+      .zab-hero-direct-message{
+        display:flex;align-items:center;gap:12px;max-width:680px;margin:14px 0 0;
+        padding:12px 14px;border:1px solid rgba(255,255,255,.58);border-radius:13px;
+        background:rgba(255,255,255,.95);color:#17372f!important;
+        box-shadow:0 9px 24px rgba(0,0,0,.16);text-shadow:none!important;
+        font-size:14px!important;font-weight:850;line-height:1.4
+      }
+      .zab-hero-direct-message a{
+        margin-left:auto;display:inline-grid;place-items:center;min-height:42px;padding:8px 12px;
+        border-radius:9px;background:var(--brand);color:#fff;text-decoration:none;
+        white-space:nowrap;font-size:13px;font-weight:900
+      }
+      .zab-booking-facts{
+        display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 12px;
+        margin:10px 0 0;padding:0;list-style:none
+      }
+      .zab-booking-facts li{font-size:13px;font-weight:820;color:#314841}
+      .zab-booking-facts li::before{content:"✓ ";color:var(--brand);font-weight:950}
+      .zab-floating-booking{
+        position:fixed;z-index:115;right:22px;bottom:22px;display:flex;align-items:center;gap:12px;
+        max-width:400px;padding:12px 14px;border:1px solid #c8dfd4;border-radius:14px;
+        background:rgba(255,255,255,.97);box-shadow:0 16px 42px rgba(0,0,0,.19);
+        transform:translateY(140%);opacity:0;pointer-events:none;
+        transition:transform .2s ease,opacity .2s ease
+      }
+      .zab-floating-booking.is-visible{transform:translateY(0);opacity:1;pointer-events:auto}
+      .zab-floating-booking strong{display:block;color:#17372f;font-size:14px;line-height:1.25}
+      .zab-floating-booking small{display:block;margin-top:2px;color:#5f6f69;font-size:11px}
+      .zab-floating-booking a{
+        display:grid;place-items:center;min-height:44px;padding:8px 12px;border-radius:9px;
+        background:var(--brand);color:#fff;text-decoration:none;white-space:nowrap;
+        font-size:13px;font-weight:900
+      }
+      @media (min-width:901px){
+        .hero-grid>.panel{position:sticky;top:16px;align-self:start}
+      }
+      @media (max-width:900px){
+        .zab-floating-booking{display:none!important}
+      }
+      @media (max-width:640px){
+        .zab-hero-direct-message{display:grid;grid-template-columns:1fr;margin-top:12px!important}
+        .zab-hero-direct-message a{margin-left:0;width:100%}
+        .zab-booking-facts{grid-template-columns:1fr}
+      }
+    `;
+    document.head.appendChild(style);
+
+    const heroCopy = document.querySelector(".hero-copy");
+    const heroIntro = heroCopy && heroCopy.querySelector("p:not(.mobile-hero-benefits)");
+    if (heroIntro && !document.getElementById("zab-hero-direct-message")) {
+      const message = document.createElement("div");
+      message.id = "zab-hero-direct-message";
+      message.className = "zab-hero-direct-message";
+      message.innerHTML = '<span>Direkt beim Gastgeber buchen – persönlicher Kontakt, keine Buchungsplattform nötig.</span><a href="#booking-title" data-track="hero_direct_booking">Verfügbarkeit prüfen</a>';
+      heroIntro.insertAdjacentElement("afterend", message);
+    }
+
+    const directBox = document.getElementById("zab-direct-box") || document.querySelector(".direct-booking-trust");
+    if (directBox) {
+      const existingBenefits = directBox.querySelector(".zab-direct-benefits");
+      if (existingBenefits) {
+        existingBenefits.innerHTML = [
+          "Privates Badezimmer",
+          "Frühstück auf Wunsch zubuchbar",
+          "Fahrradgarage",
+          "E-Bike-Lademöglichkeit",
+          "Kostenloser Parkplatz",
+          "Direkter Gastgeberkontakt"
+        ].map(function (item) { return "<li>" + item + "</li>"; }).join("");
+      } else if (!directBox.querySelector(".zab-booking-facts")) {
+        const list = document.createElement("ul");
+        list.className = "zab-booking-facts";
+        list.innerHTML = [
+          "Privates Badezimmer",
+          "Frühstück auf Wunsch zubuchbar",
+          "Fahrradgarage",
+          "E-Bike-Lademöglichkeit",
+          "Kostenloser Parkplatz",
+          "Direkter Gastgeberkontakt"
+        ].map(function (item) { return "<li>" + item + "</li>"; }).join("");
+        directBox.appendChild(list);
+      }
+    }
+
+    const mobileBar = document.querySelector(".mobile-booking-bar");
+    if (mobileBar) {
+      const strong = mobileBar.querySelector("strong");
+      const link = mobileBar.querySelector("a");
+      if (strong) strong.textContent = "Direkt bei Zuhause am Bach";
+      if (link) {
+        link.textContent = "Verfügbarkeit prüfen";
+        link.setAttribute("data-track", "mobile_sticky_booking");
+      }
+    }
+
+    if (!document.getElementById("zab-floating-booking")) {
+      const floating = document.createElement("aside");
+      floating.id = "zab-floating-booking";
+      floating.className = "zab-floating-booking";
+      floating.setAttribute("aria-label", "Direktbuchung");
+      floating.innerHTML = '<div><strong>Direkt bei Zuhause am Bach buchen</strong><small>Persönlich · ohne zusätzliche Buchungsplattform</small></div><a href="#booking-title" data-track="desktop_sticky_booking">Verfügbarkeit prüfen</a>';
+      document.body.appendChild(floating);
+
+      const bookingPanel = document.querySelector(".hero-grid > .panel");
+      function updateFloatingBooking() {
+        if (window.innerWidth < 901) {
+          floating.classList.remove("is-visible");
+          return;
+        }
+        const panelBottom = bookingPanel ? bookingPanel.getBoundingClientRect().bottom : 0;
+        const show = window.scrollY > 180 && panelBottom < 120;
+        floating.classList.toggle("is-visible", show);
+      }
+      window.addEventListener("scroll", updateFloatingBooking, { passive: true });
+      window.addEventListener("resize", updateFloatingBooking);
+      updateFloatingBooking();
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", enhanceConversion, { once: true });
+  } else {
+    enhanceConversion();
+  }
+})();
