@@ -5,6 +5,7 @@ on:
     paths:
       - .github/workflows/update-direct-booking-conversion.yml
       - scripts/sales_ready_patch.py
+      - scripts/language_checkout_patch.py
   workflow_dispatch:
 
 permissions:
@@ -17,6 +18,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Apply sales-ready patch
         run: python3 scripts/sales_ready_patch.py
+      - name: Apply language-aware checkout patch
+        run: python3 scripts/language_checkout_patch.py
       - name: Validate Python checkout modules
         run: python3 -m py_compile railway_app.py paypal_checkout.py
       - name: Commit patched production files
@@ -28,6 +31,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html en/index.html cs/index.html sk/index.html hu/index.html pl/index.html nl/index.html railway_app.py paypal_checkout.py
+          git add index.html zab-paypal-checkout.js en/index.html cs/index.html sk/index.html hu/index.html pl/index.html nl/index.html railway_app.py paypal_checkout.py
           git commit -m "Make direct booking sales-ready across languages"
           git push
