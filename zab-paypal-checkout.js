@@ -154,14 +154,14 @@ ready(function(){
       if(bookingTitle) bookingTitle.textContent="Wachau-Etappe direkt buchen";
       const bookingIntro=document.querySelector(".booking-intro");
       if(bookingIntro){
-        bookingIntro.textContent="Reisedaten wählen, Live-Verfügbarkeit prüfen und einen freien Termin sicher mit PayPal direkt buchen. Falls Sofortbuchung nicht möglich ist, bleibt die persönliche Anfrage verfügbar.";
+        bookingIntro.textContent="Reisedaten wählen, Live-Verfügbarkeit prüfen und einen freien Termin sicher mit PayPal oder Kredit-/Debitkarte direkt buchen. Falls Sofortbuchung nicht möglich ist, bleibt die persönliche Anfrage verfügbar.";
       }
       const trust=form.closest(".panel")?.querySelector(".direct-booking-trust");
       const trustStrong=trust?.querySelector("strong");
       const trustSpan=trust?.querySelector("span");
       const trustSmall=trust?.querySelector("small");
       if(trustStrong) trustStrong.textContent="Direkt buchen bei den Gastgebern";
-      if(trustSpan) trustSpan.textContent="Live-Verfügbarkeit, transparenter Preis und sichere PayPal-Zahlung.";
+      if(trustSpan) trustSpan.textContent="Live-Verfügbarkeit, transparenter Preis und sichere Zahlung über PayPal – auch per Kredit- oder Debitkarte, soweit PayPal dies anbietet.";
       if(trustSmall) trustSmall.textContent="Ohne Provision oder Umweg über eine zusätzliche Buchungsplattform.";
       const bookingTile=document.querySelector(".quick-tile.book");
       const bookingTileTitle=bookingTile?.querySelector("span");
@@ -284,10 +284,10 @@ ready(function(){
       paypalLink.removeAttribute("rel");
       paypalLink.dataset.secureCheckout="1";
       paypalLink.textContent=total>0
-        ? `Jetzt ${total.toFixed(2).replace(".",",")} EUR sicher mit PayPal buchen`
-        : "Jetzt sicher mit PayPal buchen";
+        ? `Jetzt ${total.toFixed(2).replace(".",",")} EUR mit PayPal oder Karte bezahlen`
+        : "Jetzt mit PayPal oder Karte bezahlen";
       checkoutHeading("✅ Termin frei – sichere Direktzahlung");
-      if(paypalHint) paypalHint.textContent="Termin ist laut aktuellem Booking-Kalender frei. Beim Klick wird der Termin serverseitig reserviert und vor PayPal nochmals sicher geprüft.";
+      if(paypalHint) paypalHint.textContent="Termin ist laut aktuellem Booking-Kalender frei. Beim Klick wird der Termin serverseitig reserviert und vor PayPal nochmals sicher geprüft. Eine Kredit-/Debitkartenzahlung kann PayPal im Gast-Checkout anbieten; die tatsächliche Verfügbarkeit bestimmt PayPal.";
       if(availability){
         availability.className="availability-status ok zab-backend-ok";
         availability.textContent="✅ Frei – live über den aktuellen Booking-Kalender geprüft.";
