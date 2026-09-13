@@ -30,7 +30,8 @@ from pricing_2027 import nightly_direct_rate
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-13-sales-ready-v4"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-13-merchant-email-lock-v5"
+EXPECTED_PAYPAL_MERCHANT_EMAIL = "topdiveair@gmail.com"
 
 # Checkout callbacks must use the currently active Railway public domain. Railway's
 # own RAILWAY_PUBLIC_DOMAIN wins over a stale manually configured callback URL.
@@ -126,6 +127,13 @@ def validate_public_paypal_payload():
         }), 400
 
     if request.path == "/api/paypal/create-order":
+        configured_merchant_email = os.environ.get("PAYPAL_EMAIL", "").strip().lower()
+        if configured_merchant_email != EXPECTED_PAYPAL_MERCHANT_EMAIL:
+            return jsonify({
+                "ok": False,
+                "message": "PayPal-Zahlung aus Sicherheitsgründen gestoppt: Händlerkonto ist nicht eindeutig als Zuhause am Bach konfiguriert.",
+            }), 503
+
         email = str(payload.get("email", "")).strip()
         _, parsed_email = parseaddr(email)
         if not parsed_email or parsed_email != email or "@" not in parsed_email:
@@ -221,9 +229,11 @@ def notify_successful_paid_booking(response):
 @app.get("/health/deploy")
 def railway_deploy_health():
     """Return the checkout revision currently running."""
+    configured_merchant_email = os.environ.get("PAYPAL_EMAIL", "").strip().lower()
     return {
         "status": "ok",
         "paypal_checkout": bool(app.extensions.get("zab_paypal_checkout_enabled")),
+        "paypal_merchant_email_match": configured_merchant_email == EXPECTED_PAYPAL_MERCHANT_EMAIL,
         "paid_guest_email": bool(app.extensions.get("zab_send_paid_guest_confirmation")),
         "provider_monitor": bool(app.extensions.get("zab_provider_monitor_initialized")),
         "provider_radar": bool(app.extensions.get("zab_provider_radar_initialized")),
@@ -238,6 +248,13 @@ def paypal_health():
     environment = os.environ.get("PAYPAL_ENV", "live").strip().lower()
     client_id = os.environ.get("PAYPAL_CLIENT_ID", "").strip()
     secret = os.environ.get("PAYPAL_CLIENT_SECRET", "").strip()
+    configured_merchant_email = os.environ.get("PAYPAL_EMAIL", "").strip().lower()
+    if configured_merchant_email != EXPECTED_PAYPAL_MERCHANT_EMAIL:
+        return {
+            "ok": False,
+            "environment": environment,
+            "reason": "merchant_email_mismatch",
+        }, 503
     if not client_id or not secret:
         return {"ok": False, "environment": environment, "reason": "credentials_missing"}, 503
 
