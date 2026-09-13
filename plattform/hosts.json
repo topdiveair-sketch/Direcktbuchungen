@@ -76,6 +76,62 @@
         "Parkplatz",
         "Internetanschluss"
       ]
+    },
+    {
+      "id": "weisses-roessl-muehldorf",
+      "name": "Weißes Rössl, Wirtshaus & Hotel**** Mühldorf/Wachau",
+      "status": "partner_confirmed",
+      "published": false,
+      "accepting_bookings": false,
+      "operator_note": "Partnerzusage von Roman Siebenhandl vom 13.09.2026. Alle für Welterbesteig-Wanderer abgefragten Kernpunkte bestätigt. Direktkondition: 10 % unter den jeweils aktuellen Zimmerpreisen für Wanderer, die den gesamten Welterbesteig gehen. Noch nicht live buchbar bis zur operativen Freischaltung.",
+      "routes": ["Welterbesteig Wachau"],
+      "location": "Mühldorf/Wachau",
+      "country": "AT",
+      "address": "Markt 17, 3622 Mühldorf/Wachau",
+      "accommodation_type": "Wirtshaus & Hotel****",
+      "direct_url": "https://www.roessl-wachau.at/de",
+      "email": "info@roessl-wachau.at",
+      "phone": "+43 2713 8257",
+      "contact_person": "Roman Siebenhandl",
+      "features": [
+        "1 Nacht möglich",
+        "Frühstück im Zimmerpreis inkludiert",
+        "Wanderjause/Lunchpaket auf Wunsch möglich",
+        "Wandergepäck kann vor Anreise angenommen werden",
+        "Abholung durch Transportpartner am Folgetag möglich",
+        "Trockenraum für nasse Wanderbekleidung und Schuhe mit Gebläse",
+        "Regelmäßige Direktbuchungen ausdrücklich erwünscht"
+      ],
+      "partner_terms": {
+        "confirmed_on": "2026-09-13",
+        "one_night_stay": true,
+        "minimum_stay_nights": 1,
+        "direct_price_confirmed": true,
+        "direct_price_rule": "10 % Rabatt auf die jeweils aktuellen Zimmerpreise für Wanderer, die den gesamten Welterbesteig gehen",
+        "breakfast_included": true,
+        "lunch_package_available": true,
+        "luggage_acceptance": true,
+        "luggage_pickup_by_transport_partner": true,
+        "drying_facility": true,
+        "cooperation_confirmed": true,
+        "reference_prices_as_of": "2026-09-13",
+        "reference_prices_eur": {
+          "single_room": 84,
+          "double_room_steinfeder": 166,
+          "double_room_federspiel": 186,
+          "suite_smaragd": 232
+        },
+        "tourist_tax_eur_per_person_night": 2.60,
+        "arrival_time": "15:00-20:00",
+        "season_note": "Betriebsurlaub von Jänner bis Mitte Februar",
+        "rest_days_note": "Montag und Dienstag in der Hauptsaison sind Ruhetage des Wirtshauses, nicht des Hotels"
+      },
+      "cancellation": {
+        "free_until_days_before_arrival": 15,
+        "fourteen_to_eight_days_percent": 30,
+        "seven_to_two_days_percent": 50,
+        "two_days_before_or_arrival_day_percent": 100
+      }
     }
   ]
 }
