@@ -18,6 +18,10 @@ ready(function(){
     const totalField=document.getElementById("total");
     if(!paypalLink||!form) return;
 
+    const checkoutLang=(new URLSearchParams(window.location.search).get("lang")||document.documentElement.lang||"de").slice(0,2).toLowerCase();
+    const deCheckout=checkoutLang==="de";
+    const L=(de,en)=>deCheckout?de:en;
+
     const style=document.createElement("style");
     style.textContent='.zab-paypal-primary #submitRequest,.zab-booking-blocked #submitRequest{display:none!important;}';
     document.head.appendChild(style);
@@ -112,7 +116,7 @@ ready(function(){
       if(!totalField) return;
       const nights=stayNights();
       if(nights<=0){
-        totalField.textContent="Termin wählen";
+        totalField.textContent=L("Termin wählen","Choose dates");
         return;
       }
       const adults=etappenAdults();
@@ -149,27 +153,27 @@ ready(function(){
 
     function promoteDirectBookingSurface(){
       const heroEyebrow=document.querySelector(".hero-copy .eyebrow");
-      if(heroEyebrow) heroEyebrow.textContent="Direkt buchen ohne Buchungsplattform";
+      if(heroEyebrow) heroEyebrow.textContent=L("Direkt buchen ohne Buchungsplattform","Book direct without another booking platform");
       const bookingTitle=document.getElementById("booking-title");
-      if(bookingTitle) bookingTitle.textContent="Wachau-Etappe direkt buchen";
+      if(bookingTitle) bookingTitle.textContent=L("Wachau-Etappe direkt buchen","Book your Wachau stay direct");
       const bookingIntro=document.querySelector(".booking-intro");
       if(bookingIntro){
-        bookingIntro.textContent="Reisedaten wählen, Live-Verfügbarkeit prüfen und einen freien Termin sicher mit PayPal oder Kredit-/Debitkarte direkt buchen. Falls Sofortbuchung nicht möglich ist, bleibt die persönliche Anfrage verfügbar.";
+        bookingIntro.textContent=L("Reisedaten wählen, Live-Verfügbarkeit prüfen und einen freien Termin sicher mit PayPal oder Kredit-/Debitkarte direkt buchen. Falls Sofortbuchung nicht möglich ist, bleibt die persönliche Anfrage verfügbar.","Choose your dates, check live availability and book an available stay securely via PayPal. PayPal may also offer debit or credit card payment. If instant booking is unavailable, you can still send a personal request.");
       }
       const trust=form.closest(".panel")?.querySelector(".direct-booking-trust");
       const trustStrong=trust?.querySelector("strong");
       const trustSpan=trust?.querySelector("span");
       const trustSmall=trust?.querySelector("small");
-      if(trustStrong) trustStrong.textContent="Direkt buchen bei den Gastgebern";
-      if(trustSpan) trustSpan.textContent="Live-Verfügbarkeit, transparenter Preis und sichere Zahlung über PayPal – auch per Kredit- oder Debitkarte, soweit PayPal dies anbietet.";
-      if(trustSmall) trustSmall.textContent="Ohne Provision oder Umweg über eine zusätzliche Buchungsplattform.";
+      if(trustStrong) trustStrong.textContent=L("Direkt buchen bei den Gastgebern","Book directly with your hosts");
+      if(trustSpan) trustSpan.textContent=L("Live-Verfügbarkeit, transparenter Preis und sichere Zahlung über PayPal – auch per Kredit- oder Debitkarte, soweit PayPal dies anbietet.","Live availability, transparent direct price and secure payment via PayPal; debit or credit card may also be offered by PayPal.");
+      if(trustSmall) trustSmall.textContent=L("Ohne Provision oder Umweg über eine zusätzliche Buchungsplattform.","No detour through another booking platform.");
       const bookingTile=document.querySelector(".quick-tile.book");
       const bookingTileTitle=bookingTile?.querySelector("span");
       const bookingTileSmall=bookingTile?.querySelector("small");
-      if(bookingTileTitle) bookingTileTitle.textContent="Direkt buchen";
-      if(bookingTileSmall) bookingTileSmall.textContent="Verfügbarkeit live prüfen";
-      if(bookingTile) bookingTile.setAttribute("aria-label","Direkt buchen – Verfügbarkeit live prüfen");
-      if(submitRequest) submitRequest.textContent="Buchungsanfrage senden";
+      if(bookingTileTitle) bookingTileTitle.textContent=L("Direkt buchen","Book direct");
+      if(bookingTileSmall) bookingTileSmall.textContent=L("Verfügbarkeit live prüfen","Check live availability");
+      if(bookingTile) bookingTile.setAttribute("aria-label",L("Direkt buchen – Verfügbarkeit live prüfen","Book direct – check live availability"));
+      if(submitRequest) submitRequest.textContent=L("Buchungsanfrage senden","Send booking request");
     }
 
     function setRequestFallback(visible){
@@ -245,11 +249,11 @@ ready(function(){
       form.classList.add("zab-booking-blocked");
       paypalBox?.classList.remove("hidden","zab-paypal-ready");
       paypalLink.classList.add("hidden");
-      checkoutHeading("⛔ Belegt – bitte anderen Termin wählen");
-      if(paypalHint) paypalHint.textContent=message||"Das Zimmer ist für diesen Zeitraum bereits belegt.";
+      checkoutHeading(L("⛔ Belegt – bitte anderen Termin wählen","⛔ Unavailable – please choose different dates"));
+      if(paypalHint) paypalHint.textContent=message||L("Das Zimmer ist für diesen Zeitraum bereits belegt.","The room is unavailable for these dates.");
       if(availability){
         availability.className="availability-status blocked";
-        availability.textContent="⛔ Belegt – bitte einen anderen Termin wählen.";
+        availability.textContent=L("⛔ Belegt – bitte einen anderen Termin wählen.","⛔ Unavailable – please choose different dates.");
       }
       if(submitRequest){
         submitRequest.classList.add("hidden");
@@ -263,8 +267,8 @@ ready(function(){
       paypalBox?.classList.remove("hidden");
       paypalBox?.classList.remove("zab-paypal-ready");
       paypalLink.classList.add("hidden");
-      checkoutHeading("Verfügbarkeit wird geprüft");
-      if(paypalHint) paypalHint.textContent="Verfügbarkeit wird direkt mit dem aktuellen Booking-Kalender geprüft …";
+      checkoutHeading(L("Verfügbarkeit wird geprüft","Checking availability"));
+      if(paypalHint) paypalHint.textContent=L("Verfügbarkeit wird direkt mit dem aktuellen Booking-Kalender geprüft …","Availability is being checked against the current Booking calendar …");
     }
 
     function showAvailable(data,result){
@@ -284,13 +288,13 @@ ready(function(){
       paypalLink.removeAttribute("rel");
       paypalLink.dataset.secureCheckout="1";
       paypalLink.textContent=total>0
-        ? `Jetzt ${total.toFixed(2).replace(".",",")} EUR mit PayPal oder Karte bezahlen`
-        : "Jetzt mit PayPal oder Karte bezahlen";
-      checkoutHeading("✅ Termin frei – sichere Direktzahlung");
-      if(paypalHint) paypalHint.textContent="Termin ist laut aktuellem Booking-Kalender frei. Beim Klick wird der Termin serverseitig reserviert und vor PayPal nochmals sicher geprüft. Eine Kredit-/Debitkartenzahlung kann PayPal im Gast-Checkout anbieten; die tatsächliche Verfügbarkeit bestimmt PayPal.";
+        ? (deCheckout?`Jetzt ${total.toFixed(2).replace(".",",")} EUR mit PayPal oder Karte bezahlen`:`Pay ${total.toFixed(2)} EUR securely with PayPal`)
+        : L("Jetzt mit PayPal oder Karte bezahlen","Pay securely with PayPal");
+      checkoutHeading(L("✅ Termin frei – sichere Direktzahlung","✅ Available – secure direct payment"));
+      if(paypalHint) paypalHint.textContent=L("Termin ist laut aktuellem Booking-Kalender frei. Beim Klick wird der Termin serverseitig reserviert und vor PayPal nochmals sicher geprüft. Eine Kredit-/Debitkartenzahlung kann PayPal im Gast-Checkout anbieten; die tatsächliche Verfügbarkeit bestimmt PayPal.","These dates are available according to the current Booking calendar. When you continue, the stay is held server-side and checked once more before PayPal. PayPal may offer debit or credit card payment in guest checkout; availability is determined by PayPal.");
       if(availability){
         availability.className="availability-status ok zab-backend-ok";
-        availability.textContent="✅ Frei – live über den aktuellen Booking-Kalender geprüft.";
+        availability.textContent=L("✅ Frei – live über den aktuellen Booking-Kalender geprüft.","✅ Available – checked live against the current Booking calendar.");
       }
     }
 
@@ -301,7 +305,7 @@ ready(function(){
 
     async function verifyAvailability(data){
       if(!configured()){
-        hidePayPal("Sofortzahlung ist noch nicht vollständig eingerichtet. Bitte senden Sie stattdessen die Buchungsanfrage.");
+        hidePayPal(L("Sofortzahlung ist noch nicht vollständig eingerichtet. Bitte senden Sie stattdessen die Buchungsanfrage.","Instant payment is not fully available right now. Please send a booking request instead."));
         return false;
       }
       if(!validDates(data)){
@@ -309,7 +313,7 @@ ready(function(){
         return false;
       }
       if(localCalendarBlocked()){
-        showBlocked("Der Booking-Kalender sperrt diesen Zeitraum. Bitte einen anderen Termin wählen.");
+        showBlocked(L("Der Booking-Kalender sperrt diesen Zeitraum. Bitte einen anderen Termin wählen.","The Booking calendar blocks these dates. Please choose different dates."));
         return false;
       }
       if(data.extras.etappenjause){
@@ -317,7 +321,7 @@ ready(function(){
         return false;
       }
       if(data.extras.luggage){
-        hidePayPal("Gepäcktransport hat einen streckenabhängigen Preis. Bitte Gepäcktransport abwählen und die Übernachtung bezahlen oder zuerst eine Anfrage senden.");
+        hidePayPal(L("Gepäcktransport hat einen streckenabhängigen Preis. Bitte Gepäcktransport abwählen und die Übernachtung bezahlen oder zuerst eine Anfrage senden.","Luggage transfer has a route-dependent price. Please deselect it to pay for the stay now, or send a request first."));
         return false;
       }
       const signature=quoteSignature(data);
@@ -345,7 +349,7 @@ ready(function(){
         return true;
       }catch(error){
         if(sequence!==quoteSequence) return false;
-        hidePayPal("Live-Verfügbarkeitsprüfung derzeit nicht erreichbar. Bitte Buchungsanfrage senden oder später erneut versuchen.");
+        hidePayPal(L("Live-Verfügbarkeitsprüfung derzeit nicht erreichbar. Bitte Buchungsanfrage senden oder später erneut versuchen.","Live availability is temporarily unavailable. Please send a booking request or try again later."));
         return false;
       }
     }
@@ -361,7 +365,7 @@ ready(function(){
       event.stopImmediatePropagation();
       const data=payload();
       if(localCalendarBlocked()){
-        showBlocked("Der Booking-Kalender sperrt diesen Zeitraum. Bitte einen anderen Termin wählen.");
+        showBlocked(L("Der Booking-Kalender sperrt diesen Zeitraum. Bitte einen anderen Termin wählen.","The Booking calendar blocks these dates. Please choose different dates."));
         return;
       }
       const missing=missingCustomer(data);
@@ -387,8 +391,8 @@ ready(function(){
       paypalLink.setAttribute("aria-busy","true");
       paypalLink.textContent="Termin wird reserviert und PayPal vorbereitet …";
       paypalLink.style.pointerEvents="none";
-      checkoutHeading("PayPal wird vorbereitet …");
-      if(paypalHint) paypalHint.textContent="Verfügbarkeit und Preis werden jetzt serverseitig final geprüft.";
+      checkoutHeading(L("PayPal wird vorbereitet …","Preparing PayPal …"));
+      if(paypalHint) paypalHint.textContent=L("Verfügbarkeit und Preis werden jetzt serverseitig final geprüft.","Availability and price are now being checked one final time on the server.");
       try{
         const response=await fetch(apiBase+"/api/paypal/create-order",{
           method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",body:JSON.stringify(data)
@@ -406,7 +410,7 @@ ready(function(){
         paypalLink.classList.remove("hidden");
         paypalBox?.classList.add("zab-paypal-ready");
         setRequestFallback(true);
-        checkoutHeading("⚠️ PayPal konnte nicht gestartet werden");
+        checkoutHeading(L("⚠️ PayPal konnte nicht gestartet werden","⚠️ PayPal could not be started"));
         if(paypalHint){
           paypalHint.textContent="Sofortbuchung nicht gestartet: "+(error.message||error)+" Bitte nicht mehrfach klicken; bei Bedarf die Buchungsanfrage senden.";
           paypalHint.style.fontWeight="800";

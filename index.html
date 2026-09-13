@@ -2575,8 +2575,9 @@
       es: { 0: "Soleado", 1: "Mayormente soleado", 2: "Parcialmente nublado", 3: "Nublado", 45: "Niebla", 48: "Niebla helada", 51: "Llovizna ligera", 53: "Llovizna", 55: "Llovizna fuerte", 61: "Lluvia ligera", 63: "Lluvia", 65: "Lluvia fuerte", 71: "Nieve ligera", 73: "Nieve", 75: "Nieve fuerte", 80: "Chubascos ligeros", 81: "Chubascos", 82: "Chubascos fuertes", 95: "Tormenta", 96: "Tormenta con granizo", 99: "Tormenta fuerte" },
       fr: { 0: "Ensoleillé", 1: "Plutôt ensoleillé", 2: "Partiellement nuageux", 3: "Nuageux", 45: "Brouillard", 48: "Brouillard givrant", 51: "Bruine légère", 53: "Bruine", 55: "Forte bruine", 61: "Pluie légère", 63: "Pluie", 65: "Forte pluie", 71: "Faible neige", 73: "Neige", 75: "Forte neige", 80: "Averses légères", 81: "Averses", 82: "Fortes averses", 95: "Orage", 96: "Orage avec grêle", 99: "Fort orage" }
     };
-    // Root page is German. Other languages use dedicated static SEO pages.
-    let currentLang = "de";
+    // Root page is German by default. International landing pages pass ?lang=... into the checkout.
+    const requestedCheckoutLang = new URLSearchParams(window.location.search).get("lang");
+    let currentLang = LANGUAGES[requestedCheckoutLang] ? requestedCheckoutLang : "de";
     const staticTextNodes = [];
     const staticAttributes = [];
     let latestWeatherState = null;
