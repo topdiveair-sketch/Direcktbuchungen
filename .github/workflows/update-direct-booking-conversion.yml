@@ -7,6 +7,7 @@ on:
       - scripts/sales_ready_patch.py
       - scripts/language_checkout_patch.py
       - scripts/native_checkout_languages.py
+      - scripts/paypal_primary_submit_patch.py
   workflow_dispatch:
 
 permissions:
@@ -23,6 +24,8 @@ jobs:
         run: python3 scripts/language_checkout_patch.py
       - name: Apply native checkout languages
         run: python3 scripts/native_checkout_languages.py
+      - name: Make PayPal the primary eligible submit path
+        run: python3 scripts/paypal_primary_submit_patch.py
       - name: Validate Python checkout modules
         run: python3 -m py_compile railway_app.py paypal_checkout.py
       - name: Commit patched production files
@@ -35,5 +38,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html zab-paypal-checkout.js en/index.html cs/index.html sk/index.html hu/index.html pl/index.html nl/index.html railway_app.py paypal_checkout.py
-          git commit -m "Complete native checkout languages"
+          git commit -m "Force eligible bookings into PayPal checkout"
           git push
