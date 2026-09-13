@@ -82,9 +82,6 @@
         }, 300);
       });
       form.addEventListener("submit", function () {
-        // The main booking script blocks invalid/no-price submits before exposing
-        // the send options. Record intent here; request_prepared is emitted below
-        // only once the send options actually become visible.
         setTimeout(function () {
           const options = document.getElementById("sendOptions");
           if (options && options.classList.contains("show")) send("request_prepared");
@@ -92,7 +89,6 @@
       });
     }
 
-    // Detect successful server quote via the visible price label mutation.
     const price = document.querySelector('input[name="room"][value="Bachblick"]')?.closest(".choice")?.querySelector("b.price");
     if (price) {
       let last = "";
@@ -244,4 +240,16 @@
   } else {
     enhanceConversion();
   }
+})();
+
+/* Load card checkout as an additive payment option. The card UI itself stays
+   hidden until the Railway backend reports that Stripe is securely configured. */
+(function () {
+  "use strict";
+  if (document.querySelector('script[data-zab-card-checkout]')) return;
+  const script = document.createElement("script");
+  script.src = "zab-card-checkout.js?v=20260913-1";
+  script.defer = true;
+  script.dataset.zabCardCheckout = "1";
+  document.head.appendChild(script);
 })();
