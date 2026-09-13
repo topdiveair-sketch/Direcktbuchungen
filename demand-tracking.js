@@ -242,14 +242,39 @@
   }
 })();
 
-/* Load card checkout as an additive payment option. The card UI itself stays
-   hidden until the Railway backend reports that Stripe is securely configured. */
+/* Unified payment copy: all online payments are routed through the existing
+   PayPal business checkout. PayPal decides whether guest card checkout is
+   available for the individual buyer/account/region. */
 (function () {
   "use strict";
-  if (document.querySelector('script[data-zab-card-checkout]')) return;
-  const script = document.createElement("script");
-  script.src = "zab-card-checkout.js?v=20260913-1";
-  script.defer = true;
-  script.dataset.zabCardCheckout = "1";
-  document.head.appendChild(script);
+
+  function enhancePayPalChoice() {
+    const paypalBox = document.getElementById("paypalBox");
+    const paypalLink = document.getElementById("paypalLink");
+    if (!paypalBox || !paypalLink) return false;
+
+    paypalLink.textContent = "Mit PayPal oder Karte bezahlen";
+    paypalLink.setAttribute("data-track", "paypal_or_card_payment");
+
+    if (!document.getElementById("zab-paypal-card-note")) {
+      const note = document.createElement("p");
+      note.id = "zab-paypal-card-note";
+      note.style.cssText = "margin:8px 0 0;color:#526b63;font-size:12px;line-height:1.45";
+      note.textContent = "PayPal-Zahlung oder – sofern von PayPal für den Gast freigegeben – Kredit-/Debitkarte. Die Auszahlung läuft zentral über das PayPal-Geschäftskonto.";
+      paypalLink.insertAdjacentElement("afterend", note);
+    }
+    return true;
+  }
+
+  function install() {
+    if (enhancePayPalChoice()) return;
+    const observer = new MutationObserver(function () {
+      if (enhancePayPalChoice()) observer.disconnect();
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    setTimeout(function () { observer.disconnect(); }, 15000);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", install, { once: true });
+  else install();
 })();
