@@ -15,6 +15,9 @@ from market_leader_metrics import init_market_leader_metrics
 from market_leader_scheduler import init_market_leader_scheduler
 from wachauetappe_live_gateway import init_wachauetappe_live
 
+# Deployment marker: card + PayPal checkout preparation, 2026-09-13.
+CHECKOUT_DEPLOY_REV = "2026-09-13-card-plus-paypal-v1"
+
 # Public repository stores only the SHA-256 of the packaged ProjectOS token.
 # The actual high-entropy token is shipped only in the user's local ProjectOS package.
 PACKAGED_TOKEN_SHA256 = "daab1344c9cdb902847b85105ff52e7da5d62d4a6239711e72b2bc184c885e2b"
@@ -86,4 +89,5 @@ def projectos_winter_health():
         "market_leader_metrics": bool(app.extensions.get("zab_market_leader_metrics_initialized")),
         "market_leader_scheduler": bool(app.extensions.get("zab_market_leader_scheduler_initialized")),
         "wachauetappe_live": True,
+        "checkout_rev": CHECKOUT_DEPLOY_REV,
     }, 200
