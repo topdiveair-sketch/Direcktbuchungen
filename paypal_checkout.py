@@ -341,10 +341,12 @@ def init_paypal_checkout(
                         "intent": "CAPTURE",
                         "purchase_units": [
                             {
+                                "custom_id": f"ZAB-{booking_id}",
+                                "description": f"Zuhause am Bach - {room} {arrival.isoformat()} bis {departure.isoformat()}",
                                 "amount": {
                                     "currency_code": "EUR",
                                     "value": f"{total:.2f}",
-                                }
+                                },
                             }
                         ],
                         "payment_source": {

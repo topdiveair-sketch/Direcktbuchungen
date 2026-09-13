@@ -5,8 +5,9 @@ import json
 import os
 import urllib.error
 import urllib.request
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 from email.utils import parseaddr
+from zoneinfo import ZoneInfo
 
 from flask import jsonify, request
 
@@ -29,7 +30,7 @@ from pricing_2027 import nightly_direct_rate
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-13-paypal-unified-card-v3"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-13-sales-ready-v4"
 
 # Checkout callbacks must use the currently active Railway public domain. Railway's
 # own RAILWAY_PUBLIC_DOMAIN wins over a stale manually configured callback URL.
@@ -112,7 +113,7 @@ def validate_public_paypal_payload():
     except Exception:
         return jsonify({"ok": False, "message": "Bitte gültige Reisedaten eingeben."}), 400
 
-    if arrival < date.today():
+    if arrival < datetime.now(ZoneInfo("Europe/Vienna")).date():
         return jsonify({"ok": False, "message": "Die Anreise darf nicht in der Vergangenheit liegen."}), 400
     if departure <= arrival:
         return jsonify({"ok": False, "message": "Die Abreise muss nach der Anreise liegen."}), 400
