@@ -1,4 +1,4 @@
-"""Railway entrypoint with booking hold cleanup, PayPal checkout and health check."""
+"""Railway entrypoint with booking hold cleanup, PayPal/Stripe checkout and health checks."""
 
 import base64
 import json
@@ -21,6 +21,7 @@ from app import (
 )
 from payment_hold import ALERT_EMAIL, init_payment_hold
 from paypal_checkout import init_paypal_checkout
+from stripe_checkout import init_stripe_checkout
 from booking_notifications import init_booking_notifications
 from provider_monitor import init_provider_monitor
 from provider_radar import init_provider_radar
@@ -28,9 +29,9 @@ from pricing_2027 import nightly_direct_rate
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-08-29-provider-radar-final-v3"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-13-card-plus-paypal-v1"
 
-# PayPal callbacks must use the currently active Railway public domain. Railway's
+# Checkout callbacks must use the currently active Railway public domain. Railway's
 # own RAILWAY_PUBLIC_DOMAIN wins over a stale manually configured callback URL.
 FALLBACK_RAILWAY_CHECKOUT_BASE = "https://web-production-f05a4.up.railway.app"
 _raw_checkout_base = os.environ.get("PUBLIC_CHECKOUT_BASE_URL", "").strip().strip("'\"").strip().rstrip("/")
@@ -90,6 +91,15 @@ init_paypal_checkout(
     room_available_in_conn,
     sync_room,
 )
+init_stripe_checkout(
+    app,
+    db,
+    ROOMS,
+    parse_date,
+    direct_checkout_price_breakdown,
+    room_available_in_conn,
+    sync_room,
+)
 init_booking_notifications(app, db)
 init_provider_monitor(app, db, require_admin)
 init_provider_radar(app, db, require_admin)
@@ -110,8 +120,6 @@ app.after_request_funcs[None] = [
 
 
 # Railway liveness must not depend on Flask hooks, SQLite, SMTP or iCal.
-# This WSGI-level endpoint proves only that Gunicorn imported the app and is
-# accepting HTTP requests. If application startup itself crashes, it still fails.
 _flask_wsgi_app = app.wsgi_app
 
 
@@ -133,37 +141,25 @@ def railway_liveness_wsgi(environ, start_response):
 app.wsgi_app = railway_liveness_wsgi
 
 
-@app.after_request
-def notify_successful_paypal_booking(response):
-    """Send owner/guest mail only for a genuinely paid PayPal return."""
-    if request.path != "/paypal/return" or response.status_code != 200:
-        return response
-
-    booking_id = request.args.get("booking", type=int)
+def _notify_paid_booking(booking_id):
     if not booking_id:
-        return response
-
+        return
     try:
         with db() as conn:
             booking = conn.execute(
-                "SELECT id,email,status,paid FROM bookings WHERE id=?",
-                (booking_id,),
+                "SELECT id,email,status,paid FROM bookings WHERE id=?", (booking_id,)
             ).fetchone()
             owner_sent = conn.execute(
                 """SELECT 1 FROM email_log
-                   WHERE booking_id=?
-                     AND lower(recipient)=lower(?)
-                     AND subject LIKE '%Neue bezahlte Buchung:%'
-                     AND status='gesendet'
+                   WHERE booking_id=? AND lower(recipient)=lower(?)
+                     AND subject LIKE '%Neue bezahlte Buchung:%' AND status='gesendet'
                    LIMIT 1""",
                 (booking_id, ALERT_EMAIL),
             ).fetchone()
     except Exception:
-        return response
-
+        return
     if not booking or booking["status"] != "confirmed" or not int(booking["paid"] or 0):
-        return response
-
+        return
     if not owner_sent:
         sender = app.extensions.get("zab_send_priority_alert")
         if sender:
@@ -171,27 +167,39 @@ def notify_successful_paypal_booking(response):
                 sender(booking_id, "confirmed")
             except Exception:
                 pass
+    # Existing guest confirmation currently contains PayPal-specific wording,
+    # therefore use it only for PayPal until the generic mail template is migrated.
+    if request.path == "/paypal/return":
+        guest_sender = app.extensions.get("zab_send_paid_guest_confirmation")
+        if guest_sender:
+            try:
+                guest_sender(booking_id)
+            except Exception:
+                pass
 
-    guest_sender = app.extensions.get("zab_send_paid_guest_confirmation")
-    if guest_sender:
-        try:
-            guest_sender(booking_id)
-        except Exception:
-            pass
 
+@app.after_request
+def notify_successful_paid_booking(response):
+    """Send owner alerts after genuinely paid checkout returns."""
+    if response.status_code != 200:
+        return response
+    if request.path not in {"/paypal/return", "/stripe/success"}:
+        return response
+    _notify_paid_booking(request.args.get("booking", type=int))
     return response
 
 
 @app.get("/health/deploy")
 def railway_deploy_health():
-    """Return the exact Railway/PayPal checkout revision currently running."""
+    """Return the checkout revision currently running."""
     return {
         "status": "ok",
         "paypal_checkout": bool(app.extensions.get("zab_paypal_checkout_enabled")),
+        "stripe_checkout": bool(app.extensions.get("zab_stripe_checkout_enabled")),
         "paid_guest_email": bool(app.extensions.get("zab_send_paid_guest_confirmation")),
         "provider_monitor": bool(app.extensions.get("zab_provider_monitor_initialized")),
         "provider_radar": bool(app.extensions.get("zab_provider_radar_initialized")),
-        "paypal_checkout_rev": PAYPAL_CHECKOUT_DEPLOY_REV,
+        "checkout_rev": PAYPAL_CHECKOUT_DEPLOY_REV,
         "checkout_base": os.environ.get("PUBLIC_CHECKOUT_BASE_URL", ""),
     }, 200
 
@@ -203,11 +211,7 @@ def paypal_health():
     client_id = os.environ.get("PAYPAL_CLIENT_ID", "").strip()
     secret = os.environ.get("PAYPAL_CLIENT_SECRET", "").strip()
     if not client_id or not secret:
-        return {
-            "ok": False,
-            "environment": environment,
-            "reason": "credentials_missing",
-        }, 503
+        return {"ok": False, "environment": environment, "reason": "credentials_missing"}, 503
 
     api_base = (
         "https://api-m.sandbox.paypal.com"
@@ -230,16 +234,8 @@ def paypal_health():
         with urllib.request.urlopen(req, timeout=20) as response:
             payload = json.loads(response.read().decode("utf-8"))
         if not payload.get("access_token"):
-            return {
-                "ok": False,
-                "environment": environment,
-                "reason": "token_missing",
-            }, 502
-        return {
-            "ok": True,
-            "environment": environment,
-            "credentials": "accepted",
-        }, 200
+            return {"ok": False, "environment": environment, "reason": "token_missing"}, 502
+        return {"ok": True, "environment": environment, "credentials": "accepted"}, 200
     except urllib.error.HTTPError as exc:
         return {
             "ok": False,
@@ -248,8 +244,4 @@ def paypal_health():
             "paypal_status": exc.code,
         }, 503
     except Exception:
-        return {
-            "ok": False,
-            "environment": environment,
-            "reason": "paypal_unreachable",
-        }, 503
+        return {"ok": False, "environment": environment, "reason": "paypal_unreachable"}, 503
