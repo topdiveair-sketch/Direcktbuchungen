@@ -352,6 +352,9 @@ def init_paypal_checkout(
                                 "experience_context": {
                                     "return_url": f"{base}/paypal/return?booking={booking_id}",
                                     "cancel_url": f"{base}/paypal/cancel?booking={booking_id}",
+                                    "landing_page": "GUEST",
+                                    "user_action": "PAY_NOW",
+                                    "shipping_preference": "NO_SHIPPING",
                                 }
                             }
                         },
