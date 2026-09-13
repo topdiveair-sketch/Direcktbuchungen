@@ -14,37 +14,62 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install robust PayPal primary submit handler
+      - name: Harden PayPal order review
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('index.html')
-          s=p.read_text(encoding='utf-8')
-          primary='<script src="zab-paypal-primary.js?v=20260913-2" defer></script>'
-          if 'zab-paypal-primary.js?' not in s:
-              marker='<script src="zab-paypal-checkout.js?v=20260913-5" defer></script>'
+          import re
+
+          # Ensure the primary browser handler is loaded with a fresh cache key.
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          primary = '<script src="zab-paypal-primary.js?v=20260913-3" defer></script>'
+          if 'zab-paypal-primary.js?' in s:
+              s = re.sub(r'<script src="zab-paypal-primary\.js\?v=[^"]+" defer></script>', primary, s, count=1)
+          else:
+              marker = '<script src="zab-paypal-checkout.js?v=20260913-5" defer></script>'
               if marker not in s:
                   raise SystemExit('Current PayPal checkout marker not found')
-              s=s.replace(marker, marker+'\n  '+primary, 1)
-          else:
-              import re
-              s=re.sub(r'<script src="zab-paypal-primary\.js\?v=[^"]+" defer></script>', primary, s, count=1)
-          p.write_text(s,encoding='utf-8')
+              s = s.replace(marker, marker + '\n  ' + primary, 1)
+          p.write_text(s, encoding='utf-8')
+
+          # Make PayPal itself display the merchant identity and reject any non-checkout handoff URL.
+          pp = Path('paypal_checkout.py')
+          ps = pp.read_text(encoding='utf-8')
+          ctx = '                                    "return_url": f"{base}/paypal/return?booking={booking_id}",\n'
+          if '"brand_name": "Zuhause am Bach"' not in ps:
+              if ctx not in ps:
+                  raise SystemExit('PayPal experience_context anchor not found')
+              ps = ps.replace(
+                  ctx,
+                  '                                    "brand_name": "Zuhause am Bach",\n'
+                  '                                    "locale": "de-AT",\n' + ctx,
+                  1,
+              )
+          old = '''                if not order_id or not approval_url:\n                    raise RuntimeError("PayPal hat keinen Freigabelink geliefert.")\n'''
+          new = '''                if not order_id or not approval_url:\n                    raise RuntimeError("PayPal hat keinen Freigabelink geliefert.")\n                from urllib.parse import urlparse, parse_qs\n                parsed_approval = urlparse(approval_url)\n                approval_host = parsed_approval.netloc.lower()\n                approval_token = (parse_qs(parsed_approval.query).get("token") or [""])[0]\n                if not approval_host.endswith("paypal.com") or "checkoutnow" not in parsed_approval.path.lower() or approval_token != order_id:\n                    raise RuntimeError("PayPal hat keinen gültigen Checkout-Link für diesen Auftrag geliefert.")\n'''
+          if 'parsed_approval = urlparse(approval_url)' not in ps:
+              if old not in ps:
+                  raise SystemExit('PayPal approval validation anchor not found')
+              ps = ps.replace(old, new, 1)
+          pp.write_text(ps, encoding='utf-8')
           PY
-      - name: Validate PayPal browser path
+      - name: Validate PayPal review path
         run: |
-          grep -q 'zab-paypal-primary.js?v=20260913-2' index.html
-          grep -q '/api/paypal/create-order' zab-paypal-primary.js
-          grep -q '/api/paypal/quote' zab-paypal-primary.js
+          python3 -m py_compile paypal_checkout.py
+          grep -q 'zab-paypal-primary.js?v=20260913-3' index.html
+          grep -q '"brand_name": "Zuhause am Bach"' paypal_checkout.py
+          grep -q '"locale": "de-AT"' paypal_checkout.py
+          grep -q 'checkoutnow' paypal_checkout.py
       - name: Commit hotfix
         shell: bash
         run: |
-          if git diff --quiet -- index.html; then
+          if git diff --quiet -- index.html paypal_checkout.py; then
             echo "No changes needed"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git commit -m "Enable PayPal primary checkout on live page"
+          git add index.html paypal_checkout.py
+          git commit -m "Require real PayPal checkout review page"
           git push
