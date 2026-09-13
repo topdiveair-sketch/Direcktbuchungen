@@ -1,4 +1,4 @@
-"""Railway entrypoint with booking hold cleanup, PayPal/Stripe checkout and health checks."""
+"""Railway entrypoint with booking hold cleanup, PayPal checkout and health checks."""
 
 import base64
 import json
@@ -21,7 +21,6 @@ from app import (
 )
 from payment_hold import ALERT_EMAIL, init_payment_hold
 from paypal_checkout import init_paypal_checkout
-from stripe_checkout import init_stripe_checkout
 from booking_notifications import init_booking_notifications
 from provider_monitor import init_provider_monitor
 from provider_radar import init_provider_radar
@@ -29,7 +28,7 @@ from pricing_2027 import nightly_direct_rate
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-13-card-plus-paypal-v1"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-13-paypal-unified-card-v2"
 
 # Checkout callbacks must use the currently active Railway public domain. Railway's
 # own RAILWAY_PUBLIC_DOMAIN wins over a stale manually configured callback URL.
@@ -83,15 +82,6 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
 
 init_payment_hold(app, db)
 init_paypal_checkout(
-    app,
-    db,
-    ROOMS,
-    parse_date,
-    direct_checkout_price_breakdown,
-    room_available_in_conn,
-    sync_room,
-)
-init_stripe_checkout(
     app,
     db,
     ROOMS,
@@ -167,23 +157,20 @@ def _notify_paid_booking(booking_id):
                 sender(booking_id, "confirmed")
             except Exception:
                 pass
-    # Existing guest confirmation currently contains PayPal-specific wording,
-    # therefore use it only for PayPal until the generic mail template is migrated.
-    if request.path == "/paypal/return":
-        guest_sender = app.extensions.get("zab_send_paid_guest_confirmation")
-        if guest_sender:
-            try:
-                guest_sender(booking_id)
-            except Exception:
-                pass
+    guest_sender = app.extensions.get("zab_send_paid_guest_confirmation")
+    if guest_sender:
+        try:
+            guest_sender(booking_id)
+        except Exception:
+            pass
 
 
 @app.after_request
 def notify_successful_paid_booking(response):
-    """Send owner alerts after genuinely paid checkout returns."""
+    """Send owner/guest alerts after a genuinely paid PayPal return."""
     if response.status_code != 200:
         return response
-    if request.path not in {"/paypal/return", "/stripe/success"}:
+    if request.path != "/paypal/return":
         return response
     _notify_paid_booking(request.args.get("booking", type=int))
     return response
@@ -195,7 +182,6 @@ def railway_deploy_health():
     return {
         "status": "ok",
         "paypal_checkout": bool(app.extensions.get("zab_paypal_checkout_enabled")),
-        "stripe_checkout": bool(app.extensions.get("zab_stripe_checkout_enabled")),
         "paid_guest_email": bool(app.extensions.get("zab_send_paid_guest_confirmation")),
         "provider_monitor": bool(app.extensions.get("zab_provider_monitor_initialized")),
         "provider_radar": bool(app.extensions.get("zab_provider_radar_initialized")),
