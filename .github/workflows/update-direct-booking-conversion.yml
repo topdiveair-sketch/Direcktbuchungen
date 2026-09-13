@@ -7,7 +7,6 @@ on:
       - scripts/sales_ready_patch.py
       - scripts/language_checkout_patch.py
       - scripts/native_checkout_languages.py
-      - scripts/paypal_primary_submit_patch.py
   workflow_dispatch:
 
 permissions:
@@ -24,10 +23,29 @@ jobs:
         run: python3 scripts/language_checkout_patch.py
       - name: Apply native checkout languages
         run: python3 scripts/native_checkout_languages.py
-      - name: Make PayPal the primary eligible submit path
-        run: python3 scripts/paypal_primary_submit_patch.py
+      - name: Install robust PayPal primary submit handler
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          marker='<script src="zab-paypal-checkout.js?v=20260913-5" defer></script>'
+          if marker not in s:
+              marker='<script src="zab-paypal-checkout.js?v=20260913-4" defer></script>'
+          primary='<script src="zab-paypal-primary.js?v=20260913-1" defer></script>'
+          if primary not in s:
+              if marker not in s:
+                  raise SystemExit('PayPal checkout script marker not found')
+              s=s.replace(marker, marker+'\n  '+primary, 1)
+          p.write_text(s,encoding='utf-8')
+          PY
       - name: Validate Python checkout modules
         run: python3 -m py_compile railway_app.py paypal_checkout.py
+      - name: Validate PayPal browser scripts
+        run: |
+          grep -q 'zab-paypal-primary.js?v=20260913-1' index.html
+          grep -q '/api/paypal/create-order' zab-paypal-primary.js
+          grep -q '/api/paypal/quote' zab-paypal-primary.js
       - name: Commit patched production files
         shell: bash
         run: |
@@ -38,5 +56,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html zab-paypal-checkout.js en/index.html cs/index.html sk/index.html hu/index.html pl/index.html nl/index.html railway_app.py paypal_checkout.py
-          git commit -m "Force eligible bookings into PayPal checkout"
+          git commit -m "Load robust PayPal primary checkout"
           git push
