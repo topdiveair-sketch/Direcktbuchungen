@@ -18,6 +18,17 @@ _original_price_breakdown = legacy_app.price_breakdown
 _original_init_paypal_checkout = paypal_checkout_module.init_paypal_checkout
 
 
+def _calendar_direct_price(room, day, fallback):
+    getter = legacy_app.app.extensions.get("zab_channel_price_for_day")
+    if not callable(getter):
+        return fallback
+    try:
+        value = getter(room, "direct", day, fallback)
+    except Exception:
+        return fallback
+    return fallback if value is None else float(value)
+
+
 def price_breakdown_2027(room, arrival, departure, adults, chosen, coupon_code=""):
     breakdown = _original_price_breakdown(
         room, arrival, departure, adults, chosen, coupon_code
@@ -28,15 +39,20 @@ def price_breakdown_2027(room, arrival, departure, adults, chosen, coupon_code="
 
     current = arrival
     room_total = 0.0
+    override_used = False
     while current < departure:
         nightly = nightly_direct_rate(current)
         if nightly is None:
             return breakdown
-        room_total += float(nightly)
+        fallback = float(nightly)
+        effective = _calendar_direct_price(room, current, fallback)
+        if effective != fallback:
+            override_used = True
+        room_total += effective
         current += timedelta(days=1)
 
-    # Configured rates are FINAL DIRECT RATES. Legacy percentage discounts are
-    # not stacked on top, so the 99 EUR floor remains a real guest price floor.
+    # Configured rates and explicit OS calendar prices are FINAL DIRECT RATES.
+    # Legacy percentage discounts are not stacked on top.
     extras_total = round(
         sum(float(line.get("amount", 0) or 0) for line in breakdown.get("extras", [])),
         2,
@@ -47,7 +63,11 @@ def price_breakdown_2027(room, arrival, departure, adults, chosen, coupon_code="
         "room_total": round(room_total, 2),
         "discounts": [],
         "total": round(room_total + extras_total, 2),
-        "pricing_model": "direct-event-calendar-2026-2027",
+        "pricing_model": (
+            "zab-os-calendar-override"
+            if override_used
+            else "direct-event-calendar-2026-2027"
+        ),
     }
 
 

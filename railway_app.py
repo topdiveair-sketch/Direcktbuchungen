@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 
 from flask import jsonify, request
 
+import app as core_app
 from app import (
     app,
     db,
@@ -27,10 +28,11 @@ from booking_notifications import init_booking_notifications
 from provider_monitor import init_provider_monitor
 from provider_radar import init_provider_radar
 from pricing_2027 import nightly_direct_rate
+from master_calendar import init_master_calendar
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-13-merchant-email-lock-v5"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-14-zab-master-calendar-v2"
 EXPECTED_PAYPAL_MERCHANT_EMAIL = "topdiveair@gmail.com"
 
 # Checkout callbacks must use the currently active Railway public domain. Railway's
@@ -65,6 +67,12 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
         if nightly is None:
             dynamic_rates = []
             break
+        price_getter = app.extensions.get("zab_channel_price_for_day")
+        if callable(price_getter):
+            try:
+                nightly = price_getter(room, "direct", current, float(nightly))
+            except Exception:
+                pass
         dynamic_rates.append(float(nightly))
         current += timedelta(days=1)
     room_total = round(
@@ -81,6 +89,24 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
         "discounts": [],
         "total": round(room_total + extras_total, 2),
     }
+
+
+# Install the OS-owned availability layer after app.py has initialized its base
+# schema and routes. The wrapper is then injected back into the app module, so
+# /book, /api/availability and the PayPal checkout all consult the same source.
+init_master_calendar(app, db, require_admin, ROOMS)
+_legacy_room_available_in_conn = core_app.room_available_in_conn
+
+
+def master_room_available_in_conn(conn, room, arrival, departure):
+    checker = app.extensions.get("zab_master_room_available")
+    if checker:
+        return checker(conn, room, arrival, departure, "direct")
+    return _legacy_room_available_in_conn(conn, room, arrival, departure)
+
+
+core_app.room_available_in_conn = master_room_available_in_conn
+room_available_in_conn = master_room_available_in_conn
 
 
 init_payment_hold(app, db)
@@ -237,6 +263,8 @@ def railway_deploy_health():
         "paid_guest_email": bool(app.extensions.get("zab_send_paid_guest_confirmation")),
         "provider_monitor": bool(app.extensions.get("zab_provider_monitor_initialized")),
         "provider_radar": bool(app.extensions.get("zab_provider_radar_initialized")),
+        "master_calendar": bool(app.extensions.get("zab_master_calendar_initialized")),
+        "master_calendar_mode": app.extensions.get("zab_master_calendar_mode", "off"),
         "checkout_rev": PAYPAL_CHECKOUT_DEPLOY_REV,
         "checkout_base": os.environ.get("PUBLIC_CHECKOUT_BASE_URL", ""),
     }, 200

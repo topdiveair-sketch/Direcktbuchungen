@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+  <title>Master-Kalender · Zuhause am Bach OS</title>
+  <style>
+    .calendar-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}.calendar-card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:1rem}.calendar-card h2,.calendar-card h3{margin-top:0}.status-pill{display:inline-block;padding:.2rem .55rem;border-radius:999px;background:#eee;font-size:.85rem}.status-pill.on{background:#dff5e4}.status-pill.off{background:#ffe1e1}.feed{font-family:monospace;font-size:.78rem;overflow-wrap:anywhere;background:#f6f6f6;padding:.6rem;border-radius:8px}.compact-form{display:grid;gap:.55rem}.compact-form input,.compact-form select,.compact-form button{padding:.55rem}.block-row{display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:center;border-top:1px solid #eee;padding:.55rem 0}.muted{opacity:.72}.warning{background:#fff4d6;border:1px solid #efd18a;padding:.8rem;border-radius:10px}.okbox{background:#e9f7ee;border:1px solid #a9d7b7;padding:.8rem;border-radius:10px}.month-nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}.month-nav a{padding:.45rem .75rem;border:1px solid #ccc;border-radius:8px;text-decoration:none}.room-month{margin-top:1rem;background:#fff;border:1px solid #ddd;border-radius:12px;padding:1rem;overflow-x:auto}.week-head,.month-grid{display:grid;grid-template-columns:repeat(7,minmax(118px,1fr));gap:4px;min-width:826px}.week-head div{text-align:center;font-weight:700;padding:.35rem}.day-cell{min-height:145px;border:1px solid #e3e3e3;border-radius:8px;padding:.4rem;background:#fff;position:relative}.day-cell.outside{opacity:.42}.day-cell.today{outline:2px solid #222}.day-top{display:flex;justify-content:space-between;align-items:center;gap:.3rem}.day-edit{text-decoration:none;font-size:.78rem}.channel-line{font-size:.75rem;display:flex;justify-content:space-between;gap:.25rem}.channel-line.closed{opacity:.55}.occ{font-size:.78rem;margin-top:.35rem;padding:.3rem;border-radius:6px;background:#f4f4f4}.occ.direct{background:#eaf7ee}.occ.booking{background:#e9f0ff}.occ.external{background:#f4ecff}.occ strong{display:block}.flagline{white-space:normal}.os-block{font-size:.75rem;margin-top:.3rem;padding:.25rem;border-radius:6px;background:#fff2d8}.editor{background:#fff;border:2px solid #222;border-radius:12px;padding:1rem;margin-top:1rem}.editor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem}.guest-editor{margin-top:.35rem}.guest-editor summary{cursor:pointer}.guest-editor form{display:grid;gap:.35rem;margin-top:.4rem}.guest-editor input,.guest-editor button{padding:.4rem}.price-override{font-weight:700}.info-note{font-size:.84rem;background:#eef6ff;border:1px solid #c5dcf7;padding:.7rem;border-radius:8px}.legend{display:flex;gap:.75rem;flex-wrap:wrap;font-size:.82rem}.legend span{white-space:nowrap}</style>
+</head>
+<body class="admin-page">
+<header class="os-header"><div><strong>Zuhause am Bach OS</strong><small>Master-Kalender · {{ today }}</small></div><nav><a href="{{ url_for('os_dashboard') }}">OS</a><a href="{{ url_for('admin') }}">Verwaltung</a><a href="{{ url_for('index') }}">Buchungsseite</a></nav></header>
+<main class="admin-main">
+  <section class="admin-panel">
+    <h1>Master-Kalender</h1>
+    {% if authoritative %}<div class="okbox"><strong>MASTER-Modus aktiv.</strong> Das Zuhause-am-Bach-OS ist die führende Verfügbarkeitsquelle. Booking/iCal bleibt als Belegungsimport erhalten.</div>{% else %}<div class="warning"><strong>HYBRID-Modus aktiv.</strong> Das OS führt eigene Sperren, Tagespreise und Kanalsteuerung; die PayPal-Sofortbuchung verlangt bis zur abgeschlossenen Migration weiterhin einen frischen Booking/iCal-Import.</div>{% endif %}
+    <p class="muted">Im internen Kalender werden Gastname und Land/Nationalität angezeigt, soweit diese Daten im OS vorhanden sind. Der öffentliche iCal-Feed bleibt anonym und enthält keine Gastdaten.</p>
+  </section>
+
+  <section class="calendar-grid">
+    {% for room in rooms %}
+    <article class="calendar-card">
+      <h2>{{ room }}</h2>
+      {% for channel in channels %}
+        {% set c = controls.get((room,channel)) %}
+        <div style="margin:.7rem 0">
+          <strong>{{ 'Direktbuchung' if channel=='direct' else 'Booking.com' }}</strong>
+          <span class="status-pill {{ 'on' if (not c or c.enabled) else 'off' }}">{{ 'offen' if (not c or c.enabled) else 'geschlossen' }}</span>
+          <form method="post" action="{{ url_for('master_calendar_channel_update') }}" style="display:inline">
+            <input type="hidden" name="room" value="{{ room }}"><input type="hidden" name="channel" value="{{ channel }}"><input type="hidden" name="enabled" value="{{ '0' if (not c or c.enabled) else '1' }}"><input type="hidden" name="return_to" value="{{ request.full_path }}">
+            <button type="submit">{{ 'Schließen' if (not c or c.enabled) else 'Öffnen' }}</button>
+          </form>
+        </div>
+      {% endfor %}
+      <h3>Booking-Feed</h3>
+      <div class="feed">{{ feeds[room]['booking'] }}</div>
+      <p class="muted">Nur Belegungszeiträume und Sperren. Keine Namen, E-Mail-Adressen, Telefonnummern oder Preise.</p>
+      <h3>Direkt-Feed</h3>
+      <div class="feed">{{ feeds[room]['direct'] }}</div>
+    </article>
+    {% endfor %}
+  </section>
+
+  <section class="admin-panel" style="margin-top:1rem">
+    <div class="month-nav">
+      <a href="{{ url_for('master_calendar_dashboard',year=prev_year,month=prev_month) }}">← Vorheriger Monat</a>
+      <h2 style="margin:0">Kalender {{ month_label }}</h2>
+      <a href="{{ url_for('master_calendar_dashboard',year=next_year,month=next_month) }}">Nächster Monat →</a>
+    </div>
+    <div class="legend"><span>🟢 offen</span><span>🔴 geschlossen</span><span>🟩 Direktbuchung</span><span>🟦 Booking.com</span><span>Preis mit * = OS-Tagespreis</span></div>
+  </section>
+
+  {% for room in rooms %}
+  <section class="room-month">
+    <h2>{{ room }}</h2>
+    <div class="week-head"><div>Mo</div><div>Di</div><div>Mi</div><div>Do</div><div>Fr</div><div>Sa</div><div>So</div></div>
+    <div class="month-grid">
+      {% for cell in calendar_rooms[room] %}
+      <article class="day-cell {{ '' if cell.in_month else 'outside' }} {{ 'today' if cell.today else '' }}">
+        <div class="day-top"><strong>{{ cell.day }}</strong><a class="day-edit" href="{{ url_for('master_calendar_dashboard',year=year,month=month,room=room,edit=cell.date) }}#day-editor">Einstellen</a></div>
+        <div class="channel-line {{ '' if cell.direct_open else 'closed' }}"><span>{{ '🟢' if cell.direct_open else '🔴' }} Direkt</span><span class="{{ 'price-override' if cell.direct_price_override else '' }}">{% if cell.direct_price is not none %}{{ '%.0f'|format(cell.direct_price) }} €{{ '*' if cell.direct_price_override else '' }}{% else %}—{% endif %}</span></div>
+        <div class="channel-line {{ '' if cell.booking_open else 'closed' }}"><span>{{ '🟢' if cell.booking_open else '🔴' }} Booking</span><span class="{{ 'price-override' if cell.booking_price_override else '' }}">{% if cell.booking_price is not none %}{{ '%.0f'|format(cell.booking_price) }} €*{% else %}—{% endif %}</span></div>
+        {% if cell.master_reason %}<div class="os-block">OS-Sperre: {{ cell.master_reason }}</div>{% endif %}
+        {% for occ in cell.occupancy %}
+          <div class="occ {{ occ.kind }}">
+            <strong>{{ occ.label }} · {{ occ.guest_name or 'Gastdaten noch nicht hinterlegt' }}</strong>
+            {% if occ.country_label %}<span class="flagline">{{ occ.country_label }}</span>{% endif %}
+            {% if occ.guests %}<span> · {{ occ.guests }} Pers.</span>{% endif %}
+            {% if occ.is_arrival %}
+              {% if occ.kind == 'direct' %}
+              <details class="guest-editor"><summary>Land/Nationalität bearbeiten</summary>
+                <form method="post" action="{{ url_for('master_calendar_direct_country_update') }}">
+                  <input type="hidden" name="booking_id" value="{{ occ.booking_id }}"><input type="hidden" name="return_to" value="{{ request.full_path }}#{{ room }}-{{ cell.date }}">
+                  <input name="country" value="{{ occ.country }}" placeholder="z. B. Deutschland oder DE"><button>Speichern</button>
+                </form>
+              </details>
+              {% else %}
+              <details class="guest-editor"><summary>Booking-Gastdaten erfassen</summary>
+                <form method="post" action="{{ url_for('master_calendar_external_guest_update') }}">
+                  <input type="hidden" name="room" value="{{ room }}"><input type="hidden" name="source" value="{{ occ.source }}"><input type="hidden" name="uid" value="{{ occ.uid }}"><input type="hidden" name="start_date" value="{{ occ.arrival }}"><input type="hidden" name="end_date" value="{{ occ.departure }}"><input type="hidden" name="return_to" value="{{ request.full_path }}#{{ room }}-{{ cell.date }}">
+                  <input name="guest_name" value="{{ occ.guest_name }}" placeholder="Gastname"><input name="country" value="{{ occ.country }}" placeholder="Land/Nationalität"><input name="guests" type="number" min="1" max="30" value="{{ occ.guests or '' }}" placeholder="Personen"><input name="booking_reference" value="{{ occ.booking_reference }}" placeholder="Booking-Referenz optional"><button>Speichern</button>
+                </form>
+              </details>
+              {% endif %}
+            {% endif %}
+          </div>
+        {% endfor %}
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+
+  {% if selected and edit_room %}
+  <section class="editor" id="day-editor">
+    <h2>{{ edit_room }} · ab {{ selected.date }}</h2>
+    <p>Preise und Verfügbarkeit können für einen einzelnen Tag oder einen ganzen Zeitraum gesetzt werden.</p>
+    <form method="post" action="{{ url_for('master_calendar_day_update') }}" class="compact-form">
+      <input type="hidden" name="room" value="{{ edit_room }}">
+      <div class="editor-grid">
+        <label>Von<input type="date" name="start_date" value="{{ selected.date }}" required></label>
+        <label>Bis einschließlich<input type="date" name="end_date" value="{{ selected.date }}" required></label>
+        <label>Direkt-Verfügbarkeit<select name="direct_status"><option value="keep">nicht ändern</option><option value="open">offen erzwingen</option><option value="closed">geschlossen</option><option value="reset">auf Standard zurücksetzen</option></select></label>
+        <label>Direktpreis pro Nacht<input name="direct_price" inputmode="decimal" placeholder="aktuell {{ selected.direct_price if selected.direct_price is not none else '—' }}"></label>
+        <label>Booking-Verfügbarkeit<select name="booking_status"><option value="keep">nicht ändern</option><option value="open">offen erzwingen</option><option value="closed">geschlossen</option><option value="reset">auf Standard zurücksetzen</option></select></label>
+        <label>Booking-Sollpreis pro Nacht<input name="booking_price" inputmode="decimal" placeholder="aktuell {{ selected.booking_price if selected.booking_price is not none else '—' }}"></label>
+      </div>
+      <label><input type="checkbox" name="clear_direct_price" value="1"> Direkt-Tagespreis löschen und Standardpreis verwenden</label>
+      <label><input type="checkbox" name="clear_booking_price" value="1"> Booking-Sollpreis löschen</label>
+      <button type="submit">Zeitraum speichern</button>
+    </form>
+    <p class="info-note"><strong>Booking-Preis:</strong> Der Sollpreis wird im OS gespeichert und im Kalender angezeigt. Über iCal kann Booking.com keinen Preis empfangen; bis zu einer echten Booking-Connectivity-Anbindung muss dieser Preis im Booking-Extranet manuell gesetzt werden. Die Verfügbarkeit kann dagegen über den ZAB-iCal-Feed gesteuert werden.</p>
+  </section>
+  {% endif %}
+
+  <section class="calendar-grid" style="margin-top:1rem">
+    <article class="calendar-card">
+      <h2>Sperre anlegen</h2>
+      <form method="post" action="{{ url_for('master_calendar_add_block') }}" class="compact-form">
+        <label>Zimmer<select name="room">{% for room in rooms %}<option>{{ room }}</option>{% endfor %}</select></label>
+        <label>Gilt für<select name="channel"><option value="all">Alle Kanäle</option><option value="direct">nur Direktbuchung</option><option value="booking">nur Booking.com</option></select></label>
+        <label>Von<input type="date" name="start_date" required></label>
+        <label>Bis (Abreise/freier Tag)<input type="date" name="end_date" required></label>
+        <label>Grund<input name="reason" maxlength="240" placeholder="z. B. privat belegt / Wartung"></label>
+        <button type="submit">Sperre speichern</button>
+      </form>
+    </article>
+    <article class="calendar-card">
+      <h2>Booking/iCal-Import</h2>
+      <form method="post" action="{{ url_for('master_calendar_sync_imports') }}"><button type="submit">Jetzt synchronisieren</button></form>
+      {% for row in imports %}<div class="block-row"><div><strong>{{ row.room }}</strong><br><small>{{ row.last_sync or 'noch nie' }} · {{ row.last_result or 'kein Status' }}</small></div><span>{{ external_counts.get(row.room,0) }} Blöcke</span></div>{% endfor %}
+    </article>
+  </section>
+
+  <section class="calendar-grid" style="margin-top:1rem">
+    <article class="calendar-card"><h2>Globale OS-Sperren</h2>{% for b in master_blocks %}<div class="block-row"><div><strong>{{ b.room }}</strong> · {{ b.start_date }} – {{ b.end_date }}<br><small>{{ b.reason }}</small></div><form method="post" action="{{ url_for('master_calendar_delete_block',kind='master',block_id=b.id) }}"><button>Entfernen</button></form></div>{% else %}<p>Keine globalen Sperren.</p>{% endfor %}</article>
+    <article class="calendar-card"><h2>Kanal-Sperren</h2>{% for b in channel_blocks %}<div class="block-row"><div><strong>{{ b.room }}</strong> · {{ b.channel }} · {{ b.start_date }} – {{ b.end_date }}<br><small>{{ b.reason }}</small></div><form method="post" action="{{ url_for('master_calendar_delete_block',kind='channel',block_id=b.id) }}"><button>Entfernen</button></form></div>{% else %}<p>Keine kanalbezogenen Sperren.</p>{% endfor %}</article>
+  </section>
+</main>
+</body></html>
