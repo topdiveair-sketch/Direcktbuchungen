@@ -1,4 +1,4 @@
-name: Booking-Kalender aktualisieren
+name: ZAB-OS-Masterkalender aktualisieren
 
 on:
   schedule:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: booking-calendar-update
+  group: zab-os-master-calendar-update
   cancel-in-progress: false
 
 jobs:
@@ -22,8 +22,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Booking-iCal abrufen
+      - name: ZAB OS Master-Kalender abrufen
         env:
+          ZAB_MASTER_ICAL_URL: ${{ vars.ZAB_MASTER_ICAL_URL }}
+          ZAB_MASTER_ALLOW_BOOKING_FALLBACK: ${{ vars.ZAB_MASTER_ALLOW_BOOKING_FALLBACK }}
+          ZAB_MASTER_INCLUDE_LEGACY_BLOCKS: ${{ vars.ZAB_MASTER_INCLUDE_LEGACY_BLOCKS }}
           BOOKING_ICAL_URL: ${{ secrets.BOOKING_ICAL_URL }}
           GOOGLE_ICAL_URL: ${{ secrets.GOOGLE_ICAL_URL }}
           GOOGLE_ICAL_URLS: ${{ secrets.GOOGLE_ICAL_URLS }}
@@ -36,5 +39,5 @@ jobs:
       - name: Änderungen speichern
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Booking-Kalender aktualisieren"
+          commit_message: "ZAB OS Master-Kalender aktualisieren"
           file_pattern: booking-calendar.json index.html
