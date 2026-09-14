@@ -159,7 +159,6 @@ def init_booking_guest_sync(app, db, authorize):
             if not result.get("ok"):
                 return result
             attached = attached_from_pending
-            pending = 0
             skipped = 0
             with db() as conn:
                 for record in result.get("reservations", []):
@@ -183,7 +182,6 @@ def init_booking_guest_sync(app, db, authorize):
                         attached += 1
                     else:
                         _store_pending(conn, record)
-                        pending += 1
                 pending_total = conn.execute("SELECT COUNT(*) AS n FROM zab_booking_guest_pending").fetchone()["n"]
             return {
                 "ok": True,
@@ -213,6 +211,11 @@ def init_booking_guest_sync(app, db, authorize):
     def booking_guest_auto_sync():
         global _last_auto_sync
         if request.path != "/api/central/zab-calendar" or not _auto_enabled():
+            return None
+        # before_request runs before the calendar endpoint performs its own
+        # authorization. Never trigger a Booking.com PII fetch for an
+        # unauthenticated request.
+        if not authorize():
             return None
         checker = app.extensions.get("zab_booking_connectivity_status")
         try:
