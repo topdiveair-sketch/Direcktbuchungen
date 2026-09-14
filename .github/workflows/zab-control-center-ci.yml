@@ -7,22 +7,27 @@ on:
       - 'booking_connectivity.py'
       - 'booking_guest_sync.py'
       - 'zab_control_center_v3.py'
+      - 'production_hardening.py'
       - 'railway_app.py'
       - 'wachauetappe_gateway.py'
       - 'scripts/update-booking-calendar.js'
       - 'test_booking_connectivity.py'
+      - 'test_production_hardening.py'
       - '.github/workflows/zab-control-center-ci.yml'
   push:
     branches:
       - 'feature/zab-os-control-center-v3'
+      - 'fix/zab-operational-hardening'
     paths:
       - 'booking_connectivity.py'
       - 'booking_guest_sync.py'
       - 'zab_control_center_v3.py'
+      - 'production_hardening.py'
       - 'railway_app.py'
       - 'wachauetappe_gateway.py'
       - 'scripts/update-booking-calendar.js'
       - 'test_booking_connectivity.py'
+      - 'test_production_hardening.py'
       - '.github/workflows/zab-control-center-ci.yml'
 
 jobs:
@@ -36,9 +41,9 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
       - name: Python syntax
-        run: python -m py_compile booking_connectivity.py booking_guest_sync.py zab_control_center_v3.py railway_app.py wachauetappe_gateway.py
-      - name: Booking Connectivity safety tests
-        run: python -m unittest -v test_booking_connectivity.py
+        run: python -m py_compile booking_connectivity.py booking_guest_sync.py zab_control_center_v3.py production_hardening.py railway_app.py wachauetappe_gateway.py
+      - name: Booking Connectivity and storage safety tests
+        run: python -m unittest -v test_booking_connectivity.py test_production_hardening.py
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
