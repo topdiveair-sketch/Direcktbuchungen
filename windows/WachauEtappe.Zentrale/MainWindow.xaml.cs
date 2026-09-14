@@ -35,6 +35,7 @@ public partial class MainWindow : Window
         if(page=="Buchungen"){new BookingManagementWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Abrechnung"){new BillingWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Gastgeber"){new HostManagementWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
+        if(page=="ZAB Kalender"){new MasterCalendarWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Reisen"||page=="Routenplaner"){new TripManagementWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Verfügbarkeit"||page=="Gepäck"){new OperationsWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Kandidaten"){new CandidateManagementWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
