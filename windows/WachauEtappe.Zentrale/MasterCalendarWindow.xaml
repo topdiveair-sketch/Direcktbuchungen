@@ -99,10 +99,13 @@
       <TabItem Header="Gast / Aufenthalt">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel Margin="14">
-            <TextBlock x:Name="GuestSelectionText" Text="Bitte einen belegten Kalendertag auswählen." FontWeight="SemiBold"/>
+            <WrapPanel>
+              <TextBlock x:Name="GuestSelectionText" Text="Bitte einen belegten Kalendertag auswählen." FontWeight="SemiBold" VerticalAlignment="Center"/>
+              <Button Content="Booking-Gäste jetzt synchronisieren" Click="SyncBookingGuests_Click" Margin="18,0,0,0"/>
+            </WrapPanel>
             <UniformGrid Columns="4" Margin="0,10,0,0">
               <StackPanel Margin="4"><TextBlock Text="Gastname"/><TextBox x:Name="GuestNameBox"/></StackPanel>
-              <StackPanel Margin="4"><TextBlock Text="Land / Nationalität"/><TextBox x:Name="CountryBox"/></StackPanel>
+              <StackPanel Margin="4"><TextBlock Text="Land / Herkunft"/><TextBox x:Name="CountryBox"/></StackPanel>
               <StackPanel Margin="4"><TextBlock Text="Personen"/><TextBox x:Name="GuestsBox"/></StackPanel>
               <StackPanel Margin="4"><TextBlock Text="Booking-Referenz"/><TextBox x:Name="BookingReferenceBox"/></StackPanel>
             </UniformGrid>
@@ -120,7 +123,7 @@
             <TextBlock Text="Interne Notiz" Margin="4,10,0,0"/><TextBox x:Name="GuestNotesBox" Height="60" AcceptsReturn="True" TextWrapping="Wrap"/>
             <Button Content="Gastdaten im OS speichern" Click="SaveGuest_Click" HorizontalAlignment="Left" Margin="4,10,0,0" Background="#173D32" Foreground="White"/>
             <TextBlock Margin="4,10,4,0" Foreground="#65756F" TextWrapping="Wrap"
-                       Text="Diese Angaben sind intern. Öffentliche iCal-Feeds enthalten weder Namen noch Nationalität, Personenanzahl, Frühstück noch Anreiseart."/>
+                       Text="Diese Angaben sind intern. Booking.com kann bei Connectivity das vom Booker angegebene Wohnsitzland liefern; das ist keine amtlich geprüfte Staatsangehörigkeit. Öffentliche iCal-Feeds enthalten weder Namen noch Land/Herkunft, Personenanzahl, Frühstück noch Anreiseart."/>
           </StackPanel>
         </ScrollViewer>
       </TabItem>
@@ -129,7 +132,7 @@
         <StackPanel Margin="14">
           <TextBlock Text="Externe iCal-Kalender in den OS-Master einlesen" FontWeight="Bold" FontSize="17"/>
           <WrapPanel Margin="0,12,0,0">
-            <ComboBox x:Name="ImportChannelBox" Width="160" SelectedIndex="0"><ComboBoxItem Content="Airbnb" Tag="airbnb"/><ComboBoxItem Content="Weiterer Kanal" Tag="other"/></ComboBox>
+            <ComboBox x:Name="ImportChannelBox" Width="160" SelectedIndex="0" SelectionChanged="ImportChannelBox_SelectionChanged"><ComboBoxItem Content="Airbnb" Tag="airbnb"/><ComboBoxItem Content="Weiterer Kanal" Tag="other"/></ComboBox>
             <TextBox x:Name="ImportUrlBox" Width="650" ToolTip="https://... .ics"/>
             <Button Content="URL speichern" Click="SaveImport_Click"/>
             <Button Content="Jetzt synchronisieren" Click="SyncImport_Click"/>
