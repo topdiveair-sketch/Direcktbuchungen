@@ -13,6 +13,8 @@ from flask import jsonify
 
 AUTH_URL = "https://connectivity-authentication.booking.com/token-based-authentication/exchange"
 RATE_URL = "https://supply-xml.booking.com/hotels/ota/OTA_HotelRateAmountNotif"
+RESERVATIONS_URL = "https://secure-supply-xml.booking.com/hotels/xml/reservations"
+RESERVATIONS_SUMMARY_URL = "https://secure-supply-xml.booking.com/hotels/xml/reservationssummary"
 
 ROOM_ENV_KEYS = {
     "Bachblick": "BACHBLICK",
@@ -38,6 +40,15 @@ def _room_mapping(room: str) -> tuple[str, str]:
     )
 
 
+def internal_room_for_booking_id(room_type_id: str) -> str:
+    wanted = str(room_type_id or "").strip()
+    for room in ROOM_ENV_KEYS:
+        room_id, _ = _room_mapping(room)
+        if room_id and room_id == wanted:
+            return room
+    return ""
+
+
 def connectivity_status(room: str | None = None) -> dict:
     client_id = _env("BOOKING_CONNECTIVITY_CLIENT_ID")
     secret = _env("BOOKING_CONNECTIVITY_CLIENT_SECRET")
@@ -48,6 +59,8 @@ def connectivity_status(room: str | None = None) -> dict:
         "hotel_id": hotel_id,
         "authentication": "token",
         "rate_endpoint": RATE_URL,
+        "reservations_endpoint": RESERVATIONS_URL,
+        "reservations_summary_endpoint": RESERVATIONS_SUMMARY_URL,
     }
     if room:
         room_id, rate_id = _room_mapping(room)
@@ -129,6 +142,154 @@ def _response_error(xml_text: str) -> str:
         return " | ".join(errors)[:900]
     except Exception:
         return ""
+
+
+def _post_xml(url: str, xml: bytes, timeout: int = 60) -> str:
+    req = urllib.request.Request(
+        url,
+        data=xml,
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {_token()}",
+            "Content-Type": "application/xml",
+            "Accept": "application/xml,text/xml",
+            "User-Agent": "Zuhause-am-Bach-OS/1.0",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            return response.read().decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(_read_http_error(exc)) from exc
+
+
+def _text(parent, path: str) -> str:
+    node = parent.find(path)
+    return (node.text or "").strip() if node is not None and node.text else ""
+
+
+def _guest_count(room_node) -> int:
+    total = 0
+    for guest in room_node.findall("./guest_counts/guest_count"):
+        try:
+            total += int(guest.attrib.get("count", "0"))
+        except Exception:
+            pass
+    if total:
+        return total
+    raw = _text(room_node, "numberofguests")
+    try:
+        return int(raw)
+    except Exception:
+        return 0
+
+
+def _breakfast_value(room_node):
+    meal = (_text(room_node, "meal_plan") + " " + _text(room_node, "info")).strip().casefold()
+    if not meal:
+        return None
+    positive = ("breakfast" in meal and "included" in meal) or ("frühstück" in meal and "inbegriffen" in meal)
+    negative = ("breakfast" in meal and ("not included" in meal or "excluded" in meal)) or ("frühstück" in meal and "nicht" in meal)
+    if positive:
+        return True
+    if negative:
+        return False
+    return None
+
+
+def _parse_bxml_reservations(xml_text: str) -> list[dict]:
+    try:
+        root = ET.fromstring(xml_text)
+    except Exception as exc:
+        raise RuntimeError(f"Booking.com Reservierungsantwort ist ungültig: {exc}") from exc
+
+    records = []
+    for reservation in root.findall(".//reservation"):
+        reservation_id = _text(reservation, "id")
+        customer = reservation.find("customer")
+        first = _text(customer, "first_name") if customer is not None else ""
+        last = _text(customer, "last_name") if customer is not None else ""
+        country = _text(customer, "countrycode").upper() if customer is not None else ""
+        booker_name = " ".join(x for x in (first, last) if x).strip()
+        status = _text(reservation, "status") or "future"
+        for room_node in reservation.findall("room"):
+            room_type_id = _text(room_node, "id")
+            guest_name = _text(room_node, "guest_name") or booker_name
+            records.append({
+                "reservation_id": reservation_id,
+                "roomreservation_id": _text(room_node, "roomreservation_id"),
+                "room_type_id": room_type_id,
+                "room": internal_room_for_booking_id(room_type_id),
+                "arrival": _text(room_node, "arrival_date"),
+                "departure": _text(room_node, "departure_date"),
+                "guest_name": guest_name,
+                "country": country,
+                "guests": _guest_count(room_node),
+                "breakfast": _breakfast_value(room_node),
+                "meal_plan": _text(room_node, "meal_plan"),
+                "status": status,
+            })
+    return records
+
+
+def fetch_future_reservations() -> dict:
+    """Retrieve future Booking.com reservations for OS guest enrichment.
+
+    reservationssummary is used first because it returns all future check-outs,
+    including reservations from before the property was connected. For each
+    parent reservation, the B.XML reservations endpoint is then queried by ID
+    to enrich the room with country-of-residence and full current details.
+    No payment-card fields are retained by this module.
+    """
+    base_status = connectivity_status()
+    if not base_status.get("configured"):
+        return {"ok": False, "status": "not_configured", "message": "Booking.com Connectivity-Zugang fehlt.", "reservations": []}
+    hotel_id = _env("BOOKING_HOTEL_ID", "10657485")
+    summary_xml = f"<?xml version=\"1.0\" encoding=\"UTF-8\"?><request><hotel_id>{escape(hotel_id)}</hotel_id></request>".encode("utf-8")
+    try:
+        summary_text = _post_xml(RESERVATIONS_SUMMARY_URL, summary_xml, timeout=90)
+        summaries = _parse_bxml_reservations(summary_text)
+    except Exception as exc:
+        return {"ok": False, "status": "summary_failed", "message": str(exc)[:700], "reservations": []}
+
+    # Fetch each parent once. A small property normally has only a handful of
+    # future reservations. Limit protects the interactive Windows call.
+    ids = []
+    for row in summaries:
+        rid = row.get("reservation_id")
+        if rid and rid not in ids:
+            ids.append(rid)
+    ids = ids[:50]
+    detailed_by_key = {}
+    detail_errors = []
+    for rid in ids:
+        request_xml = (
+            f"<?xml version=\"1.0\" encoding=\"UTF-8\"?><request><hotel_id>{escape(hotel_id)}</hotel_id>"
+            f"<id>{escape(str(rid))}</id></request>"
+        ).encode("utf-8")
+        try:
+            detail_text = _post_xml(RESERVATIONS_URL, request_xml, timeout=90)
+            for detail in _parse_bxml_reservations(detail_text):
+                key = (detail.get("reservation_id"), detail.get("roomreservation_id"), detail.get("room_type_id"), detail.get("arrival"), detail.get("departure"))
+                detailed_by_key[key] = detail
+        except Exception as exc:
+            detail_errors.append(f"{rid}: {str(exc)[:180]}")
+
+    merged = []
+    for summary in summaries:
+        key = (summary.get("reservation_id"), summary.get("roomreservation_id"), summary.get("room_type_id"), summary.get("arrival"), summary.get("departure"))
+        detail = detailed_by_key.get(key)
+        if detail:
+            merged.append({**summary, **detail})
+        else:
+            merged.append(summary)
+    return {
+        "ok": True,
+        "status": "synced",
+        "message": f"{len(merged)} Booking-Zimmeraufenthalte geladen.",
+        "reservations": merged,
+        "detail_errors": detail_errors,
+    }
 
 
 def push_rate(room: str, day: date, price_eur: float) -> dict:
@@ -228,6 +389,7 @@ def push_rate(room: str, day: date, price_eur: float) -> dict:
 
 def init_booking_connectivity(app):
     app.extensions["zab_booking_push_rate"] = push_rate
+    app.extensions["zab_booking_fetch_future_reservations"] = fetch_future_reservations
     app.extensions["zab_booking_connectivity_status"] = connectivity_status
     app.extensions["zab_booking_connectivity_initialized"] = True
 
