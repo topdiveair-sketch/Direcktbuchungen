@@ -1,5 +1,6 @@
 import os
 import unittest
+import xml.etree.ElementTree as ET
 from unittest.mock import patch
 
 import booking_connectivity as bc
@@ -46,6 +47,18 @@ class BookingConnectivityTests(unittest.TestCase):
         # Payment-card nodes from Booking XML must never enter the returned OS payload.
         self.assertFalse(any("cc_" in key.lower() or "card" in key.lower() for key in row))
         self.assertNotIn("4111111111111111", repr(row))
+
+    def test_breakfast_not_included_is_false(self):
+        room = ET.fromstring(
+            "<room><meal_plan>Breakfast is not included in the room rate.</meal_plan></room>"
+        )
+        self.assertIs(bc._breakfast_value(room), False)
+
+    def test_optional_paid_breakfast_stays_unknown(self):
+        room = ET.fromstring(
+            "<room><meal_plan>Breakfast costs EUR 14 per person per night.</meal_plan></room>"
+        )
+        self.assertIsNone(bc._breakfast_value(room))
 
     def test_rate_push_fails_closed_when_connectivity_is_not_configured(self):
         names = [
