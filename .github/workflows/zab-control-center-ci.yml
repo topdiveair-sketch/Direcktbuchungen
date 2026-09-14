@@ -1,0 +1,46 @@
+name: ZAB OS Control Center CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'booking_connectivity.py'
+      - 'booking_guest_sync.py'
+      - 'zab_control_center_v3.py'
+      - 'railway_app.py'
+      - 'wachauetappe_gateway.py'
+      - 'scripts/update-booking-calendar.js'
+      - 'test_booking_connectivity.py'
+      - '.github/workflows/zab-control-center-ci.yml'
+  push:
+    branches:
+      - 'feature/zab-os-control-center-v3'
+    paths:
+      - 'booking_connectivity.py'
+      - 'booking_guest_sync.py'
+      - 'zab_control_center_v3.py'
+      - 'railway_app.py'
+      - 'wachauetappe_gateway.py'
+      - 'scripts/update-booking-calendar.js'
+      - 'test_booking_connectivity.py'
+      - '.github/workflows/zab-control-center-ci.yml'
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+      - name: Python syntax
+        run: python -m py_compile booking_connectivity.py booking_guest_sync.py zab_control_center_v3.py railway_app.py wachauetappe_gateway.py
+      - name: Booking Connectivity safety tests
+        run: python -m unittest -v test_booking_connectivity.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Website master-calendar script syntax
+        run: node --check scripts/update-booking-calendar.js
