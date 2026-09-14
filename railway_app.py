@@ -32,7 +32,7 @@ from master_calendar import init_master_calendar
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-14-zab-master-calendar-v1"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-14-zab-master-calendar-v2"
 EXPECTED_PAYPAL_MERCHANT_EMAIL = "topdiveair@gmail.com"
 
 # Checkout callbacks must use the currently active Railway public domain. Railway's
@@ -67,6 +67,12 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
         if nightly is None:
             dynamic_rates = []
             break
+        price_getter = app.extensions.get("zab_channel_price_for_day")
+        if callable(price_getter):
+            try:
+                nightly = price_getter(room, "direct", current, float(nightly))
+            except Exception:
+                pass
         dynamic_rates.append(float(nightly))
         current += timedelta(days=1)
     room_total = round(
