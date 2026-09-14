@@ -90,6 +90,8 @@ Direktbuchungen lesen den Namen aus `bookings` und das Land aus `guest_profiles.
 
 Booking.com-iCal liefert Gastname und Nationalität nicht zuverlässig. Deshalb können diese Daten im internen OS-Kalender manuell zur konkreten externen Belegung ergänzt werden. Sie werden in `zab_external_guest_meta` gespeichert und niemals in den öffentlichen iCal-Feed geschrieben.
 
+Diese personenbezogenen Angaben erscheinen ausschließlich in der passwortgeschützten OS-Ansicht. Der öffentliche Kalenderexport verwendet weiterhin nur generische Belegungsinformationen.
+
 ## Reihenfolge für die Produktivumstellung
 
 1. Branch/PR deployen und `/health/master-calendar` prüfen.
