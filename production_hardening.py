@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import sqlite3
 import tempfile
 import threading
@@ -18,6 +19,7 @@ DEFAULT_SAFETY_SNAPSHOT_URL = (
     "https://raw.githubusercontent.com/topdiveair-sketch/"
     "Direcktbuchungen/main/booking-calendar.json"
 )
+REQUIRED_CORE_TABLES = {"bookings", "external_blocks", "ical_settings"}
 
 
 def _env_true(name: str, default: str = "0") -> bool:
@@ -40,13 +42,42 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _inspect_sqlite(path: Path) -> dict:
+    if not path.is_file():
+        return {"ok": False, "error": "database_missing"}
+    try:
+        uri = f"file:{path.as_posix()}?mode=ro"
+        with sqlite3.connect(uri, uri=True, timeout=30.0) as conn:
+            integrity_row = conn.execute("PRAGMA integrity_check").fetchone()
+            integrity = str(integrity_row[0] if integrity_row else "unknown")
+            tables = {
+                str(row[0])
+                for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            }
+            missing = sorted(REQUIRED_CORE_TABLES - tables)
+            counts = {}
+            for table in ("bookings", "external_blocks"):
+                if table in tables:
+                    counts[table] = int(conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
+        return {
+            "ok": integrity == "ok" and not missing,
+            "integrity": integrity,
+            "missing_tables": missing,
+            "counts": counts,
+            "size_bytes": path.stat().st_size,
+            "sha256": _sha256(path),
+        }
+    except Exception as exc:
+        return {"ok": False, "error": "database_invalid", "detail": str(exc)[:500]}
+
+
 def init_production_hardening(app, legacy_app, authorize):
     """Harden Railway SQLite operation without changing public booking semantics.
 
-    The module deliberately does not migrate storage by itself. A Railway volume
-    must only be enabled after the currently running database has been exported.
-    Once deployed, this module provides a protected consistent SQLite backup
-    endpoint so future migrations never need to depend on container shell access.
+    The module deliberately does not create/mount Railway storage by itself. The
+    currently running ephemeral database must first be exported outside Railway.
+    For the subsequent volume migration it supports a verified one-shot restore
+    from a file already uploaded to the persistent volume.
     """
 
     db_path = Path(legacy_app.DB_PATH).expanduser().resolve()
@@ -72,6 +103,81 @@ def init_production_hardening(app, legacy_app, authorize):
     # call time and therefore also benefit from the hardened connection.
     legacy_app.db = hardened_db
 
+    def _remove_sidecars() -> None:
+        for suffix in ("-wal", "-shm"):
+            try:
+                Path(str(db_path) + suffix).unlink(missing_ok=True)
+            except Exception:
+                pass
+
+    def restore_on_boot_if_requested() -> dict:
+        """Apply a pre-uploaded, verified DB exactly once during migration.
+
+        Migration sequence: export live DB -> create volume -> upload the backup
+        to the volume -> set ZAB_RESTORE_ON_BOOT=1 and ZAB_RESTORE_FROM_PATH ->
+        deploy this code. The source file is renamed after success, preventing a
+        later deployment from replaying an old database accidentally.
+        """
+        if not _env_true("ZAB_RESTORE_ON_BOOT"):
+            return {"status": "disabled"}
+        raw_source = os.environ.get("ZAB_RESTORE_FROM_PATH", "").strip()
+        if not raw_source:
+            return {"status": "source_not_configured"}
+        source_path = Path(raw_source).expanduser().resolve()
+        if source_path == db_path:
+            return {"status": "source_is_live_database"}
+        source_info = _inspect_sqlite(source_path)
+        if not source_info.get("ok"):
+            return {"status": "source_invalid", "source": source_info}
+
+        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        pre_restore = db_path.with_name(f"zab.before-restore-{stamp}.db")
+        staged = db_path.with_name(f".zab.restore-{os.getpid()}.tmp")
+        try:
+            db_path.parent.mkdir(parents=True, exist_ok=True)
+            if db_path.is_file():
+                with hardened_db() as current, sqlite3.connect(pre_restore) as backup:
+                    current.backup(backup)
+                    check = backup.execute("PRAGMA integrity_check").fetchone()
+                    if not check or str(check[0]) != "ok":
+                        pre_restore.unlink(missing_ok=True)
+                        return {"status": "pre_restore_backup_failed"}
+            shutil.copy2(source_path, staged)
+            staged_info = _inspect_sqlite(staged)
+            if not staged_info.get("ok"):
+                staged.unlink(missing_ok=True)
+                return {"status": "staged_restore_invalid", "source": staged_info}
+            _remove_sidecars()
+            os.replace(staged, db_path)
+            _remove_sidecars()
+            live_info = _inspect_sqlite(db_path)
+            if not live_info.get("ok"):
+                if pre_restore.is_file():
+                    shutil.copy2(pre_restore, staged)
+                    _remove_sidecars()
+                    os.replace(staged, db_path)
+                    _remove_sidecars()
+                return {"status": "restore_verification_failed", "live": live_info, "rolled_back": pre_restore.is_file()}
+
+            applied = source_path.with_name(
+                f"{source_path.stem}.applied-{stamp}-{source_info['sha256'][:12]}{source_path.suffix or '.db'}"
+            )
+            os.replace(source_path, applied)
+            return {
+                "status": "restored",
+                "source_sha256": source_info["sha256"],
+                "source_counts": source_info.get("counts", {}),
+                "live_sha256": live_info["sha256"],
+                "live_counts": live_info.get("counts", {}),
+                "pre_restore_backup": pre_restore.name if pre_restore.is_file() else "",
+                "applied_backup": applied.name,
+            }
+        except Exception as exc:
+            staged.unlink(missing_ok=True)
+            return {"status": "restore_error", "message": str(exc)[:500]}
+
+    restore_result = restore_on_boot_if_requested()
+
     def storage_status(include_private: bool = False) -> dict:
         mount_raw = os.environ.get("RAILWAY_VOLUME_MOUNT_PATH", "").strip()
         mount = Path(mount_raw).expanduser().resolve() if mount_raw else None
@@ -85,6 +191,7 @@ def init_production_hardening(app, legacy_app, authorize):
             "persistent_storage_required": _env_true("REQUIRE_PERSISTENT_STORAGE"),
             "sqlite_busy_timeout_ms": 30000,
             "sqlite_wal_requested": True,
+            "restore_on_boot_enabled": _env_true("ZAB_RESTORE_ON_BOOT"),
         }
         if include_private:
             status.update(
@@ -133,7 +240,7 @@ def init_production_hardening(app, legacy_app, authorize):
         req = urllib.request.Request(
             f"{snapshot_url}{separator}_bootstrap={int(datetime.now(timezone.utc).timestamp())}",
             headers={
-                "User-Agent": "ZAB-Production-Hardening/1.1",
+                "User-Agent": "ZAB-Production-Hardening/1.2",
                 "Accept": "application/json",
                 "Cache-Control": "no-cache",
             },
@@ -231,6 +338,7 @@ def init_production_hardening(app, legacy_app, authorize):
     app.extensions["zab_storage_quick_check"] = quick_check
     app.extensions["zab_refresh_booking_safety"] = refresh_booking_safety_snapshot
     app.extensions["zab_booking_safety_bootstrap"] = dict(safety_state["result"])
+    app.extensions["zab_restore_on_boot"] = restore_result
 
     @app.before_request
     def refresh_safety_for_central_calendar():
@@ -247,10 +355,15 @@ def init_production_hardening(app, legacy_app, authorize):
             status["database_exists"]
             and integrity == "ok"
             and (not required or status["persistent_storage"])
+            and restore_result.get("status") not in {
+                "source_invalid", "pre_restore_backup_failed", "staged_restore_invalid",
+                "restore_verification_failed", "restore_error",
+            }
         )
         return jsonify(
             ok=ok,
             sqlite_integrity=integrity,
+            restore_on_boot=restore_result,
             booking_safety_bootstrap=app.extensions.get("zab_booking_safety_bootstrap", {}),
             **status,
         ), 200 if ok else 503
@@ -261,6 +374,7 @@ def init_production_hardening(app, legacy_app, authorize):
             return jsonify(ok=False, error="unauthorized"), 401
         status = storage_status(True)
         status["sqlite_integrity"] = quick_check()
+        status["restore_on_boot"] = restore_result
         status["booking_safety_bootstrap"] = app.extensions.get("zab_booking_safety_bootstrap", {})
         status["ok"] = status["database_exists"] and status["sqlite_integrity"] == "ok"
         return jsonify(status), 200, {"Cache-Control": "no-store"}
