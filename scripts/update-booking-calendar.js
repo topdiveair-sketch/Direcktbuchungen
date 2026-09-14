@@ -1,7 +1,11 @@
 const fs = require("fs");
 const path = require("path");
 
+const DEFAULT_ZAB_MASTER_ICAL_URL = "https://web-production-f05a4.up.railway.app/calendar/public/Bachblick.ics";
+const ZAB_MASTER_ICAL_URL = String(process.env.ZAB_MASTER_ICAL_URL || DEFAULT_ZAB_MASTER_ICAL_URL).trim();
 const BOOKING_ICAL_URL = String(process.env.BOOKING_ICAL_URL || "").trim();
+const ALLOW_BOOKING_FALLBACK = /^(1|true|yes|on)$/i.test(String(process.env.ZAB_MASTER_ALLOW_BOOKING_FALLBACK || "0"));
+const INCLUDE_LEGACY_BLOCKS = /^(1|true|yes|on)$/i.test(String(process.env.ZAB_MASTER_INCLUDE_LEGACY_BLOCKS || "0"));
 const GOOGLE_ICAL_URLS = (process.env.GOOGLE_ICAL_URLS || process.env.GOOGLE_ICAL_URL || "")
   .split(";")
   .map((url) => url.trim())
@@ -39,7 +43,7 @@ function loadManualBlocks() {
       start,
       end,
       summary: String(block.summary || "MANUELL GESCHLOSSEN - Not available"),
-      source: "Manuell"
+      source: "Legacy manuell"
     };
   });
 }
@@ -57,7 +61,7 @@ function parseIcal(text, source) {
     .map((block) => {
       let start = "";
       let end = "";
-      let summary = "Booking/iCal belegt oder geschlossen";
+      let summary = "ZAB OS belegt oder geschlossen";
       for (const rawLine of block.split(/\r?\n/)) {
         const line = rawLine.trim();
         if (line.startsWith("DTSTART")) start = parseDate(line.split(":").pop());
@@ -76,7 +80,7 @@ async function fetchIcal(url, source) {
       const separator = url.includes("?") ? "&" : "?";
       const response = await fetch(`${url}${separator}_zab=${Date.now()}`, {
         headers: {
-          "User-Agent": "Zuhause-am-Bach-Calendar-Sync/3.0",
+          "User-Agent": "Zuhause-am-Bach-Calendar-Sync/4.0",
           "Accept": "text/calendar,text/plain,*/*",
           "Cache-Control": "no-cache"
         }
@@ -119,7 +123,7 @@ function updateHtmlFallback(events, updatedAt, updatedAtIso) {
     `const BACHBLICK_BOOKING_BLOCKS = [\n${renderFallbackBlocks(events)}\n    ];`
   );
 
-  // A known Booking/iCal conflict must remain blocked even if the freshness
+  // A known OS/master conflict must remain blocked even if the freshness
   // timestamp later expires. Freshness is only required to positively confirm
   // availability, never to discard an already known blocked period.
   html = html.replace(/if \(conflict && calendarIsFresh\(\)\)/g, "if (conflict)");
@@ -130,20 +134,38 @@ function updateHtmlFallback(events, updatedAt, updatedAtIso) {
 }
 
 async function main() {
-  if (!BOOKING_ICAL_URL) throw new Error("BOOKING_ICAL_URL fehlt; als GitHub Actions Secret konfigurieren");
+  if (!ZAB_MASTER_ICAL_URL) throw new Error("ZAB_MASTER_ICAL_URL fehlt");
 
-  const events = await fetchIcal(BOOKING_ICAL_URL, "Booking");
-  for (const [index, googleUrl] of GOOGLE_ICAL_URLS.entries()) {
-    events.push(...await fetchIcal(googleUrl, `Google Kalender ${index + 1}`));
+  let events;
+  let source = "ZAB OS Master-Kalender";
+  try {
+    events = await fetchIcal(ZAB_MASTER_ICAL_URL, "ZAB OS Master");
+  } catch (error) {
+    if (!ALLOW_BOOKING_FALLBACK || !BOOKING_ICAL_URL) throw error;
+    console.warn(`ZAB OS Master nicht erreichbar; explizit erlaubter Booking-Fallback wird verwendet: ${error.message}`);
+    events = await fetchIcal(BOOKING_ICAL_URL, "Booking Fallback");
+    source = "Booking iCal Fallback";
   }
-  events.push(...loadManualBlocks());
+
+  // Legacy feeds are off by default. External blocks belong in the OS master
+  // calendar so website, checkout and channel feeds use one source of truth.
+  if (INCLUDE_LEGACY_BLOCKS) {
+    for (const [index, googleUrl] of GOOGLE_ICAL_URLS.entries()) {
+      events.push(...await fetchIcal(googleUrl, `Google Kalender ${index + 1}`));
+    }
+    events.push(...loadManualBlocks());
+    source += " + Legacy-Blöcke";
+  }
+
   events.sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end) || a.source.localeCompare(b.source));
 
   const calendarPath = path.join(process.cwd(), "booking-calendar.json");
   const now = new Date();
   const payload = {
     room: "Bachblick",
-    source: GOOGLE_ICAL_URLS.length ? "Booking iCal + Google Calendar iCal" : "Booking iCal",
+    roomDisplayName: "Gartenblick Zimmer",
+    source,
+    masterUrl: ZAB_MASTER_ICAL_URL,
     events,
     updatedAt: now.toLocaleString("de-AT", { timeZone: "Europe/Vienna" }),
     updatedAtIso: now.toISOString()
@@ -151,7 +173,7 @@ async function main() {
 
   fs.writeFileSync(calendarPath, JSON.stringify(payload, null, 2) + "\n", "utf8");
   updateHtmlFallback(events, payload.updatedAt, payload.updatedAtIso);
-  console.log(`Kalender erfolgreich geprüft: ${events.length} belegt/geschlossen, ${payload.updatedAt}`);
+  console.log(`ZAB-OS-Masterkalender geprüft: ${events.length} belegt/geschlossen, ${payload.updatedAt}`);
 }
 
 main().catch((error) => {

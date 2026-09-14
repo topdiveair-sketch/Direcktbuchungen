@@ -31,6 +31,9 @@ import partner_portal_gateway  # noqa: F401,E402
 import app as legacy_app  # noqa: E402
 from demand_analytics import init_demand_analytics  # noqa: E402
 from master_calendar_desktop_api import init_master_calendar_desktop_api  # noqa: E402
+from booking_connectivity import init_booking_connectivity  # noqa: E402
+from booking_guest_sync import init_booking_guest_sync  # noqa: E402
+from zab_control_center_v3 import init_zab_control_center_v3  # noqa: E402
 
 init_demand_analytics(app, legacy_app.db, legacy_app.require_admin)
 
@@ -81,6 +84,21 @@ init_master_calendar_desktop_api(
     _desktop_admin_ok,
     nightly_direct_rate,
 )
+
+# V3 is the Windows-first Zuhause-am-Bach control center. It keeps the old
+# desktop endpoint for compatibility while adding guest operations, additional
+# channels and Booking.com rate push support.
+init_booking_connectivity(app)
+init_zab_control_center_v3(
+    app,
+    legacy_app.db,
+    legacy_app.ROOMS,
+    _desktop_admin_ok,
+    nightly_direct_rate,
+)
+# Booking reservation details are private enrichment data only. They are
+# matched to Booking iCal blocks and never exported through public ICS feeds.
+init_booking_guest_sync(app, legacy_app.db, _desktop_admin_ok)
 
 
 def _effective_direct_rate(room: str, day: date, fallback: float) -> tuple[float, bool]:
@@ -179,9 +197,13 @@ def wachauetappe_production_health():
     central_demand_ok = any(rule.rule == "/api/central/demand-summary" for rule in app.url_map.iter_rules())
     master_calendar_ok = bool(app.extensions.get("zab_master_calendar_initialized"))
     desktop_calendar_api_ok = bool(app.extensions.get("zab_master_calendar_desktop_api"))
+    control_center_v3_ok = bool(app.extensions.get("zab_control_center_v3"))
+    booking_connectivity_ok = bool(app.extensions.get("zab_booking_connectivity_initialized"))
+    booking_guest_sync_ok = bool(app.extensions.get("zab_booking_guest_sync_initialized"))
     ok = (
         live_ok and pricing_ok and price_api_ok and analytics_ok and os_analytics_ok
         and central_demand_ok and master_calendar_ok and desktop_calendar_api_ok
+        and control_center_v3_ok and booking_connectivity_ok and booking_guest_sync_ok
     )
     return {
         "ok": ok,
@@ -196,6 +218,9 @@ def wachauetappe_production_health():
         "rainsoft_central_demand_api": central_demand_ok,
         "master_calendar": master_calendar_ok,
         "rainsoft_central_master_calendar_api": desktop_calendar_api_ok,
+        "zab_control_center_v3": control_center_v3_ok,
+        "booking_connectivity_adapter": booking_connectivity_ok,
+        "booking_guest_sync": booking_guest_sync_ok,
         "pricing_rates": pricing_rates,
     }, 200 if ok else 503
 
