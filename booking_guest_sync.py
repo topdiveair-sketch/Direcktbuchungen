@@ -9,6 +9,8 @@ from flask import jsonify, request
 
 _sync_lock = threading.Lock()
 _last_auto_sync = 0.0
+_last_quote_sync = 0.0
+_last_quote_result = None
 
 
 def _now() -> str:
@@ -19,12 +21,17 @@ def _auto_enabled() -> bool:
     return os.environ.get("BOOKING_AUTO_SYNC_GUESTS", "1").strip().lower() in {"1", "true", "yes", "on"}
 
 
-def init_booking_guest_sync(app, db, authorize):
-    """Enrich Booking iCal occupancy with reservation details from Connectivity.
+def _env_true(name: str) -> bool:
+    return os.environ.get(name, "0").strip().lower() in {"1", "true", "yes", "on"}
 
-    Availability remains privacy-safe iCal data. Full reservation details are
-    written only to the private OS database and are never emitted by public or
-    channel calendar feeds.
+
+def init_booking_guest_sync(app, db, authorize):
+    """Sync Booking.com occupancy and private guest details through Connectivity.
+
+    Booking iCal remains a hybrid fallback. In OS-master mode, the Booking API
+    can itself create anonymous occupancy blocks before a direct PayPal order,
+    so checkout no longer has to trust a freshly downloaded Booking iCal file.
+    Guest details remain private and are never emitted by public/channel feeds.
     """
 
     with db() as conn:
@@ -90,14 +97,70 @@ def init_booking_guest_sync(app, db, authorize):
                ORDER BY id""",
             (room, arrival, departure),
         ).fetchall()
-        if len(rows) == 1:
-            return rows[0]
         if reservation_id:
             for row in rows:
                 searchable = f"{row['uid'] or ''} {row['summary'] or ''}"
                 if reservation_id in searchable:
                     return row
+        if len(rows) == 1:
+            return rows[0]
         return None
+
+    def _api_uid(record) -> str:
+        reservation_id = str(record.get("reservation_id") or "unknown").strip()
+        roomreservation_id = str(record.get("roomreservation_id") or "room").strip()
+        return f"booking-api-{reservation_id}-{roomreservation_id}@zab"
+
+    def _create_api_block(conn, record):
+        uid = _api_uid(record)
+        conn.execute(
+            """INSERT INTO external_blocks(room,start_date,end_date,source,uid,summary,imported_at)
+               VALUES(?,?,?,?,?,?,?)""",
+            (
+                str(record.get("room") or ""), str(record.get("arrival") or ""),
+                str(record.get("departure") or ""), "booking_ical", uid,
+                "Booking.com", _now(),
+            ),
+        )
+        return conn.execute(
+            """SELECT id,room,start_date,end_date,source,uid,summary FROM external_blocks
+               WHERE room=? AND source='booking_ical' AND uid=? ORDER BY id DESC LIMIT 1""",
+            (str(record.get("room") or ""), uid),
+        ).fetchone()
+
+    def _remove_cancelled(conn, record) -> int:
+        reservation_id = str(record.get("reservation_id") or "").strip()
+        room = str(record.get("room") or "").strip()
+        arrival = str(record.get("arrival") or "").strip()
+        departure = str(record.get("departure") or "").strip()
+        if not room or not arrival or not departure:
+            return 0
+        rows = conn.execute(
+            """SELECT id,uid FROM external_blocks
+               WHERE room=? AND source='booking_ical' AND start_date=? AND end_date=?""",
+            (room, arrival, departure),
+        ).fetchall()
+        ids = []
+        for row in rows:
+            uid = str(row["uid"] or "")
+            if reservation_id and reservation_id in uid:
+                ids.append(int(row["id"]))
+        # If there is exactly one Booking occupancy block on those dates, the
+        # Booking API cancellation is authoritative enough to remove it.
+        if not ids and len(rows) == 1:
+            ids = [int(rows[0]["id"])]
+        for block_id in ids:
+            block = conn.execute(
+                "SELECT room,uid,start_date,end_date FROM external_blocks WHERE id=?", (block_id,)
+            ).fetchone()
+            if block:
+                conn.execute(
+                    """DELETE FROM zab_external_guest_meta
+                       WHERE room=? AND source='booking_ical' AND uid=? AND start_date=? AND end_date=?""",
+                    (block["room"], block["uid"] or "", block["start_date"], block["end_date"]),
+                )
+            conn.execute("DELETE FROM external_blocks WHERE id=?", (block_id,))
+        return len(ids)
 
     def _store_pending(conn, record) -> None:
         breakfast = record.get("breakfast")
@@ -137,6 +200,8 @@ def init_booking_guest_sync(app, db, authorize):
             for row in rows:
                 record = _pending_as_record(row)
                 block = _find_block(conn, record)
+                if not block and record.get("room"):
+                    block = _create_api_block(conn, record)
                 if not block:
                     continue
                 _upsert_meta(conn, block, record)
@@ -159,6 +224,8 @@ def init_booking_guest_sync(app, db, authorize):
             if not result.get("ok"):
                 return result
             attached = attached_from_pending
+            created = 0
+            cancelled_removed = 0
             skipped = 0
             with db() as conn:
                 for record in result.get("reservations", []):
@@ -170,9 +237,21 @@ def init_booking_guest_sync(app, db, authorize):
                         skipped += 1
                         continue
                     if not room or departure <= arrival:
+                        _store_pending(conn, record)
                         skipped += 1
                         continue
+                    status = str(record.get("status") or "").strip().casefold()
+                    if "cancel" in status:
+                        cancelled_removed += _remove_cancelled(conn, record)
+                        conn.execute(
+                            "DELETE FROM zab_booking_guest_pending WHERE reservation_id=? AND room=? AND arrival=? AND departure=?",
+                            (str(record.get("reservation_id") or ""), room, arrival.isoformat(), departure.isoformat()),
+                        )
+                        continue
                     block = _find_block(conn, record)
+                    if not block:
+                        block = _create_api_block(conn, record)
+                        created += 1
                     if block:
                         _upsert_meta(conn, block, record)
                         conn.execute(
@@ -186,8 +265,13 @@ def init_booking_guest_sync(app, db, authorize):
             return {
                 "ok": True,
                 "status": "synced",
-                "message": f"Booking-Gastdaten: {attached} zugeordnet, {pending_total} warten auf iCal-Zuordnung.",
+                "message": (
+                    f"Booking API: {attached} Aufenthalte aktuell, {created} OS-Belegungen neu, "
+                    f"{cancelled_removed} Storno-Blöcke entfernt, {pending_total} warten auf Zimmer-Mapping."
+                ),
                 "attached": attached,
+                "created": created,
+                "cancelled_removed": cancelled_removed,
                 "pending": int(pending_total),
                 "skipped": skipped,
                 "detail_errors": result.get("detail_errors", []),
@@ -196,6 +280,34 @@ def init_booking_guest_sync(app, db, authorize):
             return {"ok": False, "status": "error", "message": str(exc)[:900]}
         finally:
             _sync_lock.release()
+
+    def _booking_may_be_open() -> bool:
+        try:
+            today = date.today().isoformat()
+            with db() as conn:
+                row = conn.execute(
+                    "SELECT enabled FROM zab_channel_controls WHERE room='Bachblick' AND channel='booking'"
+                ).fetchone()
+                global_open = True if row is None else bool(row["enabled"])
+                if global_open:
+                    return True
+                override = conn.execute(
+                    """SELECT 1 FROM zab_channel_day_settings
+                       WHERE room='Bachblick' AND channel='booking' AND day>=? AND enabled_override=1 LIMIT 1""",
+                    (today,),
+                ).fetchone()
+                return bool(override)
+        except Exception:
+            # On uncertainty fail safely: assume Booking can still sell.
+            return True
+
+    def _master_independent_requested() -> bool:
+        mode = str(app.extensions.get("zab_master_calendar_mode", "hybrid")).strip().lower()
+        if mode != "master":
+            return False
+        if _env_true("ZAB_MASTER_PAYPAL_INDEPENDENT"):
+            return True
+        return not _booking_may_be_open()
 
     app.extensions["zab_booking_guest_sync"] = sync_booking_guests
     app.extensions["zab_booking_guest_sync_initialized"] = True
@@ -209,33 +321,59 @@ def init_booking_guest_sync(app, db, authorize):
 
     @app.before_request
     def booking_guest_auto_sync():
-        global _last_auto_sync
-        if request.path != "/api/central/zab-calendar" or not _auto_enabled():
+        global _last_auto_sync, _last_quote_sync, _last_quote_result
+
+        if request.path == "/api/central/zab-calendar":
+            if not _auto_enabled() or not authorize():
+                return None
+            checker = app.extensions.get("zab_booking_connectivity_status")
+            try:
+                configured = callable(checker) and bool(checker().get("configured"))
+            except Exception:
+                configured = False
+            if not configured:
+                return None
+            now = time.monotonic()
+            if now - _last_auto_sync < 600:
+                _attach_pending()
+                return None
+            _last_auto_sync = now
+            sync_booking_guests()
             return None
-        # before_request runs before the calendar endpoint performs its own
-        # authorization. Never trigger a Booking.com PII fetch for an
-        # unauthenticated request.
-        if not authorize():
-            return None
-        checker = app.extensions.get("zab_booking_connectivity_status")
-        try:
-            configured = callable(checker) and bool(checker().get("configured"))
-        except Exception:
-            configured = False
-        if not configured:
-            return None
-        now = time.monotonic()
-        if now - _last_auto_sync < 600:
-            _attach_pending()
-            return None
-        _last_auto_sync = now
-        sync_booking_guests()
+
+        # In explicit OS-master mode, a Booking.com API occupancy refresh is
+        # the safety barrier that replaces the former mandatory Booking iCal
+        # refresh. Quotes may reuse a result briefly; create-order always does
+        # a fresh API read immediately before the transactional availability
+        # recheck and payment hold.
+        if request.path in {"/api/paypal/quote", "/api/paypal/create-order"} and _master_independent_requested():
+            if not _booking_may_be_open():
+                return None
+            now = time.monotonic()
+            if request.path == "/api/paypal/quote" and _last_quote_result and now - _last_quote_sync < 30:
+                result = _last_quote_result
+            else:
+                result = sync_booking_guests()
+                _last_quote_sync = now
+                _last_quote_result = result
+            if not result.get("ok"):
+                return jsonify({
+                    "ok": False,
+                    "message": "Direktbuchung vorübergehend gestoppt: Booking.com Belegung konnte nicht sicher aktualisiert werden.",
+                    "calendar_status": result.get("status", "booking_api_failed"),
+                }), 503
         return None
 
     @app.get("/health/booking-guest-sync")
     def booking_guest_sync_health():
         with db() as conn:
             pending = conn.execute("SELECT COUNT(*) AS n FROM zab_booking_guest_pending").fetchone()["n"]
-        return jsonify(ok=True, initialized=True, auto=_auto_enabled(), pending=int(pending)), 200
+        return jsonify(
+            ok=True,
+            initialized=True,
+            auto=_auto_enabled(),
+            master_checkout_api_guard=True,
+            pending=int(pending),
+        ), 200
 
     return sync_booking_guests
