@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+  <title>Master-Kalender · Zuhause am Bach OS</title>
+  <style>
+    .calendar-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}.calendar-card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:1rem}.calendar-card h2,.calendar-card h3{margin-top:0}.status-pill{display:inline-block;padding:.2rem .55rem;border-radius:999px;background:#eee;font-size:.85rem}.status-pill.on{background:#dff5e4}.status-pill.off{background:#ffe1e1}.feed{font-family:monospace;font-size:.78rem;overflow-wrap:anywhere;background:#f6f6f6;padding:.6rem;border-radius:8px}.compact-form{display:grid;gap:.55rem}.compact-form input,.compact-form select,.compact-form button{padding:.55rem}.block-row{display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:center;border-top:1px solid #eee;padding:.55rem 0}.muted{opacity:.72}.warning{background:#fff4d6;border:1px solid #efd18a;padding:.8rem;border-radius:10px}.okbox{background:#e9f7ee;border:1px solid #a9d7b7;padding:.8rem;border-radius:10px}</style>
+</head>
+<body class="admin-page">
+<header class="os-header"><div><strong>Zuhause am Bach OS</strong><small>Master-Kalender · {{ today }}</small></div><nav><a href="{{ url_for('os_dashboard') }}">OS</a><a href="{{ url_for('admin') }}">Verwaltung</a><a href="{{ url_for('index') }}">Buchungsseite</a></nav></header>
+<main class="admin-main">
+  <section class="admin-panel">
+    <h1>Master-Kalender</h1>
+    {% if authoritative %}<div class="okbox"><strong>MASTER-Modus aktiv.</strong> Das Zuhause-am-Bach-OS ist die führende Verfügbarkeitsquelle. Booking/iCal bleibt als Belegungsimport erhalten.</div>{% else %}<div class="warning"><strong>HYBRID-Modus aktiv.</strong> Das OS führt bereits eigene Sperren und Kanalsteuerung, die PayPal-Sofortbuchung verlangt aber weiterhin einen frischen Booking/iCal-Import. Für vollständige Unabhängigkeit später <code>ZAB_MASTER_CALENDAR_MODE=master</code> setzen.</div>{% endif %}
+    <p class="muted">Direktbuchungen, OS-Sperren und externe Belegungen werden zusammengeführt. Für Booking.com gibt es einen eigenen anonymen iCal-Feed ohne Gastdaten.</p>
+  </section>
+
+  <section class="calendar-grid">
+    {% for room in rooms %}
+    <article class="calendar-card">
+      <h2>{{ room }}</h2>
+      {% for channel in channels %}
+        {% set c = controls.get((room,channel)) %}
+        <div style="margin:.7rem 0">
+          <strong>{{ 'Direktbuchung' if channel=='direct' else 'Booking.com' }}</strong>
+          <span class="status-pill {{ 'on' if (not c or c.enabled) else 'off' }}">{{ 'offen' if (not c or c.enabled) else 'geschlossen' }}</span>
+          <form method="post" action="{{ url_for('master_calendar_channel_update') }}" style="display:inline">
+            <input type="hidden" name="room" value="{{ room }}"><input type="hidden" name="channel" value="{{ channel }}"><input type="hidden" name="enabled" value="{{ '0' if (not c or c.enabled) else '1' }}">
+            <button type="submit">{{ 'Schließen' if (not c or c.enabled) else 'Öffnen' }}</button>
+          </form>
+        </div>
+      {% endfor %}
+      <h3>Booking-Feed</h3>
+      <div class="feed">{{ feeds[room]['booking'] }}</div>
+      <p class="muted">Diesen Feed in Booking.com für das Zimmer importieren. Enthalten sind nur Belegungszeiträume/Sperren, keine Gastnamen oder Kontaktdaten.</p>
+      <h3>Direkt-Feed</h3>
+      <div class="feed">{{ feeds[room]['direct'] }}</div>
+    </article>
+    {% endfor %}
+  </section>
+
+  <section class="calendar-grid" style="margin-top:1rem">
+    <article class="calendar-card">
+      <h2>Sperre anlegen</h2>
+      <form method="post" action="{{ url_for('master_calendar_add_block') }}" class="compact-form">
+        <label>Zimmer<select name="room">{% for room in rooms %}<option>{{ room }}</option>{% endfor %}</select></label>
+        <label>Gilt für<select name="channel"><option value="all">Alle Kanäle</option><option value="direct">nur Direktbuchung</option><option value="booking">nur Booking.com</option></select></label>
+        <label>Von<input type="date" name="start_date" required></label>
+        <label>Bis (Abreise/freier Tag)<input type="date" name="end_date" required></label>
+        <label>Grund<input name="reason" maxlength="240" placeholder="z. B. privat belegt / Wartung"></label>
+        <button type="submit">Sperre speichern</button>
+      </form>
+    </article>
+    <article class="calendar-card">
+      <h2>Booking/iCal-Import</h2>
+      <form method="post" action="{{ url_for('master_calendar_sync_imports') }}"><button type="submit">Jetzt synchronisieren</button></form>
+      {% for row in imports %}<div class="block-row"><div><strong>{{ row.room }}</strong><br><small>{{ row.last_sync or 'noch nie' }} · {{ row.last_result or 'kein Status' }}</small></div><span>{{ external_counts.get(row.room,0) }} Blöcke</span></div>{% endfor %}
+    </article>
+  </section>
+
+  <section class="calendar-grid" style="margin-top:1rem">
+    <article class="calendar-card"><h2>Globale OS-Sperren</h2>{% for b in master_blocks %}<div class="block-row"><div><strong>{{ b.room }}</strong> · {{ b.start_date }} – {{ b.end_date }}<br><small>{{ b.reason }}</small></div><form method="post" action="{{ url_for('master_calendar_delete_block',kind='master',block_id=b.id) }}"><button>Entfernen</button></form></div>{% else %}<p>Keine globalen Sperren.</p>{% endfor %}</article>
+    <article class="calendar-card"><h2>Kanal-Sperren</h2>{% for b in channel_blocks %}<div class="block-row"><div><strong>{{ b.room }}</strong> · {{ b.channel }} · {{ b.start_date }} – {{ b.end_date }}<br><small>{{ b.reason }}</small></div><form method="post" action="{{ url_for('master_calendar_delete_block',kind='channel',block_id=b.id) }}"><button>Entfernen</button></form></div>{% else %}<p>Keine kanalbezogenen Sperren.</p>{% endfor %}</article>
+  </section>
+</main>
+</body></html>
