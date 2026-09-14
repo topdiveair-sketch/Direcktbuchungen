@@ -57,7 +57,9 @@ Der Monatskalender zeigt intern außerdem:
 
 ### Direktbuchung
 
-Ein im OS-Kalender gesetzter Direkt-Tagespreis wird für Bachblick in den öffentlichen Preis-API-Antworten und im PayPal-Checkout als finaler Direktpreis verwendet. Ohne OS-Override greift der bestehende dynamische Direktpreiskalender.
+Ein im OS-Kalender gesetzter Direkt-Tagespreis wird für **Bachblick** in den öffentlichen Preis-API-Antworten und im PayPal-Checkout als finaler Direktpreis verwendet. Ohne OS-Override greift der bestehende dynamische Direktpreiskalender.
+
+Die Kalenderoberfläche kann auch für die übrigen Zimmer Tageswerte speichern und anzeigen. Deren bestehender Direktbuchungs-/Zahlungsfluss wird in diesem Rollout jedoch noch nicht auf den neuen Preis-Override umgestellt; produktiv relevant ist zunächst Bachblick.
 
 ### Booking.com
 
