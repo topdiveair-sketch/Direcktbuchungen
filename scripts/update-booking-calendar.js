@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const DEFAULT_ZAB_MASTER_ICAL_URL = "https://web-production-f05a4.up.railway.app/calendar/public/Bachblick.ics";
+const DEFAULT_ZAB_MASTER_ICAL_URL = "https://web-production-907d68.up.railway.app/calendar/public/Bachblick.ics";
 const ZAB_MASTER_ICAL_URL = String(process.env.ZAB_MASTER_ICAL_URL || DEFAULT_ZAB_MASTER_ICAL_URL).trim();
 const BOOKING_ICAL_URL = String(process.env.BOOKING_ICAL_URL || "").trim();
 const ALLOW_BOOKING_FALLBACK = /^(1|true|yes|on)$/i.test(String(process.env.ZAB_MASTER_ALLOW_BOOKING_FALLBACK || "0"));
