@@ -162,8 +162,10 @@ public partial class MasterCalendarWindow : Window
         ShowGuest(row.Occupancy);
     }
 
+    // Only pre-fill explicit OS overrides. The current computed price remains
+    // visible in the grid but is not silently turned into an override on save.
     private static string PriceText(ZabDayState state, string channel) =>
-        state.Channels.TryGetValue(channel, out var value) && value.Price.HasValue
+        state.Channels.TryGetValue(channel, out var value) && value.Price.HasValue && value.PriceOverride
             ? value.Price.Value.ToString("0.00", CultureInfo.GetCultureInfo("de-AT"))
             : "";
 
@@ -279,6 +281,14 @@ public partial class MasterCalendarWindow : Window
         await LoadMonthAsync();
     }
 
+    private async void SyncBookingGuests_Click(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = "Booking.com Gast- und Aufenthaltsdaten werden synchronisiert …";
+        var result = await ZabMasterCalendarService.SyncBookingGuestsAsync();
+        StatusText.Text = (result.Ok ? "✓ " : "⚠ ") + result.Message;
+        if (result.Ok) await LoadMonthAsync();
+    }
+
     private async void SaveGuest_Click(object sender, RoutedEventArgs e)
     {
         if (_selectedOccupancy is null)
@@ -315,18 +325,20 @@ public partial class MasterCalendarWindow : Window
         if (result.Ok) await LoadMonthAsync();
     }
 
+    private void ImportChannelBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_loading) LoadImportUrlForSelection();
+    }
+
     private void LoadImportUrlForSelection()
     {
         if (_snapshot is null) return;
         var channel = (ImportChannelBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "airbnb";
         var row = _snapshot.Imports.FirstOrDefault(x => x.Room == SelectedRoomKey && x.Channel == channel);
-        if (row is not null)
-        {
-            ImportUrlBox.Text = row.ImportUrl;
-            ImportStatusText.Text = string.IsNullOrWhiteSpace(row.LastResult)
-                ? "Noch nicht synchronisiert."
-                : $"{row.LastSync} · {row.LastResult}";
-        }
+        ImportUrlBox.Text = row?.ImportUrl ?? "";
+        ImportStatusText.Text = row is null || string.IsNullOrWhiteSpace(row.LastResult)
+            ? "Noch nicht synchronisiert."
+            : $"{row.LastSync} · {row.LastResult}";
     }
 
     private async void SaveImport_Click(object sender, RoutedEventArgs e)
