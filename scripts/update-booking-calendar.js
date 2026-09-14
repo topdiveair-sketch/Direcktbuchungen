@@ -141,6 +141,13 @@ function updateHtmlFallback(events, updatedAt, updatedAtIso) {
     `const BACHBLICK_BOOKING_BLOCKS = [\n${renderFallbackBlocks(events)}\n    ];`
   );
 
+  // User-facing naming is Gartenblick Zimmer. The technical value Bachblick is
+  // deliberately preserved because Railway/Booking mappings use that stable key.
+  html = html.replace(
+    /(<input[^>]*name="room"[^>]*value="Bachblick"[^>]*>[\s\S]*?<span><strong>)Bachblick(<\/strong>)/,
+    "$1Gartenblick Zimmer$2"
+  );
+
   // Fail closed while a live refresh is still pending. A generated fallback
   // snapshot is considered loaded only when it actually contains intervals.
   html = html.replace(
@@ -159,6 +166,9 @@ function updateHtmlFallback(events, updatedAt, updatedAtIso) {
 
   if (events.length > 0 && !html.includes(`start: "${events[0].start}", end: "${events[0].end}"`)) {
     throw new Error("Kalender-Sicherheitsblöcke konnten nicht in index.html eingebettet werden");
+  }
+  if (!html.includes("<strong>Gartenblick Zimmer</strong>")) {
+    throw new Error("Sichtbarer Zimmername konnte nicht auf Gartenblick Zimmer normalisiert werden");
   }
 
   if (html === original) return false;
