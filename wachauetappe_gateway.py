@@ -71,6 +71,20 @@ def _desktop_admin_ok() -> bool:
     return hmac.compare_digest(str(expected), str(supplied))
 
 
+def _effective_direct_rate(room: str, day: date, fallback: float) -> tuple[float, bool]:
+    getter = app.extensions.get("zab_channel_price_for_day")
+    if not callable(getter):
+        return fallback, False
+    try:
+        value = getter(room, "direct", day, fallback)
+    except Exception:
+        return fallback, False
+    if value is None:
+        return fallback, False
+    value = float(value)
+    return value, value != fallback
+
+
 @app.route("/api/direct-price", methods=["GET", "OPTIONS"])
 def public_direct_price():
     """Public, date-aware room quote used by the static GitHub Pages frontend."""
@@ -95,12 +109,15 @@ def public_direct_price():
     nights = []
     current = arrival
     total = 0.0
+    override_used = False
     while current < departure:
         rate = nightly_direct_rate(current)
         if rate is None:
             return {"ok": False, "error": "date_outside_pricing_calendar"}, 400, _cors_headers()
-        rate = float(rate)
-        nights.append({"date": current.isoformat(), "price_eur": rate})
+        fallback = float(rate)
+        rate, overridden = _effective_direct_rate(room, current, fallback)
+        override_used = override_used or overridden
+        nights.append({"date": current.isoformat(), "price_eur": rate, "os_override": overridden})
         total += rate
         current += timedelta(days=1)
 
@@ -114,7 +131,11 @@ def public_direct_price():
         "average_nightly_eur": round(total / len(nights), 2),
         "nights": nights,
         "currency": "EUR",
-        "pricing_model": "direct-event-calendar-2026-2027",
+        "pricing_model": (
+            "zab-os-calendar-override"
+            if override_used
+            else "direct-event-calendar-2026-2027"
+        ),
     }, 200, _cors_headers()
 
 
@@ -144,7 +165,8 @@ def wachauetappe_production_health():
     analytics_ok = any(rule.rule == "/api/demand-event" for rule in app.url_map.iter_rules())
     os_analytics_ok = any(rule.rule == "/os/nachfrage" for rule in app.url_map.iter_rules())
     central_demand_ok = any(rule.rule == "/api/central/demand-summary" for rule in app.url_map.iter_rules())
-    ok = live_ok and pricing_ok and price_api_ok and analytics_ok and os_analytics_ok and central_demand_ok
+    master_calendar_ok = bool(app.extensions.get("zab_master_calendar_initialized"))
+    ok = live_ok and pricing_ok and price_api_ok and analytics_ok and os_analytics_ok and central_demand_ok and master_calendar_ok
     return {
         "ok": ok,
         "gateway": "wachauetappe_gateway",
@@ -156,6 +178,7 @@ def wachauetappe_production_health():
         "demand_analytics_api": analytics_ok,
         "zab_os_demand_dashboard": os_analytics_ok,
         "rainsoft_central_demand_api": central_demand_ok,
+        "master_calendar": master_calendar_ok,
         "pricing_rates": pricing_rates,
     }, 200 if ok else 503
 
