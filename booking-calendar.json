@@ -3,32 +3,7 @@
   "roomDisplayName": "Gartenblick Zimmer",
   "source": "ZAB OS Master-Kalender",
   "masterUrl": "https://web-production-907d68.up.railway.app/calendar/public/Bachblick.ics",
-  "events": [
-    {
-      "start": "2026-09-17",
-      "end": "2026-09-20",
-      "summary": "Gesperrt - Zuhause am Bach OS",
-      "source": "ZAB OS Master"
-    },
-    {
-      "start": "2026-09-24",
-      "end": "2026-09-28",
-      "summary": "Gesperrt - Zuhause am Bach OS",
-      "source": "ZAB OS Master"
-    },
-    {
-      "start": "2026-10-03",
-      "end": "2026-10-04",
-      "summary": "Gesperrt - Zuhause am Bach OS",
-      "source": "ZAB OS Master"
-    },
-    {
-      "start": "2026-10-17",
-      "end": "2026-10-19",
-      "summary": "Gesperrt - Zuhause am Bach OS",
-      "source": "ZAB OS Master"
-    }
-  ],
-  "updatedAt": "14.9.2026, 20:28:47",
-  "updatedAtIso": "2026-09-14T18:28:47.745Z"
+  "events": [],
+  "updatedAt": "14.9.2026, 20:30:49",
+  "updatedAtIso": "2026-09-14T18:30:49.111Z"
 }
