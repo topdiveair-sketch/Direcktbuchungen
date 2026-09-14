@@ -35,7 +35,10 @@ jobs:
           node-version: "20"
       - name: ZAB OS Master-Kalender abrufen
         env:
-          ZAB_MASTER_ICAL_URL: ${{ vars.ZAB_MASTER_ICAL_URL }}
+          # Produktiver Railway-Dienst. Bewusst fest gesetzt, damit eine leere
+          # oder veraltete Repository-Variable den Masterfeed nicht auf einen
+          # alten Railway-Host umbiegt.
+          ZAB_MASTER_ICAL_URL: https://web-production-907d68.up.railway.app/calendar/public/Bachblick.ics
           ZAB_MASTER_ALLOW_BOOKING_FALLBACK: ${{ vars.ZAB_MASTER_ALLOW_BOOKING_FALLBACK }}
           ZAB_MASTER_INCLUDE_LEGACY_BLOCKS: ${{ vars.ZAB_MASTER_INCLUDE_LEGACY_BLOCKS }}
           BOOKING_ICAL_URL: ${{ secrets.BOOKING_ICAL_URL }}
