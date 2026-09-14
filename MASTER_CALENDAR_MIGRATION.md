@@ -53,6 +53,8 @@ Der Monatskalender zeigt intern außerdem:
 - Direktpreis und Booking-Sollpreis je Tag,
 - den Öffnungs-/Schließstatus beider Kanäle.
 
+Bedienung: Im Monatskalender auf **Einstellen** beim gewünschten Tag klicken. Dort können Direkt- und Booking-Verfügbarkeit sowie beide Tagespreise für einen einzelnen Tag oder einen ganzen Zeitraum gesetzt werden.
+
 ## Preise
 
 ### Direktbuchung
