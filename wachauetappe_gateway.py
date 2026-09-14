@@ -36,9 +36,8 @@ from demand_analytics import init_demand_analytics  # noqa: E402
 from master_calendar_desktop_api import init_master_calendar_desktop_api  # noqa: E402
 from booking_connectivity import init_booking_connectivity  # noqa: E402
 from booking_guest_sync import init_booking_guest_sync  # noqa: E402
+from production_hardening import init_production_hardening  # noqa: E402
 from zab_control_center_v3 import init_zab_control_center_v3  # noqa: E402
-
-init_demand_analytics(app, legacy_app.db, legacy_app.require_admin)
 
 PUBLIC_SITE_ORIGIN = "https://topdiveair-sketch.github.io"
 PUBLIC_CALENDAR_SNAPSHOT_URL = os.environ.get(
@@ -85,6 +84,12 @@ def _desktop_admin_ok() -> bool:
         return False
     return hmac.compare_digest(str(expected), str(supplied))
 
+
+# Harden SQLite before any control-center module receives the DB factory.
+# Storage migration itself is intentionally not automatic: the live ephemeral
+# database must first be exported outside Railway before a volume is mounted.
+init_production_hardening(app, legacy_app, _desktop_admin_ok)
+init_demand_analytics(app, legacy_app.db, legacy_app.require_admin)
 
 # RAINsoft CENTRAL uses the same DPAPI-protected Railway admin credential as
 # the existing demand dashboard. Only non-sensitive calendar data is returned.
@@ -335,10 +340,33 @@ def wachauetappe_production_health():
     control_center_v3_ok = bool(app.extensions.get("zab_control_center_v3"))
     booking_connectivity_ok = bool(app.extensions.get("zab_booking_connectivity_initialized"))
     booking_guest_sync_ok = bool(app.extensions.get("zab_booking_guest_sync_initialized"))
+
+    storage_getter = app.extensions.get("zab_storage_status")
+    try:
+        storage = dict(storage_getter(False)) if callable(storage_getter) else {}
+    except Exception:
+        storage = {}
+    persistent_required = bool(storage.get("persistent_storage_required"))
+    storage_gate = bool(storage.get("database_exists")) and (
+        not persistent_required or bool(storage.get("persistent_storage"))
+    )
+
+    connectivity_getter = app.extensions.get("zab_booking_connectivity_status")
+    try:
+        connectivity = dict(connectivity_getter("Bachblick")) if callable(connectivity_getter) else {}
+    except Exception:
+        connectivity = {}
+    booking_connected = bool(connectivity.get("configured"))
+    booking_required = os.environ.get("REQUIRE_BOOKING_CONNECTIVITY", "0").strip().lower() in {
+        "1", "true", "yes", "on"
+    }
+    booking_gate = not booking_required or booking_connected
+
     ok = (
         live_ok and pricing_ok and price_api_ok and analytics_ok and os_analytics_ok
         and central_demand_ok and master_calendar_ok and desktop_calendar_api_ok
         and control_center_v3_ok and booking_connectivity_ok and booking_guest_sync_ok
+        and storage_gate and booking_gate
     )
     return {
         "ok": ok,
@@ -356,7 +384,14 @@ def wachauetappe_production_health():
         "rainsoft_central_master_calendar_api": desktop_calendar_api_ok,
         "zab_control_center_v3": control_center_v3_ok,
         "booking_connectivity_adapter": booking_connectivity_ok,
+        "booking_connectivity_connected": booking_connected,
+        "booking_connectivity_required": booking_required,
         "booking_guest_sync": booking_guest_sync_ok,
+        "sqlite_hardened": bool(app.extensions.get("zab_sqlite_hardened")),
+        "database_exists": bool(storage.get("database_exists")),
+        "persistent_storage": bool(storage.get("persistent_storage")),
+        "persistent_storage_required": persistent_required,
+        "booking_safety_bootstrap": app.extensions.get("zab_booking_safety_bootstrap", {}),
         "pricing_rates": pricing_rates,
     }, 200 if ok else 503
 
