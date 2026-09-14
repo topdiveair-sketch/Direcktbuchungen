@@ -56,6 +56,9 @@ public static class ZabMasterCalendarService
     public static Task<ZabApiResult> SaveGuestMetaAsync(IDictionary<string, object?> payload) =>
         SendJsonAsync("/api/central/zab-calendar/guest-meta", payload);
 
+    public static Task<ZabApiResult> SyncBookingGuestsAsync() =>
+        SendJsonAsync("/api/central/zab-calendar/sync-booking-guests", new { });
+
     public static Task<ZabApiResult> SaveImportSourceAsync(string room, string channel, string importUrl) =>
         SendJsonAsync("/api/central/zab-calendar/import-source", new { room, channel, import_url = importUrl });
 
