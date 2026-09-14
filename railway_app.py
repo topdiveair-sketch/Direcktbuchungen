@@ -29,10 +29,11 @@ from provider_monitor import init_provider_monitor
 from provider_radar import init_provider_radar
 from pricing_2027 import nightly_direct_rate
 from master_calendar import init_master_calendar
+from zab_control_center_v3 import make_master_checkout_sync
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-14-zab-master-calendar-v2"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-14-zab-control-center-v3"
 EXPECTED_PAYPAL_MERCHANT_EMAIL = "topdiveair@gmail.com"
 
 # Checkout callbacks must use the currently active Railway public domain. Railway's
@@ -108,6 +109,10 @@ def master_room_available_in_conn(conn, room, arrival, departure):
 core_app.room_available_in_conn = master_room_available_in_conn
 room_available_in_conn = master_room_available_in_conn
 
+# HYBRID keeps the existing Booking/iCal safety barrier. In MASTER mode the
+# operator can explicitly let PayPal trust the OS calendar, or it happens
+# automatically while the Booking channel is globally closed.
+checkout_sync_room = make_master_checkout_sync(app, db, sync_room)
 
 init_payment_hold(app, db)
 init_paypal_checkout(
@@ -117,7 +122,7 @@ init_paypal_checkout(
     parse_date,
     direct_checkout_price_breakdown,
     room_available_in_conn,
-    sync_room,
+    checkout_sync_room,
 )
 init_booking_notifications(app, db)
 init_provider_monitor(app, db, require_admin)
@@ -265,6 +270,7 @@ def railway_deploy_health():
         "provider_radar": bool(app.extensions.get("zab_provider_radar_initialized")),
         "master_calendar": bool(app.extensions.get("zab_master_calendar_initialized")),
         "master_calendar_mode": app.extensions.get("zab_master_calendar_mode", "off"),
+        "paypal_master_independent": bool(app.extensions.get("zab_paypal_master_independent")),
         "checkout_rev": PAYPAL_CHECKOUT_DEPLOY_REV,
         "checkout_base": os.environ.get("PUBLIC_CHECKOUT_BASE_URL", ""),
     }, 200
