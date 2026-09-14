@@ -10,8 +10,11 @@ All operational APIs share the same Flask app and Railway database:
 """
 
 import hmac
+import json
 import os
-from datetime import date, timedelta
+import urllib.error
+import urllib.request
+from datetime import date, datetime, timedelta, timezone
 
 from flask import request
 
@@ -38,6 +41,14 @@ from zab_control_center_v3 import init_zab_control_center_v3  # noqa: E402
 init_demand_analytics(app, legacy_app.db, legacy_app.require_admin)
 
 PUBLIC_SITE_ORIGIN = "https://topdiveair-sketch.github.io"
+PUBLIC_CALENDAR_SNAPSHOT_URL = os.environ.get(
+    "ZAB_PUBLIC_CALENDAR_JSON_URL",
+    "https://raw.githubusercontent.com/topdiveair-sketch/Direcktbuchungen/main/booking-calendar.json",
+).strip()
+PUBLIC_CALENDAR_MAX_AGE_SECONDS = max(
+    60,
+    min(int(os.environ.get("ZAB_PUBLIC_CALENDAR_MAX_AGE_SECONDS", "900")), 3600),
+)
 
 
 def _cors_headers() -> dict[str, str]:
@@ -115,6 +126,95 @@ def _effective_direct_rate(room: str, day: date, fallback: float) -> tuple[float
     return value, value != fallback
 
 
+def _dates_overlap(a_start: date, a_end: date, b_start: date, b_end: date) -> bool:
+    return a_start < b_end and b_start < a_end
+
+
+def _parse_snapshot_timestamp(value: str) -> datetime | None:
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    if raw.endswith("Z"):
+        raw = raw[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(raw)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _public_calendar_safety_check(room: str, arrival: date, departure: date):
+    """Cross-check the public hybrid snapshot before a positive direct quote.
+
+    The static snapshot is generated from both ZAB master state and Booking iCal.
+    It deliberately contains no guest data. A missing or stale snapshot fails
+    closed so the site can never turn an uncertain period into an automatic
+    "frei" quote.
+    """
+    if room != "Bachblick" or not PUBLIC_CALENDAR_SNAPSHOT_URL:
+        return None, "Der öffentliche Sicherheitskalender ist nicht verfügbar."
+
+    separator = "&" if "?" in PUBLIC_CALENDAR_SNAPSHOT_URL else "?"
+    url = f"{PUBLIC_CALENDAR_SNAPSHOT_URL}{separator}_zab={int(datetime.now(timezone.utc).timestamp())}"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "Zuhause-am-Bach-Direct-Quote/2.0",
+            "Accept": "application/json",
+            "Cache-Control": "no-cache",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=12) as response:
+            payload = json.loads(response.read().decode("utf-8", errors="replace"))
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ValueError, json.JSONDecodeError) as exc:
+        return None, f"Der Booking-Sicherheitskalender ist nicht erreichbar: {exc}"
+    except Exception as exc:
+        return None, f"Der Booking-Sicherheitskalender konnte nicht geprüft werden: {exc}"
+
+    events = payload.get("events")
+    updated = _parse_snapshot_timestamp(payload.get("updatedAtIso", ""))
+    if not isinstance(events, list) or updated is None:
+        return None, "Der Booking-Sicherheitskalender ist ungültig."
+
+    age_seconds = (datetime.now(timezone.utc) - updated).total_seconds()
+    if age_seconds < -300 or age_seconds > PUBLIC_CALENDAR_MAX_AGE_SECONDS:
+        return None, "Der Booking-Sicherheitskalender ist nicht aktuell genug."
+
+    for event in events:
+        if not isinstance(event, dict):
+            continue
+        try:
+            start = date.fromisoformat(str(event.get("start", "")))
+            end = date.fromisoformat(str(event.get("end", "")))
+        except ValueError:
+            continue
+        if end > start and _dates_overlap(arrival, departure, start, end):
+            return False, "Das Gartenblick Zimmer ist in diesem Zeitraum bereits belegt oder geschlossen."
+
+    return True, "ZAB- und Booking-Sicherheitskalender sind aktuell und ohne Konflikt."
+
+
+def _master_direct_availability(room: str, arrival: date, departure: date):
+    checker = app.extensions.get("zab_master_room_available")
+    if not callable(checker):
+        return None, "Der ZAB-Masterkalender ist nicht verfügbar."
+    release_expired = app.extensions.get("zab_release_expired_holds")
+    if callable(release_expired):
+        try:
+            release_expired()
+        except Exception:
+            pass
+    try:
+        with legacy_app.db() as conn:
+            available, message = checker(conn, room, arrival, departure, "direct")
+        return bool(available), str(message or "")
+    except Exception as exc:
+        return None, f"Der ZAB-Masterkalender konnte nicht geprüft werden: {exc}"
+
+
 @app.route("/api/direct-price", methods=["GET", "OPTIONS"])
 def public_direct_price():
     """Public, date-aware room quote used by the static GitHub Pages frontend."""
@@ -123,18 +223,50 @@ def public_direct_price():
 
     room = (request.args.get("room") or "Bachblick").strip()
     if room != "Bachblick":
-        return {"ok": False, "error": "unsupported_room"}, 400, _cors_headers()
+        return {"ok": False, "available": False, "error": "unsupported_room"}, 400, _cors_headers()
 
     try:
         arrival = date.fromisoformat(request.args.get("arrival", ""))
         departure = date.fromisoformat(request.args.get("departure", ""))
     except ValueError:
-        return {"ok": False, "error": "invalid_dates"}, 400, _cors_headers()
+        return {"ok": False, "available": False, "error": "invalid_dates"}, 400, _cors_headers()
 
     if departure <= arrival:
-        return {"ok": False, "error": "departure_must_be_after_arrival"}, 400, _cors_headers()
+        return {"ok": False, "available": False, "error": "departure_must_be_after_arrival"}, 400, _cors_headers()
     if (departure - arrival).days > 30:
-        return {"ok": False, "error": "stay_too_long"}, 400, _cors_headers()
+        return {"ok": False, "available": False, "error": "stay_too_long"}, 400, _cors_headers()
+
+    master_available, master_message = _master_direct_availability(room, arrival, departure)
+    if master_available is None:
+        return {
+            "ok": False,
+            "available": False,
+            "error": "master_availability_unavailable",
+            "message": master_message,
+        }, 503, _cors_headers()
+    if not master_available:
+        return {
+            "ok": False,
+            "available": False,
+            "error": "unavailable",
+            "message": master_message,
+        }, 409, _cors_headers()
+
+    safety_available, safety_message = _public_calendar_safety_check(room, arrival, departure)
+    if safety_available is None:
+        return {
+            "ok": False,
+            "available": False,
+            "error": "booking_safety_check_unavailable",
+            "message": safety_message,
+        }, 503, _cors_headers()
+    if not safety_available:
+        return {
+            "ok": False,
+            "available": False,
+            "error": "unavailable",
+            "message": safety_message,
+        }, 409, _cors_headers()
 
     nights = []
     current = arrival
@@ -143,7 +275,7 @@ def public_direct_price():
     while current < departure:
         rate = nightly_direct_rate(current)
         if rate is None:
-            return {"ok": False, "error": "date_outside_pricing_calendar"}, 400, _cors_headers()
+            return {"ok": False, "available": False, "error": "date_outside_pricing_calendar"}, 400, _cors_headers()
         fallback = float(rate)
         rate, overridden = _effective_direct_rate(room, current, fallback)
         override_used = override_used or overridden
@@ -153,7 +285,9 @@ def public_direct_price():
 
     return {
         "ok": True,
+        "available": True,
         "room": room,
+        "room_display_name": "Gartenblick Zimmer",
         "arrival": arrival.isoformat(),
         "departure": departure.isoformat(),
         "night_count": len(nights),
@@ -161,6 +295,7 @@ def public_direct_price():
         "average_nightly_eur": round(total / len(nights), 2),
         "nights": nights,
         "currency": "EUR",
+        "availability_source": "zab-master+booking-safety-snapshot",
         "pricing_model": (
             "zab-os-calendar-override"
             if override_used
@@ -213,6 +348,7 @@ def wachauetappe_production_health():
         "live_central_state": live_ok,
         "dynamic_direct_pricing": pricing_ok,
         "public_direct_price_api": price_api_ok,
+        "public_direct_price_fail_closed": True,
         "demand_analytics_api": analytics_ok,
         "zab_os_demand_dashboard": os_analytics_ok,
         "rainsoft_central_demand_api": central_demand_ok,
