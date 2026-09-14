@@ -80,7 +80,7 @@ async function fetchIcal(url, source) {
       const separator = url.includes("?") ? "&" : "?";
       const response = await fetch(`${url}${separator}_zab=${Date.now()}`, {
         headers: {
-          "User-Agent": "Zuhause-am-Bach-Calendar-Sync/4.0",
+          "User-Agent": "Zuhause-am-Bach-Calendar-Sync/4.1",
           "Accept": "text/calendar,text/plain,*/*",
           "Cache-Control": "no-cache"
         }
@@ -96,6 +96,24 @@ async function fetchIcal(url, source) {
     }
   }
   throw lastError;
+}
+
+function dedupeEvents(events) {
+  const unique = new Map();
+  for (const event of events) {
+    if (!event || !event.start || !event.end || event.end <= event.start) continue;
+    const key = `${event.start}|${event.end}`;
+    const existing = unique.get(key);
+    if (!existing) {
+      unique.set(key, { ...event });
+      continue;
+    }
+    if (!String(existing.source || "").includes(String(event.source || ""))) {
+      existing.source = [existing.source, event.source].filter(Boolean).join(" + ");
+    }
+  }
+  return Array.from(unique.values())
+    .sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end) || String(a.source).localeCompare(String(b.source)));
 }
 
 function renderFallbackBlocks(events) {
@@ -119,14 +137,29 @@ function updateHtmlFallback(events, updatedAt, updatedAtIso) {
     `let bookingCalendarUpdatedIso = "${updatedAtIso}";`
   );
   html = html.replace(
-    /const BACHBLICK_BOOKING_BLOCKS = \[\r?\n[\s\S]*?\r?\n\s*\];/,
+    /const BACHBLICK_BOOKING_BLOCKS = \[[\s\S]*?\n\s*\];/,
     `const BACHBLICK_BOOKING_BLOCKS = [\n${renderFallbackBlocks(events)}\n    ];`
   );
 
-  // A known OS/master conflict must remain blocked even if the freshness
-  // timestamp later expires. Freshness is only required to positively confirm
-  // availability, never to discard an already known blocked period.
+  // Fail closed while a live refresh is still pending. A generated fallback
+  // snapshot is considered loaded only when it actually contains intervals.
+  html = html.replace(
+    /let liveBookingCalendarLoaded = (?:true|false);/,
+    "let liveBookingCalendarLoaded = false;"
+  );
+  html = html.replace(
+    /let bachblickBookingBlocks = BACHBLICK_BOOKING_BLOCKS\.slice\(\);(?:\s*liveBookingCalendarLoaded = bachblickBookingBlocks\.length > 0;)?/,
+    "let bachblickBookingBlocks = BACHBLICK_BOOKING_BLOCKS.slice();\n    liveBookingCalendarLoaded = bachblickBookingBlocks.length > 0;"
+  );
+
+  // A known OS/master/Booking conflict must remain blocked even if the
+  // freshness timestamp later expires. Freshness is only required to
+  // positively confirm availability, never to discard a known block.
   html = html.replace(/if \(conflict && calendarIsFresh\(\)\)/g, "if (conflict)");
+
+  if (events.length > 0 && !html.includes(`start: "${events[0].start}", end: "${events[0].end}"`)) {
+    throw new Error("Kalender-Sicherheitsblöcke konnten nicht in index.html eingebettet werden");
+  }
 
   if (html === original) return false;
   fs.writeFileSync(indexPath, html, "utf8");
@@ -136,16 +169,33 @@ function updateHtmlFallback(events, updatedAt, updatedAtIso) {
 async function main() {
   if (!ZAB_MASTER_ICAL_URL) throw new Error("ZAB_MASTER_ICAL_URL fehlt");
 
-  let events;
+  let masterEvents = [];
   let source = "ZAB OS Master-Kalender";
   try {
-    events = await fetchIcal(ZAB_MASTER_ICAL_URL, "ZAB OS Master");
+    masterEvents = await fetchIcal(ZAB_MASTER_ICAL_URL, "ZAB OS Master");
   } catch (error) {
     if (!ALLOW_BOOKING_FALLBACK || !BOOKING_ICAL_URL) throw error;
     console.warn(`ZAB OS Master nicht erreichbar; explizit erlaubter Booking-Fallback wird verwendet: ${error.message}`);
-    events = await fetchIcal(BOOKING_ICAL_URL, "Booking Fallback");
+    masterEvents = [];
     source = "Booking iCal Fallback";
   }
+
+  let bookingSafetyEvents = [];
+  if (BOOKING_ICAL_URL) {
+    // Hybrid safety net: Booking remains independently authoritative for its
+    // own reservations. This prevents a fresh Railway deploy or empty master
+    // DB from ever turning an existing Booking reservation into "frei".
+    bookingSafetyEvents = await fetchIcal(BOOKING_ICAL_URL, "Booking iCal Sicherheitsabgleich");
+    if (source === "Booking iCal Fallback") {
+      source = "Booking iCal Sicherheitsabgleich";
+    } else {
+      source += " + Booking iCal Sicherheitsabgleich";
+    }
+  } else if (masterEvents.length === 0) {
+    throw new Error("Master-Kalender ist leer und BOOKING_ICAL_URL fehlt; aus Sicherheitsgründen wird kein Frei-Stand veröffentlicht");
+  }
+
+  let events = dedupeEvents([...masterEvents, ...bookingSafetyEvents]);
 
   // Legacy feeds are off by default. External blocks belong in the OS master
   // calendar so website, checkout and channel feeds use one source of truth.
@@ -154,10 +204,9 @@ async function main() {
       events.push(...await fetchIcal(googleUrl, `Google Kalender ${index + 1}`));
     }
     events.push(...loadManualBlocks());
+    events = dedupeEvents(events);
     source += " + Legacy-Blöcke";
   }
-
-  events.sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end) || a.source.localeCompare(b.source));
 
   const calendarPath = path.join(process.cwd(), "booking-calendar.json");
   const now = new Date();
@@ -173,7 +222,7 @@ async function main() {
 
   fs.writeFileSync(calendarPath, JSON.stringify(payload, null, 2) + "\n", "utf8");
   updateHtmlFallback(events, payload.updatedAt, payload.updatedAtIso);
-  console.log(`ZAB-OS-Masterkalender geprüft: ${events.length} belegt/geschlossen, ${payload.updatedAt}`);
+  console.log(`ZAB-OS-Sicherheitskalender geprüft: ${events.length} belegt/geschlossen, davon ${masterEvents.length} Master und ${bookingSafetyEvents.length} Booking, ${payload.updatedAt}`);
 }
 
 main().catch((error) => {
