@@ -1,9 +1,58 @@
 {
   "room": "Bachblick",
   "roomDisplayName": "Gartenblick Zimmer",
-  "source": "ZAB OS Master-Kalender",
+  "source": "ZAB OS Master-Kalender + Booking iCal Sicherheitsabgleich",
   "masterUrl": "https://web-production-907d68.up.railway.app/calendar/public/Bachblick.ics",
-  "events": [],
-  "updatedAt": "14.9.2026, 20:30:49",
-  "updatedAtIso": "2026-09-14T18:30:49.111Z"
+  "events": [
+    {
+      "start": "2026-09-14",
+      "end": "2026-09-15",
+      "summary": "CLOSED - Not available",
+      "source": "Booking iCal Sicherheitsabgleich"
+    },
+    {
+      "start": "2026-09-17",
+      "end": "2026-09-20",
+      "summary": "Gesperrt - Zuhause am Bach OS",
+      "source": "ZAB OS Master + Booking iCal Sicherheitsabgleich"
+    },
+    {
+      "start": "2026-09-24",
+      "end": "2026-09-28",
+      "summary": "Gesperrt - Zuhause am Bach OS",
+      "source": "ZAB OS Master + Booking iCal Sicherheitsabgleich"
+    },
+    {
+      "start": "2026-10-17",
+      "end": "2026-10-19",
+      "summary": "CLOSED - Not available",
+      "source": "Booking iCal Sicherheitsabgleich"
+    },
+    {
+      "start": "2026-12-19",
+      "end": "2027-01-11",
+      "summary": "CLOSED - Not available",
+      "source": "Booking iCal Sicherheitsabgleich"
+    },
+    {
+      "start": "2027-05-01",
+      "end": "2027-05-02",
+      "summary": "CLOSED - Not available",
+      "source": "Booking iCal Sicherheitsabgleich"
+    },
+    {
+      "start": "2027-08-19",
+      "end": "2027-08-23",
+      "summary": "CLOSED - Not available",
+      "source": "Booking iCal Sicherheitsabgleich"
+    },
+    {
+      "start": "2027-12-20",
+      "end": "2028-01-10",
+      "summary": "CLOSED - Not available",
+      "source": "Booking iCal Sicherheitsabgleich"
+    }
+  ],
+  "updatedAt": "14.9.2026, 20:46:30",
+  "updatedAtIso": "2026-09-14T18:46:30.746Z"
 }
