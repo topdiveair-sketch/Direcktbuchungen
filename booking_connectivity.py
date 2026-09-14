@@ -188,12 +188,39 @@ def _breakfast_value(room_node):
     meal = (_text(room_node, "meal_plan") + " " + _text(room_node, "info")).strip().casefold()
     if not meal:
         return None
-    positive = ("breakfast" in meal and "included" in meal) or ("frühstück" in meal and "inbegriffen" in meal)
-    negative = ("breakfast" in meal and ("not included" in meal or "excluded" in meal)) or ("frühstück" in meal and "nicht" in meal)
-    if positive:
-        return True
-    if negative:
+
+    # Test negative wording first: "not included" contains the word
+    # "included" and must never be interpreted as a positive meal plan.
+    negative_markers = (
+        "breakfast is not included",
+        "breakfast not included",
+        "breakfast excluded",
+        "no breakfast included",
+        "no meal is included",
+        "no meals are included",
+        "frühstück ist nicht inbegriffen",
+        "frühstück nicht inbegriffen",
+        "frühstück ist nicht enthalten",
+        "frühstück nicht enthalten",
+        "ohne frühstück",
+    )
+    if any(marker in meal for marker in negative_markers):
         return False
+
+    positive_markers = (
+        "breakfast is included",
+        "breakfast included",
+        "free breakfast",
+        "frühstück ist inbegriffen",
+        "frühstück inbegriffen",
+        "frühstück ist enthalten",
+        "frühstück enthalten",
+    )
+    if any(marker in meal for marker in positive_markers):
+        return True
+
+    # Text such as "Breakfast costs EUR ..." describes an optional charge,
+    # not a booked breakfast. Keep it unknown so the operator can set it.
     return None
 
 
