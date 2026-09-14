@@ -4,6 +4,17 @@ on:
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/update-booking-calendar.yml'
+      - 'scripts/update-booking-calendar.js'
+      - 'zab_control_center_v3.py'
+      - 'master_calendar.py'
+      - 'master_calendar_v2.py'
+      - 'railway_app.py'
+      - 'wachauetappe_gateway.py'
 
 permissions:
   contents: write
