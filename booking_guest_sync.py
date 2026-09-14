@@ -365,6 +365,19 @@ def init_booking_guest_sync(app, db, authorize):
             room = str(payload.get("room") or "Bachblick").strip()
             if not _master_independent_requested(room) or not _booking_may_be_open(room):
                 return None
+
+            checker = app.extensions.get("zab_booking_connectivity_status")
+            try:
+                connectivity = checker(room) if callable(checker) else {}
+            except Exception:
+                connectivity = {}
+            if not connectivity.get("credentials_configured") or not connectivity.get("room_id_configured"):
+                return jsonify({
+                    "ok": False,
+                    "message": "Direktbuchung vorübergehend gestoppt: Booking.com API-Zugang oder Zimmer-Mapping fehlt.",
+                    "calendar_status": "booking_api_not_configured",
+                }), 503
+
             now = time.monotonic()
             if request.path == "/api/paypal/quote" and _last_quote_result and now - _last_quote_sync < 30:
                 result = _last_quote_result
@@ -372,11 +385,12 @@ def init_booking_guest_sync(app, db, authorize):
                 result = sync_booking_guests()
                 _last_quote_sync = now
                 _last_quote_result = result
-            if not result.get("ok"):
+            if not result.get("ok") or int(result.get("pending") or 0) > 0:
                 return jsonify({
                     "ok": False,
-                    "message": "Direktbuchung vorübergehend gestoppt: Booking.com Belegung konnte nicht sicher aktualisiert werden.",
+                    "message": "Direktbuchung vorübergehend gestoppt: Booking.com Belegung konnte nicht eindeutig dem OS zugeordnet werden.",
                     "calendar_status": result.get("status", "booking_api_failed"),
+                    "pending_mappings": int(result.get("pending") or 0),
                 }), 503
         return None
 
