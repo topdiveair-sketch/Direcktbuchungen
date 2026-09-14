@@ -30,6 +30,7 @@ import guest_booking_gateway  # noqa: F401,E402
 import partner_portal_gateway  # noqa: F401,E402
 import app as legacy_app  # noqa: E402
 from demand_analytics import init_demand_analytics  # noqa: E402
+from master_calendar_desktop_api import init_master_calendar_desktop_api  # noqa: E402
 
 init_demand_analytics(app, legacy_app.db, legacy_app.require_admin)
 
@@ -69,6 +70,17 @@ def _desktop_admin_ok() -> bool:
     if not expected or not supplied:
         return False
     return hmac.compare_digest(str(expected), str(supplied))
+
+
+# RAINsoft CENTRAL uses the same DPAPI-protected Railway admin credential as
+# the existing demand dashboard. Only non-sensitive calendar data is returned.
+init_master_calendar_desktop_api(
+    app,
+    legacy_app.db,
+    legacy_app.ROOMS,
+    _desktop_admin_ok,
+    nightly_direct_rate,
+)
 
 
 def _effective_direct_rate(room: str, day: date, fallback: float) -> tuple[float, bool]:
@@ -166,7 +178,11 @@ def wachauetappe_production_health():
     os_analytics_ok = any(rule.rule == "/os/nachfrage" for rule in app.url_map.iter_rules())
     central_demand_ok = any(rule.rule == "/api/central/demand-summary" for rule in app.url_map.iter_rules())
     master_calendar_ok = bool(app.extensions.get("zab_master_calendar_initialized"))
-    ok = live_ok and pricing_ok and price_api_ok and analytics_ok and os_analytics_ok and central_demand_ok and master_calendar_ok
+    desktop_calendar_api_ok = bool(app.extensions.get("zab_master_calendar_desktop_api"))
+    ok = (
+        live_ok and pricing_ok and price_api_ok and analytics_ok and os_analytics_ok
+        and central_demand_ok and master_calendar_ok and desktop_calendar_api_ok
+    )
     return {
         "ok": ok,
         "gateway": "wachauetappe_gateway",
@@ -179,6 +195,7 @@ def wachauetappe_production_health():
         "zab_os_demand_dashboard": os_analytics_ok,
         "rainsoft_central_demand_api": central_demand_ok,
         "master_calendar": master_calendar_ok,
+        "rainsoft_central_master_calendar_api": desktop_calendar_api_ok,
         "pricing_rates": pricing_rates,
     }, 200 if ok else 503
 
