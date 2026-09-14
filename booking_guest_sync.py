@@ -281,33 +281,47 @@ def init_booking_guest_sync(app, db, authorize):
         finally:
             _sync_lock.release()
 
-    def _booking_may_be_open() -> bool:
+    def _booking_global_enabled(room: str) -> bool:
+        try:
+            with db() as conn:
+                row = conn.execute(
+                    "SELECT enabled FROM zab_channel_controls WHERE room=? AND channel='booking'",
+                    (room,),
+                ).fetchone()
+                return True if row is None else bool(row["enabled"])
+        except Exception:
+            return True
+
+    def _booking_may_be_open(room: str) -> bool:
         try:
             today = date.today().isoformat()
             with db() as conn:
                 row = conn.execute(
-                    "SELECT enabled FROM zab_channel_controls WHERE room='Bachblick' AND channel='booking'"
+                    "SELECT enabled FROM zab_channel_controls WHERE room=? AND channel='booking'",
+                    (room,),
                 ).fetchone()
                 global_open = True if row is None else bool(row["enabled"])
                 if global_open:
                     return True
                 override = conn.execute(
                     """SELECT 1 FROM zab_channel_day_settings
-                       WHERE room='Bachblick' AND channel='booking' AND day>=? AND enabled_override=1 LIMIT 1""",
-                    (today,),
+                       WHERE room=? AND channel='booking' AND day>=? AND enabled_override=1 LIMIT 1""",
+                    (room, today),
                 ).fetchone()
                 return bool(override)
         except Exception:
             # On uncertainty fail safely: assume Booking can still sell.
             return True
 
-    def _master_independent_requested() -> bool:
+    def _master_independent_requested(room: str) -> bool:
         mode = str(app.extensions.get("zab_master_calendar_mode", "hybrid")).strip().lower()
         if mode != "master":
             return False
-        if _env_true("ZAB_MASTER_PAYPAL_INDEPENDENT"):
-            return True
-        return not _booking_may_be_open()
+        # This deliberately mirrors make_master_checkout_sync(): master mode is
+        # independent when explicitly enabled, or when the global Booking
+        # channel is closed. A future per-day override can still make Booking
+        # sell, which is why _booking_may_be_open() is checked separately.
+        return _env_true("ZAB_MASTER_PAYPAL_INDEPENDENT") or not _booking_global_enabled(room)
 
     app.extensions["zab_booking_guest_sync"] = sync_booking_guests
     app.extensions["zab_booking_guest_sync_initialized"] = True
@@ -346,8 +360,10 @@ def init_booking_guest_sync(app, db, authorize):
         # refresh. Quotes may reuse a result briefly; create-order always does
         # a fresh API read immediately before the transactional availability
         # recheck and payment hold.
-        if request.path in {"/api/paypal/quote", "/api/paypal/create-order"} and _master_independent_requested():
-            if not _booking_may_be_open():
+        if request.path in {"/api/paypal/quote", "/api/paypal/create-order"}:
+            payload = request.get_json(silent=True) or {}
+            room = str(payload.get("room") or "Bachblick").strip()
+            if not _master_independent_requested(room) or not _booking_may_be_open(room):
                 return None
             now = time.monotonic()
             if request.path == "/api/paypal/quote" and _last_quote_result and now - _last_quote_sync < 30:
