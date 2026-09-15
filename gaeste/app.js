@@ -1,4 +1,4 @@
-const API_BASE=(window.WACHAUETAPPE_API_BASE||'https://web-production-907d68.up.railway.app').replace(/\/$/,'');
+const API_BASE=(window.WACHAUETAPPE_API_BASE||'https://web-production-2b242.up.railway.app').replace(/\/$/,'');
 const ROUTE_URL='../plattform/routes.json';
 const HOSTS_URL='../plattform/hosts.json';
 const $=id=>document.getElementById(id);
