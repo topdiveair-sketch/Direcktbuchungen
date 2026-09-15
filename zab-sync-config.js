@@ -1,7 +1,7 @@
 window.ZAB_BOOKING_SYNC_URL = "https://PASTE-YOUR-WORKER.workers.dev";
 
 /* Railway-Backend fuer serverseitig gepruefte Direktbuchung + PayPal. */
-window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-f05a4.up.railway.app";
+window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-2b242.up.railway.app";
 
 (function () {
   "use strict";
