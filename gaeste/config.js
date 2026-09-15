@@ -1,5 +1,5 @@
 // Online-API der Gäste-Webseite.
-window.WACHAUETAPPE_API_BASE = 'https://web-production-907d68.up.railway.app';
+window.WACHAUETAPPE_API_BASE = 'https://web-production-2b242.up.railway.app';
 
 // Zusatzmodule der öffentlichen Gäste-Seite laden.
 window.addEventListener('DOMContentLoaded', () => {

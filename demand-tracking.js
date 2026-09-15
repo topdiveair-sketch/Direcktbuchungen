@@ -2,7 +2,7 @@
    No names, email addresses, phone numbers, message text, IP or user agent are sent. */
 (function () {
   "use strict";
-  const ENDPOINT = "https://web-production-907d68.up.railway.app/api/demand-event";
+  const ENDPOINT = "https://web-production-2b242.up.railway.app/api/demand-event";
 
   function details(extra) {
     const arrival = document.getElementById("arrival");
