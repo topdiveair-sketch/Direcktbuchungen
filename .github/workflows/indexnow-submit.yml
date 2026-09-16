@@ -6,6 +6,7 @@ on:
     paths:
       - '**/*.html'
       - 'sitemap.xml'
+      - 'gaeste/sitemap.xml'
       - 'robots.txt'
       - 'llms.txt'
       - 'zab-sync-config.js'
@@ -38,8 +39,10 @@ jobs:
           key_location = base + key + '.txt'
 
           urls = []
-          sitemap = Path('sitemap.xml')
-          if sitemap.exists():
+          for sitemap_path in ('sitemap.xml', 'gaeste/sitemap.xml'):
+              sitemap = Path(sitemap_path)
+              if not sitemap.exists():
+                  continue
               try:
                   root = ET.fromstring(sitemap.read_text(encoding='utf-8'))
                   ns = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
@@ -47,7 +50,7 @@ jobs:
                       if loc.text and loc.text.startswith(base):
                           urls.append(loc.text.strip())
               except Exception as exc:
-                  print('Sitemap parse warning:', exc)
+                  print(f'Sitemap parse warning for {sitemap_path}:', exc)
 
           if not urls:
               urls = [base]
@@ -69,7 +72,7 @@ jobs:
               data=payload,
               headers={
                   'Content-Type': 'application/json; charset=utf-8',
-                  'User-Agent': 'Zuhause-am-Bach-IndexNow/1.0',
+                  'User-Agent': 'Zuhause-am-Bach-IndexNow/1.1',
               },
               method='POST',
           )
@@ -78,8 +81,6 @@ jobs:
                   print('IndexNow status:', response.status)
                   print('Submitted URLs:', len(urls))
           except urllib.error.HTTPError as exc:
-              # IndexNow is an optional external SEO notification. A provider-side
-              # rejection must not mark an otherwise healthy site deployment red.
               body = exc.read().decode('utf-8', errors='replace')[:500]
               print(f'IndexNow warning: HTTP {exc.code}; submission skipped. {body}')
           except urllib.error.URLError as exc:
