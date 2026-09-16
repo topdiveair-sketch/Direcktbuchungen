@@ -278,3 +278,116 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", install, { once: true });
   else install();
 })();
+
+/* Fail-safe booking request fallback.
+   Instant booking stays fail-closed, but a normal personal request must not hang
+   forever when the live direct-price endpoint is temporarily unavailable. */
+(function () {
+  "use strict";
+
+  function validStay() {
+    const a = document.getElementById("arrival")?.value || "";
+    const d = document.getElementById("departure")?.value || "";
+    return /^\d{4}-\d{2}-\d{2}$/.test(a) && /^\d{4}-\d{2}-\d{2}$/.test(d) && d > a;
+  }
+
+  function requiredFieldsComplete(form) {
+    const required = Array.from(form.querySelectorAll("[required]"));
+    const missing = required.find(function (field) { return !String(field.value || "").trim(); });
+    if (missing) {
+      missing.focus();
+      missing.scrollIntoView({ behavior: "smooth", block: "center" });
+      return false;
+    }
+    return true;
+  }
+
+  function buildFallbackRequest(form) {
+    const room = form.querySelector('input[name="room"]:checked')?.value || "Bachblick";
+    const extras = Array.from(form.querySelectorAll('input[name="extra"]:checked')).map(function (x) { return x.value; });
+    const lines = [
+      "Buchungsanfrage Zuhause am Bach",
+      "",
+      "Name: " + (document.getElementById("firstName")?.value || "") + " " + (document.getElementById("lastName")?.value || ""),
+      "E-Mail: " + (document.getElementById("email")?.value || ""),
+      "Telefon: " + (document.getElementById("phone")?.value || ""),
+      "",
+      "Anreise: " + (document.getElementById("arrival")?.value || ""),
+      "Abreise: " + (document.getElementById("departure")?.value || ""),
+      "Personen: " + (document.getElementById("adults")?.value || ""),
+      "Zimmer: " + room,
+      "Extras: " + (extras.length ? extras.join(", ") : "keine"),
+      "Direktpreis: wird persönlich bestätigt",
+      "",
+      "Nachricht:",
+      document.getElementById("message")?.value || "-",
+      "",
+      "Hinweis: Die Live-Preisprüfung war beim Absenden vorübergehend nicht erreichbar. Verfügbarkeit und Preis bitte persönlich bestätigen."
+    ];
+    return lines.join("\n");
+  }
+
+  function installFallback() {
+    const form = document.getElementById("requestForm");
+    const button = document.getElementById("submitRequest");
+    const availability = document.getElementById("availabilityStatus");
+    const sendOptions = document.getElementById("sendOptions");
+    const emailLink = document.getElementById("sendEmailLink");
+    const whatsappLink = document.getElementById("sendWhatsappLink");
+    if (!form || !button || !sendOptions || !emailLink || !whatsappLink) return;
+
+    let checkingSince = 0;
+
+    function refresh() {
+      const text = (button.textContent || "").trim();
+      const checking = /Preis wird geprüft|Price is being checked/i.test(text);
+      const blocked = availability?.classList.contains("blocked");
+      if (checking && validStay() && !blocked) {
+        if (!checkingSince) checkingSince = Date.now();
+        if (Date.now() - checkingSince >= 2500) {
+          button.disabled = false;
+          button.dataset.priceFallback = "1";
+          button.textContent = "Buchungsanfrage senden – Preis wird bestätigt";
+          if (availability && !availability.classList.contains("blocked")) {
+            availability.className = "availability-status note";
+            availability.textContent = "Live-Preis derzeit nicht erreichbar. Ihre Anfrage kann trotzdem gesendet werden; Verfügbarkeit und Preis werden persönlich bestätigt.";
+          }
+        }
+      } else {
+        checkingSince = 0;
+        if (!checking && button.dataset.priceFallback === "1") delete button.dataset.priceFallback;
+      }
+    }
+
+    setInterval(refresh, 400);
+
+    button.addEventListener("click", function (event) {
+      if (button.dataset.priceFallback !== "1") return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (!requiredFieldsComplete(form)) {
+        alert("Bitte alle Pflichtfelder ausfüllen.");
+        return;
+      }
+      if (!validStay()) {
+        alert("Bitte Anreise und Abreise korrekt auswählen.");
+        return;
+      }
+      if (availability?.classList.contains("blocked")) {
+        alert(availability.textContent || "Der gewählte Termin ist nicht verfügbar.");
+        return;
+      }
+
+      const subject = "Buchungsanfrage Zuhause am Bach";
+      const body = buildFallbackRequest(form);
+      emailLink.href = "mailto:Zuhause.am.Bach@outlook.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+      whatsappLink.href = "https://wa.me/436646437526?text=" + encodeURIComponent(subject + "\n\n" + body);
+      sendOptions.classList.add("show");
+      sendOptions.scrollIntoView({ behavior: "smooth", block: "center" });
+      window.zabTrack?.("booking_request_fallback_prepared", { reason: "direct_price_unavailable" });
+    }, true);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", installFallback, { once: true });
+  else installFallback();
+})();
