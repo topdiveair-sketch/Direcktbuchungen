@@ -28,17 +28,17 @@ jobs:
           text = path.read_text(encoding='utf-8')
           original = text
           base = 'https://topdiveair-sketch.github.io/Direcktbuchungen/'
+          desired_title = 'Zuhause am Bach – Unterkunft Aggsbach Wachau | Direkt buchen'
+          desired_description = 'Unterkunft in Aggsbach Markt in der Wachau direkt beim Gastgeber buchen: für Welterbesteig, Donauradweg und Wachau-Aufenthalte mit Verfügbarkeit, Direktpreis und persönlichem Kontakt.'
 
-          text = text.replace(
-              '<title>Zuhause am Bach | Unterkunft Donauradweg & Welterbesteig Wachau</title>',
-              '<title>Zuhause am Bach – Wachau | Donauradweg & Welterbesteig</title>'
-          )
-          text = text.replace(
-              'content="Zuhause am Bach | Unterkunft Donauradweg & Welterbesteig Wachau"',
-              'content="Zuhause am Bach – Wachau | Donauradweg & Welterbesteig"'
-          )
+          text = re.sub(r'<title>.*?</title>', f'<title>{desired_title}</title>', text, count=1, flags=re.S)
+          if re.search(r'<meta\s+name="description"\s+content="[^"]*"\s*/?>', text, re.I):
+              text = re.sub(r'<meta\s+name="description"\s+content="[^"]*"\s*/?>', f'<meta name="description" content="{desired_description}">', text, count=1, flags=re.I)
 
           canonical = f'<link rel="canonical" href="{base}">'
+          if 'rel="canonical"' not in text:
+              text = text.replace('</title>', '</title>\n  ' + canonical, 1)
+
           hreflang_block = '\n'.join([
               f'  <link rel="alternate" hreflang="de-AT" href="{base}">',
               f'  <link rel="alternate" hreflang="en" href="{base}en/">',
@@ -49,34 +49,28 @@ jobs:
               f'  <link rel="alternate" hreflang="nl" href="{base}nl/">',
               f'  <link rel="alternate" hreflang="x-default" href="{base}">',
           ])
-          if 'hreflang="de-AT"' not in text and canonical in text:
+          if 'hreflang="de-AT"' not in text:
               text = text.replace(canonical, canonical + '\n' + hreflang_block, 1)
 
-          text = re.sub(
-              r'("name"\s*:\s*)"Zuhause am Bach"',
-              r'\1"Zuhause am Bach – Wachau"',
-              text,
-              count=1,
-          )
-          text = re.sub(
-              r'("dateModified"\s*:\s*)"[0-9]{4}-[0-9]{2}-[0-9]{2}"',
-              r'\1"2026-09-02"',
-              text,
-              count=1,
-          )
+          text = re.sub(r'("name"\s*:\s*)"Zuhause am Bach(?: – Wachau)?"', r'\1"Zuhause am Bach – Wachau"', text, count=1)
+          text = re.sub(r'("dateModified"\s*:\s*)"[0-9]{4}-[0-9]{2}-[0-9]{2}"', r'\1"2026-09-16"', text, count=1)
 
           same_as = [
-              'https://www.booking.com/hotel/at/zu-hause-am-bach.de.html',
-              'https://www.google.com/travel/hotels/entity/CgsIncbWpIupyZPWARAB',
+              'https://www.aggsbach.gv.at/Zuhause_am_Bach_-_Privatzimmervermietung',
               'https://www.donau.com/wachau-nibelungengau-kremstal/unterkunft/zu-hause-am-bach-wachau',
-              'https://www.outdooractive.com/de/accommodation/donau-niederoesterreich/zuhause-am-bach-wachau-privatzimmer-wo-geschichten-entstehen/811315184/',
-              'https://www.holidaycheck.at/hi/zuhause-am-bach-ruhige-unterkunft-fuer-erholungssuchende-am-welterbesteig-und-donauradweg/d66cc36b-7f57-4db0-8211-e5f75fcc669a'
+              'https://www.booking.com/hotel/at/zu-hause-am-bach.de.html',
+              'https://www.outdooractive.com/de/accommodation/donau-niederoesterreich/zuhause-am-bach-wachau-privatzimmer-wo-geschichten-entstehen/811315184/'
           ]
-          if '"sameAs"' not in text:
-              marker = '    "telephone": "+436646437526",'
+          marker = '    "telephone": "+436646437526",'
+          if marker in text:
               block = '    "sameAs": [\n' + ',\n'.join(f'      "{u}"' for u in same_as) + '\n    ],\n'
-              if marker in text:
+              if '"sameAs"' in text:
+                  text = re.sub(r'\s*"sameAs"\s*:\s*\[[\s\S]*?\],\s*', '\n' + block, text, count=1)
+              else:
                   text = text.replace(marker, block + marker, 1)
+
+          if 'name="robots"' not in text:
+              text = text.replace('</title>', '</title>\n  <meta name="robots" content="index,follow,max-image-preview:large">', 1)
 
           if text != original:
               path.write_text(text, encoding='utf-8')
@@ -91,12 +85,15 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           text = Path('index.html').read_text(encoding='utf-8')
-          assert '<title>Zuhause am Bach – Wachau | Donauradweg & Welterbesteig</title>' in text
+          assert '<title>Zuhause am Bach – Unterkunft Aggsbach Wachau | Direkt buchen</title>' in text
+          assert 'Unterkunft in Aggsbach Markt in der Wachau direkt beim Gastgeber buchen' in text
+          assert 'rel="canonical" href="https://topdiveair-sketch.github.io/Direcktbuchungen/"' in text
           for lang in ('de-AT','en','cs','sk','hu','pl','nl','x-default'):
               assert f'hreflang="{lang}"' in text, lang
           assert '"name": "Zuhause am Bach – Wachau"' in text
           assert '"sameAs"' in text
-          assert '"email": "Zuhause.am.Bach@outlook.com"' in text
+          assert 'https://www.aggsbach.gv.at/Zuhause_am_Bach_-_Privatzimmervermietung' in text
+          assert 'https://www.donau.com/wachau-nibelungengau-kremstal/unterkunft/zu-hause-am-bach-wachau' in text
           print('SEO identity validation passed')
           PY
 
@@ -110,5 +107,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git commit -m 'Normalize brand identity, hreflang and profile links'
+          git commit -m 'Strengthen Aggsbach Wachau homepage SEO identity'
           git push
