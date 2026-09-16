@@ -1,0 +1,186 @@
+name: Consolidate route SEO
+
+on:
+  push:
+    paths:
+      - '.github/workflows/consolidate-route-seo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  consolidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Consolidate search intent and internal links
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          base = 'https://topdiveair-sketch.github.io/Direcktbuchungen/'
+          changed = []
+
+          def save(path, before, after):
+              if after != before:
+                  Path(path).write_text(after, encoding='utf-8')
+                  changed.append(path)
+
+          # 1) Homepage: robust canonical, robots and language alternates.
+          p = Path('index.html')
+          before = p.read_text(encoding='utf-8')
+          text = before
+          head_block = '\n'.join([
+              f'  <link rel="canonical" href="{base}">',
+              '  <meta name="robots" content="index,follow,max-image-preview:large">',
+              f'  <link rel="alternate" hreflang="de-AT" href="{base}">',
+              f'  <link rel="alternate" hreflang="en" href="{base}en/">',
+              f'  <link rel="alternate" hreflang="cs" href="{base}cs/">',
+              f'  <link rel="alternate" hreflang="sk" href="{base}sk/">',
+              f'  <link rel="alternate" hreflang="hu" href="{base}hu/">',
+              f'  <link rel="alternate" hreflang="pl" href="{base}pl/">',
+              f'  <link rel="alternate" hreflang="nl" href="{base}nl/">',
+              f'  <link rel="alternate" hreflang="x-default" href="{base}">',
+          ])
+          if 'rel="canonical"' not in text:
+              text = text.replace('  <style>', head_block + '\n  <style>', 1)
+          else:
+              text = re.sub(r'\s*<link rel="canonical"[^>]*>', '', text, count=1)
+              text = re.sub(r'\s*<meta name="robots"[^>]*>', '', text, count=1)
+              text = re.sub(r'\s*<link rel="alternate" hreflang="(?:de-AT|en|cs|sk|hu|pl|nl|x-default)"[^>]*>', '', text)
+              text = text.replace('  <style>', head_block + '\n  <style>', 1)
+          save('index.html', before, text)
+
+          # 2) Make the rich route pages the primary organic landing pages.
+          route_specs = {
+              'welterbesteig-unterkunft-wachau/index.html': {
+                  'title': 'Welterbesteig Unterkunft Aggsbach | Zuhause am Bach Wachau',
+                  'description': 'Welterbesteig Unterkunft in Aggsbach Markt in der Wachau: persönlich übernachten, Frühstück und Gepäckservice anfragen und direkt beim Gastgeber buchen.',
+                  'h1': 'Welterbesteig Unterkunft in Aggsbach Markt',
+              },
+              'donauradweg-unterkunft-wachau/index.html': {
+                  'title': 'Donauradweg Übernachtung Aggsbach | Zuhause am Bach Wachau',
+                  'description': 'Donauradweg Übernachtung in Aggsbach Markt in der Wachau: Fahrrad sicher abstellen, E-Bike laden, Frühstück anfragen und direkt beim Gastgeber buchen.',
+                  'h1': 'Donauradweg Übernachtung in Aggsbach Markt',
+              },
+          }
+          for path, spec in route_specs.items():
+              p = Path(path)
+              before = p.read_text(encoding='utf-8')
+              text = before
+              text = re.sub(r'<title>.*?</title>', f'<title>{spec["title"]}</title>', text, count=1, flags=re.S)
+              text = re.sub(r'<meta name="description" content="[^"]*">', f'<meta name="description" content="{spec["description"]}">', text, count=1)
+              text = re.sub(r'<h1>.*?</h1>', f'<h1>{spec["h1"]}</h1>', text, count=1, flags=re.S)
+              save(path, before, text)
+
+          # 3) Thin exact-match pages remain useful navigation pages, but consolidate ranking signals.
+          canonical_map = {
+              'unterkunft-welterbesteig-wachau.html': base + 'welterbesteig-unterkunft-wachau/',
+              'unterkunft-donauradweg-wachau.html': base + 'donauradweg-unterkunft-wachau/',
+          }
+          for path, target in canonical_map.items():
+              p = Path(path)
+              before = p.read_text(encoding='utf-8')
+              text = before
+              text = re.sub(r'<link rel="canonical" href="[^"]+">', f'<link rel="canonical" href="{target}">', text, count=1)
+              save(path, before, text)
+
+          # 4) Point WachauEtappe directly at the canonical route pages.
+          for path in [
+              'gaeste/welterbesteig-wachau-unterkuenfte-etappen/index.html',
+              'gaeste/aggsbach-markt-welterbesteig-donauradweg/index.html',
+              'unterkunft-welterbesteig-wachau.html',
+              'unterkunft-donauradweg-wachau.html',
+          ]:
+              p = Path(path)
+              if not p.exists():
+                  continue
+              before = p.read_text(encoding='utf-8')
+              text = before.replace('../../unterkunft-welterbesteig-wachau.html', '../../welterbesteig-unterkunft-wachau/')
+              text = text.replace('../../unterkunft-donauradweg-wachau.html', '../../donauradweg-unterkunft-wachau/')
+              text = text.replace('href="gaeste/aggsbach-markt-welterbesteig-donauradweg/', 'href="gaeste/aggsbach-markt-welterbesteig-donauradweg/')
+              save(path, before, text)
+
+          # 5) Keep only canonical route URLs in the main sitemap and mark them fresh.
+          p = Path('sitemap.xml')
+          before = p.read_text(encoding='utf-8')
+          text = before
+          for url in [base + 'unterkunft-welterbesteig-wachau.html', base + 'unterkunft-donauradweg-wachau.html']:
+              text = re.sub(r'\s*<url><loc>' + re.escape(url) + r'</loc>.*?</url>', '', text)
+          for slug in ['welterbesteig-unterkunft-wachau/', 'donauradweg-unterkunft-wachau/']:
+              url = base + slug
+              repl = f'  <url><loc>{url}</loc><lastmod>2026-09-16</lastmod><changefreq>monthly</changefreq><priority>0.95</priority></url>'
+              text = re.sub(r'\s*<url><loc>' + re.escape(url) + r'</loc>.*?</url>', '\n' + repl, text)
+          save('sitemap.xml', before, text)
+
+          # 6) Correct the public guest-app URL for AI/LLM discovery.
+          p = Path('llms.txt')
+          before = p.read_text(encoding='utf-8')
+          text = before.replace('https://topdiveair-sketch.github.io/Gaeste/', base + 'gaeste/')
+          text = re.sub(r'Stand: \d{4}-\d{2}-\d{2}', 'Stand: 2026-09-16', text)
+          save('llms.txt', before, text)
+
+          print('Changed files:')
+          for path in changed:
+              print('-', path)
+          PY
+
+      - name: Validate consolidated SEO
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          base = 'https://topdiveair-sketch.github.io/Direcktbuchungen/'
+          home = Path('index.html').read_text(encoding='utf-8')
+          assert f'<link rel="canonical" href="{base}">' in home
+          for lang in ('de-AT','en','cs','sk','hu','pl','nl','x-default'):
+              assert f'hreflang="{lang}"' in home
+
+          w = Path('welterbesteig-unterkunft-wachau/index.html').read_text(encoding='utf-8')
+          d = Path('donauradweg-unterkunft-wachau/index.html').read_text(encoding='utf-8')
+          assert '<title>Welterbesteig Unterkunft Aggsbach | Zuhause am Bach Wachau</title>' in w
+          assert '<h1>Welterbesteig Unterkunft in Aggsbach Markt</h1>' in w
+          assert '<title>Donauradweg Übernachtung Aggsbach | Zuhause am Bach Wachau</title>' in d
+          assert '<h1>Donauradweg Übernachtung in Aggsbach Markt</h1>' in d
+
+          thin_w = Path('unterkunft-welterbesteig-wachau.html').read_text(encoding='utf-8')
+          thin_d = Path('unterkunft-donauradweg-wachau.html').read_text(encoding='utf-8')
+          assert f'rel="canonical" href="{base}welterbesteig-unterkunft-wachau/"' in thin_w
+          assert f'rel="canonical" href="{base}donauradweg-unterkunft-wachau/"' in thin_d
+
+          sitemap = Path('sitemap.xml').read_text(encoding='utf-8')
+          assert base + 'unterkunft-welterbesteig-wachau.html' not in sitemap
+          assert base + 'unterkunft-donauradweg-wachau.html' not in sitemap
+          assert base + 'welterbesteig-unterkunft-wachau/' in sitemap
+          assert base + 'donauradweg-unterkunft-wachau/' in sitemap
+
+          llms = Path('llms.txt').read_text(encoding='utf-8')
+          assert base + 'gaeste/' in llms
+          assert 'https://topdiveair-sketch.github.io/Gaeste/' not in llms
+          print('Consolidated SEO validation passed')
+          PY
+
+      - name: Commit consolidated SEO
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo 'No changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html sitemap.xml llms.txt \
+            welterbesteig-unterkunft-wachau/index.html \
+            donauradweg-unterkunft-wachau/index.html \
+            unterkunft-welterbesteig-wachau.html \
+            unterkunft-donauradweg-wachau.html \
+            gaeste/welterbesteig-wachau-unterkuenfte-etappen/index.html \
+            gaeste/aggsbach-markt-welterbesteig-donauradweg/index.html
+          git commit -m 'Consolidate route SEO and direct-booking signals'
+          git push
