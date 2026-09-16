@@ -18,7 +18,8 @@
     .cta{display:inline-block;padding:14px 18px;border-radius:10px;background:#fff;color:#17372f;text-decoration:none;font-weight:900;margin:8px 8px 0 0}.cta.alt{background:#f0b424;color:#222}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
     .card strong{color:var(--brand);font-size:18px}.price-note{background:var(--warm);border:1px solid #efd79e;border-radius:14px;padding:18px;margin:20px 0}.facts{background:var(--soft);border-radius:14px;padding:20px;margin:22px 0}.facts ul{margin:8px 0 0}.section{margin:30px 0}.section h2{font-size:28px;margin:0 0 12px}.small{color:var(--muted);font-size:14px}.sticky{position:sticky;bottom:12px;z-index:20;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 14px 36px rgba(0,0,0,.14)}
-    .sticky a{white-space:nowrap;background:var(--brand);color:#fff;text-decoration:none;font-weight:900;padding:12px 14px;border-radius:9px}@media(max-width:640px){main{padding:14px}.hero{padding:30px 20px}.sticky{display:grid}.sticky a{text-align:center}}
+    .sticky a{white-space:nowrap;background:var(--brand);color:#fff;text-decoration:none;font-weight:900;padding:12px 14px;border-radius:9px}.book-feature{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;background:#fff3df;border:1px solid #ebcf9a;border-radius:16px;padding:22px;margin:26px 0}.book-feature h2{margin:0 0 8px;font-size:26px}.book-feature p{margin:6px 0}.book-feature .book-link{display:inline-block;background:#8b3d1f;color:#fff;text-decoration:none;font-weight:900;padding:13px 16px;border-radius:10px;white-space:nowrap}
+    @media(max-width:640px){main{padding:14px}.hero{padding:30px 20px}.sticky{display:grid}.sticky a{text-align:center}.book-feature{grid-template-columns:1fr}.book-feature .book-link{text-align:center;white-space:normal}}
   </style>
 </head>
 <body>
@@ -53,6 +54,16 @@
       <li>Gepäckunterstützung nach Verfügbarkeit</li>
       <li>Kurze Wege zu Welterbesteig, Donauradweg und Wachau-Erlebnissen</li>
     </ul>
+  </section>
+
+  <section class="book-feature" aria-labelledby="windis-book-title">
+    <div>
+      <div class="eyebrow" style="color:#8b3d1f">Wachau-Weihnachtsabenteuer</div>
+      <h2 id="windis-book-title">Die wilden Windis auf dem Dürnsteiner Weihnachtsmarkt</h2>
+      <p><strong>Ausführliche Weihnachtsabenteuer der Wachau</strong> – Die Wilden Wachauer Windis, Band 15.</p>
+      <p class="small">Ein passender Buchtipp zum Wachauer Advent in Dürnstein.</p>
+    </div>
+    <a id="windis-amazon-link" class="book-link" href="https://www.amazon.de/dp/B0G2RYG75Y" target="_blank" rel="noopener noreferrer">Buch auf Amazon.de ansehen</a>
   </section>
 
   <section class="price-note">
@@ -102,7 +113,12 @@
   }
   document.querySelectorAll('a[data-track]').forEach(function(a){a.href=bookingUrl();});
   send('campaign_landing_view');
-  document.addEventListener('click',function(e){const a=e.target.closest('[data-track]');if(a)send('campaign_booking_cta_click',{cta:a.getAttribute('data-track')});},true);
+  document.addEventListener('click',function(e){
+    const booking=e.target.closest('[data-track]');
+    if(booking)send('campaign_booking_cta_click',{cta:booking.getAttribute('data-track')});
+    const book=e.target.closest('#windis-amazon-link');
+    if(book)send('windis_book_click',{book:'duernsteiner_weihnachtsmarkt_band_15'});
+  },true);
 })();
 </script>
 </body>
