@@ -1,0 +1,121 @@
+name: SEO quality pass
+
+on:
+  push:
+    paths:
+      - '.github/workflows/seo-quality-pass.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Align entity and route metadata
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          base = 'https://topdiveair-sketch.github.io/Direcktbuchungen/'
+          changed = []
+
+          def write_if_changed(path, before, after):
+              if before != after:
+                  Path(path).write_text(after, encoding='utf-8')
+                  changed.append(path)
+
+          # Central entity page: use the current public WachauEtappe URL everywhere.
+          path = 'zuhause-am-bach-wachau/index.html'
+          p = Path(path)
+          before = p.read_text(encoding='utf-8')
+          text = before.replace('https://topdiveair-sketch.github.io/Gaeste/', base + 'gaeste/')
+          text = re.sub(r'"dateModified":"\d{4}-\d{2}-\d{2}"', '"dateModified":"2026-09-16"', text)
+          # Give the guest platform a visible internal path from the central entity page.
+          if 'WachauEtappe planen' not in text:
+              marker = '<a href="../wachau-routenplaner/"><strong>Routenplaner öffnen →</strong></a>'
+              if marker in text:
+                  text = text.replace(marker, marker + '<br><a href="../gaeste/"><strong>WachauEtappe planen →</strong></a>', 1)
+          write_if_changed(path, before, text)
+
+          specs = {
+              'welterbesteig-unterkunft-wachau/index.html': {
+                  'title': 'Welterbesteig Unterkunft Aggsbach | Zuhause am Bach Wachau',
+                  'description': 'Welterbesteig Unterkunft in Aggsbach Markt in der Wachau: persönlich übernachten, Frühstück und Gepäckservice anfragen und direkt beim Gastgeber buchen.',
+                  'guest_anchor': 'Welterbesteig mit WachauEtappe planen',
+              },
+              'donauradweg-unterkunft-wachau/index.html': {
+                  'title': 'Donauradweg Übernachtung Aggsbach | Zuhause am Bach Wachau',
+                  'description': 'Donauradweg Übernachtung in Aggsbach Markt in der Wachau: Fahrrad sicher abstellen, E-Bike laden, Frühstück anfragen und direkt beim Gastgeber buchen.',
+                  'guest_anchor': 'Aggsbach-Etappe mit WachauEtappe planen',
+              },
+          }
+
+          for path, spec in specs.items():
+              p = Path(path)
+              before = p.read_text(encoding='utf-8')
+              text = before
+              # Keep social previews aligned with the search landing-page identity.
+              text = re.sub(r'<meta property="og:title" content="[^"]*">', f'<meta property="og:title" content="{spec["title"]}">', text, count=1)
+              text = re.sub(r'<meta property="og:description" content="[^"]*">', f'<meta property="og:description" content="{spec["description"]}">', text, count=1)
+              text = re.sub(r'<meta name="twitter:title" content="[^"]*">', f'<meta name="twitter:title" content="{spec["title"]}">', text, count=1)
+              text = re.sub(r'<meta name="twitter:description" content="[^"]*">', f'<meta name="twitter:description" content="{spec["description"]}">', text, count=1)
+
+              # Align the WebPage JSON-LD name/description with the canonical page intent.
+              text = text.replace('"name":"Unterkunft am Welterbesteig Wachau | Zuhause am Bach"', '"name":"Welterbesteig Unterkunft Aggsbach | Zuhause am Bach Wachau"')
+              text = text.replace('"name":"Unterkunft am Donauradweg Wachau | Zuhause am Bach"', '"name":"Donauradweg Übernachtung Aggsbach | Zuhause am Bach Wachau"')
+
+              # Add a visible, crawlable route-planning link once.
+              if spec['guest_anchor'] not in text:
+                  marker = '<div class="link-list">'
+                  guest_link = f'<a href="../gaeste/aggsbach-markt-welterbesteig-donauradweg/">{spec["guest_anchor"]}</a>'
+                  text = text.replace(marker, marker + guest_link, 1)
+
+              write_if_changed(path, before, text)
+
+          print('Changed:')
+          for item in changed:
+              print('-', item)
+          PY
+
+      - name: Validate quality pass
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          base = 'https://topdiveair-sketch.github.io/Direcktbuchungen/'
+          entity = Path('zuhause-am-bach-wachau/index.html').read_text(encoding='utf-8')
+          assert 'https://topdiveair-sketch.github.io/Gaeste/' not in entity
+          assert base + 'gaeste/' in entity
+          assert 'WachauEtappe planen' in entity
+
+          w = Path('welterbesteig-unterkunft-wachau/index.html').read_text(encoding='utf-8')
+          d = Path('donauradweg-unterkunft-wachau/index.html').read_text(encoding='utf-8')
+          assert 'property="og:title" content="Welterbesteig Unterkunft Aggsbach | Zuhause am Bach Wachau"' in w
+          assert 'Welterbesteig mit WachauEtappe planen' in w
+          assert 'property="og:title" content="Donauradweg Übernachtung Aggsbach | Zuhause am Bach Wachau"' in d
+          assert 'Aggsbach-Etappe mit WachauEtappe planen' in d
+          print('SEO quality validation passed')
+          PY
+
+      - name: Commit quality pass
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo 'No changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add zuhause-am-bach-wachau/index.html \
+            welterbesteig-unterkunft-wachau/index.html \
+            donauradweg-unterkunft-wachau/index.html
+          git commit -m 'Align route metadata and WachauEtappe entity links'
+          git push
