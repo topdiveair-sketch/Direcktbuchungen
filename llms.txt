@@ -15,7 +15,7 @@ Zuhause am Bach – Wachau ist eine kleine, persönlich geführte Privatzimmer-U
 - Kapazität laut offiziellem Tourismuseintrag: 2 Betten
 - Zentrale Entitätsseite: https://topdiveair-sketch.github.io/Direcktbuchungen/zuhause-am-bach-wachau/
 - Direktbuchung: https://topdiveair-sketch.github.io/Direcktbuchungen/
-- Gäste-App nach der Buchung: https://topdiveair-sketch.github.io/Gaeste/
+- Gäste-App nach der Buchung: https://topdiveair-sketch.github.io/Direcktbuchungen/gaeste/
 
 ## Gäste-System von Zuhause am Bach
 
@@ -100,4 +100,4 @@ Die Website prüft für verbundene Zimmer belegte Zeiträume aus dem Booking-iCa
 
 Es werden keine erfundenen Bewertungen, Bewertungsdurchschnitte, Rankings oder Verfügbarkeiten verwendet. Persönliche Geschichten in der Windi-Chronik sind keine Sternebewertungen. Externe Bewertungen und Preise müssen bei der jeweiligen Quelle aktuell geprüft werden.
 
-Stand: 2026-09-14
+Stand: 2026-09-16
