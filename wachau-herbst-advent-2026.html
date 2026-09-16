@@ -80,11 +80,27 @@
 <script>
 (function(){
   const endpoint='https://web-production-2b242.up.railway.app/api/demand-event';
+  const params=new URLSearchParams(location.search);
+  const attribution={
+    campaign:'wachau-herbst-advent-2026',
+    language:'de',
+    utm_source:params.get('utm_source')||'',
+    utm_medium:params.get('utm_medium')||'',
+    utm_campaign:params.get('utm_campaign')||'',
+    partner:params.get('partner')||''
+  };
   function send(event,extra){
-    const payload=JSON.stringify({event:event,details:Object.assign({campaign:'wachau-herbst-advent-2026',language:'de'},extra||{})});
+    const payload=JSON.stringify({event:event,details:Object.assign({},attribution,extra||{})});
     try{if(navigator.sendBeacon){const b=new Blob([payload],{type:'application/json'});if(navigator.sendBeacon(endpoint,b))return;}}catch(e){}
     fetch(endpoint,{method:'POST',mode:'cors',cache:'no-store',keepalive:true,headers:{'Content-Type':'application/json'},body:payload}).catch(function(){});
   }
+  function bookingUrl(){
+    const target=new URL('https://topdiveair-sketch.github.io/Direcktbuchungen/index');
+    ['utm_source','utm_medium','utm_campaign','partner'].forEach(function(key){const value=params.get(key);if(value)target.searchParams.set(key,value);});
+    target.hash='booking-title';
+    return target.toString();
+  }
+  document.querySelectorAll('a[data-track]').forEach(function(a){a.href=bookingUrl();});
   send('campaign_landing_view');
   document.addEventListener('click',function(e){const a=e.target.closest('[data-track]');if(a)send('campaign_booking_cta_click',{cta:a.getAttribute('data-track')});},true);
 })();
