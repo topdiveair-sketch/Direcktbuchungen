@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Wachau Herbst & Advent 2026 – direkt bei Zuhause am Bach buchen</title>
-  <meta name="description" content="Herbst- und Adventurlaub 2026 in der Wachau: Zuhause am Bach in Aggsbach Markt direkt beim Gastgeber buchen – ideal für Welterbesteig, Donauradweg und Wachauer Advent.">
+  <meta name="description" content="Herbst- und Adventurlaub 2026 in der Wachau: Zuhause am Bach direkt beim Gastgeber buchen – ideal für Welterbesteig, Donauradweg und Wachauer Advent.">
   <link rel="canonical" href="https://topdiveair-sketch.github.io/Direcktbuchungen/wachau-herbst-advent-2026.html">
   <meta property="og:title" content="Wachau Herbst & Advent 2026 – Zuhause am Bach">
   <meta property="og:description" content="Direkt beim Gastgeber buchen: Wachau, Welterbesteig, Donauradweg und Wachauer Advent 2026.">
@@ -18,7 +18,7 @@
     .cta{display:inline-block;padding:14px 18px;border-radius:10px;background:#fff;color:#17372f;text-decoration:none;font-weight:900;margin:8px 8px 0 0}.cta.alt{background:#f0b424;color:#222}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
     .card strong{color:var(--brand);font-size:18px}.price-note{background:var(--warm);border:1px solid #efd79e;border-radius:14px;padding:18px;margin:20px 0}.facts{background:var(--soft);border-radius:14px;padding:20px;margin:22px 0}.facts ul{margin:8px 0 0}.section{margin:30px 0}.section h2{font-size:28px;margin:0 0 12px}.small{color:var(--muted);font-size:14px}.sticky{position:sticky;bottom:12px;z-index:20;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 14px 36px rgba(0,0,0,.14)}
-    .sticky a{white-space:nowrap;background:var(--brand);color:#fff;text-decoration:none;font-weight:900;padding:12px 14px;border-radius:9px}.book-feature{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;background:#fff3df;border:1px solid #ebcf9a;border-radius:16px;padding:22px;margin:26px 0}.book-feature h2{margin:0 0 8px;font-size:26px}.book-feature p{margin:6px 0}.book-feature .book-link{display:inline-block;background:#8b3d1f;color:#fff;text-decoration:none;font-weight:900;padding:13px 16px;border-radius:10px;white-space:nowrap}
+    .sticky a{white-space:nowrap;background:var(--brand);color:#fff;text-decoration:none;font-weight:900;padding:12px 14px;border-radius:9px}.book-feature{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;background:#fff3df;border:1px solid #ebcf9a;border-radius:16px;padding:22px;margin:26px 0}.book-feature h2{margin:0 0 8px;font-size:26px}.book-feature p{margin:6px 0}.book-actions{display:grid;gap:8px}.book-feature .book-link{display:inline-block;background:#8b3d1f;color:#fff;text-decoration:none;font-weight:900;padding:13px 16px;border-radius:10px;white-space:nowrap;text-align:center}.book-feature .book-link.secondary{background:#176b5a}
     @media(max-width:640px){main{padding:14px}.hero{padding:30px 20px}.sticky{display:grid}.sticky a{text-align:center}.book-feature{grid-template-columns:1fr}.book-feature .book-link{text-align:center;white-space:normal}}
   </style>
 </head>
@@ -63,7 +63,10 @@
       <p><strong>Ausführliche Weihnachtsabenteuer der Wachau</strong> – Die Wilden Wachauer Windis, Band 15.</p>
       <p class="small">Ein passender Buchtipp zum Wachauer Advent in Dürnstein.</p>
     </div>
-    <a id="windis-amazon-link" class="book-link" href="https://www.amazon.de/dp/B0G2RYG75Y" target="_blank" rel="noopener noreferrer">Buch auf Amazon.de ansehen</a>
+    <div class="book-actions">
+      <a class="book-link secondary" href="windis-duernsteiner-weihnachtsmarkt.html">Mehr zum Buch</a>
+      <a id="windis-amazon-link" class="book-link" href="https://www.amazon.de/dp/B0G2RYG75Y" target="_blank" rel="noopener noreferrer">Buch auf Amazon.de ansehen</a>
+    </div>
   </section>
 
   <section class="price-note">
@@ -81,7 +84,7 @@
     </div>
   </section>
 
-  <p class="small">Zuhause am Bach · Aggsbach Markt · Wachau. Diese Seite führt direkt zum bestehenden Buchungsprozess von Zuhause am Bach.</p>
+  <p class="small">Zuhause am Bach · Wachau. Diese Seite führt direkt zum bestehenden Buchungsprozess von Zuhause am Bach.</p>
 
   <div class="sticky">
     <div><strong>Wunschtermin gefunden?</strong><br><span class="small">Direktpreis und Verfügbarkeit sofort prüfen.</span></div>
@@ -92,33 +95,10 @@
 (function(){
   const endpoint='https://web-production-2b242.up.railway.app/api/demand-event';
   const params=new URLSearchParams(location.search);
-  const attribution={
-    campaign:'wachau-herbst-advent-2026',
-    language:'de',
-    utm_source:params.get('utm_source')||'',
-    utm_medium:params.get('utm_medium')||'',
-    utm_campaign:params.get('utm_campaign')||'',
-    partner:params.get('partner')||''
-  };
-  function send(event,extra){
-    const payload=JSON.stringify({event:event,details:Object.assign({},attribution,extra||{})});
-    try{if(navigator.sendBeacon){const b=new Blob([payload],{type:'application/json'});if(navigator.sendBeacon(endpoint,b))return;}}catch(e){}
-    fetch(endpoint,{method:'POST',mode:'cors',cache:'no-store',keepalive:true,headers:{'Content-Type':'application/json'},body:payload}).catch(function(){});
-  }
-  function bookingUrl(){
-    const target=new URL('https://topdiveair-sketch.github.io/Direcktbuchungen/index');
-    ['utm_source','utm_medium','utm_campaign','partner'].forEach(function(key){const value=params.get(key);if(value)target.searchParams.set(key,value);});
-    target.hash='booking-title';
-    return target.toString();
-  }
-  document.querySelectorAll('a[data-track]').forEach(function(a){a.href=bookingUrl();});
-  send('campaign_landing_view');
-  document.addEventListener('click',function(e){
-    const booking=e.target.closest('[data-track]');
-    if(booking)send('campaign_booking_cta_click',{cta:booking.getAttribute('data-track')});
-    const book=e.target.closest('#windis-amazon-link');
-    if(book)send('windis_book_click',{book:'duernsteiner_weihnachtsmarkt_band_15'});
-  },true);
+  const attribution={campaign:'wachau-herbst-advent-2026',language:'de',utm_source:params.get('utm_source')||'',utm_medium:params.get('utm_medium')||'',utm_campaign:params.get('utm_campaign')||'',partner:params.get('partner')||''};
+  function send(event,extra){const payload=JSON.stringify({event:event,details:Object.assign({},attribution,extra||{})});try{if(navigator.sendBeacon){const b=new Blob([payload],{type:'application/json'});if(navigator.sendBeacon(endpoint,b))return;}}catch(e){}fetch(endpoint,{method:'POST',mode:'cors',cache:'no-store',keepalive:true,headers:{'Content-Type':'application/json'},body:payload}).catch(function(){});}
+  function bookingUrl(){const target=new URL('https://topdiveair-sketch.github.io/Direcktbuchungen/index');['utm_source','utm_medium','utm_campaign','partner'].forEach(function(key){const value=params.get(key);if(value)target.searchParams.set(key,value);});target.hash='booking-title';return target.toString();}
+  document.querySelectorAll('a[data-track]').forEach(function(a){a.href=bookingUrl();});send('campaign_landing_view');document.addEventListener('click',function(e){const booking=e.target.closest('[data-track]');if(booking)send('campaign_booking_cta_click',{cta:booking.getAttribute('data-track')});const book=e.target.closest('#windis-amazon-link');if(book)send('windis_book_click',{book:'duernsteiner_weihnachtsmarkt_band_15'});},true);
 })();
 </script>
 </body>
