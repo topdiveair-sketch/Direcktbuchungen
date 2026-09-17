@@ -9,6 +9,10 @@
       "app.py",
       "railway_app.py",
       "growth_action_gateway.py",
+      "rank_price_entrypoint.py",
+      "rank_price_gateway.py",
+      "pricing_2027.py",
+      "pricing-2027.json",
       "payment_hold.py",
       "paypal_checkout.py",
       "booking_notifications.py",
@@ -26,7 +30,7 @@
     ]
   },
   "deploy": {
-    "startCommand": "gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 growth_action_gateway:app",
+    "startCommand": "gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 rank_price_entrypoint:app",
     "healthcheckPath": "/health/live",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
