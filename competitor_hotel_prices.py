@@ -29,6 +29,10 @@ def _norm(value: object) -> str:
     return re.sub(r"[^a-z0-9]+", " ", text).strip()
 
 
+def _tokens(value: object) -> set[str]:
+    return {t for t in _norm(value).split() if len(t) >= 2 and t not in {"haus", "hotel", "pension", "gasthof", "wachau"}}
+
+
 def _number(value: object):
     if value is None or isinstance(value, bool):
         return None
@@ -61,7 +65,6 @@ def _block_price(block):
 def _extract_prices(prop: dict, nights: int) -> tuple[float | None, float | None]:
     nightly = _block_price(prop.get("rate_per_night"))
     total = _block_price(prop.get("total_rate"))
-
     if nightly is None:
         for key in ("extracted_price", "price", "lowest_rate", "rate"):
             if key in prop:
@@ -69,12 +72,10 @@ def _extract_prices(prop: dict, nights: int) -> tuple[float | None, float | None
                 if nightly is not None:
                     nightly = round(nightly, 2)
                     break
-
     if total is None and nightly is not None:
         total = round(nightly * nights, 2)
     if nightly is None and total is not None and nights > 0:
         nightly = round(total / nights, 2)
-
     if nightly is not None and not 20 <= nightly <= 5000:
         nightly = None
     if total is not None and not 20 <= total <= 20000:
@@ -94,17 +95,35 @@ def _match_name(property_name: str):
     return None
 
 
-def hotel_price_snapshot(arrival: date, departure: date) -> dict:
+def _target_match_score(canonical: str, aliases: list[str], display_name: str) -> float:
+    dn = _norm(display_name)
+    if not dn:
+        return 0.0
+    variants = [canonical] + aliases
+    best = 0.0
+    for variant in variants:
+        vn = _norm(variant)
+        if not vn:
+            continue
+        if vn == dn:
+            return 1.0
+        if vn in dn or dn in vn:
+            best = max(best, 0.95)
+        vt = _tokens(vn)
+        dt = _tokens(dn)
+        if vt and dt:
+            overlap = len(vt & dt) / max(1, len(vt))
+            best = max(best, overlap)
+    return best
+
+
+def _google_hotels(query: str, arrival: date, departure: date) -> dict:
     key = os.environ.get("SERPAPI_KEY", "").strip()
     if not key:
-        return {"ok": False, "error": "SERPAPI_KEY fehlt", "prices": []}
-    if departure <= arrival:
-        return {"ok": False, "error": "Abreise muss nach Anreise liegen", "prices": []}
-
-    nights = (departure - arrival).days
+        return {"ok": False, "error": "SERPAPI_KEY fehlt", "properties": []}
     params = {
         "engine": "google_hotels",
-        "q": "Aggsbach Markt Wachau Austria",
+        "q": query,
         "check_in_date": arrival.isoformat(),
         "check_out_date": departure.isoformat(),
         "adults": "2",
@@ -114,26 +133,50 @@ def hotel_price_snapshot(arrival: date, departure: date) -> dict:
         "api_key": key,
     }
     url = "https://serpapi.com/search.json?" + urllib.parse.urlencode(params)
-    req = urllib.request.Request(
-        url,
-        headers={"User-Agent": "ZuhauseAmBach-RangPreis/1.6", "Accept": "application/json"},
-    )
+    req = urllib.request.Request(url, headers={"User-Agent": "ZuhauseAmBach-RangPreis/1.7", "Accept": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=28) as response:
             payload = json.loads(response.read().decode("utf-8", errors="replace"))
     except Exception as exc:
-        return {"ok": False, "error": f"Google-Hotels-Abfrage fehlgeschlagen: {type(exc).__name__}", "prices": []}
-
+        return {"ok": False, "error": f"Google-Hotels-Abfrage fehlgeschlagen: {type(exc).__name__}", "properties": []}
     if not isinstance(payload, dict):
-        return {"ok": False, "error": "Ungültige Google-Hotels-Antwort", "prices": []}
+        return {"ok": False, "error": "Ungültige Google-Hotels-Antwort", "properties": []}
     if payload.get("error"):
-        return {"ok": False, "error": str(payload.get("error")), "prices": []}
-
+        return {"ok": False, "error": str(payload.get("error")), "properties": []}
     properties = payload.get("properties") or []
-    if not isinstance(properties, list):
-        properties = []
+    return {"ok": True, "properties": properties if isinstance(properties, list) else []}
 
-    found = {}
+
+def _row_from_property(canonical: str, prop: dict, arrival: date, departure: date, source_note: str) -> dict | None:
+    nights = (departure - arrival).days
+    nightly, total = _extract_prices(prop, nights)
+    if nightly is None and total is None:
+        return None
+    display_name = str(prop.get("name") or prop.get("title") or "").strip()
+    return {
+        "name": canonical,
+        "nightly_eur": nightly,
+        "total_eur": total,
+        "nights": nights,
+        "source": "Google Hotels / SerpAPI",
+        "arrival": arrival.isoformat(),
+        "departure": departure.isoformat(),
+        "adults": 2,
+        "matched_property": display_name,
+        "match_method": source_note,
+    }
+
+
+def hotel_price_snapshot(arrival: date, departure: date) -> dict:
+    if departure <= arrival:
+        return {"ok": False, "error": "Abreise muss nach Anreise liegen", "prices": []}
+
+    broad = _google_hotels("Aggsbach Markt Wachau Austria", arrival, departure)
+    if not broad.get("ok"):
+        return {"ok": False, "error": broad.get("error") or "Google Hotels nicht verfügbar", "prices": []}
+
+    found: dict[str, dict] = {}
+    properties = broad.get("properties") or []
     for prop in properties:
         if not isinstance(prop, dict):
             continue
@@ -141,42 +184,58 @@ def hotel_price_snapshot(arrival: date, departure: date) -> dict:
         canonical = _match_name(display_name)
         if not canonical:
             continue
-        nightly, total = _extract_prices(prop, nights)
-        if nightly is None and total is None:
+        row = _row_from_property(canonical, prop, arrival, departure, "Sammelsuche")
+        if row is None:
             continue
         current = found.get(canonical)
-        candidate_total = total if total is not None else float("inf")
-        current_total = current.get("total_eur") if current else None
-        if current is None or current_total is None or candidate_total < current_total:
-            found[canonical] = {
-                "name": canonical,
-                "nightly_eur": nightly,
-                "total_eur": total,
-                "nights": nights,
-                "source": "Google Hotels / SerpAPI",
-                "arrival": arrival.isoformat(),
-                "departure": departure.isoformat(),
-                "adults": 2,
-                "matched_property": display_name,
-            }
+        if current is None or (row.get("total_eur") or 999999) < (current.get("total_eur") or 999999):
+            found[canonical] = row
+
+    # Targeted fallback only for competitors missing from the broad result set.
+    # This is intentionally demand-driven so the normal case remains cheap.
+    targeted_calls = 0
+    targeted_errors = []
+    for canonical, aliases in COMPETITORS:
+        if canonical in found:
+            continue
+        query = f'"{canonical}" Aggsbach Wachau Austria'
+        targeted = _google_hotels(query, arrival, departure)
+        targeted_calls += 1
+        if not targeted.get("ok"):
+            targeted_errors.append(f"{canonical}: {targeted.get('error') or 'Fehler'}")
+            continue
+        candidates = []
+        for prop in targeted.get("properties") or []:
+            if not isinstance(prop, dict):
+                continue
+            display_name = str(prop.get("name") or prop.get("title") or "").strip()
+            score = _target_match_score(canonical, aliases, display_name)
+            if score < 0.60:
+                continue
+            row = _row_from_property(canonical, prop, arrival, departure, "gezielte Hotelsuche")
+            if row is not None:
+                candidates.append((score, row))
+        if candidates:
+            candidates.sort(key=lambda item: (-item[0], item[1].get("total_eur") or 999999))
+            found[canonical] = candidates[0][1]
 
     return {
         "ok": True,
         "source": "Google Hotels / SerpAPI",
         "arrival": arrival.isoformat(),
         "departure": departure.isoformat(),
-        "nights": nights,
+        "nights": (departure - arrival).days,
         "adults": 2,
         "property_count": len(properties),
+        "targeted_calls": targeted_calls,
+        "targeted_errors": targeted_errors[:5],
         "prices": list(found.values()),
     }
 
 
 def competitor_stay_matrix(arrival: date) -> dict:
-    """Compare every known competitor for 1-night and 3-night stays from the same arrival date."""
     one = hotel_price_snapshot(arrival, arrival + timedelta(days=1))
     three = hotel_price_snapshot(arrival, arrival + timedelta(days=3))
-
     one_map = {row["name"]: row for row in (one.get("prices") or []) if isinstance(row, dict) and row.get("name")}
     three_map = {row["name"]: row for row in (three.get("prices") or []) if isinstance(row, dict) and row.get("name")}
 
@@ -192,14 +251,12 @@ def competitor_stay_matrix(arrival: date) -> dict:
                 three_nightly = round(float(three_total) / 3, 2)
             except Exception:
                 three_nightly = None
-
         if one_total is not None:
             availability = "1 Nacht buchbar"
         elif three_total is not None:
             availability = "ab 3 Nächten"
         else:
-            availability = "kein Preis gefunden"
-
+            availability = "kein öffentlicher Preis gefunden"
         rows.append({
             "name": canonical,
             "price_eur": one_total if one_total is not None else three_nightly,
@@ -215,7 +272,9 @@ def competitor_stay_matrix(arrival: date) -> dict:
             "adults": 2,
             "matched_property_1n": r1.get("matched_property", ""),
             "matched_property_3n": r3.get("matched_property", ""),
-            "note": "Google-Hotels-Preise für 2 Erwachsene, gleicher Anreisetag; 1 Nacht und 3 Nächte werden getrennt abgefragt.",
+            "match_method_1n": r1.get("match_method", ""),
+            "match_method_3n": r3.get("match_method", ""),
+            "note": "Google-Hotels-Preise für 2 Erwachsene, gleicher Anreisetag; Sammelsuche plus gezielter Fallback je fehlendem Betrieb.",
         })
 
     errors = []
@@ -223,7 +282,6 @@ def competitor_stay_matrix(arrival: date) -> dict:
         errors.append("1 Nacht: " + str(one.get("error") or "Fehler"))
     if not three.get("ok"):
         errors.append("3 Nächte: " + str(three.get("error") or "Fehler"))
-
     return {
         "ok": bool(one.get("ok") or three.get("ok")),
         "source": "Google Hotels / SerpAPI",
@@ -234,5 +292,7 @@ def competitor_stay_matrix(arrival: date) -> dict:
         "three_night_property_count": three.get("property_count") or 0,
         "one_night_match_count": len(one_map),
         "three_night_match_count": len(three_map),
+        "targeted_calls_1n": one.get("targeted_calls") or 0,
+        "targeted_calls_3n": three.get("targeted_calls") or 0,
         "error": " | ".join(errors),
     }
