@@ -1,0 +1,73 @@
+name: Build Rang Preis No Popup Verified
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-rank-price-no-popup-verified.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Apply and verify no-popup patch
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python scripts/patch_rank_price_no_popup.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m py_compile windows_rank_price/app.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $content = Get-Content windows_rank_price/app.py -Raw
+          if ($content -match 'messagebox\.showerror\(APP_NAME, message\)') { throw 'Popup line still present' }
+          if ($content -notmatch 'self\.status_var\.set\(f"Fehler: \{clean\}"\)') { throw 'Status-only error handler missing' }
+
+      - name: Commit repair
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add windows_rank_price/app.py
+          git commit -m "Stop repeated Windows fetch error popups"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git push
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pip pyinstaller
+
+      - name: Build desktop EXE
+        shell: pwsh
+        run: |
+          Set-Location windows_rank_price
+          pyinstaller --noconfirm --clean --onefile --windowed --name ZuhauseAmBach-RangPreis app.py
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      - name: Build Setup EXE
+        shell: pwsh
+        run: |
+          Set-Location windows_rank_price
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZuhauseAmBach-RangPreis-Setup-NO-POPUPS-VERIFIED
+          path: windows_rank_price/dist-installer/ZuhauseAmBach-RangPreis-Setup.exe
+          if-no-files-found: error
+          retention-days: 30
