@@ -1,0 +1,47 @@
+name: Build Rang Preis Windows Installer
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'windows_rank_price/**'
+      - '.github/workflows/build-rank-price-windows.yml'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pip pyinstaller
+
+      - name: Build desktop EXE
+        shell: pwsh
+        run: |
+          Set-Location windows_rank_price
+          pyinstaller --noconfirm --clean --onefile --windowed --name ZuhauseAmBach-RangPreis app.py
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      - name: Build Setup EXE
+        shell: pwsh
+        run: |
+          Set-Location windows_rank_price
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZuhauseAmBach-RangPreis-Setup
+          path: windows_rank_price/dist-installer/ZuhauseAmBach-RangPreis-Setup.exe
+          if-no-files-found: error
+          retention-days: 30
