@@ -13,8 +13,6 @@ INQUIRY_ONLY = {
 
 
 def _alte_post_rate(arrival: date) -> float | None:
-    # Published 2026 rates for the 2-person apartment. Cleaning and visitor tax
-    # are published separately and therefore included below in the stay total.
     periods = (
         (date(2026, 4, 11), date(2026, 5, 3), 110.0),
         (date(2026, 5, 3), date(2026, 6, 20), 100.0),
@@ -44,11 +42,6 @@ def _published_from(row: dict, one_total: float, source: str, note: str) -> None
 
 
 def apply_public_fallbacks(rows: list[dict], arrival: date, adults: int = 2) -> list[dict]:
-    """Enrich missing live rows with published public rates/status.
-
-    Fallback values are explicitly labelled as published 'from' prices and are
-    never presented as live OTA availability. Exact live Google/OTA values win.
-    """
     out = []
     for raw in rows or []:
         row = dict(raw) if isinstance(raw, dict) else {}
@@ -58,7 +51,14 @@ def apply_public_fallbacks(rows: list[dict], arrival: date, adults: int = 2) -> 
             out.append(row)
             continue
 
-        if name == "Haus Gerstbauer":
+        if name == "Goldene Wachau - Privatzimmer":
+            _published_from(
+                row,
+                160.0,
+                "Offizielle Website Goldene Wachau",
+                "Offiziell veröffentlicht: Suiten ab 160 € pro Zimmer/2 Personen. Suite Goldene Wachau ab 180 €, Appartement ab 290 € für 4 Personen. Kein Live-Verfügbarkeitsnachweis für das gewählte Datum.",
+            )
+        elif name == "Haus Gerstbauer":
             _published_from(
                 row,
                 72.60,
