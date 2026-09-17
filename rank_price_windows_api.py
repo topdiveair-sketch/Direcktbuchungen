@@ -49,6 +49,8 @@ def windows_rank_price_check():
         "rank": serp.get("rank") or {},
         "competitor_rankings": serp.get("competitor_rankings") or [],
         "ranking_source": serp.get("source") or "",
+        "provider_error": serp.get("provider_error") or "",
+        "ranking_result_count": serp.get("result_count") or 0,
         "available_keywords": KEYWORDS,
         "own_price": own,
         "public_benchmarks": _public_benchmarks(),
