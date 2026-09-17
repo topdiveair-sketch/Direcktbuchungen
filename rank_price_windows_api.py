@@ -15,17 +15,36 @@ from flask import jsonify, request
 
 from rank_price_gateway import app, _public_benchmarks, _stay_price, DEFAULT_QUERY
 from competitor_serp import KEYWORDS, serp_snapshot
+from competitor_hotel_prices import hotel_price_snapshot
 import app as legacy_app
 
 
 WEEKDAYS_DE = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
-API_VERSION = "1.4-month-overview"
+API_VERSION = "1.5-hotel-prices"
 
 
 def _desktop_admin_ok() -> bool:
     expected = os.environ.get("ADMIN_PASSWORD", "").strip()
     supplied = request.headers.get("X-Admin-Password", "").strip()
     return bool(expected and supplied and hmac.compare_digest(expected, supplied))
+
+
+def _merge_benchmarks(live_prices: list[dict], stored_prices: list[dict]) -> list[dict]:
+    """Prefer date-specific Google Hotels prices, retain stored public observations as fallback."""
+    out = []
+    seen = set()
+    for row in list(live_prices or []) + list(stored_prices or []):
+        if not isinstance(row, dict):
+            continue
+        name = str(row.get("name") or "").strip()
+        if not name:
+            continue
+        key = name.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(row)
+    return out
 
 
 @app.get("/api/windows/rank-price-check")
@@ -48,6 +67,10 @@ def windows_rank_price_check():
         return jsonify({"ok": False, "error": "invalid_input", "message": str(exc)}), 400
 
     serp = serp_snapshot(query)
+    hotel_prices = hotel_price_snapshot(arrival, departure)
+    live_benchmarks = hotel_prices.get("prices") if hotel_prices.get("ok") else []
+    benchmarks = _merge_benchmarks(live_benchmarks or [], _public_benchmarks())
+
     return jsonify({
         "ok": True,
         "api_version": API_VERSION,
@@ -59,7 +82,12 @@ def windows_rank_price_check():
         "ranking_result_count": serp.get("result_count") or 0,
         "available_keywords": KEYWORDS,
         "own_price": own,
-        "public_benchmarks": _public_benchmarks(),
+        "public_benchmarks": benchmarks,
+        "hotel_price_source": hotel_prices.get("source") or "Google Hotels / SerpAPI",
+        "hotel_price_error": "" if hotel_prices.get("ok") else (hotel_prices.get("error") or ""),
+        "hotel_property_count": hotel_prices.get("property_count") or 0,
+        "hotel_price_match_count": len(live_benchmarks or []),
+        "hotel_price_adults": hotel_prices.get("adults") or 2,
         "serp_live_configured": bool(os.environ.get("SERPAPI_KEY", "").strip()),
         "price_rank_rule": "Nur identische Aufenthalte duerfen fuer einen exakten Preisrang verglichen werden.",
     }), 200, {"Cache-Control": "no-store"}
@@ -145,5 +173,6 @@ def rank_price_windows_health():
         "auth": "X-Admin-Password",
         "serp_live_configured": bool(os.environ.get("SERPAPI_KEY", "").strip()),
         "competitor_rankings": True,
+        "competitor_hotel_prices": True,
         "month_overview": True,
     }, 200
