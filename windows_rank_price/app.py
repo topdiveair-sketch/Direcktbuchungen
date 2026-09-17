@@ -5,6 +5,7 @@ import ctypes
 from ctypes import wintypes
 import json
 import os
+import queue
 import threading
 import urllib.error
 import urllib.parse
@@ -29,6 +30,13 @@ def _blob(data: bytes) -> tuple[DATA_BLOB, ctypes.Array]:
     return DATA_BLOB(len(data), ctypes.cast(buf, ctypes.POINTER(ctypes.c_byte))), buf
 
 
+def _local_free(pointer) -> None:
+    kernel32 = ctypes.windll.kernel32
+    kernel32.LocalFree.argtypes = [wintypes.HLOCAL]
+    kernel32.LocalFree.restype = wintypes.HLOCAL
+    kernel32.LocalFree(ctypes.cast(pointer, wintypes.HLOCAL))
+
+
 def protect(value: str) -> str:
     raw = value.encode("utf-8")
     in_blob, in_buf = _blob(raw)
@@ -41,7 +49,7 @@ def protect(value: str) -> str:
         data = ctypes.string_at(out_blob.pbData, out_blob.cbData)
         return base64.b64encode(data).decode("ascii")
     finally:
-        ctypes.windll.kernel32.LocalFree(out_blob.pbData)
+        _local_free(out_blob.pbData)
         del in_buf
 
 
@@ -59,7 +67,7 @@ def unprotect(value: str) -> str:
         data = ctypes.string_at(out_blob.pbData, out_blob.cbData)
         return data.decode("utf-8")
     finally:
-        ctypes.windll.kernel32.LocalFree(out_blob.pbData)
+        _local_free(out_blob.pbData)
         del in_buf
 
 
@@ -97,7 +105,9 @@ class App(tk.Tk):
         self.option_add("*Font", "{Segoe UI} 10")
         self.config_data = load_config()
         self.own_price: float | None = None
+        self.result_queue: queue.Queue[tuple[str, object]] = queue.Queue()
         self._build()
+        self.after(100, self._poll_results)
 
     def _build(self):
         top = ttk.Frame(self, padding=16)
@@ -234,45 +244,74 @@ class App(tk.Tk):
         self.price_rank.set(f"Preisrang {pos} / {len(prices)}")
 
     def fetch(self):
-        if not self.pw_var.get():
+        password = self.pw_var.get()
+        if not password:
             messagebox.showwarning(APP_NAME, "Bitte zuerst das Admin-Passwort eintragen.")
             return
+
+        api_base = self.api_var.get().strip().rstrip("/")
+        query = self.query_var.get().strip()
+        room = self.room_var.get().strip()
+        arrival = self.arrival_var.get().strip()
+        departure = self.departure_var.get().strip()
+
         try:
-            a = date.fromisoformat(self.arrival_var.get().strip())
-            d = date.fromisoformat(self.departure_var.get().strip())
+            a = date.fromisoformat(arrival)
+            d = date.fromisoformat(departure)
             if d <= a:
                 raise ValueError
         except Exception:
             messagebox.showwarning(APP_NAME, "Bitte gültige An- und Abreisedaten im Format YYYY-MM-DD eingeben.")
             return
+
         self.fetch_btn.state(["disabled"])
         self.status_var.set("Abruf läuft …")
-        threading.Thread(target=self._fetch_worker, daemon=True).start()
+        threading.Thread(
+            target=self._fetch_worker,
+            args=(api_base, password, query, room, arrival, departure),
+            daemon=True,
+        ).start()
 
-    def _fetch_worker(self):
-        base = self.api_var.get().strip().rstrip("/")
+    def _fetch_worker(self, base: str, password: str, query: str, room: str, arrival: str, departure: str):
         params = urllib.parse.urlencode({
-            "q": self.query_var.get().strip(),
-            "room": self.room_var.get().strip(),
-            "arrival": self.arrival_var.get().strip(),
-            "departure": self.departure_var.get().strip(),
+            "q": query,
+            "room": room,
+            "arrival": arrival,
+            "departure": departure,
         })
         req = urllib.request.Request(
             f"{base}/api/windows/rank-price-check?{params}",
-            headers={"X-Admin-Password": self.pw_var.get(), "Accept": "application/json", "User-Agent": "ZAB-RangPreis-Windows/1.0"},
+            headers={
+                "X-Admin-Password": password,
+                "Accept": "application/json",
+                "User-Agent": "ZAB-RangPreis-Windows/1.1",
+            },
         )
         try:
-            with urllib.request.urlopen(req, timeout=35) as response:
+            with urllib.request.urlopen(req, timeout=45) as response:
                 payload = json.loads(response.read().decode("utf-8", errors="replace"))
-            self.after(0, lambda: self._show_result(payload))
+            self.result_queue.put(("ok", payload))
         except urllib.error.HTTPError as exc:
             if exc.code == 401:
                 msg = "Admin-Passwort wurde vom Server abgelehnt."
             else:
                 msg = f"Serverfehler HTTP {exc.code}."
-            self.after(0, lambda: self._show_error(msg))
+            self.result_queue.put(("error", msg))
         except Exception as exc:
-            self.after(0, lambda: self._show_error(f"Abruf fehlgeschlagen: {type(exc).__name__}: {exc}"))
+            self.result_queue.put(("error", f"Abruf fehlgeschlagen: {type(exc).__name__}: {exc}"))
+
+    def _poll_results(self):
+        try:
+            while True:
+                kind, payload = self.result_queue.get_nowait()
+                if kind == "ok":
+                    self._show_result(payload if isinstance(payload, dict) else {})
+                else:
+                    self._show_error(str(payload))
+        except queue.Empty:
+            pass
+        if self.winfo_exists():
+            self.after(100, self._poll_results)
 
     def _show_result(self, data: dict):
         self.fetch_btn.state(["!disabled"])
@@ -289,7 +328,10 @@ class App(tk.Tk):
         self.rank_note.set(f"{rank.get('message','')}  Quelle: {rank.get('source','')}")
 
         own = data.get("own_price") or {}
-        self.own_price = float(own.get("total_eur") or 0)
+        try:
+            self.own_price = float(own.get("total_eur") or 0)
+        except (TypeError, ValueError):
+            self.own_price = 0.0
         self.price_value.set(money(self.own_price))
         self.price_note.set(f"{own.get('nights','–')} Nacht/Nächte · Ø {money(own.get('average_nightly_eur'))} pro Nacht")
         self._calc_rank()
