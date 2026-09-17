@@ -14,6 +14,8 @@ from datetime import date, timedelta
 from flask import jsonify, request
 
 from rank_price_gateway import app, _public_benchmarks, _stay_price, DEFAULT_QUERY
+import competitor_serp as competitor_serp_module
+import competitor_hotel_prices as competitor_hotel_prices_module
 from competitor_serp import KEYWORDS, serp_snapshot
 from competitor_hotel_prices import competitor_stay_matrix
 from competitor_public_fallbacks import apply_public_fallbacks
@@ -21,7 +23,25 @@ import app as legacy_app
 
 
 WEEKDAYS_DE = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
-API_VERSION = "1.8-public-fallbacks"
+API_VERSION = "1.9-active-competitors"
+
+# These businesses are no longer active and must not appear in rank/price checks
+# or consume live lookup calls.
+RETIRED_COMPETITORS = {
+    "Landhaus Wachau",
+    "Gasthof-Pension zum Kranz",
+}
+
+# Both imported modules read their COMPETITORS globals at call time. Filter them
+# once during app startup so SERP ranking and hotel-price lookups stay aligned.
+competitor_serp_module.COMPETITORS = [
+    row for row in competitor_serp_module.COMPETITORS
+    if str(row.get("name") or "").strip() not in RETIRED_COMPETITORS
+]
+competitor_hotel_prices_module.COMPETITORS = [
+    row for row in competitor_hotel_prices_module.COMPETITORS
+    if str(row[0] if isinstance(row, (tuple, list)) and row else "").strip() not in RETIRED_COMPETITORS
+]
 
 
 def _desktop_admin_ok() -> bool:
@@ -31,12 +51,15 @@ def _desktop_admin_ok() -> bool:
 
 
 def _merge_benchmarks(live_rows: list[dict], stored_prices: list[dict]) -> list[dict]:
-    """Keep every known competitor from the live matrix; enrich only missing values from stored observations."""
+    """Keep every active competitor from the live matrix; enrich only missing values from stored observations."""
     stored = {}
     for row in stored_prices or []:
         if not isinstance(row, dict):
             continue
-        name = str(row.get("name") or "").strip().casefold()
+        raw_name = str(row.get("name") or "").strip()
+        if raw_name in RETIRED_COMPETITORS:
+            continue
+        name = raw_name.casefold()
         if name and name not in stored:
             stored[name] = row
 
@@ -45,7 +68,10 @@ def _merge_benchmarks(live_rows: list[dict], stored_prices: list[dict]) -> list[
         if not isinstance(row, dict):
             continue
         merged = dict(row)
-        key = str(merged.get("name") or "").strip().casefold()
+        raw_name = str(merged.get("name") or "").strip()
+        if raw_name in RETIRED_COMPETITORS:
+            continue
+        key = raw_name.casefold()
         fallback = stored.get(key)
         if fallback and merged.get("one_night_total_eur") is None and merged.get("three_night_total_eur") is None:
             merged["stored_benchmark_eur"] = fallback.get("price_eur")
@@ -78,19 +104,24 @@ def windows_rank_price_check():
     stay_matrix = competitor_stay_matrix(arrival)
     live_rows = apply_public_fallbacks(stay_matrix.get("rows") or [], arrival, adults=2)
     benchmarks = _merge_benchmarks(live_rows, _public_benchmarks())
+    competitor_rankings = [
+        row for row in (serp.get("competitor_rankings") or [])
+        if isinstance(row, dict) and str(row.get("name") or "").strip() not in RETIRED_COMPETITORS
+    ]
 
     return jsonify({
         "ok": True,
         "api_version": API_VERSION,
         "query": query,
         "rank": serp.get("rank") or {},
-        "competitor_rankings": serp.get("competitor_rankings") or [],
+        "competitor_rankings": competitor_rankings,
         "ranking_source": serp.get("source") or "",
         "provider_error": serp.get("provider_error") or "",
         "ranking_result_count": serp.get("result_count") or 0,
         "available_keywords": KEYWORDS,
         "own_price": own,
         "public_benchmarks": benchmarks,
+        "retired_competitors": sorted(RETIRED_COMPETITORS),
         "hotel_price_source": stay_matrix.get("source") or "Google Hotels / SerpAPI",
         "hotel_price_error": stay_matrix.get("error") or "",
         "hotel_one_night_property_count": stay_matrix.get("one_night_property_count") or 0,
@@ -185,5 +216,6 @@ def rank_price_windows_health():
         "competitor_rankings": True,
         "competitor_hotel_prices_1n_3n": True,
         "public_rate_fallbacks": True,
+        "retired_competitors_filtered": True,
         "month_overview": True,
     }, 200
