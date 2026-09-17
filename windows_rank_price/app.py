@@ -398,7 +398,9 @@ class App(tk.Tk):
     def _show_error(self, message: str):
         self.fetch_btn.state(["!disabled"])
         self.status_var.set(message)
-        messagebox.showerror(APP_NAME, message)
+        clean = " ".join(str(message or "Unbekannter Fehler").split())
+        self.status_var.set(f"Fehler: {clean}")
+        self.rank_note.set(clean)
 
 
 if __name__ == "__main__":
