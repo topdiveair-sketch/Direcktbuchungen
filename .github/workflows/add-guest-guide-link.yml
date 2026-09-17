@@ -1,0 +1,49 @@
+name: Add guest guide link safely
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/add-guest-guide-link.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  add-link:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Insert verified guest guide link
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '</html>' index.html
+          grep -q '<meta name="robots" content="index,follow,max-image-preview:large">' index.html
+          if grep -q 'https://topdiveair-sketch.github.io/Gaeste/' index.html; then exit 0; fi
+          before_lines=$(wc -l < index.html)
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '    </details>\n  </footer>'
+          assert s.count(marker) == 1, 'footer marker must occur exactly once'
+          addition = '''    </details>\n    <p class="small" style="margin-top:14px"><a href="https://topdiveair-sketch.github.io/Gaeste/">Wachau Gästeguide: Donauradweg, Welterbesteig & persönliche Tipps</a></p>\n  </footer>'''
+          p.write_text(s.replace(marker, addition, 1), encoding='utf-8')
+          PY
+          grep -q 'https://topdiveair-sketch.github.io/Gaeste/' index.html
+          grep -q 'Wachau Gästeguide: Donauradweg, Welterbesteig & persönliche Tipps' index.html
+          grep -q '</html>' index.html
+          after_lines=$(wc -l < index.html)
+          test "$after_lines" -eq $((before_lines + 1))
+      - name: Commit only verified link change
+        shell: bash
+        run: |
+          if git diff --quiet -- index.html; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'SEO: link direct booking to Wachau guest guide'
+          git push
+
+# This workflow adds exactly one visible internal SEO link and validates page integrity before commit.
