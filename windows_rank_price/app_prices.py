@@ -33,19 +33,20 @@ def _benchmark_for(name: str, rows: list[dict]) -> dict | None:
 class App(MonthApp):
     def __init__(self):
         super().__init__()
-        self.geometry("1380x880")
+        self.geometry("1580x900")
         self.rank_tree.configure(
-            columns=("rank", "name", "one", "three", "avg", "availability", "status", "title")
+            columns=("rank", "name", "one", "three", "avg", "scope", "availability", "status", "title")
         )
         for col, text, width, anchor in [
             ("rank", "Rang", 80, "w"),
-            ("name", "Betrieb", 230, "w"),
+            ("name", "Betrieb / Zimmer", 255, "w"),
             ("one", "1 Nacht", 105, "e"),
             ("three", "3 Nächte", 105, "e"),
             ("avg", "Ø/Nacht (3N)", 115, "e"),
-            ("availability", "Buchbarkeit", 125, "w"),
+            ("scope", "Preisart", 210, "w"),
+            ("availability", "Buchbarkeit", 150, "w"),
             ("status", "Google-Status", 135, "w"),
-            ("title", "Gefundener Treffer", 320, "w"),
+            ("title", "Gefundener Treffer / Hinweis", 360, "w"),
         ]:
             self.rank_tree.heading(col, text=text)
             self.rank_tree.column(col, width=width, anchor=anchor)
@@ -84,8 +85,13 @@ class App(MonthApp):
             three_text = money(benchmark.get("three_night_total_eur"))
             avg_text = money(benchmark.get("three_night_average_eur"))
             availability = str(benchmark.get("availability") or "kein Preis gefunden")
+            price_scope = str(benchmark.get("price_scope") or "")
+            unit_summary = str(benchmark.get("unit_summary") or "").strip()
+            title = str(row.get("title") or "")
+            if unit_summary:
+                title = f"{title} · {unit_summary}" if title else unit_summary
 
-            self.rank_tree.insert(
+            parent = self.rank_tree.insert(
                 "",
                 "end",
                 values=(
@@ -94,11 +100,34 @@ class App(MonthApp):
                     one_text,
                     three_text,
                     avg_text,
+                    price_scope,
                     availability,
                     google_status,
-                    row.get("title", ""),
+                    title,
                 ),
+                open=True,
             )
+
+            for offer in benchmark.get("unit_offers") or []:
+                if not isinstance(offer, dict):
+                    continue
+                occupancy = str(offer.get("occupancy") or "").strip()
+                offer_scope = str(offer.get("price_scope") or "veröffentlichter Zimmerpreis")
+                self.rank_tree.insert(
+                    parent,
+                    "end",
+                    values=(
+                        "",
+                        f"↳ {offer.get('unit') or 'Zimmer/Einheit'}",
+                        money(offer.get("one_night_total_eur")),
+                        money(offer.get("three_night_total_eur")),
+                        money(offer.get("three_night_average_eur")),
+                        offer_scope,
+                        occupancy,
+                        "",
+                        "separate veröffentlichte Einheit; keine Live-Verfügbarkeit für das gewählte Datum",
+                    ),
+                )
 
         if provider_error:
             self.status_var.set(
@@ -110,7 +139,7 @@ class App(MonthApp):
             price_error = str(data.get("hotel_price_error") or "").strip()
             suffix = f" · Preisfehler: {price_error}" if price_error else ""
             self.status_var.set(
-                f"Abruf abgeschlossen · 1 Nacht: {n1} Preis-Treffer · 3 Nächte: {n3} Preis-Treffer{suffix}"
+                f"Abruf abgeschlossen · 1 Nacht: {n1} Preis-Treffer · 3 Nächte: {n3} Preis-Treffer · Mehrzimmer-Betriebe berücksichtigt{suffix}"
             )
 
 
