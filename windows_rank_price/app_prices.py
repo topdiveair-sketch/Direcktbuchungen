@@ -1,11 +1,6 @@
 from __future__ import annotations
 
-"""Windows launcher with monthly overview plus visible competitor benchmark prices.
-
-Benchmark prices are shown next to Google ranking rows when the backend has a
-stored public observation. They are informational only and are never mixed into
-the exact same-stay price ranking.
-"""
+"""Windows launcher with monthly overview plus 1-night and 3-night competitor prices."""
 
 import re
 import unicodedata
@@ -30,9 +25,7 @@ def _benchmark_for(name: str, rows: list[dict]) -> dict | None:
             return row
     for row in rows:
         candidate = _norm(row.get("name", ""))
-        if not candidate:
-            continue
-        if candidate in wanted or wanted in candidate:
+        if candidate and (candidate in wanted or wanted in candidate):
             return row
     return None
 
@@ -40,20 +33,24 @@ def _benchmark_for(name: str, rows: list[dict]) -> dict | None:
 class App(MonthApp):
     def __init__(self):
         super().__init__()
-        self.rank_tree.configure(columns=("rank", "name", "price", "status", "title"))
+        self.geometry("1380x880")
+        self.rank_tree.configure(
+            columns=("rank", "name", "one", "three", "avg", "availability", "status", "title")
+        )
         for col, text, width, anchor in [
-            ("rank", "Rang", 90, "w"),
-            ("name", "Betrieb", 235, "w"),
-            ("price", "Benchmarkpreis", 120, "e"),
-            ("status", "Status", 170, "w"),
-            ("title", "Gefundener Treffer", 460, "w"),
+            ("rank", "Rang", 80, "w"),
+            ("name", "Betrieb", 230, "w"),
+            ("one", "1 Nacht", 105, "e"),
+            ("three", "3 Nächte", 105, "e"),
+            ("avg", "Ø/Nacht (3N)", 115, "e"),
+            ("availability", "Buchbarkeit", 125, "w"),
+            ("status", "Google-Status", 135, "w"),
+            ("title", "Gefundener Treffer", 320, "w"),
         ]:
             self.rank_tree.heading(col, text=text)
             self.rank_tree.column(col, width=width, anchor=anchor)
 
     def _show_result(self, data: dict):
-        # Let the stable client update cards, price rank, benchmark table and
-        # status first. We then redraw only the Google competitor table.
         super()._show_result(data)
         if not data.get("ok"):
             return
@@ -65,37 +62,55 @@ class App(MonthApp):
         benchmarks = [row for row in (data.get("public_benchmarks") or []) if isinstance(row, dict)]
         result_count = int(data.get("ranking_result_count") or 0)
 
-        if provider_error:
-            self.rank_tree.insert(
-                "",
-                "end",
-                values=("–", "Google-Rangliste", "–", "derzeit nicht verfügbar", provider_error),
-            )
-            return
-
         for row in data.get("competitor_rankings") or []:
             if not isinstance(row, dict):
                 continue
             rank = row.get("rank")
             if rank is not None:
                 rank_text = f"#{rank}"
-                status = "gefunden"
+                google_status = "gefunden"
             elif row.get("status") == "not_configured":
                 rank_text = "–"
-                status = "API fehlt"
+                google_status = "API fehlt"
             elif row.get("status") in {"error", "unavailable"}:
                 rank_text = "–"
-                status = "derzeit nicht verfügbar"
+                google_status = "nicht verfügbar"
             else:
-                rank_text = f"nicht in Top {result_count}" if result_count else "nicht gefunden"
-                status = "nicht gefunden"
+                rank_text = f"nicht Top {result_count}" if result_count else "nicht gefunden"
+                google_status = "nicht gefunden"
 
-            benchmark = _benchmark_for(row.get("name", ""), benchmarks)
-            price_text = money(benchmark.get("price_eur")) if benchmark else "–"
+            benchmark = _benchmark_for(row.get("name", ""), benchmarks) or {}
+            one_text = money(benchmark.get("one_night_total_eur"))
+            three_text = money(benchmark.get("three_night_total_eur"))
+            avg_text = money(benchmark.get("three_night_average_eur"))
+            availability = str(benchmark.get("availability") or "kein Preis gefunden")
+
             self.rank_tree.insert(
                 "",
                 "end",
-                values=(rank_text, row.get("name", ""), price_text, status, row.get("title", "")),
+                values=(
+                    rank_text,
+                    row.get("name", ""),
+                    one_text,
+                    three_text,
+                    avg_text,
+                    availability,
+                    google_status,
+                    row.get("title", ""),
+                ),
+            )
+
+        if provider_error:
+            self.status_var.set(
+                "Mitbewerberpreise wurden separat abgefragt; organische Google-Rangliste derzeit nicht verfügbar."
+            )
+        else:
+            n1 = int(data.get("hotel_one_night_match_count") or 0)
+            n3 = int(data.get("hotel_three_night_match_count") or 0)
+            price_error = str(data.get("hotel_price_error") or "").strip()
+            suffix = f" · Preisfehler: {price_error}" if price_error else ""
+            self.status_var.set(
+                f"Abruf abgeschlossen · 1 Nacht: {n1} Preis-Treffer · 3 Nächte: {n3} Preis-Treffer{suffix}"
             )
 
 
