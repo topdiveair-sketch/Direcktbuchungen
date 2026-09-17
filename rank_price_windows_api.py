@@ -19,6 +19,7 @@ import app as legacy_app
 
 
 WEEKDAYS_DE = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
+API_VERSION = "1.4-month-overview"
 
 
 def _desktop_admin_ok() -> bool:
@@ -49,6 +50,7 @@ def windows_rank_price_check():
     serp = serp_snapshot(query)
     return jsonify({
         "ok": True,
+        "api_version": API_VERSION,
         "query": query,
         "rank": serp.get("rank") or {},
         "competitor_rankings": serp.get("competitor_rankings") or [],
@@ -125,6 +127,7 @@ def windows_month_overview():
     }
     return jsonify({
         "ok": True,
+        "api_version": API_VERSION,
         "month": f"{year:04d}-{month:02d}",
         "room": room,
         "rows": rows,
@@ -136,6 +139,7 @@ def windows_month_overview():
 def rank_price_windows_health():
     return {
         "ok": True,
+        "version": API_VERSION,
         "endpoint": "/api/windows/rank-price-check",
         "month_endpoint": "/api/windows/month-overview",
         "auth": "X-Admin-Password",
