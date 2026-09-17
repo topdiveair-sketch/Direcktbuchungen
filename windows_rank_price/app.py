@@ -94,7 +94,7 @@ class App(tk.Tk):
         self.title(APP_NAME)
         self.geometry("980x720")
         self.minsize(860, 640)
-        self.option_add("*Font", "Segoe UI 10")
+        self.option_add("*Font", "{Segoe UI} 10")
         self.config_data = load_config()
         self.own_price: float | None = None
         self._build()
