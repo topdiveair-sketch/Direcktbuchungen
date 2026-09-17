@@ -1,0 +1,48 @@
+name: Add Windis link safely
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/add-windis-link.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  add-link:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add Windis navigation link with integrity checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          target='        <a href="wachau-tipps/">Wachau-Tipps</a>'
+          insert='        <a href="wilde-wachauer-windis/">Wilde Wachauer Windis</a>'
+          test "$(grep -Fxc "$target" index.html)" -eq 1
+          if grep -Fq "$insert" index.html; then exit 0; fi
+          before_lines=$(wc -l < index.html)
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old='        <a href="wachau-tipps/">Wachau-Tipps</a>\n'
+          new=old+'        <a href="wilde-wachauer-windis/">Wilde Wachauer Windis</a>\n'
+          assert s.count(old)==1
+          p.write_text(s.replace(old,new,1))
+          PY
+          after_lines=$(wc -l < index.html)
+          test "$after_lines" -eq $((before_lines + 1))
+          test "$(grep -Fc 'href="wilde-wachauer-windis/"' index.html)" -ge 1
+          grep -q '</html>' index.html
+          grep -q 'id="requestForm"' index.html
+      - name: Commit verified link only
+        shell: bash
+        run: |
+          if git diff --quiet -- index.html; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'SEO: link direct booking to Wild Wachau Windis'
+          git push
