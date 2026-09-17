@@ -15,12 +15,12 @@ from flask import jsonify, request
 
 from rank_price_gateway import app, _public_benchmarks, _stay_price, DEFAULT_QUERY
 from competitor_serp import KEYWORDS, serp_snapshot
-from competitor_hotel_prices import hotel_price_snapshot
+from competitor_hotel_prices import competitor_stay_matrix
 import app as legacy_app
 
 
 WEEKDAYS_DE = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
-API_VERSION = "1.5-hotel-prices"
+API_VERSION = "1.6-competitor-1n-3n"
 
 
 def _desktop_admin_ok() -> bool:
@@ -29,21 +29,28 @@ def _desktop_admin_ok() -> bool:
     return bool(expected and supplied and hmac.compare_digest(expected, supplied))
 
 
-def _merge_benchmarks(live_prices: list[dict], stored_prices: list[dict]) -> list[dict]:
-    """Prefer date-specific Google Hotels prices, retain stored public observations as fallback."""
-    out = []
-    seen = set()
-    for row in list(live_prices or []) + list(stored_prices or []):
+def _merge_benchmarks(live_rows: list[dict], stored_prices: list[dict]) -> list[dict]:
+    """Keep every known competitor from the live matrix; enrich only missing values from stored observations."""
+    stored = {}
+    for row in stored_prices or []:
         if not isinstance(row, dict):
             continue
-        name = str(row.get("name") or "").strip()
-        if not name:
+        name = str(row.get("name") or "").strip().casefold()
+        if name and name not in stored:
+            stored[name] = row
+
+    out = []
+    for row in live_rows or []:
+        if not isinstance(row, dict):
             continue
-        key = name.casefold()
-        if key in seen:
-            continue
-        seen.add(key)
-        out.append(row)
+        merged = dict(row)
+        key = str(merged.get("name") or "").strip().casefold()
+        fallback = stored.get(key)
+        if fallback and merged.get("one_night_total_eur") is None and merged.get("three_night_total_eur") is None:
+            merged["stored_benchmark_eur"] = fallback.get("price_eur")
+            merged["stored_benchmark_source"] = fallback.get("source")
+            merged["stored_benchmark_checked_at"] = fallback.get("checked_at")
+        out.append(merged)
     return out
 
 
@@ -67,9 +74,9 @@ def windows_rank_price_check():
         return jsonify({"ok": False, "error": "invalid_input", "message": str(exc)}), 400
 
     serp = serp_snapshot(query)
-    hotel_prices = hotel_price_snapshot(arrival, departure)
-    live_benchmarks = hotel_prices.get("prices") if hotel_prices.get("ok") else []
-    benchmarks = _merge_benchmarks(live_benchmarks or [], _public_benchmarks())
+    stay_matrix = competitor_stay_matrix(arrival)
+    live_rows = stay_matrix.get("rows") or []
+    benchmarks = _merge_benchmarks(live_rows, _public_benchmarks())
 
     return jsonify({
         "ok": True,
@@ -83,13 +90,15 @@ def windows_rank_price_check():
         "available_keywords": KEYWORDS,
         "own_price": own,
         "public_benchmarks": benchmarks,
-        "hotel_price_source": hotel_prices.get("source") or "Google Hotels / SerpAPI",
-        "hotel_price_error": "" if hotel_prices.get("ok") else (hotel_prices.get("error") or ""),
-        "hotel_property_count": hotel_prices.get("property_count") or 0,
-        "hotel_price_match_count": len(live_benchmarks or []),
-        "hotel_price_adults": hotel_prices.get("adults") or 2,
+        "hotel_price_source": stay_matrix.get("source") or "Google Hotels / SerpAPI",
+        "hotel_price_error": stay_matrix.get("error") or "",
+        "hotel_one_night_property_count": stay_matrix.get("one_night_property_count") or 0,
+        "hotel_three_night_property_count": stay_matrix.get("three_night_property_count") or 0,
+        "hotel_one_night_match_count": stay_matrix.get("one_night_match_count") or 0,
+        "hotel_three_night_match_count": stay_matrix.get("three_night_match_count") or 0,
+        "hotel_price_adults": stay_matrix.get("adults") or 2,
         "serp_live_configured": bool(os.environ.get("SERPAPI_KEY", "").strip()),
-        "price_rank_rule": "Nur identische Aufenthalte duerfen fuer einen exakten Preisrang verglichen werden.",
+        "price_rank_rule": "1-Nacht- und 3-Nacht-Preise werden getrennt verglichen; fehlende Preise werden nicht geschätzt.",
     }), 200, {"Cache-Control": "no-store"}
 
 
@@ -173,6 +182,6 @@ def rank_price_windows_health():
         "auth": "X-Admin-Password",
         "serp_live_configured": bool(os.environ.get("SERPAPI_KEY", "").strip()),
         "competitor_rankings": True,
-        "competitor_hotel_prices": True,
+        "competitor_hotel_prices_1n_3n": True,
         "month_overview": True,
     }, 200
