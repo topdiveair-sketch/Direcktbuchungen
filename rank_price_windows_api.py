@@ -12,7 +12,8 @@ from datetime import date, timedelta
 
 from flask import jsonify, request
 
-from rank_price_gateway import app, _public_benchmarks, _serp_rank, _stay_price, DEFAULT_QUERY
+from rank_price_gateway import app, _public_benchmarks, _stay_price, DEFAULT_QUERY
+from competitor_serp import KEYWORDS, serp_snapshot
 import app as legacy_app
 
 
@@ -41,10 +42,14 @@ def windows_rank_price_check():
     except Exception as exc:
         return jsonify({"ok": False, "error": "invalid_input", "message": str(exc)}), 400
 
+    serp = serp_snapshot(query)
     return jsonify({
         "ok": True,
         "query": query,
-        "rank": _serp_rank(query),
+        "rank": serp.get("rank") or {},
+        "competitor_rankings": serp.get("competitor_rankings") or [],
+        "ranking_source": serp.get("source") or "",
+        "available_keywords": KEYWORDS,
         "own_price": own,
         "public_benchmarks": _public_benchmarks(),
         "serp_live_configured": bool(os.environ.get("SERPAPI_KEY", "").strip()),
@@ -59,4 +64,5 @@ def rank_price_windows_health():
         "endpoint": "/api/windows/rank-price-check",
         "auth": "X-Admin-Password",
         "serp_live_configured": bool(os.environ.get("SERPAPI_KEY", "").strip()),
+        "competitor_rankings": True,
     }, 200
