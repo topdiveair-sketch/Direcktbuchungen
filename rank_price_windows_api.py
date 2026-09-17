@@ -16,11 +16,12 @@ from flask import jsonify, request
 from rank_price_gateway import app, _public_benchmarks, _stay_price, DEFAULT_QUERY
 from competitor_serp import KEYWORDS, serp_snapshot
 from competitor_hotel_prices import competitor_stay_matrix
+from competitor_public_fallbacks import apply_public_fallbacks
 import app as legacy_app
 
 
 WEEKDAYS_DE = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
-API_VERSION = "1.6-competitor-1n-3n"
+API_VERSION = "1.8-public-fallbacks"
 
 
 def _desktop_admin_ok() -> bool:
@@ -75,7 +76,7 @@ def windows_rank_price_check():
 
     serp = serp_snapshot(query)
     stay_matrix = competitor_stay_matrix(arrival)
-    live_rows = stay_matrix.get("rows") or []
+    live_rows = apply_public_fallbacks(stay_matrix.get("rows") or [], arrival, adults=2)
     benchmarks = _merge_benchmarks(live_rows, _public_benchmarks())
 
     return jsonify({
@@ -98,7 +99,7 @@ def windows_rank_price_check():
         "hotel_three_night_match_count": stay_matrix.get("three_night_match_count") or 0,
         "hotel_price_adults": stay_matrix.get("adults") or 2,
         "serp_live_configured": bool(os.environ.get("SERPAPI_KEY", "").strip()),
-        "price_rank_rule": "1-Nacht- und 3-Nacht-Preise werden getrennt verglichen; fehlende Preise werden nicht geschätzt.",
+        "price_rank_rule": "Live-Preise, veröffentlichte Ab-Preise und Anfrage-Status werden getrennt gekennzeichnet; fehlende Live-Preise werden nicht erfunden.",
     }), 200, {"Cache-Control": "no-store"}
 
 
@@ -183,5 +184,6 @@ def rank_price_windows_health():
         "serp_live_configured": bool(os.environ.get("SERPAPI_KEY", "").strip()),
         "competitor_rankings": True,
         "competitor_hotel_prices_1n_3n": True,
+        "public_rate_fallbacks": True,
         "month_overview": True,
     }, 200
