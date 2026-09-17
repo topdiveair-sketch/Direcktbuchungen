@@ -26,7 +26,7 @@ jobs:
         shell: pwsh
         run: |
           Set-Location windows_rank_price
-          pyinstaller --noconfirm --clean --onefile --windowed --name ZuhauseAmBach-RangPreis app.py
+          pyinstaller --noconfirm --clean --onefile --windowed --name ZuhauseAmBach-RangPreis app_fixed.py
 
       - name: Install Inno Setup
         shell: pwsh
