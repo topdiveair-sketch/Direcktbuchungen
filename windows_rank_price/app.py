@@ -20,6 +20,28 @@ DEFAULT_API = "https://web-production-2b242.up.railway.app"
 CONFIG_DIR = Path(os.environ.get("APPDATA", str(Path.home()))) / "ZuhauseAmBach" / "RangPreis"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
+KEYWORDS = [
+    "unterkunft wachau nordufer",
+    "unterkunft aggsbach markt",
+    "privatzimmer wachau",
+    "donauradweg unterkunft wachau",
+    "welterbesteig unterkunft wachau",
+]
+
+COMPETITOR_NAMES = [
+    "Goldene Wachau - Privatzimmer",
+    "Haus Gerstbauer",
+    "Ferienwohnung Alte Post - Wachau",
+    "Gästehaus Pumi",
+    "Gasthof zur Venus",
+    "Haus Birgit",
+    "Haus Donaublick",
+    "Landhaus Wachau",
+    "M-Haus",
+    "Villa Venus",
+    "Gasthof-Pension zum Kranz",
+]
+
 
 class DATA_BLOB(ctypes.Structure):
     _fields_ = [("cbData", wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_byte))]
@@ -100,8 +122,8 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title(APP_NAME)
-        self.geometry("980x720")
-        self.minsize(860, 640)
+        self.geometry("1180x850")
+        self.minsize(980, 720)
         self.option_add("*Font", "{Segoe UI} 10")
         self.config_data = load_config()
         self.own_price: float | None = None
@@ -113,7 +135,7 @@ class App(tk.Tk):
         top = ttk.Frame(self, padding=16)
         top.pack(fill="x")
         ttk.Label(top, text=APP_NAME, font=("Segoe UI", 18, "bold")).pack(anchor="w")
-        ttk.Label(top, text="Google-Rang und Preisposition mit einem Klick abrufen.").pack(anchor="w", pady=(2, 10))
+        ttk.Label(top, text="Google-Rangliste aller relevanten Mitbewerber und exakter Direktpreis.").pack(anchor="w", pady=(2, 10))
 
         settings = ttk.LabelFrame(top, text="Verbindung", padding=10)
         settings.pack(fill="x", pady=(0, 10))
@@ -128,79 +150,90 @@ class App(tk.Tk):
 
         query_box = ttk.LabelFrame(top, text="Abfrage", padding=10)
         query_box.pack(fill="x")
-        self.query_var = tk.StringVar(value="unterkunft wachau nordufer")
+        self.query_var = tk.StringVar(value=KEYWORDS[0])
         self.room_var = tk.StringVar(value="Bachblick")
         today = date.today()
         self.arrival_var = tk.StringVar(value=today.isoformat())
         self.departure_var = tk.StringVar(value=(today + timedelta(days=1)).isoformat())
-        fields = [
-            ("Suchbegriff", self.query_var, 42),
-            ("Zimmer", self.room_var, 18),
-            ("Anreise YYYY-MM-DD", self.arrival_var, 16),
-            ("Abreise YYYY-MM-DD", self.departure_var, 16),
-        ]
-        for i, (label, var, width) in enumerate(fields):
-            ttk.Label(query_box, text=label).grid(row=0, column=i, sticky="w")
-            if label == "Zimmer":
-                w = ttk.Combobox(query_box, textvariable=var, width=width, state="readonly", values=["Bachblick", "Marillenzimmer", "Weinbergzimmer", "Donauzimmer"])
-            else:
-                w = ttk.Entry(query_box, textvariable=var, width=width)
-            w.grid(row=1, column=i, sticky="ew", padx=(0, 8))
+
+        ttk.Label(query_box, text="Suchbegriff").grid(row=0, column=0, sticky="w")
+        ttk.Combobox(query_box, textvariable=self.query_var, width=42, values=KEYWORDS).grid(row=1, column=0, sticky="ew", padx=(0, 8))
+        ttk.Label(query_box, text="Zimmer").grid(row=0, column=1, sticky="w")
+        ttk.Combobox(query_box, textvariable=self.room_var, width=18, state="readonly", values=["Bachblick", "Marillenzimmer", "Weinbergzimmer", "Donauzimmer"]).grid(row=1, column=1, padx=(0, 8))
+        ttk.Label(query_box, text="Anreise YYYY-MM-DD").grid(row=0, column=2, sticky="w")
+        ttk.Entry(query_box, textvariable=self.arrival_var, width=16).grid(row=1, column=2, padx=(0, 8))
+        ttk.Label(query_box, text="Abreise YYYY-MM-DD").grid(row=0, column=3, sticky="w")
+        ttk.Entry(query_box, textvariable=self.departure_var, width=16).grid(row=1, column=3, padx=(0, 8))
         self.fetch_btn = ttk.Button(query_box, text="Jetzt abrufen", command=self.fetch)
         self.fetch_btn.grid(row=1, column=4)
         query_box.columnconfigure(0, weight=1)
 
         result = ttk.Frame(self, padding=(16, 4, 16, 16))
         result.pack(fill="both", expand=True)
+
         cards = ttk.Frame(result)
-        cards.pack(fill="x", pady=(4, 12))
+        cards.pack(fill="x", pady=(4, 10))
         self.rank_value = tk.StringVar(value="–")
         self.price_value = tk.StringVar(value="–")
         self.rank_note = tk.StringVar(value="Noch nicht abgefragt")
         self.price_note = tk.StringVar(value="Noch nicht abgefragt")
         for col, title, value, note in [
-            (0, "Google-Rang", self.rank_value, self.rank_note),
+            (0, "Zuhause am Bach – Google-Rang", self.rank_value, self.rank_note),
             (1, "Direktpreis", self.price_value, self.price_note),
         ]:
-            box = ttk.LabelFrame(cards, text=title, padding=16)
+            box = ttk.LabelFrame(cards, text=title, padding=14)
             box.grid(row=0, column=col, sticky="nsew", padx=(0 if col == 0 else 8, 8 if col == 0 else 0))
-            ttk.Label(box, textvariable=value, font=("Segoe UI", 28, "bold")).pack(anchor="w")
-            ttk.Label(box, textvariable=note, wraplength=420).pack(anchor="w", pady=(5, 0))
+            ttk.Label(box, textvariable=value, font=("Segoe UI", 26, "bold")).pack(anchor="w")
+            ttk.Label(box, textvariable=note, wraplength=500).pack(anchor="w", pady=(4, 0))
             cards.columnconfigure(col, weight=1)
+
+        ranking_frame = ttk.LabelFrame(result, text="Google-Rangliste Mitbewerber", padding=10)
+        ranking_frame.pack(fill="both", expand=True, pady=(0, 10))
+        ttk.Label(ranking_frame, text="Organische Google.at-Position für denselben Suchbegriff. Nicht gefundene Betriebe werden nicht geschätzt.").pack(anchor="w", pady=(0, 6))
+        self.rank_tree = ttk.Treeview(ranking_frame, columns=("rank", "name", "status", "title"), show="headings", height=10)
+        for col, text, width in [
+            ("rank", "Rang", 70),
+            ("name", "Betrieb", 260),
+            ("status", "Status", 180),
+            ("title", "Gefundener Treffer", 560),
+        ]:
+            self.rank_tree.heading(col, text=text)
+            self.rank_tree.column(col, width=width, anchor="w")
+        self.rank_tree.pack(fill="both", expand=True)
 
         lower = ttk.Panedwindow(result, orient="horizontal")
         lower.pack(fill="both", expand=True)
-        comp_frame = ttk.LabelFrame(lower, text="Preisvergleich für exakt denselben Aufenthalt", padding=10)
-        bench_frame = ttk.LabelFrame(lower, text="Öffentliche Benchmarks", padding=10)
+        comp_frame = ttk.LabelFrame(lower, text="Preisrang – exakt derselbe Aufenthalt", padding=10)
+        bench_frame = ttk.LabelFrame(lower, text="Öffentliche Preis-Benchmarks", padding=10)
         lower.add(comp_frame, weight=1)
         lower.add(bench_frame, weight=1)
 
         self.price_rank = tk.StringVar(value="–")
-        ttk.Label(comp_frame, textvariable=self.price_rank, font=("Segoe UI", 24, "bold")).pack(anchor="w")
-        ttk.Label(comp_frame, text="Rang 1 = günstigster Preis. Nur identische Aufenthalte vergleichen.").pack(anchor="w", pady=(0, 8))
-        self.comp_tree = ttk.Treeview(comp_frame, columns=("name", "price"), show="headings", height=8)
+        ttk.Label(comp_frame, textvariable=self.price_rank, font=("Segoe UI", 22, "bold")).pack(anchor="w")
+        ttk.Label(comp_frame, text="Rang 1 = günstigster Preis. Nur identische Aufenthalte vergleichen.").pack(anchor="w", pady=(0, 6))
+        self.comp_tree = ttk.Treeview(comp_frame, columns=("name", "price"), show="headings", height=6)
         self.comp_tree.heading("name", text="Mitbewerber")
         self.comp_tree.heading("price", text="Preis €")
-        self.comp_tree.column("name", width=220)
+        self.comp_tree.column("name", width=250)
         self.comp_tree.column("price", width=100, anchor="e")
         self.comp_tree.pack(fill="both", expand=True)
         entry_row = ttk.Frame(comp_frame)
-        entry_row.pack(fill="x", pady=(8, 0))
-        self.comp_name = tk.StringVar(value="Goldene Wachau")
+        entry_row.pack(fill="x", pady=(6, 0))
+        self.comp_name = tk.StringVar(value=COMPETITOR_NAMES[0])
         self.comp_price = tk.StringVar()
-        ttk.Entry(entry_row, textvariable=self.comp_name).pack(side="left", fill="x", expand=True, padx=(0, 6))
+        ttk.Combobox(entry_row, textvariable=self.comp_name, values=COMPETITOR_NAMES).pack(side="left", fill="x", expand=True, padx=(0, 6))
         ttk.Entry(entry_row, textvariable=self.comp_price, width=12).pack(side="left", padx=(0, 6))
         ttk.Button(entry_row, text="Hinzufügen", command=self.add_competitor).pack(side="left")
-        ttk.Button(comp_frame, text="Markierten entfernen", command=self.remove_competitor).pack(anchor="e", pady=(6, 0))
+        ttk.Button(comp_frame, text="Markierten entfernen", command=self.remove_competitor).pack(anchor="e", pady=(5, 0))
 
-        self.bench_tree = ttk.Treeview(bench_frame, columns=("name", "price", "source", "time"), show="headings", height=10)
-        for col, text, width in [("name", "Betrieb", 160), ("price", "Preis", 80), ("source", "Quelle", 100), ("time", "Stand", 150)]:
+        self.bench_tree = ttk.Treeview(bench_frame, columns=("name", "price", "source", "time"), show="headings", height=8)
+        for col, text, width in [("name", "Betrieb", 180), ("price", "Preis", 90), ("source", "Quelle", 110), ("time", "Stand", 150)]:
             self.bench_tree.heading(col, text=text)
             self.bench_tree.column(col, width=width, anchor="w")
         self.bench_tree.pack(fill="both", expand=True)
 
         self.status_var = tk.StringVar(value="Bereit.")
-        ttk.Label(result, textvariable=self.status_var).pack(anchor="w", pady=(8, 0))
+        ttk.Label(result, textvariable=self.status_var).pack(anchor="w", pady=(7, 0))
 
     def save_settings(self):
         try:
@@ -248,13 +281,11 @@ class App(tk.Tk):
         if not password:
             messagebox.showwarning(APP_NAME, "Bitte zuerst das Admin-Passwort eintragen.")
             return
-
         api_base = self.api_var.get().strip().rstrip("/")
         query = self.query_var.get().strip()
         room = self.room_var.get().strip()
         arrival = self.arrival_var.get().strip()
         departure = self.departure_var.get().strip()
-
         try:
             a = date.fromisoformat(arrival)
             d = date.fromisoformat(departure)
@@ -263,9 +294,8 @@ class App(tk.Tk):
         except Exception:
             messagebox.showwarning(APP_NAME, "Bitte gültige An- und Abreisedaten im Format YYYY-MM-DD eingeben.")
             return
-
         self.fetch_btn.state(["disabled"])
-        self.status_var.set("Abruf läuft …")
+        self.status_var.set("Abruf läuft … Google-Rangliste kann einige Sekunden dauern.")
         threading.Thread(
             target=self._fetch_worker,
             args=(api_base, password, query, room, arrival, departure),
@@ -273,29 +303,21 @@ class App(tk.Tk):
         ).start()
 
     def _fetch_worker(self, base: str, password: str, query: str, room: str, arrival: str, departure: str):
-        params = urllib.parse.urlencode({
-            "q": query,
-            "room": room,
-            "arrival": arrival,
-            "departure": departure,
-        })
+        params = urllib.parse.urlencode({"q": query, "room": room, "arrival": arrival, "departure": departure})
         req = urllib.request.Request(
             f"{base}/api/windows/rank-price-check?{params}",
             headers={
                 "X-Admin-Password": password,
                 "Accept": "application/json",
-                "User-Agent": "ZAB-RangPreis-Windows/1.1",
+                "User-Agent": "ZAB-RangPreis-Windows/1.2",
             },
         )
         try:
-            with urllib.request.urlopen(req, timeout=45) as response:
+            with urllib.request.urlopen(req, timeout=50) as response:
                 payload = json.loads(response.read().decode("utf-8", errors="replace"))
             self.result_queue.put(("ok", payload))
         except urllib.error.HTTPError as exc:
-            if exc.code == 401:
-                msg = "Admin-Passwort wurde vom Server abgelehnt."
-            else:
-                msg = f"Serverfehler HTTP {exc.code}."
+            msg = "Admin-Passwort wurde vom Server abgelehnt." if exc.code == 401 else f"Serverfehler HTTP {exc.code}."
             self.result_queue.put(("error", msg))
         except Exception as exc:
             self.result_queue.put(("error", f"Abruf fehlgeschlagen: {type(exc).__name__}: {exc}"))
@@ -318,6 +340,7 @@ class App(tk.Tk):
         if not data.get("ok"):
             self._show_error(data.get("message") or data.get("error") or "Unbekannter Fehler")
             return
+
         rank = data.get("rank") or {}
         if rank.get("rank") is not None:
             self.rank_value.set(f"#{rank['rank']}")
@@ -326,6 +349,24 @@ class App(tk.Tk):
         else:
             self.rank_value.set(">100 / n. g.")
         self.rank_note.set(f"{rank.get('message','')}  Quelle: {rank.get('source','')}")
+
+        for item in self.rank_tree.get_children():
+            self.rank_tree.delete(item)
+        for row in data.get("competitor_rankings") or []:
+            r = row.get("rank")
+            if r is not None:
+                rank_text = f"#{r}"
+                status = "gefunden"
+            elif row.get("status") == "not_configured":
+                rank_text = "–"
+                status = "SERP-API fehlt"
+            elif row.get("status") == "error":
+                rank_text = "–"
+                status = "Abfragefehler"
+            else:
+                rank_text = ">100 / n. g."
+                status = "nicht gefunden"
+            self.rank_tree.insert("", "end", values=(rank_text, row.get("name", ""), status, row.get("title", "")))
 
         own = data.get("own_price") or {}
         try:
@@ -340,7 +381,7 @@ class App(tk.Tk):
             self.bench_tree.delete(item)
         for row in data.get("public_benchmarks") or []:
             self.bench_tree.insert("", "end", values=(row.get("name", ""), money(row.get("price_eur")), row.get("source", ""), row.get("checked_at", "")))
-        self.status_var.set("Abruf abgeschlossen.")
+        self.status_var.set(f"Abruf abgeschlossen: {len(data.get('competitor_rankings') or [])} Mitbewerber geprüft.")
 
     def _show_error(self, message: str):
         self.fetch_btn.state(["!disabled"])
