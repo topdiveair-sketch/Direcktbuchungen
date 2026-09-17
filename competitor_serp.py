@@ -79,6 +79,27 @@ def _competitor_match(item: dict, aliases: list[str]) -> bool:
     return any(_norm(alias) in haystack for alias in aliases if alias)
 
 
+def _error_snapshot(query: str, message: str, source: str = "SerpAPI") -> dict:
+    rank = {
+        "status": "error",
+        "rank": None,
+        "query": query,
+        "source": source,
+        "message": message,
+    }
+    return {
+        "rank": rank,
+        "competitor_rankings": [
+            {"name": c["name"], "rank": None, "status": "unavailable", "title": "", "link": ""}
+            for c in COMPETITORS
+        ],
+        "source": source,
+        "provider_error": message,
+        "query": query,
+        "result_count": 0,
+    }
+
+
 def serp_snapshot(query: str) -> dict:
     query = " ".join((query or "").split())[:180]
     key = os.environ.get("SERPAPI_KEY", "").strip()
@@ -97,6 +118,9 @@ def serp_snapshot(query: str) -> dict:
                 for c in COMPETITORS
             ],
             "source": "SerpAPI",
+            "provider_error": "SERPAPI_KEY fehlt.",
+            "query": query,
+            "result_count": 0,
         }
 
     params = {
@@ -110,30 +134,28 @@ def serp_snapshot(query: str) -> dict:
         "api_key": key,
     }
     url = "https://serpapi.com/search.json?" + urllib.parse.urlencode(params)
-    req = urllib.request.Request(url, headers={"User-Agent": "ZuhauseAmBach-CompetitorRank/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "ZuhauseAmBach-CompetitorRank/1.1"})
     try:
         with urllib.request.urlopen(req, timeout=30) as response:
             payload = json.loads(response.read().decode("utf-8", errors="replace"))
     except Exception as exc:
-        rank = {
-            "status": "error",
-            "rank": None,
-            "query": query,
-            "source": "SerpAPI",
-            "message": f"Live-Abfrage fehlgeschlagen: {type(exc).__name__}",
-        }
-        return {
-            "rank": rank,
-            "competitor_rankings": [
-                {"name": c["name"], "rank": None, "status": "error", "title": "", "link": ""}
-                for c in COMPETITORS
-            ],
-            "source": "SerpAPI",
-        }
+        return _error_snapshot(query, f"Live-Abfrage fehlgeschlagen: {type(exc).__name__}")
 
-    organic = payload.get("organic_results") if isinstance(payload, dict) else []
+    if not isinstance(payload, dict):
+        return _error_snapshot(query, "SerpAPI lieferte keine gültige Antwort.")
+
+    provider_error = str(payload.get("error") or "").strip()
+    if provider_error:
+        return _error_snapshot(query, f"SerpAPI: {provider_error}")
+
+    search_status = payload.get("search_metadata") if isinstance(payload.get("search_metadata"), dict) else {}
+    status_value = str(search_status.get("status") or "").lower()
+    if status_value and status_value not in {"success", "cached"}:
+        return _error_snapshot(query, f"SerpAPI-Status: {status_value}")
+
+    organic = payload.get("organic_results")
     if not isinstance(organic, list):
-        organic = []
+        return _error_snapshot(query, "SerpAPI lieferte keine organischen Ergebnisse.")
 
     own_matches = []
     for item in organic:
@@ -195,6 +217,7 @@ def serp_snapshot(query: str) -> dict:
         "rank": rank,
         "competitor_rankings": competitor_rows,
         "source": "SerpAPI / Google.at",
+        "provider_error": "",
         "query": query,
         "result_count": len(organic),
     }
