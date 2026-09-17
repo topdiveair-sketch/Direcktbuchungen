@@ -5,7 +5,6 @@ from datetime import date
 
 INQUIRY_ONLY = {
     "Gästehaus Pumi": "Öffentlich ist derzeit nur eine direkte Anfrage/Kontaktmöglichkeit auffindbar.",
-    "Haus Birgit": "Öffentlich ist derzeit nur eine direkte Anfrage/Kontaktmöglichkeit auffindbar.",
     "Villa Venus": "Booking/öffentliche Unterkunftsseiten vorhanden, aber kein belastbarer öffentlicher Preis für das gewählte Datum verfügbar.",
     "Gasthof-Pension zum Kranz": "Kein belastbarer öffentlicher Zimmerpreis gefunden; Anfrage erforderlich.",
     "M-Haus": "Kein belastbarer öffentlicher Zimmerpreis gefunden; Anfrage erforderlich.",
@@ -27,6 +26,23 @@ def _alte_post_rate(arrival: date) -> float | None:
     return None
 
 
+def _published_from(row: dict, one_total: float, source: str, note: str) -> None:
+    one_total = round(float(one_total), 2)
+    three_total = round(one_total * 3, 2)
+    row.update({
+        "one_night_total_eur": one_total,
+        "three_night_total_eur": three_total,
+        "three_night_average_eur": one_total,
+        "price_eur": one_total,
+        "availability": "veröffentlichter Ab-Preis",
+        "state": "published_from",
+        "comparable": False,
+        "price_kind": "published_from",
+        "source": source,
+        "note": note,
+    })
+
+
 def apply_public_fallbacks(rows: list[dict], arrival: date, adults: int = 2) -> list[dict]:
     """Enrich missing live rows with published public rates/status.
 
@@ -42,7 +58,21 @@ def apply_public_fallbacks(rows: list[dict], arrival: date, adults: int = 2) -> 
             out.append(row)
             continue
 
-        if name == "Haus Donaublick":
+        if name == "Haus Gerstbauer":
+            _published_from(
+                row,
+                72.60,
+                "preiswert-uebernachten.de / Haus Gerstbauer",
+                "Veröffentlicht: günstigster Preis ab 72,60 € pro Zimmer und Nacht; abhängig von Saison, Auslastung und Aufenthaltsdauer. Kein Live-Verfügbarkeitsnachweis für das gewählte Datum.",
+            )
+        elif name == "Haus Birgit":
+            _published_from(
+                row,
+                50.0,
+                "Marktgemeinde Aggsbach / Gastgeberverzeichnis",
+                "Veröffentlicht: ab 50 € für 2 Personen; Nächtigungstaxe laut Gastgeberverzeichnis nicht enthalten. Kein Live-Verfügbarkeitsnachweis für das gewählte Datum.",
+            )
+        elif name == "Haus Donaublick":
             per_person = 65.0
             one_total = round(per_person * adults, 2)
             three_total = round(one_total * 3, 2)
