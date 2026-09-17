@@ -4,19 +4,26 @@ from __future__ import annotations
 
 Extends the base client with a separate day-by-day monthly price overview while
 keeping the base app's single rank/price result consumer untouched.
+
+If the dedicated month endpoint is not deployed yet (HTTP 404), Bachblick falls
+back automatically to the already-live public /api/direct-price endpoint. This
+keeps the month view usable even while Railway has a snapshot/build problem.
 """
 
+import calendar
 import json
 import queue
 import threading
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import date
+from datetime import date, timedelta
 import tkinter as tk
 from tkinter import ttk
 
 from app import App as BaseApp, APP_NAME, money
+
+WEEKDAYS_DE = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
 
 
 class App(BaseApp):
@@ -161,18 +168,111 @@ class App(BaseApp):
             headers={
                 "X-Admin-Password": request_data["password"],
                 "Accept": "application/json",
-                "User-Agent": "ZAB-RangPreis-Windows/1.3",
+                "User-Agent": "ZAB-RangPreis-Windows/1.4",
             },
         )
         try:
             with urllib.request.urlopen(req, timeout=45) as response:
                 payload = json.loads(response.read().decode("utf-8", errors="replace"))
             self.month_queue.put(("ok", payload))
+            return
         except urllib.error.HTTPError as exc:
-            msg = "Admin-Passwort wurde vom Server abgelehnt." if exc.code == 401 else f"Serverfehler HTTP {exc.code}."
-            self.month_queue.put(("error", msg))
+            if exc.code == 401:
+                self.month_queue.put(("error", "Admin-Passwort wurde vom Server abgelehnt."))
+                return
+            if exc.code != 404:
+                self.month_queue.put(("error", f"Serverfehler HTTP {exc.code}."))
+                return
         except Exception as exc:
             self.month_queue.put(("error", f"Monatsabruf fehlgeschlagen: {type(exc).__name__}: {exc}"))
+            return
+
+        # 404 fallback: the dedicated month route is not live yet. For Bachblick,
+        # use the already-live public direct quote route, one date at a time.
+        try:
+            payload = self._month_fallback_public_direct_price(request_data)
+            self.month_queue.put(("ok", payload))
+        except Exception as exc:
+            self.month_queue.put(("error", f"Monats-Fallback fehlgeschlagen: {type(exc).__name__}: {exc}"))
+
+    def _month_fallback_public_direct_price(self, request_data: dict) -> dict:
+        room = request_data["room"]
+        if room != "Bachblick":
+            raise RuntimeError(
+                "Der 404-Fallback ist derzeit nur für Bachblick verfügbar. "
+                "Für andere Zimmer muss der Railway-Monats-Endpunkt live sein."
+            )
+
+        year, month_num = [int(part) for part in request_data["month"].split("-", 1)]
+        days_in_month = calendar.monthrange(year, month_num)[1]
+        rows = []
+        prices = []
+
+        for day_number in range(1, days_in_month + 1):
+            arrival = date(year, month_num, day_number)
+            departure = arrival + timedelta(days=1)
+            params = urllib.parse.urlencode(
+                {
+                    "room": "Bachblick",
+                    "arrival": arrival.isoformat(),
+                    "departure": departure.isoformat(),
+                }
+            )
+            req = urllib.request.Request(
+                f"{request_data['base']}/api/direct-price?{params}",
+                headers={
+                    "Accept": "application/json",
+                    "User-Agent": "ZAB-RangPreis-Windows/1.4-month-fallback",
+                },
+            )
+            total = None
+            status = "unavailable"
+            message = ""
+            try:
+                with urllib.request.urlopen(req, timeout=20) as response:
+                    day_payload = json.loads(response.read().decode("utf-8", errors="replace"))
+                if day_payload.get("ok") and day_payload.get("available"):
+                    total = day_payload.get("room_total_eur")
+                    try:
+                        prices.append(float(total))
+                    except (TypeError, ValueError):
+                        pass
+                    status = "ok"
+                else:
+                    message = day_payload.get("message") or day_payload.get("error") or "nicht verfügbar"
+            except urllib.error.HTTPError as exc:
+                try:
+                    body = json.loads(exc.read().decode("utf-8", errors="replace"))
+                except Exception:
+                    body = {}
+                message = body.get("message") or body.get("error") or f"HTTP {exc.code}"
+            except Exception as exc:
+                message = f"{type(exc).__name__}: {exc}"
+
+            rows.append(
+                {
+                    "date": arrival.isoformat(),
+                    "weekday": WEEKDAYS_DE[arrival.weekday()],
+                    "total_eur": total,
+                    "status": status,
+                    "message": message,
+                }
+            )
+
+        return {
+            "ok": True,
+            "month": request_data["month"],
+            "room": room,
+            "rows": rows,
+            "fallback": True,
+            "summary": {
+                "days": len(rows),
+                "priced_days": len(prices),
+                "min_eur": min(prices) if prices else None,
+                "max_eur": max(prices) if prices else None,
+                "average_eur": (sum(prices) / len(prices)) if prices else None,
+            },
+        }
 
     def _poll_month_results(self):
         try:
@@ -220,8 +320,9 @@ class App(BaseApp):
                 f"Maximum {money(summary.get('max_eur'))}"
             )
         if self.month_status is not None:
+            suffix = " · Fallback über Live-Direktpreis-API" if data.get("fallback") else ""
             self.month_status.set(
-                f"{summary.get('priced_days', 0)} von {summary.get('days', 0)} Tagen berechnet."
+                f"{summary.get('priced_days', 0)} von {summary.get('days', 0)} Tagen berechnet{suffix}."
             )
 
 
