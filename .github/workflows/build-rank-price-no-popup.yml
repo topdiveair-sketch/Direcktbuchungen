@@ -1,0 +1,84 @@
+name: Build Rang Preis No Popup Fix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-rank-price-no-popup.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Remove modal fetch error popup
+        shell: pwsh
+        run: |
+          @'
+          from pathlib import Path
+          p = Path('windows_rank_price/app.py')
+          s = p.read_text(encoding='utf-8')
+          old = '''    def _show_error(self, message: str):
+              self.fetch_btn.state(["!disabled"])
+              self.status_var.set(message)
+              messagebox.showerror(APP_NAME, message)
+          '''
+          new = '''    def _show_error(self, message: str):
+              self.fetch_btn.state(["!disabled"])
+              clean = " ".join(str(message or "Unbekannter Fehler").split())
+              self.status_var.set(f"Fehler: {clean}")
+              self.rank_note.set(clean)
+          '''
+          if old not in s:
+              raise SystemExit('Expected _show_error block not found')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+          '@ | Set-Content -Path patch_no_popup.py -Encoding utf8
+          python patch_no_popup.py
+          python -m py_compile windows_rank_price/app.py
+
+      - name: Commit repair
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add windows_rank_price/app.py
+          git commit -m "Stop repeated Windows error popups"
+          git push
+
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pip pyinstaller
+
+      - name: Build desktop EXE
+        shell: pwsh
+        run: |
+          Set-Location windows_rank_price
+          pyinstaller --noconfirm --clean --onefile --windowed --name ZuhauseAmBach-RangPreis app.py
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      - name: Build Setup EXE
+        shell: pwsh
+        run: |
+          Set-Location windows_rank_price
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZuhauseAmBach-RangPreis-Setup-NO-POPUPS
+          path: windows_rank_price/dist-installer/ZuhauseAmBach-RangPreis-Setup.exe
+          if-no-files-found: error
+          retention-days: 30
