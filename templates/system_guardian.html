@@ -14,7 +14,7 @@
     .status-ok{background:#e9f8ee;color:#176b36}.status-degraded{background:#fff4d6;color:#865d00}.status-error,.status-critical{background:#ffe6e6;color:#9b1c1c}.status-unknown{background:#eef1f3;color:#53606a}
     .guardian-actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 0}.guardian-actions form{margin:0}
     .guardian-actions button,.guardian-back{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
-    .guardian-actions button{background:#17313d;color:#fff}.guardian-actions .repair{background:#7b4b17}.guardian-back{background:#edf2f4;color:#17313d}
+    .guardian-actions button{background:#17313d;color:#fff}.guardian-actions .repair{background:#7b4b17}.guardian-actions .sound{background:#4b3f72}.guardian-back{background:#edf2f4;color:#17313d}
     .guardian-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}
     .guardian-summary article,.finding{background:#fff;border:1px solid #dfe6e9;border-radius:14px;padding:16px}
     .guardian-summary span{display:block;color:#60727c;font-size:12px;text-transform:uppercase;font-weight:800}.guardian-summary strong{font-size:27px}
@@ -42,6 +42,7 @@
       <div class="guardian-actions">
         <form method="post"><input type="hidden" name="action" value="audit"><button type="submit">👻 Jetzt prüfen</button></form>
         <form method="post"><input type="hidden" name="action" value="repair"><button class="repair" type="submit">🔧 Sichere Fehler beheben</button></form>
+        <button class="sound" type="button" id="guardian-sound-toggle">🔊 Alarm & Sprache aktivieren</button>
         <a class="guardian-back" href="{{ url_for('os_dashboard') }}">Zurück</a>
       </div>
     </div>
@@ -83,5 +84,124 @@
     <strong>Sicherheitsregel:</strong> Der Geist darf nur risikoarme Reparaturen durchführen. Keine Datenbanklöschung, keine Secret-Änderung und keine Infrastruktur-Löschung erfolgt automatisch.
   </section>
 </main>
+<script>
+(function(){
+  const STORAGE_KEY = "prem_projectos_guardian_audio_enabled";
+  const LAST_ALERT_KEY = "prem_projectos_guardian_last_alert";
+  const toggle = document.getElementById("guardian-sound-toggle");
+  let audioEnabled = localStorage.getItem(STORAGE_KEY) === "1";
+
+  function updateToggle(){
+    toggle.textContent = audioEnabled ? "🔊 Alarm & Sprache aktiv" : "🔇 Alarm & Sprache aus";
+  }
+
+  function tone(frequency, duration, delay){
+    window.setTimeout(() => {
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        const ctx = new Ctx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration / 1000);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration / 1000 + 0.03);
+        osc.onended = () => ctx.close();
+      } catch (_) {}
+    }, delay || 0);
+  }
+
+  function soundAlarm(level){
+    if (level === "critical") {
+      tone(880, 260, 0); tone(660, 260, 340); tone(880, 420, 680);
+    } else if (level === "error") {
+      tone(740, 240, 0); tone(520, 360, 320);
+    } else if (level === "warning") {
+      tone(520, 180, 0);
+    }
+  }
+
+  function severityGerman(level){
+    if (level === "critical") return "kritisch";
+    if (level === "error") return "schwerwiegend";
+    if (level === "warning") return "Warnung";
+    return "Information";
+  }
+
+  function speak(text){
+    if (!("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "de-DE";
+      utter.rate = 0.95;
+      utter.pitch = 1.0;
+      const voices = window.speechSynthesis.getVoices();
+      const german = voices.find(v => /^de[-_]/i.test(v.lang || ""));
+      if (german) utter.voice = german;
+      window.speechSynthesis.speak(utter);
+    } catch (_) {}
+  }
+
+  function alertForGuardian(guardian){
+    if (!audioEnabled || !guardian || !guardian.findings) return;
+    const important = guardian.findings
+      .filter(f => f && (f.severity === "critical" || f.severity === "error"))
+      .sort((a,b) => (b.severity === "critical") - (a.severity === "critical"));
+    if (!important.length) return;
+
+    const fingerprint = guardian.generated_at + "|" + important.map(f => f.component + ":" + f.severity + ":" + f.code).join("|");
+    if (localStorage.getItem(LAST_ALERT_KEY) === fingerprint) return;
+    localStorage.setItem(LAST_ALERT_KEY, fingerprint);
+
+    const worst = important[0];
+    soundAlarm(worst.severity);
+    const components = important.slice(0,3).map(f => f.component).join(", ");
+    const extra = important.length > 3 ? " und weitere Systeme" : "";
+    const text = "Achtung. Prem Project O S System Guardian. " +
+      severityGerman(worst.severity) + "er Fehler. Betroffen: " + components + extra + ". " +
+      worst.message;
+    window.setTimeout(() => speak(text), worst.severity === "critical" ? 1150 : 800);
+  }
+
+  async function poll(){
+    try {
+      const response = await fetch("{{ url_for('system_guardian_status') }}", {
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: {"Accept":"application/json"}
+      });
+      if (!response.ok) return;
+      const payload = await response.json();
+      alertForGuardian(payload.guardian);
+    } catch (_) {}
+  }
+
+  toggle.addEventListener("click", function(){
+    audioEnabled = !audioEnabled;
+    localStorage.setItem(STORAGE_KEY, audioEnabled ? "1" : "0");
+    updateToggle();
+    if (audioEnabled) {
+      tone(620, 140, 0);
+      speak("System Guardian Alarm und deutsche Sprachausgabe sind aktiviert.");
+      window.setTimeout(poll, 1200);
+    } else if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  });
+
+  updateToggle();
+  if (audioEnabled) {
+    window.setTimeout(poll, 1200);
+    window.setInterval(poll, 30000);
+  }
+})();
+</script>
 </body>
 </html>
