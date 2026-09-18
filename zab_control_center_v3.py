@@ -733,14 +733,24 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
     @app.get("/health/zab-control-center")
     def zab_control_center_health():
         checker = app.extensions.get("zab_booking_connectivity_status")
-        return jsonify(
+        booking_status = checker("Bachblick") if callable(checker) else {"configured": False}
+        booking_ready = bool(booking_status.get("configured"))
+        payload = dict(
             ok=True,
+            degraded=not booking_ready,
             version=3,
             channels=list(CHANNELS),
             rooms=[{"key": room, "label": ROOM_LABELS.get(room, room)} for room in rooms],
-            booking_connectivity=checker("Bachblick") if callable(checker) else {"configured": False},
+            booking_connectivity=booking_status,
+            booking_connectivity_ready=booking_ready,
+            booking_connectivity_message=(
+                "Booking.com Connectivity ist vollständig konfiguriert."
+                if booking_ready
+                else "Booking.com Connectivity ist nicht vollständig konfiguriert; Kalender-Fallbacks bleiben aktiv."
+            ),
             paypal_master_independent=bool(app.extensions.get("zab_paypal_master_independent")),
-        ), 200
+        )
+        return jsonify(payload), 200
 
     app.extensions["zab_control_center_channels"] = CHANNELS
     app.extensions["zab_control_center_snapshot"] = _calendar_snapshot
