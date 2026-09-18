@@ -4,6 +4,33 @@
   "use strict";
   const ENDPOINT = "https://web-production-2b242.up.railway.app/api/demand-event";
 
+  const ATTRIBUTION_KEY = "zab-attribution-v1";
+
+  function getAttribution() {
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(ATTRIBUTION_KEY) || "{}"); } catch (_) {}
+    const params = new URLSearchParams(location.search);
+    const referrerHost = (() => {
+      try { return document.referrer ? new URL(document.referrer).hostname : ""; } catch (_) { return ""; }
+    })();
+    const current = {
+      utm_source: params.get("utm_source") || saved.utm_source || "",
+      utm_medium: params.get("utm_medium") || saved.utm_medium || "",
+      utm_campaign: params.get("utm_campaign") || saved.utm_campaign || "",
+      referrer_host: saved.referrer_host || referrerHost || "",
+      landing_path: saved.landing_path || (location.pathname + location.search),
+      current_path: location.pathname
+    };
+    if (!current.utm_source && referrerHost) {
+      if (/google\./i.test(referrerHost)) current.utm_source = "google";
+      else if (/bing\./i.test(referrerHost)) current.utm_source = "bing";
+      else current.utm_source = "referral";
+    }
+    if (!current.utm_medium && current.utm_source === "google") current.utm_medium = "organic";
+    try { localStorage.setItem(ATTRIBUTION_KEY, JSON.stringify(current)); } catch (_) {}
+    return current;
+  }
+
   function details(extra) {
     const arrival = document.getElementById("arrival");
     const departure = document.getElementById("departure");
@@ -24,7 +51,7 @@
       room: room ? room.value : "",
       total: totalMatch ? Number(totalMatch[1]) : null,
       language: document.documentElement.lang || "de"
-    }, extra || {});
+    }, getAttribution(), extra || {});
   }
 
   function send(event, extra) {
@@ -55,7 +82,7 @@
   }
 
   function ready() {
-    oncePerSession("view", "page_view");
+    oncePerSession("view", "page_view", { attribution: getAttribution() });
 
     document.addEventListener("click", function (ev) {
       const tracked = ev.target.closest("[data-track], a[href*='#booking'], a[href*='#arrival']");
@@ -67,6 +94,8 @@
       if (whatsapp) send("whatsapp_click");
       const copy = ev.target.closest("#copyRequestButton");
       if (copy) send("copy_request_click");
+      const paypal = ev.target.closest("#paypalLink");
+      if (paypal) send("payment_started", { payment_method: "paypal_or_card" });
     }, true);
 
     const form = document.getElementById("requestForm");
