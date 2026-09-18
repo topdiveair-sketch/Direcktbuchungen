@@ -14,6 +14,7 @@ from direct_booking_metrics import init_direct_booking_metrics
 from market_leader_metrics import init_market_leader_metrics
 from market_leader_scheduler import init_market_leader_scheduler
 from wachauetappe_live_gateway import init_wachauetappe_live
+from projectos_system_guardian import init_projectos_system_guardian
 
 # Deployment marker: card + PayPal checkout preparation, 2026-09-13.
 CHECKOUT_DEPLOY_REV = "2026-09-13-card-plus-paypal-v2"
@@ -49,6 +50,7 @@ _direct_booking_summary = init_direct_booking_metrics(app, db, require_admin)
 _market_leader_summary = init_market_leader_metrics(app, db, require_admin)
 init_market_leader_scheduler(app, db, _market_leader_summary)
 init_wachauetappe_live(app, db, require_admin)
+_system_guardian_run = init_projectos_system_guardian(app, db)
 
 
 @app.get("/api/projectos/winter-performance")
@@ -76,6 +78,21 @@ def projectos_market_leader_performance():
     return jsonify({"ok": True, **_market_leader_summary(refresh_competitors=refresh)}), 200
 
 
+@app.get("/api/projectos/system-audit")
+def projectos_system_audit():
+    if not _projectos_authorized():
+        return jsonify({"ok": False, "error": "unauthorized"}), 401
+    repair = request.args.get("repair", "0").strip().lower() in {"1", "true", "yes", "on"}
+    return jsonify(_system_guardian_run(auto_repair=repair)), 200
+
+
+@app.post("/api/projectos/system-repair")
+def projectos_system_repair():
+    if not _projectos_authorized():
+        return jsonify({"ok": False, "error": "unauthorized"}), 401
+    return jsonify(_system_guardian_run(auto_repair=True)), 200
+
+
 @app.get("/health/projectos-winter")
 def projectos_winter_health():
     return {
@@ -85,6 +102,10 @@ def projectos_winter_health():
         "endpoint": "/api/projectos/winter-performance",
         "direct_booking_endpoint": "/api/projectos/direct-booking-performance",
         "market_leader_endpoint": "/api/projectos/market-leader-performance",
+        "system_audit_endpoint": "/api/projectos/system-audit",
+        "system_repair_endpoint": "/api/projectos/system-repair",
+        "system_guardian": bool(app.extensions.get("projectos_system_guardian_initialized")),
+        "system_guardian_scheduler": bool(app.extensions.get("projectos_system_guardian_scheduler")),
         "direct_booking_metrics": bool(app.extensions.get("zab_direct_booking_metrics_initialized")),
         "market_leader_metrics": bool(app.extensions.get("zab_market_leader_metrics_initialized")),
         "market_leader_scheduler": bool(app.extensions.get("zab_market_leader_scheduler_initialized")),
