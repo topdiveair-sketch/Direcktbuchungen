@@ -59,7 +59,7 @@ def _cors_headers() -> dict[str, str]:
     return {
         "Access-Control-Allow-Origin": PUBLIC_SITE_ORIGIN,
         "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "Content-Type, Cache-Control",
         "Cache-Control": "no-store",
     }
 
