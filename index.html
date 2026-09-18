@@ -2689,7 +2689,7 @@
       && !/(PASTE-YOUR-WORKER|DEIN-NAME)/i.test(configuredBookingSyncUrl);
     const LIVE_BOOKING_API_URL = hasConfiguredBookingSync
       ? configuredBookingSyncUrl + "/availability"
-      : "booking-calendar.json";
+      : "https://web-production-907d68.up.railway.app/api/direct-booking-calendar";
     const LIVE_PRICE_API_URL = "https://web-production-2b242.up.railway.app/api/direct-price";
     const OTHER_ROOMS_RELEASED = window.SHOW_ADDITIONAL_ROOMS === true;
     const OTHER_ROOMS_RELEASE_DATE = "2026-08-15";
