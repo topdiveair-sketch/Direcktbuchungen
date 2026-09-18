@@ -234,6 +234,19 @@ def init_zab_os(app, DB_PATH, db, require_admin, ROOMS):
             today=today,
         )
 
+    @app.get("/os/system-guardian/status")
+    def system_guardian_status():
+        if not require_admin():
+            return jsonify({"ok": False, "error": "unauthorized"}), 401
+        state = app.extensions.get("projectos_system_guardian_state") or {}
+        result = state.get("last_result") if isinstance(state, dict) else None
+        return jsonify({
+            "ok": True,
+            "scheduler_active": bool(app.extensions.get("projectos_system_guardian_scheduler")),
+            "guardian": result,
+        }), 200
+
+
     @app.route("/os/system-guardian", methods=["GET", "POST"])
     def system_guardian_dashboard():
         if not require_admin():
