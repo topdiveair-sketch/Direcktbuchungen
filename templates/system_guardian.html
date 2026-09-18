@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+  <title>System Guardian · Prem ProjectOS</title>
+  <style>
+    .guardian-wrap{max-width:1180px;margin:0 auto;padding:28px 18px 64px}
+    .guardian-hero{display:flex;gap:18px;align-items:center;background:#fff;border:1px solid #dfe6e9;border-radius:18px;padding:22px;margin-bottom:18px}
+    .guardian-ghost{font-size:58px;line-height:1}
+    .guardian-status{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;font-weight:800;text-transform:uppercase;font-size:12px;letter-spacing:.04em}
+    .status-ok{background:#e9f8ee;color:#176b36}.status-degraded{background:#fff4d6;color:#865d00}.status-error,.status-critical{background:#ffe6e6;color:#9b1c1c}.status-unknown{background:#eef1f3;color:#53606a}
+    .guardian-actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 0}.guardian-actions form{margin:0}
+    .guardian-actions button,.guardian-back{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
+    .guardian-actions button{background:#17313d;color:#fff}.guardian-actions .repair{background:#7b4b17}.guardian-back{background:#edf2f4;color:#17313d}
+    .guardian-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}
+    .guardian-summary article,.finding{background:#fff;border:1px solid #dfe6e9;border-radius:14px;padding:16px}
+    .guardian-summary span{display:block;color:#60727c;font-size:12px;text-transform:uppercase;font-weight:800}.guardian-summary strong{font-size:27px}
+    .findings{display:grid;gap:10px}.finding{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start}
+    .finding-icon{font-size:22px}.finding h3{margin:0 0 4px}.finding p{margin:0;color:#52646d}.finding small{display:block;margin-top:7px;color:#7a878d}
+    .finding-badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.badge{font-size:11px;font-weight:800;border-radius:999px;padding:5px 8px;background:#eef2f4}
+    .manual{background:#fff0dc;color:#8b5200}.repaired{background:#e7f7ec;color:#176b36}
+    .guardian-note{background:#eef6ff;border:1px solid #cedff1;border-radius:12px;padding:14px 16px;margin-top:16px}
+    @media(max-width:720px){.guardian-hero{align-items:flex-start}.guardian-ghost{font-size:46px}.finding{grid-template-columns:auto 1fr}.finding-badges{grid-column:2;justify-content:flex-start}}
+  </style>
+</head>
+<body class="admin-page">
+<header class="os-header">
+  <div><strong>👻 Prem ProjectOS · System Guardian</strong><small>sichtbare Systemüberwachung</small></div>
+  <nav><a href="{{ url_for('os_dashboard') }}">OS Startseite</a><a href="{{ url_for('admin') }}">Verwaltung</a></nav>
+</header>
+<main class="guardian-wrap">
+  {% set status = guardian.status if guardian else 'unknown' %}
+  <section class="guardian-hero">
+    <div class="guardian-ghost">👻</div>
+    <div>
+      <div class="guardian-status status-{{ status }}">{{ status }}</div>
+      <h1 style="margin:10px 0 4px">System Guardian</h1>
+      <p style="margin:0;color:#60727c">Der Geist schaut sichtbar nach deinen Programmen und Systemen – statt unsichtbar im Hintergrund zu laufen.</p>
+      <div class="guardian-actions">
+        <form method="post"><input type="hidden" name="action" value="audit"><button type="submit">👻 Jetzt prüfen</button></form>
+        <form method="post"><input type="hidden" name="action" value="repair"><button class="repair" type="submit">🔧 Sichere Fehler beheben</button></form>
+        <a class="guardian-back" href="{{ url_for('os_dashboard') }}">Zurück</a>
+      </div>
+    </div>
+  </section>
+
+  {% if guardian %}
+  <section class="guardian-summary">
+    <article><span>Prüfungen</span><strong>{{ guardian.summary.checks }}</strong></article>
+    <article><span>Fehler</span><strong>{{ guardian.summary.errors }}</strong></article>
+    <article><span>Warnungen</span><strong>{{ guardian.summary.warnings }}</strong></article>
+    <article><span>Repariert</span><strong>{{ guardian.summary.repairs_applied }}</strong></article>
+    <article><span>Manuell offen</span><strong>{{ guardian.summary.manual_actions }}</strong></article>
+  </section>
+  <p><strong>Letzte Prüfung:</strong> {{ guardian.generated_at or 'noch nicht vorhanden' }} · Scheduler: <strong>{{ 'aktiv' if scheduler_active else 'inaktiv' }}</strong></p>
+
+  <section class="findings">
+    {% for f in guardian.findings %}
+    <article class="finding">
+      <div class="finding-icon">
+        {% if f.severity == 'ok' %}✅{% elif f.severity == 'info' %}ℹ️{% elif f.severity == 'warning' %}⚠️{% else %}❌{% endif %}
+      </div>
+      <div>
+        <h3>{{ f.component }}</h3>
+        <p>{{ f.message }}</p>
+        <small>{{ f.code }} · {{ f.severity }}</small>
+      </div>
+      <div class="finding-badges">
+        {% if f.repaired %}<span class="badge repaired">repariert</span>{% endif %}
+        {% if f.manual_action_required %}<span class="badge manual">manuell prüfen</span>{% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+  {% else %}
+  <section class="guardian-note">Noch kein Guardian-Bericht vorhanden. Klicke auf <strong>„Jetzt prüfen“</strong>.</section>
+  {% endif %}
+
+  <section class="guardian-note">
+    <strong>Sicherheitsregel:</strong> Der Geist darf nur risikoarme Reparaturen durchführen. Keine Datenbanklöschung, keine Secret-Änderung und keine Infrastruktur-Löschung erfolgt automatisch.
+  </section>
+</main>
+</body>
+</html>
