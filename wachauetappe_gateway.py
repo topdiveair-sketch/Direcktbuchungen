@@ -45,6 +45,10 @@ PUBLIC_CALENDAR_SNAPSHOT_URL = os.environ.get(
     "ZAB_PUBLIC_CALENDAR_JSON_URL",
     "https://raw.githubusercontent.com/topdiveair-sketch/Direcktbuchungen/main/booking-calendar.json",
 ).strip()
+LIVE_SAFETY_ICAL_URL = os.environ.get(
+    "ZAB_LIVE_SAFETY_ICAL_URL",
+    "https://web-production-907d68.up.railway.app/calendar/public/Bachblick.ics",
+).strip()
 PUBLIC_CALENDAR_MAX_AGE_SECONDS = max(
     60,
     min(int(os.environ.get("ZAB_PUBLIC_CALENDAR_MAX_AGE_SECONDS", "900")), 3600),
@@ -145,34 +149,91 @@ def _parse_snapshot_timestamp(value: str) -> datetime | None:
     return parsed.astimezone(timezone.utc)
 
 
-def _public_calendar_safety_check(room: str, arrival: date, departure: date):
-    """Cross-check the public hybrid snapshot before a positive direct quote.
+def _parse_ical_date(value: str) -> date | None:
+    raw = str(value or "").strip()
+    if len(raw) < 8:
+        return None
+    raw = raw[:8]
+    try:
+        return date(int(raw[:4]), int(raw[4:6]), int(raw[6:8]))
+    except (TypeError, ValueError):
+        return None
 
-    The static snapshot is generated from both ZAB master state and Booking iCal.
-    It deliberately contains no guest data. A missing or stale snapshot fails
-    closed so the site can never turn an uncertain period into an automatic
-    "frei" quote.
+
+def _live_calendar_safety_check(room: str, arrival: date, departure: date):
+    """Check the authoritative live ZAB calendar before using a static snapshot.
+
+    The public ICS feed is served directly by the production ZAB OS with
+    Cache-Control: no-store. This removes GitHub Actions freshness from the
+    critical direct-booking path while preserving fail-closed behaviour.
     """
+    if room != "Bachblick" or not LIVE_SAFETY_ICAL_URL:
+        return None, "Der Live-Sicherheitskalender ist nicht konfiguriert."
+
+    separator = "&" if "?" in LIVE_SAFETY_ICAL_URL else "?"
+    url = f"{LIVE_SAFETY_ICAL_URL}{separator}_zab={int(datetime.now(timezone.utc).timestamp())}"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "Zuhause-am-Bach-Direct-Booking-Safety/1.0",
+            "Accept": "text/calendar,text/plain,*/*",
+            "Cache-Control": "no-cache",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=8) as response:
+            text = response.read().decode("utf-8", errors="replace")
+    except Exception as exc:
+        return None, f"Der Live-Sicherheitskalender konnte nicht geprüft werden: {exc}"
+
+    if "BEGIN:VCALENDAR" not in text:
+        return None, "Der Live-Sicherheitskalender hat ungültige Daten geliefert."
+
+    unfolded = text.replace("\r\n ", "").replace("\r\n\t", "").replace("\n ", "").replace("\n\t", "")
+    for block in unfolded.split("BEGIN:VEVENT")[1:]:
+        start = None
+        end = None
+        for raw_line in block.splitlines():
+            line = raw_line.strip()
+            if line.startswith("DTSTART"):
+                start = _parse_ical_date(line.split(":", 1)[-1])
+            elif line.startswith("DTEND"):
+                end = _parse_ical_date(line.split(":", 1)[-1])
+        if start and end and end > start and _dates_overlap(arrival, departure, start, end):
+            return False, "Das Gartenblick Zimmer ist im Live-Sicherheitskalender bereits belegt oder geschlossen."
+
+    return True, "Der Live-Sicherheitskalender ist aktuell und ohne Konflikt."
+
+
+def _public_calendar_safety_check(room: str, arrival: date, departure: date):
+    """Cross-check live availability, with the GitHub snapshot only as fallback.
+
+    The live Railway ICS feed is authoritative for the booking path. The static
+    GitHub snapshot remains a resilience fallback, but its scheduler freshness
+    can no longer disable live direct pricing while Railway is reachable.
+    """
+    live_available, live_message = _live_calendar_safety_check(room, arrival, departure)
+    if live_available is not None:
+        return live_available, live_message
+
     if room != "Bachblick" or not PUBLIC_CALENDAR_SNAPSHOT_URL:
-        return None, "Der öffentliche Sicherheitskalender ist nicht verfügbar."
+        return None, live_message
 
     separator = "&" if "?" in PUBLIC_CALENDAR_SNAPSHOT_URL else "?"
     url = f"{PUBLIC_CALENDAR_SNAPSHOT_URL}{separator}_zab={int(datetime.now(timezone.utc).timestamp())}"
     req = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "Zuhause-am-Bach-Direct-Quote/2.0",
+            "User-Agent": "Zuhause-am-Bach-Direct-Booking-Safety/1.0",
             "Accept": "application/json",
             "Cache-Control": "no-cache",
         },
     )
     try:
-        with urllib.request.urlopen(req, timeout=12) as response:
-            payload = json.loads(response.read().decode("utf-8", errors="replace"))
-    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ValueError, json.JSONDecodeError) as exc:
-        return None, f"Der Booking-Sicherheitskalender ist nicht erreichbar: {exc}"
+        with urllib.request.urlopen(req, timeout=8) as response:
+            payload = json.loads(response.read().decode("utf-8"))
     except Exception as exc:
-        return None, f"Der Booking-Sicherheitskalender konnte nicht geprüft werden: {exc}"
+        return None, f"{live_message} Snapshot-Fallback ebenfalls nicht verfügbar: {exc}"
 
     events = payload.get("events")
     updated = _parse_snapshot_timestamp(payload.get("updatedAtIso", ""))
@@ -181,7 +242,7 @@ def _public_calendar_safety_check(room: str, arrival: date, departure: date):
 
     age_seconds = (datetime.now(timezone.utc) - updated).total_seconds()
     if age_seconds < -300 or age_seconds > PUBLIC_CALENDAR_MAX_AGE_SECONDS:
-        return None, "Der Booking-Sicherheitskalender ist nicht aktuell genug."
+        return None, "Live-Sicherheitskalender nicht erreichbar und Snapshot nicht aktuell genug."
 
     for event in events:
         if not isinstance(event, dict):
@@ -194,7 +255,7 @@ def _public_calendar_safety_check(room: str, arrival: date, departure: date):
         if end > start and _dates_overlap(arrival, departure, start, end):
             return False, "Das Gartenblick Zimmer ist in diesem Zeitraum bereits belegt oder geschlossen."
 
-    return True, "ZAB- und Booking-Sicherheitskalender sind aktuell und ohne Konflikt."
+    return True, "Snapshot-Fallback ist aktuell und ohne Konflikt."
 
 
 def _master_direct_availability(room: str, arrival: date, departure: date):
