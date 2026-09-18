@@ -214,8 +214,12 @@ def init_zab_os(app, DB_PATH, db, require_admin, ROOMS):
 
         revenue, costs, profit = month_profit(month_prefix)
 
+        guardian_state = app.extensions.get("projectos_system_guardian_state") or {}
+        guardian_result = guardian_state.get("last_result") if isinstance(guardian_state, dict) else None
+
         return render_template(
             "os_dashboard.html",
+            guardian_result=guardian_result,
             arrivals=arrivals,
             departures=departures,
             open_tasks=open_tasks,
@@ -229,6 +233,60 @@ def init_zab_os(app, DB_PATH, db, require_admin, ROOMS):
             profit=profit,
             today=today,
         )
+
+    @app.route("/os/system-guardian", methods=["GET", "POST"])
+    def system_guardian_dashboard():
+        if not require_admin():
+            return redirect(url_for("admin_login"))
+
+        runner = app.extensions.get("projectos_system_guardian_run")
+        state = app.extensions.get("projectos_system_guardian_state") or {}
+        action = request.form.get("action", "").strip().lower() if request.method == "POST" else ""
+
+        if request.method == "POST":
+            if not callable(runner):
+                flash("System Guardian ist auf diesem Dienst nicht verfügbar.", "error")
+            else:
+                try:
+                    result = runner(auto_repair=action == "repair")
+                    if action == "repair":
+                        flash(
+                            f"Guardian-Prüfung abgeschlossen: {result.get('summary', {}).get('repairs_applied', 0)} sichere Reparatur(en) ausgeführt.",
+                            "success",
+                        )
+                    else:
+                        flash("Guardian-Prüfung abgeschlossen.", "success")
+                except Exception as exc:
+                    flash(f"Guardian-Prüfung fehlgeschlagen: {exc}", "error")
+            return redirect(url_for("system_guardian_dashboard"))
+
+        result = state.get("last_result") if isinstance(state, dict) else None
+        if result is None and callable(runner):
+            try:
+                result = runner(auto_repair=False)
+            except Exception as exc:
+                result = {
+                    "ok": False,
+                    "status": "error",
+                    "generated_at": "",
+                    "summary": {"checks": 0, "errors": 1, "warnings": 0, "repairs_applied": 0, "manual_actions": 1},
+                    "findings": [{
+                        "component": "System Guardian",
+                        "severity": "error",
+                        "code": "guardian_run_failed",
+                        "message": f"Prüfung konnte nicht ausgeführt werden: {exc}",
+                        "repaired": False,
+                        "manual_action_required": True,
+                        "details": {},
+                    }],
+                }
+
+        return render_template(
+            "system_guardian.html",
+            guardian=result,
+            scheduler_active=bool(app.extensions.get("projectos_system_guardian_scheduler")),
+        )
+
 
     @app.get("/os/guests")
     def guest_database():
