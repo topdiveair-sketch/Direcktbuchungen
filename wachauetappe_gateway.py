@@ -284,6 +284,70 @@ def _master_direct_availability(room: str, arrival: date, departure: date):
         return None, f"Der ZAB-Masterkalender konnte nicht geprüft werden: {exc}"
 
 
+@app.route("/api/direct-booking-calendar", methods=["GET", "OPTIONS"])
+def public_direct_booking_calendar():
+    """Fresh public calendar for the static direct-booking frontend."""
+    if request.method == "OPTIONS":
+        return "", 204, _cors_headers()
+
+    separator = "&" if "?" in LIVE_SAFETY_ICAL_URL else "?"
+    url = f"{LIVE_SAFETY_ICAL_URL}{separator}_zab={int(datetime.now(timezone.utc).timestamp())}"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "Zuhause-am-Bach-Direct-Booking-Calendar/1.0",
+            "Accept": "text/calendar,text/plain,*/*",
+            "Cache-Control": "no-cache",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=8) as response:
+            text = response.read().decode("utf-8", errors="replace")
+    except Exception as exc:
+        return {
+            "ok": False,
+            "error": "live_calendar_unavailable",
+            "message": f"Der Live-Sicherheitskalender konnte nicht geladen werden: {exc}",
+        }, 503, _cors_headers()
+
+    if "BEGIN:VCALENDAR" not in text:
+        return {
+            "ok": False,
+            "error": "invalid_live_calendar",
+            "message": "Der Live-Sicherheitskalender hat ungültige Daten geliefert.",
+        }, 503, _cors_headers()
+
+    unfolded = text.replace("\r\n ", "").replace("\r\n\t", "").replace("\n ", "").replace("\n\t", "")
+    events = []
+    for block in unfolded.split("BEGIN:VEVENT")[1:]:
+        start = None
+        end = None
+        for raw_line in block.splitlines():
+            line = raw_line.strip()
+            if line.startswith("DTSTART"):
+                start = _parse_ical_date(line.split(":", 1)[-1])
+            elif line.startswith("DTEND"):
+                end = _parse_ical_date(line.split(":", 1)[-1])
+        if start and end and end > start:
+            events.append({
+                "start": start.isoformat(),
+                "end": end.isoformat(),
+                "summary": "CLOSED - Not available",
+                "source": "ZAB OS Master-Kalender live",
+            })
+
+    now = datetime.now(timezone.utc)
+    return {
+        "ok": True,
+        "room": "Bachblick",
+        "roomDisplayName": "Gartenblick Zimmer",
+        "source": "ZAB OS Master-Kalender live",
+        "events": events,
+        "updatedAt": now.astimezone().strftime("%d.%m.%Y %H:%M:%S"),
+        "updatedAtIso": now.isoformat().replace("+00:00", "Z"),
+    }, 200, _cors_headers()
+
+
 @app.route("/api/direct-price", methods=["GET", "OPTIONS"])
 def public_direct_price():
     """Public, date-aware room quote used by the static GitHub Pages frontend."""
