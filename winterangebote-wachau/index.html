@@ -118,5 +118,32 @@
 <div><strong>Zuhause am Bach – Wachau</strong><br>Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich</div>
 <div><a href="tel:+436646437526">+43 664 6437526</a><br><a href="mailto:Zuhause.am.Bach@outlook.com">Zuhause.am.Bach@outlook.com</a></div>
 </div></footer><div class="mobile-booking"><a href="../?utm_source=winter_hub&utm_medium=organic&utm_campaign=winter_mobile_2026#booking-title">Wintertermin & Direktpreis prüfen</a></div>
+<script>
+(function(){
+  const endpoint='https://web-production-2b242.up.railway.app/api/demand-event';
+  const params=new URLSearchParams(location.search);
+  const base={campaign:'winter-wachau-2026',page:'winterangebote-wachau',utm_source:params.get('utm_source')||'',utm_medium:params.get('utm_medium')||'',utm_campaign:params.get('utm_campaign')||''};
+  function send(event,extra){
+    const payload=JSON.stringify({event:event,details:Object.assign({},base,extra||{})});
+    try{
+      if(navigator.sendBeacon){
+        const blob=new Blob([payload],{type:'application/json'});
+        if(navigator.sendBeacon(endpoint,blob)) return;
+      }
+    }catch(e){}
+    fetch(endpoint,{method:'POST',mode:'cors',cache:'no-store',keepalive:true,headers:{'Content-Type':'application/json'},body:payload}).catch(function(){});
+  }
+  send('winter_offer_view');
+  document.addEventListener('click',function(e){
+    const a=e.target.closest('a');
+    if(!a) return;
+    const href=a.getAttribute('href')||'';
+    if(href.includes('wachauer-advent-unterkunft')) send('winter_offer_click',{offer:'advent'});
+    else if(href.includes('skifahren-jauerling-unterkunft-wachau')) send('winter_offer_click',{offer:'jauerling'});
+    else if(href.includes('winter-wachau-jauerling')) send('winter_offer_click',{offer:'winterruhe'});
+    if(href.includes('#booking-title')) send('winter_booking_cta_click',{label:(a.textContent||'').trim().slice(0,120)});
+  },true);
+})();
+</script>
 </body>
 </html>
