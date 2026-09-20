@@ -288,6 +288,79 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-2b242.up.railway.app
     if (heroEyebrow) heroEyebrow.textContent = "Direktpreis statt Plattform-Umweg";
   }
 
+  function installSalesHomepageUpgrade() {
+    const path = window.location.pathname || "";
+    if (/\/(en|cs|sk|hu|pl|nl)\//.test(path) || document.getElementById("zab-sales-upgrade")) return;
+
+    const style = document.createElement("style");
+    style.id = "zab-sales-upgrade";
+    style.textContent = `
+      .zab-sales-proof{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:18px}
+      .zab-sales-proof span{padding:12px;border:1px solid rgba(255,255,255,.4);border-radius:12px;background:rgba(12,42,34,.62);color:#fff;font-size:13px;font-weight:850;text-align:center;backdrop-filter:blur(4px)}
+      .zab-booking-reasons{display:grid;gap:9px;margin:4px 0 2px;padding:13px;border-radius:12px;background:#fff7e8;border:1px solid #ead8b6}
+      .zab-booking-reasons strong{color:#17372f;font-size:14px}
+      .zab-booking-reasons ul{display:grid;gap:5px;margin:0;padding-left:20px;color:#455e56;font-size:13px;font-weight:750}
+      .zab-sales-section{padding:46px min(5vw,56px);background:#fffaf0}
+      .zab-sales-section h2{margin:0 0 10px;font-size:clamp(28px,4vw,42px);color:#17372f}
+      .zab-sales-section>p{max-width:820px;margin:0 0 22px;color:#5f6f69}
+      .zab-sales-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+      .zab-sales-card{padding:20px;border:1px solid #d8e2dd;border-radius:16px;background:#fff;box-shadow:0 10px 25px rgba(20,38,32,.07)}
+      .zab-sales-card strong{display:block;margin-bottom:7px;color:#176b5a;font-size:18px}
+      .zab-sales-card p{margin:0;color:#5f6f69;font-size:14px}
+      .zab-sales-cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:22px}
+      .zab-sales-cta a{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:11px 18px;border-radius:9px;background:#176b5a;color:#fff;text-decoration:none;font-weight:900}
+      .zab-sales-cta small{color:#5f6f69;font-weight:750}
+      @media(max-width:760px){.zab-sales-proof,.zab-sales-grid{grid-template-columns:1fr 1fr}.zab-sales-proof span{font-size:12px}}
+      @media(max-width:480px){.zab-sales-proof,.zab-sales-grid{grid-template-columns:1fr}}
+    `;
+    document.head.appendChild(style);
+
+    const heroP = document.querySelector(".hero-copy > p:not(.mobile-hero-benefits)");
+    if (heroP) heroP.textContent = "Ihre persönliche Wachau-Basis direkt am Welterbesteig und nahe dem Donauradweg: ruhig schlafen, Fahrrad sicher abstellen, E-Bike laden und auf Wunsch mit Frühstück in den Tag starten.";
+
+    const trust = document.querySelector(".hero-trust");
+    if (trust) {
+      trust.innerHTML = "<span>✓ Persönlich geführt</span><span>✓ Fahrrad sicher</span><span>✓ E-Bike laden</span><span>✓ Frühstück auf Wunsch</span>";
+      const proof = document.createElement("div");
+      proof.className = "zab-sales-proof";
+      proof.innerHTML = "<span>🚴 Für Donauradweg-Gäste</span><span>🥾 Für Welterbesteig-Wanderer</span><span>🅿 Kostenlos parken</span><span>📱 Digitale Gäste-App</span>";
+      trust.after(proof);
+    }
+
+    const intro = document.querySelector(".booking-intro");
+    if (intro) intro.textContent = "In weniger als einer Minute: Reisedaten wählen, Live-Verfügbarkeit prüfen, Direktpreis sehen und bei freiem Termin direkt bezahlen.";
+
+    const directTrust = document.querySelector(".direct-booking-trust");
+    if (directTrust) {
+      directTrust.innerHTML = "<strong>Direkt buchen statt Plattform-Umweg</strong><span>Live-Verfügbarkeit und transparenter Direktpreis direkt bei Zuhause am Bach.</span><small>Persönliche Gastgeber bleiben Ihre direkten Ansprechpartner.</small>";
+      const reasons = document.createElement("div");
+      reasons.className = "zab-booking-reasons";
+      reasons.innerHTML = "<strong>Darum passt Zuhause am Bach zu Ihrer Wachau-Reise:</strong><ul><li>ruhiger Ausgangspunkt zwischen Melk und Dürnstein</li><li>abschließbare Fahrrad-Unterbringung und E-Bike-Lademöglichkeit</li><li>Trockenmöglichkeit für Wander- und Radbekleidung</li><li>Frühstück auf Vorbestellung, auch vegetarisch oder vegan</li></ul>";
+      directTrust.after(reasons);
+    }
+
+    const header = document.querySelector("header.top");
+    if (header) {
+      const section = document.createElement("section");
+      section.className = "zab-sales-section";
+      section.setAttribute("aria-label","Warum Zuhause am Bach");
+      section.innerHTML = `
+        <h2>Die Wachau erleben – ohne an Kleinigkeiten denken zu müssen</h2>
+        <p>Zuhause am Bach ist bewusst keine anonyme Großunterkunft. Sie wohnen persönlich, ruhig und mit genau den Leistungen, die für eine Wander-, Rad- oder Genussreise in der Wachau praktisch sind.</p>
+        <div class="zab-sales-grid">
+          <article class="zab-sales-card"><strong>Für Radfahrer</strong><p>Fahrrad sicher unterbringen, E-Bike laden und am nächsten Morgen direkt weiter Richtung Melk, Spitz oder Dürnstein.</p></article>
+          <article class="zab-sales-card"><strong>Für Wanderer</strong><p>Welterbesteig vor der Haustür, Trockenmöglichkeit für Kleidung und Unterstützung beim Gepäcktransport nach Vereinbarung.</p></article>
+          <article class="zab-sales-card"><strong>Für Genießer</strong><p>Ruhige Nächte, Frühstück auf Wunsch und persönliche Empfehlungen für Heurige, Ausflüge und besondere Plätze der Wachau.</p></article>
+        </div>
+        <div class="zab-sales-cta"><a href="#booking-title">Jetzt Verfügbarkeit prüfen</a><small>Reisedaten eingeben → Direktpreis sehen → freien Termin buchen</small></div>
+      `;
+      header.after(section);
+    }
+
+    const submit = document.getElementById("submitRequest");
+    if (submit && !submit.disabled && !/^✓/.test(submit.textContent || "")) submit.textContent = "Jetzt Verfügbarkeit & Direktpreis prüfen";
+  }
+
   function loadWinterJauerlingPromo() {
     const path = window.location.pathname || "";
     const isGermanHome = !/\/(en|cs|sk|hu|pl|nl)\//.test(path);
@@ -310,7 +383,8 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-2b242.up.railway.app
     installOneClickInquiry();
     loadWinterJauerlingPromo();
     optimizeDirectBookingCopy();
-    setTimeout(optimizeDirectBookingCopy, 0);
+    installSalesHomepageUpgrade();
+    setTimeout(() => { optimizeDirectBookingCopy(); installSalesHomepageUpgrade(); }, 0);
 
     const form = document.getElementById("requestForm");
     ["input", "change"].forEach((eventName) => {
