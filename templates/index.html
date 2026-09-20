@@ -94,30 +94,24 @@
           </div>
         </section>
 
-        <h3 class="subheading">Zimmer wählen</h3>
-        <div class="release-note">
-          Bis einschließlich <strong>15.08.2026</strong> ist nur das Zimmer <strong>Bachblick</strong> buchbar.
-          Ab <strong>16.08.2026</strong> stehen alle vier Zimmer zur Verfügung.
-        </div>
-
+        <h3 class="subheading">Gartenzimmer</h3>
         <div id="zimmer" class="room-list">
-          {% for room, info in rooms.items() %}
+          {% set info = rooms['Bachblick'] %}
           <label class="room-option">
-            <input type="radio" name="room" value="{{ room }}" data-price="{{ info.price }}"
-                   data-from="{{ info.available_from.isoformat() }}" {% if room == 'Bachblick' %}checked{% endif %}>
-            <img src="{{ url_for('static', filename='images/rooms/' + room_images[room]) }}" alt="{{ room }}">
+            <input type="radio" name="room" value="Bachblick" data-price="{{ info.price }}"
+                   data-from="{{ info.available_from.isoformat() }}" checked>
+            <img src="{{ url_for('static', filename='images/rooms/' + room_images['Bachblick']) }}" alt="Gartenzimmer bei Zuhause am Bach">
             <span class="room-copy">
-              <strong>{{ room }}</strong>
-              <small>{{ info.description }}</small>
+              <strong>Gartenzimmer</strong>
+              <small>Ruhiges Doppelzimmer mit persönlicher Atmosphäre – gemütlich und zum Wohlfühlen.</small>
               <span class="room-features">Doppelbett · eigenes Bad · WLAN · ruhige Lage</span>
             </span>
             <span class="room-price">
-              {% if room == 'Bachblick' %}<strong>ab 99 €</strong>{% else %}<strong>{{ '%.0f'|format(info.price) }} €</strong>{% endif %}
+              <strong>ab 99 €</strong>
               <small>pro Nacht</small>
             </span>
             <span class="room-check">✓</span>
           </label>
-          {% endfor %}
         </div>
 
         <div id="priceBreakdown" class="price-breakdown"></div>
@@ -179,8 +173,8 @@
         <span class="eyebrow">Live-Verfügbarkeit</span>
         <h2>Freie und belegte Tage</h2>
       </div>
-      <select id="calendarRoom">
-        {% for room in rooms %}<option value="{{ room }}">{{ room }}</option>{% endfor %}
+      <select id="calendarRoom" aria-label="Zimmer">
+        <option value="Bachblick">Gartenzimmer</option>
       </select>
     </div>
     <div class="calendar-controls">
