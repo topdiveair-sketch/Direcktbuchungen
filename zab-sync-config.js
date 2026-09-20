@@ -355,6 +355,36 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-2b242.up.railway.app
         <div class="zab-sales-cta"><a href="#booking-title">Jetzt Verfügbarkeit prüfen</a><small>Reisedaten eingeben → Direktpreis sehen → freien Termin buchen</small></div>
       `;
       header.after(section);
+
+      const proofSection = document.createElement("section");
+      proofSection.className = "zab-sales-section";
+      proofSection.setAttribute("aria-label","Gästestimmen und Passung");
+      proofSection.innerHTML = `
+        <h2>Persönlich geführt – und genau dafür geschätzt</h2>
+        <p>Gäste bewerten besonders die herzliche Betreuung, die ruhige Lage, das Frühstück und die Eignung für Radreisen. Auf Booking.com liegt Zuhause am Bach aktuell bei 8,8/10, die Gastgeberbewertung bei 9,8/10 und das Preis-Leistungs-Verhältnis bei 9,2/10 (Stand September 2026).</p>
+        <div class="zab-sales-grid">
+          <article class="zab-sales-card"><strong>„Ideal mit dem Fahrrad“</strong><p>Mehrere Gäste heben die sichere Fahrradunterbringung, die ruhige Lage und die gute Eignung für eine Donauradweg-Etappe hervor.</p></article>
+          <article class="zab-sales-card"><strong>Frühstück, das in Erinnerung bleibt</strong><p>Bewertungen beschreiben das Frühstück wiederholt als reichhaltig, liebevoll vorbereitet und besonders angenehm vor einem aktiven Tag.</p></article>
+          <article class="zab-sales-card"><strong>Persönlich statt anonym</strong><p>Die Unterkunft ist bewusst privat geführt. Wer direkten Kontakt, ehrliche Wachau-Tipps und eine familiäre Atmosphäre schätzt, ist hier richtig.</p></article>
+        </div>
+        <div class="zab-sales-cta"><a href="https://www.booking.com/hotel/at/zu-hause-am-bach.de.html" target="_blank" rel="noopener">Aktuelle Gästebewertungen ansehen</a><small>Externe Bewertungen bei Booking.com</small></div>
+      `;
+      section.after(proofSection);
+
+      const fitSection = document.createElement("section");
+      fitSection.className = "zab-sales-section";
+      fitSection.setAttribute("aria-label","Passt Zuhause am Bach zu mir");
+      fitSection.innerHTML = `
+        <h2>Passt Zuhause am Bach zu Ihrer Reise?</h2>
+        <p>Wir möchten, dass die Unterkunft wirklich zu Ihnen passt. Das verhindert Enttäuschungen und macht den Aufenthalt für beide Seiten angenehmer.</p>
+        <div class="zab-sales-grid">
+          <article class="zab-sales-card"><strong>Sehr passend, wenn …</strong><p>Sie die Wachau aktiv erleben, ruhig schlafen, persönliche Gastgeber schätzen und lieber direkt als anonym übernachten.</p></article>
+          <article class="zab-sales-card"><strong>Gut zu wissen</strong><p>Zum Zuhause gehören die freundlichen Windhunde Fidel, Gloria und Pia. Bei Hundeangst oder Hundeallergie ist die Unterkunft daher möglicherweise nicht die beste Wahl.</p></article>
+          <article class="zab-sales-card"><strong>Klare Hausregeln</strong><p>Nichtraucher-Unterkunft, keine Partys und keine mitgebrachten Haustiere. So bleibt es ruhig und angenehm für alle Gäste.</p></article>
+        </div>
+        <div class="zab-sales-cta"><a href="#booking-title">Passt für mich – Verfügbarkeit prüfen</a><small>Direktpreis und freie Termine sofort prüfen</small></div>
+      `;
+      proofSection.after(fitSection);
     }
 
     const submit = document.getElementById("submitRequest");
