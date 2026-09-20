@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import json
 import sqlite3
 import urllib.request
 import urllib.error
@@ -563,24 +564,47 @@ def api_calendar():
     year = int(request.args.get("year", date.today().year))
     month = int(request.args.get("month", date.today().month))
 
-    if room not in ROOMS:
+    if room != "Bachblick":
         return jsonify(error="Unbekanntes Zimmer"), 400
 
     first = date(year, month, 1)
     next_month = date(year + (month == 12), 1 if month == 12 else month + 1, 1)
 
+    # Grundzustand nur dann "free", wenn der Live-Masterkalender erfolgreich gelesen wurde.
     states = {}
-    current = first
-    while current < next_month:
-        states[current.isoformat()] = "free"
-        current += timedelta(days=1)
-
-    if first < ROOMS[room]["available_from"]:
+    live_ok = False
+    live_updated = ""
+    live_source = ""
+    try:
+        live_url = "https://web-production-907d68.up.railway.app/api/direct-booking-calendar"
+        req = urllib.request.Request(live_url, headers={"Cache-Control": "no-cache", "User-Agent": "ZAB-Homepage/1.0"})
+        with urllib.request.urlopen(req, timeout=8) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        events = payload.get("events")
+        if payload.get("ok") is True and isinstance(events, list):
+            live_ok = True
+            live_updated = str(payload.get("updatedAt") or "")
+            live_source = str(payload.get("source") or "Live-Kalender")
+            current = first
+            while current < next_month:
+                states[current.isoformat()] = "free"
+                current += timedelta(days=1)
+            for event in events:
+                if not event.get("start") or not event.get("end"):
+                    continue
+                start_d = parse_date(event["start"][:10])
+                end_d = parse_date(event["end"][:10])
+                current = max(first, start_d)
+                while current < min(next_month, end_d):
+                    states[current.isoformat()] = "booking"
+                    current += timedelta(days=1)
+    except Exception:
         current = first
-        while current < min(next_month, ROOMS[room]["available_from"]):
-            states[current.isoformat()] = "unreleased"
+        while current < next_month:
+            states[current.isoformat()] = "unknown"
             current += timedelta(days=1)
 
+    # Eigene Direktbuchungen werden immer zusätzlich berücksichtigt.
     with db() as conn:
         local = conn.execute(
             """
@@ -589,28 +613,25 @@ def api_calendar():
             """,
             (room,),
         ).fetchall()
-        external = conn.execute(
-            "SELECT start_date, end_date FROM external_blocks WHERE room=?",
-            (room,),
-        ).fetchall()
-
-    for row in external:
-        start, end = parse_date(row["start_date"]), parse_date(row["end_date"])
-        current = max(first, start)
-        while current < min(next_month, end):
-            states[current.isoformat()] = "booking"
-            current += timedelta(days=1)
 
     for row in local:
-        start, end = parse_date(row["arrival"]), parse_date(row["departure"])
-        current = max(first, start)
+        start_d, end_d = parse_date(row["arrival"]), parse_date(row["departure"])
+        current = max(first, start_d)
         state = "direct" if row["status"] == "confirmed" else "pending"
-        while current < min(next_month, end):
+        while current < min(next_month, end_d):
             states[current.isoformat()] = state
             current += timedelta(days=1)
 
-    return jsonify(room=room, year=year, month=month, days=states)
-
+    return jsonify(
+        room="Gartenzimmer",
+        roomTechnical="Bachblick",
+        year=year,
+        month=month,
+        days=states,
+        live=live_ok,
+        updatedAt=live_updated,
+        source=live_source,
+    )
 
 @app.post("/book")
 def book():
