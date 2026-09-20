@@ -341,20 +341,55 @@ def room_available_in_conn(conn: sqlite3.Connection, room: str, arrival: date, d
     return True, "Das Zimmer ist verfügbar."
 
 
+MASTER_CALENDAR_URL = "https://web-production-907d68.up.railway.app/api/direct-booking-calendar"
+
+def live_master_availability(arrival: date, departure: date) -> tuple[bool | None, str]:
+    """Return True=free, False=blocked, None=live check unavailable."""
+    try:
+        req = urllib.request.Request(
+            MASTER_CALENDAR_URL,
+            headers={"Cache-Control": "no-cache", "User-Agent": "ZAB-Homepage/1.0"},
+        )
+        with urllib.request.urlopen(req, timeout=8) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        events = payload.get("events")
+        if payload.get("ok") is not True or not isinstance(events, list):
+            return None, "Live-Kalender konnte nicht bestätigt werden."
+        for event in events:
+            if not event.get("start") or not event.get("end"):
+                continue
+            start_d = parse_date(str(event["start"])[:10])
+            end_d = parse_date(str(event["end"])[:10])
+            if overlaps(arrival, departure, start_d, end_d):
+                return False, "Das Gartenzimmer ist in diesem Zeitraum bereits belegt."
+        return True, "Das Gartenzimmer ist laut Live-Kalender verfügbar."
+    except Exception:
+        return None, "Live-Kalender derzeit nicht erreichbar. Bitte Termin später erneut prüfen oder direkt anfragen."
+
+
 def room_available(room: str, arrival: date, departure: date) -> tuple[bool, str]:
-    if room not in ROOMS:
+    if room != "Bachblick":
         return False, "Unbekanntes Zimmer."
     if departure <= arrival:
         return False, "Die Abreise muss nach der Anreise liegen."
     if arrival < ROOMS[room]["available_from"]:
-        return False, f"{room} ist erst ab {ROOMS[room]['available_from'].strftime('%d.%m.%Y')} buchbar."
+        return False, "Das Gartenzimmer ist für diesen Zeitraum nicht buchbar."
     if app.extensions.get("v6_maintenance_conflict"):
         conflict, reason = app.extensions["v6_maintenance_conflict"](room, arrival, departure)
         if conflict:
-            return False, f"Das Zimmer ist wegen {reason} gesperrt."
+            return False, f"Das Gartenzimmer ist wegen {reason} gesperrt."
+
+    live_ok, live_message = live_master_availability(arrival, departure)
+    if live_ok is None:
+        return False, live_message
+    if live_ok is False:
+        return False, live_message
 
     with db() as conn:
-        return room_available_in_conn(conn, room, arrival, departure)
+        local_ok, local_message = room_available_in_conn(conn, room, arrival, departure)
+    if not local_ok:
+        return False, local_message
+    return True, live_message
 
 def calculate_total(room: str, arrival: date, departure: date, adults: int, breakfast: bool) -> float:
     return price_breakdown(room,arrival,departure,adults,{"breakfast":breakfast})["total"]
