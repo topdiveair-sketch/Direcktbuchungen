@@ -69,7 +69,7 @@ app.config.update(
 )
 ADMIN_PASSWORD = ADMIN_PASSWORD or "windis2026"
 PAYPAL_EMAIL = os.environ.get("PAYPAL_EMAIL", "topdiveair@gmail.com")
-GUEST_APP_URL = "https://topdiveair-sketch.github.io/Gaeste/"
+GUEST_APP_URL = os.environ.get("GUEST_APP_URL", "https://topdiveair-sketch.github.io/Gaeste/")
 ROOM_RELEASE_DATE = date(2026, 8, 16)
 BREAKFAST_PRICE = 12.0
 
