@@ -519,13 +519,19 @@ def globals_for_templates():
 
 @app.get("/")
 def index():
-    return render_template(
+    response = Response(render_template(
         "index.html",
         today=date.today().isoformat(),
         settings=get_settings(),
         room_images=get_room_images(),
+        rooms={"Bachblick": ROOMS["Bachblick"]},
         price_settings=pricing_data()[0], discounts=pricing_data()[1], extras_cfg=pricing_data()[2], seasons=pricing_data()[3],
-    )
+    ))
+    # Preview/Homepage immer frisch ausliefern, damit alte Zimmertexte nicht aus dem Browser-Cache kommen.
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 
 @app.post("/api/availability")
