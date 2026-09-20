@@ -6,67 +6,49 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-2b242.up.railway.app
 (function () {
   "use strict";
 
-  /* Zusatzzimmer nur nach ausdruecklicher manueller Freigabe anzeigen. */
+  /* Auf der Homepage wird ausschließlich das Gartenzimmer angeboten.
+     Der technische Zimmerwert "Bachblick" bleibt für die bestehende Backend-Schnittstelle erhalten. */
   window.SHOW_ADDITIONAL_ROOMS = false;
 
-  const blockedRooms = new Set(["Marillenzimmer", "Weinbergzimmer", "Donauzimmer"]);
   const API_BASE = String(window.ZAB_DIRECT_BOOKING_API_URL || "").replace(/\/+$/, "");
   const ATTRIBUTION_KEY = "zab_attribution_v1";
 
   function removeUnreleasedRooms() {
-    if (window.SHOW_ADDITIONAL_ROOMS === true) return;
-
     document.querySelectorAll("[data-future-room]").forEach((element) => element.remove());
 
     document.querySelectorAll('input[name="room"]').forEach((input) => {
-      if (blockedRooms.has(input.value)) input.closest(".choice")?.remove();
+      if (input.value !== "Bachblick") input.closest(".choice")?.remove();
     });
 
-    /* Auch in statischen Zimmerkarten keinerlei Freigabedatum oder Prognose zeigen. */
     document.querySelectorAll(".room-card").forEach((card) => {
       const title = (card.querySelector("h3")?.textContent || "").trim();
-      if (!blockedRooms.has(title)) return;
-      card.querySelectorAll("small, p, strong, span").forEach((node) => {
-        const text = (node.textContent || "").trim();
-        if (/15[./-]0?8[./-]2026|2026-0?8-1[56]|freigabe|buchbar ab|available from|prepared from|od 15|desde 15|à partir du 15/i.test(text)) {
-          node.remove();
-        }
-      });
-      if (!card.querySelector(".zab-room-status")) {
-        const status = document.createElement("p");
-        status.className = "zab-room-status";
-        status.textContent = "Derzeit nicht buchbar.";
-        card.querySelector("div")?.appendChild(status);
-      }
+      if (title && title !== "Gartenzimmer") card.remove();
     });
 
-    const bachblick = document.querySelector('input[name="room"][value="Bachblick"]');
-    if (bachblick) {
-      bachblick.disabled = false;
-      bachblick.checked = true;
+    const primaryRoom = document.querySelector('input[name="room"][value="Bachblick"]');
+    if (primaryRoom) {
+      primaryRoom.disabled = false;
+      primaryRoom.checked = true;
     }
-  }
 
-  function scrubReleaseDates(root = document) {
-    if (window.SHOW_ADDITIONAL_ROOMS === true) return;
-    const walker = document.createTreeWalker(root.body || root, NodeFilter.SHOW_TEXT);
-    const replacements = [
-      [/ab\s+15\.08\.2026,?\s*erst nach Freigabe/gi, "derzeit nicht buchbar"],
-      [/ab\s+15\.08\.2026/gi, ""],
-      [/from\s+15\/08\/2026,?\s*after release/gi, "currently not bookable"],
-      [/prepared from\s+15\/08\/2026[^.]*\.?/gi, "currently not bookable."],
-      [/od\s+15\.\s*8\.\s*2026[^,.;]*/gi, "zatím nelze rezervovat"],
-      [/2026\.08\.15-től[^,.;]*/gi, "jelenleg nem foglalható"],
-      [/desde\s+15\/08\/2026[^,.;]*/gi, "actualmente no reservable"],
-      [/à partir du\s+15\/08\/2026[^,.;]*/gi, "actuellement non réservable"]
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const removePatterns = [
+      /Bis einschließlich\s*15\.08\.2026[^.]*\./gi,
+      /Ab\s*16\.08\.2026[^.]*\./gi,
+      /nur das Zimmer\s*Bachblick[^.]*\./gi,
+      /alle vier Zimmer[^.]*\./gi
     ];
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach((textNode) => {
-      let value = textNode.nodeValue || "";
-      replacements.forEach(([pattern, replacement]) => { value = value.replace(pattern, replacement); });
-      textNode.nodeValue = value;
+    nodes.forEach((node) => {
+      let value = node.nodeValue || "";
+      removePatterns.forEach((pattern) => { value = value.replace(pattern, ""); });
+      node.nodeValue = value;
     });
+  }
+
+  function scrubReleaseDates() {
+    /* Keine Freigabedaten oder Hinweise auf weitere Zimmer öffentlich anzeigen. */
   }
 
   function captureAttribution() {
