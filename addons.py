@@ -173,30 +173,50 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
     def send_booking_confirmation(booking_id):
         public_token, cancel_token, invoice_number = ensure_booking_tokens(booking_id)
         with db() as conn:
-            b = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
-        base_url = settings().get("public_base_url", request.url_root.rstrip("/"))
-        body = (
-            f"Hallo {b['first_name']},\n\n"
-            f"deine Buchungsanfrage für {b['room']} von {b['arrival']} bis {b['departure']} "
-            f"wurde gespeichert.\nGesamtbetrag: {b['total']:.2f} EUR\n"
-            f"Zahlungsart: {b['payment_method']}\n\n"
+            booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
+        cfg = settings()
+        base_url = cfg.get("public_base_url", request.url_root.rstrip("/")).rstrip("/")
+        room_name = "Gartenzimmer" if booking["room"] == "Bachblick" else booking["room"]
+
+        guest_subject = "Buchungsanfrage – Zuhause am Bach"
+        guest_body = (
+            f"Hallo {booking['first_name']},\n\n"
+            f"deine Buchungsanfrage für das {room_name} von {booking['arrival']} bis {booking['departure']} "
+            f"wurde gespeichert.\n"
+            f"Gesamtbetrag: {booking['total']:.2f} EUR\n"
+            f"Zahlungsart: {booking['payment_method']}\n\n"
             f"Gästeportal: {base_url}/guest/{public_token}\n"
             f"Stornierung: {base_url}/cancel/{cancel_token}\n"
             f"Rechnung: {base_url}/invoice/{public_token}.pdf\n\n"
             "Bitte PayPal erst nach persönlicher Bestätigung verwenden.\n"
             "Zuhause am Bach"
         )
-        ok_guest, msg_guest = smtp_send(b["email"], "Buchungsanfrage – Zuhause am Bach", body)
-        owner = settings().get("email", PAYPAL_EMAIL)
-        ok_owner, msg_owner = smtp_send(
-            owner,
-            f"Neue Direktbuchung: {b['room']}",
-            f"{b['first_name']} {b['last_name']}\n{b['arrival']} bis {b['departure']}\n{b['total']:.2f} EUR\nTelefon: {b['phone']}",
+        ok_guest, msg_guest = smtp_send(booking["email"], guest_subject, guest_body)
+
+        owner = cfg.get("email", PAYPAL_EMAIL)
+        owner_subject = f"Neue Direktbuchung: {room_name}"
+        owner_body = (
+            f"{booking['first_name']} {booking['last_name']}\n"
+            f"{room_name}\n"
+            f"{booking['arrival']} bis {booking['departure']}\n"
+            f"{booking['total']:.2f} EUR\n"
+            f"Zahlungsart: {booking['payment_method']}\n"
+            f"Telefon: {booking['phone']}\n"
+            f"E-Mail: {booking['email']}"
         )
+        ok_owner, msg_owner = smtp_send(owner, owner_subject, owner_body)
+
+        created_at = datetime.now().isoformat(timespec="seconds")
         with db() as conn:
-            conn.execute("INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
-                         (booking_id,b["email"],"Buchungsanfrage",msg_guest,datetime.now().isoformat(timespec="seconds")))
-        return ok_guest or ok_owner
+            conn.execute(
+                "INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
+                (booking_id, booking["email"], guest_subject, msg_guest, created_at),
+            )
+            conn.execute(
+                "INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
+                (booking_id, owner, owner_subject, msg_owner, created_at),
+            )
+        return ok_guest and ok_owner
 
     app.extensions["zab_send_confirmation"] = send_booking_confirmation
     app.extensions["zab_ensure_tokens"] = ensure_booking_tokens
