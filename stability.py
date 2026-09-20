@@ -62,8 +62,8 @@ Aggsbach Markt 82
 Oesterreich
 
 Telefon: +43 664 6437526
-E-Mail: topdiveair@gmail.com
-Website: https://topdiveair-sketch.github.io/Gaeste/
+E-Mail: Zuhause.am.Bach@outlook.com
+Website: https://zuhauseambach-wachau.at/
 
 Unternehmensgegenstand: Beherbergung / Privatzimmervermietung.
 
@@ -72,7 +72,7 @@ Hinweis: Bitte UID-Nummer, Gewerbe-/Behoerdenangaben, Aufsichtsbehoerde, Kammerz
 
 Verantwortliche Stelle:
 Zuhause am Bach - Wachau, Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Oesterreich.
-Kontakt: topdiveair@gmail.com, +43 664 6437526.
+Kontakt: Zuhause.am.Bach@outlook.com, +43 664 6437526.
 
 Wir verarbeiten personenbezogene Daten, die Gaeste im Rahmen einer Anfrage, Buchung, Online-Check-in-Nutzung oder Kontaktaufnahme angeben. Dazu gehoeren insbesondere Name, Kontaktdaten, Reisedaten, Zimmer, Zahlungsart, Nachrichten, Angaben zum Check-in und technisch notwendige Protokolldaten.
 
@@ -106,7 +106,7 @@ Eine Stornierung ist bis 7 Tage vor Anreise kostenlos moeglich, sofern in der Bu
 
 Bei spaeterer Stornierung, Nichtanreise oder vorzeitiger Abreise koennen Stornokosten anfallen. Die konkrete Hoehe richtet sich nach der bestaetigten Buchung, der Aufenthaltsdauer, dem Zeitpunkt der Stornierung und einer moeglichen Weitervermietung.
 
-Stornierungen muessen schriftlich per E-Mail an topdiveair@gmail.com erfolgen. Massgeblich ist der Zeitpunkt des Eingangs.
+Stornierungen muessen schriftlich per E-Mail an Zuhause.am.Bach@outlook.com erfolgen. Massgeblich ist der Zeitpunkt des Eingangs.
 
 Bei aussergewoehnlichen Umstaenden kann Zuhause am Bach - Wachau im Einzelfall kulante Loesungen anbieten; ein Anspruch darauf besteht nicht.
 
