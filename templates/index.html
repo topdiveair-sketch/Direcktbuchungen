@@ -121,7 +121,7 @@
           <label class="room-option">
             <input type="radio" name="room" value="Bachblick" data-price="{{ info.price }}"
                    data-from="{{ info.available_from.isoformat() }}" checked>
-            <img src="{{ url_for('static', filename='images/rooms/' + room_images['Bachblick']) }}" alt="Gartenzimmer bei Zuhause am Bach">
+            <img src="{{ url_for('static', filename='images/rooms/' + room_images['Bachblick']) }}" alt="Gartenzimmer bei Zuhause am Bach" loading="lazy" decoding="async">
             <span class="room-copy">
               <strong>Gartenzimmer</strong>
               <small>Ruhiges Doppelzimmer mit persönlicher Atmosphäre – gemütlich und zum Wohlfühlen.</small>
@@ -183,7 +183,7 @@
     <article><span>💬</span><strong>Ausflugstipps</strong><small>Karten und Geheimtipps in der Gäste-App.</small></article>
     <article><span>📱</span><strong>Gäste-App</strong><small>Alle Informationen auf dem Smartphone.</small></article>
     <a class="qr-block" href="{{ guest_app_url }}" target="_blank" rel="noopener">
-      <img src="{{ url_for('static', filename='images/gaesteapp-qr.png') }}" alt="QR-Code zur Gäste-App">
+      <img src="{{ url_for('static', filename='images/gaesteapp-qr.png') }}" alt="QR-Code zur Gäste-App" loading="lazy" decoding="async">
       <span>Zur Gäste-App</span>
     </a>
   </section>
