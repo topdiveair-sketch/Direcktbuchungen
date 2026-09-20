@@ -157,6 +157,17 @@ async function renderCalendar() {
   const data = await response.json();
   cal.innerHTML = "";
 
+  let statusNote = document.getElementById("calendarStatusNote");
+  if (!statusNote) {
+    statusNote = document.createElement("div");
+    statusNote.id = "calendarStatusNote";
+    statusNote.className = "calendar-status-note";
+    cal.parentElement.insertBefore(statusNote, cal);
+  }
+  statusNote.textContent = data.live
+    ? `Live-Kalender aktuell${data.updatedAt ? " · Stand " + data.updatedAt : ""}`
+    : "Live-Kalender derzeit nicht erreichbar – freie Tage werden nicht automatisch bestätigt.";
+
   ["Mo","Di","Mi","Do","Fr","Sa","So"].forEach(d => {
     const e = document.createElement("div");
     e.className = "cal-head";
@@ -175,7 +186,7 @@ async function renderCalendar() {
   const daysInMonth = new Date(year, month, 0).getDate();
   for (let day=1;day<=daysInMonth;day++) {
     const key = `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-    const state = data.days[key] || "free";
+    const state = data.days[key] || "unknown";
     const e = document.createElement("div");
     e.className = `cal-day ${state}`;
     e.textContent = day;
