@@ -379,6 +379,11 @@ def room_available(room: str, arrival: date, departure: date) -> tuple[bool, str
         if conflict:
             return False, f"Das Gartenzimmer ist wegen {reason} gesperrt."
 
+    # Booking/iCal ist die unabhängige Sicherheitsquelle. Vor jeder
+    # Verfügbarkeitsprüfung frisch synchronisieren, damit eine neue
+    # Booking-Sperre nie durch einen leeren/stalen Masterkalender als frei gilt.
+    sync_room(room)
+
     live_ok, live_message = live_master_availability(arrival, departure)
     if live_ok is None:
         return False, live_message
@@ -639,7 +644,13 @@ def api_calendar():
             states[current.isoformat()] = "unknown"
             current += timedelta(days=1)
 
-    # Eigene Direktbuchungen werden immer zusätzlich berücksichtigt.
+    # Booking/iCal vor der Anzeige frisch synchronisieren und seine Sperren
+    # als Sicherheitsnetz über den Masterkalender legen. Der Master kann leer
+    # oder verzögert sein; Booking-Belegungen dürfen dadurch nie "free" werden.
+    sync_room(room)
+
+    # Eigene Direktbuchungen und Booking/iCal-Sperren werden immer zusätzlich
+    # berücksichtigt.
     with db() as conn:
         local = conn.execute(
             """
@@ -648,6 +659,20 @@ def api_calendar():
             """,
             (room,),
         ).fetchall()
+        external = conn.execute(
+            """
+            SELECT start_date, end_date FROM external_blocks
+            WHERE room=? AND source='booking_ical'
+            """,
+            (room,),
+        ).fetchall()
+
+    for row in external:
+        start_d, end_d = parse_date(row["start_date"]), parse_date(row["end_date"])
+        current = max(first, start_d)
+        while current < min(next_month, end_d):
+            states[current.isoformat()] = "booking"
+            current += timedelta(days=1)
 
     for row in local:
         start_d, end_d = parse_date(row["arrival"]), parse_date(row["departure"])
