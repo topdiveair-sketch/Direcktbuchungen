@@ -784,6 +784,9 @@ def book():
             "first_name": first_name,
         },
         settings=get_settings(),
+        bank_account_holder=env_value("BANK_ACCOUNT_HOLDER"),
+        bank_iban=env_value("BANK_IBAN"),
+        paypal_email=PAYPAL_EMAIL,
     )
 
 
