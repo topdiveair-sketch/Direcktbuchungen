@@ -110,13 +110,13 @@ Die auf der Website angezeigte Verfügbarkeit wird unmittelbar vor Abschluss ern
 
 Bei erfolgreicher PayPal-Zahlung wird die Buchung nach serverseitiger Zahlungsbestätigung als bestätigt markiert und der Zeitraum verbindlich reserviert.
 
-Bei Auswahl von Banküberweisung oder Zahlung vor Ort wird der Zeitraum zunächst vorgemerkt. Die persönliche Buchungsbestätigung folgt anschließend.
+Bei Auswahl von Banküberweisung oder Zahlung vor Ort wird zunächst eine Buchungsanfrage übermittelt. Diese Anfrage blockiert den Zeitraum noch nicht. Erst nach persönlicher Bestätigung wird der Termin verbindlich reserviert.
 
 2. Preise
 Alle auf der Website dargestellten Preise verstehen sich in Euro. Der im Buchungsprozess ausgewiesene Gesamtpreis berücksichtigt die ausgewählten Zusatzleistungen und gegebenenfalls gültige Rabatte. Gesetzliche Abgaben oder Ortstaxen können zusätzlich anfallen, sofern sie nicht ausdrücklich als enthalten ausgewiesen sind.
 
 3. Zahlung
-PayPal-Zahlungen werden über den sicheren PayPal-Checkout abgewickelt. Bei Banküberweisung werden Kontoinhaber, IBAN, Betrag und Verwendungszweck im Buchungsprozess bzw. in der Bestätigung angezeigt. Bei Zahlung vor Ort ist der Betrag bei Anreise fällig, sofern nichts anderes vereinbart wurde.
+PayPal-Zahlungen werden über den sicheren PayPal-Checkout abgewickelt und führen nach erfolgreicher serverseitiger Zahlungsbestätigung zur verbindlichen Reservierung. Bei Banküberweisung werden Kontoinhaber, IBAN, Betrag und Verwendungszweck angezeigt; die Überweisung soll erst nach persönlicher Buchungsbestätigung erfolgen. Bei Zahlung vor Ort ist der Betrag nach bestätigter Buchung bei Anreise fällig, sofern nichts anderes vereinbart wurde.
 
 4. Check-in und Check-out
 Check-in ist grundsätzlich ab 14:00 Uhr möglich, Check-out bis 10:00 Uhr. Abweichungen bedürfen einer vorherigen Vereinbarung.
