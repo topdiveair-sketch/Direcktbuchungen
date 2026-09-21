@@ -67,6 +67,24 @@ function updateRoomRelease() {
   updateTotals();
 }
 
+function selectedPayment() {
+  return document.querySelector('input[name="payment_method"]:checked')?.value || "PayPal";
+}
+
+function updatePaymentUI() {
+  const method = selectedPayment();
+  if (method === "PayPal") {
+    bookingSubmit.textContent = "MIT PAYPAL BEZAHLEN";
+    if (paymentNotice) paymentNotice.textContent = "Nach dem Klick wird der Termin nochmals geprüft und anschließend der sichere PayPal-Checkout geöffnet.";
+  } else if (method === "Banküberweisung") {
+    bookingSubmit.textContent = "BUCHEN & BANKDATEN ERHALTEN";
+    if (paymentNotice) paymentNotice.textContent = "Die Buchung wird vorgemerkt. Danach werden die Bankdaten für die Überweisung angezeigt.";
+  } else {
+    bookingSubmit.textContent = "JETZT DIREKT BUCHEN";
+    if (paymentNotice) paymentNotice.textContent = "Zahlung erfolgt bei Anreise.";
+  }
+}
+
 function resetAvailability() {
   result.classList.add("hidden");
   guestArea.classList.add("hidden");
@@ -267,4 +285,5 @@ calRoom.addEventListener("change",renderCalendar);
 
 updateRoomRelease();
 updateTotals();
+updatePaymentUI();
 renderCalendar();
