@@ -43,6 +43,14 @@ def env_value(*names: str) -> str:
             return value
     return ""
 
+def format_iban(value: str) -> str:
+    clean = "".join(ch for ch in (value or "") if ch.isalnum()).upper()
+    return " ".join(clean[i:i+4] for i in range(0, len(clean), 4))
+
+
+def public_room_name(room: str) -> str:
+    return "Gartenblick" if room == "Bachblick" else room
+
 
 PRODUCTION_MODE = (
     env_flag("REQUIRE_PRODUCTION_SECRETS")
@@ -167,6 +175,21 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS extras (key TEXT PRIMARY KEY, label TEXT NOT NULL, price REAL NOT NULL, unit TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 1);
             """
         )
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(bookings)")}
+        if "idempotency_key" not in cols:
+            conn.execute("ALTER TABLE bookings ADD COLUMN idempotency_key TEXT DEFAULT ''")
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_idempotency "
+            "ON bookings(idempotency_key) WHERE idempotency_key <> ''"
+        )
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS site_events(
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   event TEXT NOT NULL,
+                   created_at TEXT NOT NULL
+               )"""
+        )
+
         for room, data in ROOMS.items():
             conn.execute(
                 "INSERT OR IGNORE INTO ical_settings(room, import_url) VALUES (?, '')",
@@ -585,12 +608,33 @@ def index():
         price_settings=pricing_data()[0], discounts=pricing_data()[1], extras_cfg=pricing_data()[2], seasons=pricing_data()[3],
         bank_account_holder=env_value("BANK_ACCOUNT_HOLDER"),
         bank_iban=env_value("BANK_IBAN"),
+        bank_iban_display=format_iban(env_value("BANK_IBAN")),
+        paypal_email=PAYPAL_EMAIL,
     ))
     # Preview/Homepage immer frisch ausliefern, damit alte Zimmertexte nicht aus dem Browser-Cache kommen.
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     return response
+
+
+@app.post("/api/events")
+def api_events():
+    payload = request.get_json(silent=True) or {}
+    event = str(payload.get("event", "")).strip()[:64]
+    allowed_prefixes = (
+        "landing_view", "room_selected", "extras_selected",
+        "availability_started", "availability_result_",
+        "checkout_started", "booking_abandoned",
+    )
+    if not event or not any(event == prefix or event.startswith(prefix) for prefix in allowed_prefixes):
+        return Response(status=204)
+    with db() as conn:
+        conn.execute(
+            "INSERT INTO site_events(event, created_at) VALUES (?, ?)",
+            (event, datetime.now().isoformat(timespec="seconds")),
+        )
+    return Response(status=204)
 
 
 @app.post("/api/availability")
@@ -711,6 +755,24 @@ def api_calendar():
         source=live_source,
     )
 
+def booking_success_response(booking):
+    data = dict(booking)
+    booking_id = int(data.get("id") or 0)
+    data["booking_number"] = data.get("booking_number") or (f"ZAB-{booking_id:06d}" if booking_id else "ZAB")
+    data["room"] = public_room_name(str(data.get("room", "")))
+    settings = get_settings()
+    return render_template(
+        "success.html",
+        booking=data,
+        settings=settings,
+        bank_account_holder=env_value("BANK_ACCOUNT_HOLDER"),
+        bank_iban=env_value("BANK_IBAN"),
+        bank_iban_display=format_iban(env_value("BANK_IBAN")),
+        paypal_email=PAYPAL_EMAIL,
+        guest_app_url=settings.get("public_base_url", "https://topdiveair-sketch.github.io/Gaeste/"),
+    )
+
+
 @app.post("/book")
 def book():
     try:
@@ -719,16 +781,33 @@ def book():
         departure = parse_date(request.form["departure"])
         adults = max(1, min(2, int(request.form["adults"])))
         breakfast = request.form.get("breakfast") == "on"
-        chosen={k:request.form.get(k)=="on" for k in ("breakfast","jause","luggage","dog","baby_bed")}
-        coupon_code=request.form.get("coupon_code","")
+        chosen = {k: request.form.get(k) == "on" for k in ("breakfast", "jause", "luggage", "dog", "baby_bed")}
+        coupon_code = request.form.get("coupon_code", "").strip()
         first_name = request.form["first_name"].strip()
         last_name = request.form["last_name"].strip()
         email = request.form["email"].strip()
         phone = request.form["phone"].strip()
-        payment_method = request.form["payment_method"]
+        payment_method = request.form["payment_method"].strip()
+        idempotency_key = request.form.get("idempotency_key", "").strip()[:120]
     except (KeyError, ValueError):
         flash("Bitte alle Pflichtfelder korrekt ausfüllen.", "error")
         return redirect(url_for("index") + "#booking")
+
+    if payment_method == "PayPal":
+        flash("PayPal-Zahlungen bitte über den sicheren PayPal-Button starten.", "error")
+        return redirect(url_for("index") + "#booking")
+    if payment_method not in {"Banküberweisung", "Vor Ort"}:
+        flash("Bitte eine gültige Zahlungsart wählen.", "error")
+        return redirect(url_for("index") + "#booking")
+
+    if idempotency_key:
+        with db() as conn:
+            existing = conn.execute(
+                "SELECT * FROM bookings WHERE idempotency_key=?",
+                (idempotency_key,),
+            ).fetchone()
+        if existing:
+            return booking_success_response(existing)
 
     ok, message = room_available(room, arrival, departure)
     if not ok:
@@ -739,30 +818,55 @@ def book():
         flash("Bitte Name, E-Mail und Telefonnummer ausfüllen.", "error")
         return redirect(url_for("index") + "#booking")
 
-    total = price_breakdown(room,arrival,departure,adults,chosen,coupon_code)["total"]
+    total = price_breakdown(room, arrival, departure, adults, chosen, coupon_code)["total"]
     uid = f"ZAB-{uuid4()}@zuhause-am-bach"
 
-    with db() as conn:
-        conn.execute("BEGIN IMMEDIATE")
-        ok, message = room_available_in_conn(conn, room, arrival, departure)
-        if not ok:
-            flash(message, "error")
-            return redirect(url_for("index") + "#booking")
-        cur = conn.execute(
-            """
-            INSERT INTO bookings
-            (uid, room, arrival, departure, adults, breakfast, first_name,
-             last_name, email, phone, message, payment_method, total, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
-            """,
-            (
-                uid, room, arrival.isoformat(), departure.isoformat(), adults,
-                1 if breakfast else 0, first_name, last_name, email, phone,
-                request.form.get("message", "").strip(), payment_method, total,
-                datetime.now().isoformat(timespec="seconds"),
-            ),
-        )
-        booking_id = cur.lastrowid
+    try:
+        with db() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            if idempotency_key:
+                existing = conn.execute(
+                    "SELECT * FROM bookings WHERE idempotency_key=?",
+                    (idempotency_key,),
+                ).fetchone()
+                if existing:
+                    conn.rollback()
+                    return booking_success_response(existing)
+
+            ok, message = room_available_in_conn(conn, room, arrival, departure)
+            if not ok:
+                conn.rollback()
+                flash(message, "error")
+                return redirect(url_for("index") + "#booking")
+
+            cur = conn.execute(
+                """
+                INSERT INTO bookings
+                (uid, room, arrival, departure, adults, breakfast, first_name,
+                 last_name, email, phone, message, payment_method, total, status,
+                 created_at, idempotency_key)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
+                """,
+                (
+                    uid, room, arrival.isoformat(), departure.isoformat(), adults,
+                    1 if breakfast else 0, first_name, last_name, email, phone,
+                    request.form.get("message", "").strip(), payment_method, total,
+                    datetime.now().isoformat(timespec="seconds"), idempotency_key,
+                ),
+            )
+            booking_id = cur.lastrowid
+    except sqlite3.IntegrityError:
+        if idempotency_key:
+            with db() as conn:
+                existing = conn.execute(
+                    "SELECT * FROM bookings WHERE idempotency_key=?",
+                    (idempotency_key,),
+                ).fetchone()
+            if existing:
+                return booking_success_response(existing)
+        flash("Die Buchung wurde bereits verarbeitet. Bitte Seite aktualisieren.", "error")
+        return redirect(url_for("index") + "#booking")
+
     if app.extensions.get("zab_ensure_tokens"):
         app.extensions["zab_ensure_tokens"](booking_id)
     if app.extensions.get("v6_ensure_checkin_token"):
@@ -773,23 +877,9 @@ def book():
         except Exception:
             pass
 
-    return render_template(
-        "success.html",
-        booking={
-            "room": room,
-            "arrival": arrival,
-            "departure": departure,
-            "adults": adults,
-            "breakfast": breakfast,
-            "payment_method": payment_method,
-            "total": total,
-            "first_name": first_name,
-        },
-        settings=get_settings(),
-        bank_account_holder=env_value("BANK_ACCOUNT_HOLDER"),
-        bank_iban=env_value("BANK_IBAN"),
-        paypal_email=PAYPAL_EMAIL,
-    )
+    with db() as conn:
+        booking_row = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
+    return booking_success_response(booking_row)
 
 
 @app.get("/calendar/<room>.ics")
