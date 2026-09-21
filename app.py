@@ -683,7 +683,7 @@ def api_calendar():
             current += timedelta(days=1)
 
     return jsonify(
-        room="Gartenzimmer",
+        room="Gartenblick",
         roomTechnical="Bachblick",
         year=year,
         month=month,
