@@ -22,7 +22,7 @@
         <p><strong>Personen:</strong> {{ booking.adults }}</p>
         <p><strong>Frühstück:</strong> {{ 'Ja' if booking.breakfast else 'Nein' }}</p>
         <p><strong>Zahlung:</strong> {{ booking.payment_method }}</p>
-        <p><strong>Zahlungsstatus:</strong> Ausstehend – erst nach persönlicher Bestätigung</p>
+        <p><strong>Zahlungsstatus:</strong> {{ 'Zahlung über PayPal' if booking.payment_method == 'PayPal' else 'Überweisung ausstehend' if booking.payment_method == 'Banküberweisung' else 'Zahlung bei Anreise' }}</p>
         <p class="summary-total"><strong>Gesamt:</strong> {{ '%.2f'|format(booking.total)|replace('.', ',') }} €</p>
       </div>
 
