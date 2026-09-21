@@ -14,7 +14,7 @@ from flask import Response, jsonify, redirect, render_template_string, request
 
 
 HOLD_MINUTES = 10
-DEFAULT_DIRECT_ORIGIN = "https://topdiveair-sketch.github.io"
+DEFAULT_DIRECT_ORIGIN = "https://www.zuhauseambach-wachau.at"
 
 
 def init_paypal_checkout(
@@ -207,7 +207,7 @@ def init_paypal_checkout(
         except Exception as exc:
             raise ValueError("Bitte gültige Reisedaten eingeben.") from exc
         if room != "Bachblick":
-            raise ValueError("Derzeit ist ausschließlich Bachblick für Direktbuchungen freigegeben.")
+            raise ValueError("Derzeit ist ausschließlich Gartenblick für Direktbuchungen freigegeben.")
         if room not in rooms or departure <= arrival:
             raise ValueError("Bitte gültiges Zimmer sowie An- und Abreise wählen.")
         extras_raw = data.get("extras") if isinstance(data.get("extras"), dict) else {}
@@ -218,10 +218,6 @@ def init_paypal_checkout(
             "dog": False,
             "baby_bed": False,
         }
-        if chosen["luggage"]:
-            raise ValueError(
-                "Gepäcktransport hat einen streckenabhängigen Preis und kann deshalb nicht automatisch über PayPal abgeschlossen werden. Bitte ohne Gepäcktransport bezahlen oder eine Anfrage senden."
-            )
         customer = {
             "first_name": str(data.get("first_name", "")).strip(),
             "last_name": str(data.get("last_name", "")).strip(),
@@ -233,7 +229,7 @@ def init_paypal_checkout(
             raise ValueError("Bitte Name, E-Mail und Telefonnummer vollständig eingeben.")
         return data, room, arrival, departure, adults, chosen, customer
 
-    def authoritative_quote(room, arrival, departure, adults, chosen):
+    def authoritative_quote(room, arrival, departure, adults, chosen, coupon_code=""):
         ok_sync, sync_message = ensure_live_calendar(room)
         if not ok_sync:
             raise ValueError(sync_message)
@@ -241,7 +237,7 @@ def init_paypal_checkout(
             ok, availability_message = room_available_in_conn(conn, room, arrival, departure)
         if not ok:
             raise ValueError(availability_message)
-        breakdown = price_breakdown(room, arrival, departure, adults, chosen)
+        breakdown = price_breakdown(room, arrival, departure, adults, chosen, coupon_code)
         return breakdown, sync_message
 
     @app.route("/api/paypal/quote", methods=["POST", "OPTIONS"])
@@ -249,8 +245,9 @@ def init_paypal_checkout(
         if request.method == "OPTIONS":
             return Response(status=204, headers=cors_headers())
         try:
-            _, room, arrival, departure, adults, chosen, _ = parse_payload(False)
-            breakdown, sync_message = authoritative_quote(room, arrival, departure, adults, chosen)
+            data, room, arrival, departure, adults, chosen, _ = parse_payload(False)
+            coupon_code = str(data.get("coupon_code", "")).strip()
+            breakdown, sync_message = authoritative_quote(room, arrival, departure, adults, chosen, coupon_code)
             return api_json(
                 {
                     "ok": True,
@@ -276,7 +273,8 @@ def init_paypal_checkout(
             if not ok_sync:
                 return api_json({"ok": False, "message": sync_message}, 409)
 
-            breakdown = price_breakdown(room, arrival, departure, adults, chosen)
+            coupon_code = str(data.get("coupon_code", "")).strip()
+            breakdown = price_breakdown(room, arrival, departure, adults, chosen, coupon_code)
             total = Decimal(str(breakdown["total"])).quantize(Decimal("0.01"))
             if total <= 0:
                 return api_json({"ok": False, "message": "Ungültiger Gesamtpreis."}, 400)
@@ -288,7 +286,7 @@ def init_paypal_checkout(
                 {
                     "extras": chosen,
                     "breakdown": breakdown,
-                    "source": "github-pages-paypal",
+                    "source": "zuhauseambach-wachau.at",
                 },
                 ensure_ascii=False,
             )
@@ -318,7 +316,7 @@ def init_paypal_checkout(
                             customer["email"],
                             customer["phone"],
                             customer["message"],
-                            "paypal_checkout",
+                            "PayPal",
                             float(total),
                             now.isoformat(timespec="seconds"),
                             hold_expires.isoformat(timespec="seconds"),
@@ -342,7 +340,7 @@ def init_paypal_checkout(
                         "purchase_units": [
                             {
                                 "custom_id": f"ZAB-{booking_id}",
-                                "description": f"Zuhause am Bach - {room} {arrival.isoformat()} bis {departure.isoformat()}",
+                                "description": f"Zuhause am Bach - Gartenblick {arrival.isoformat()} bis {departure.isoformat()}",
                                 "amount": {
                                     "currency_code": "EUR",
                                     "value": f"{total:.2f}",
@@ -442,9 +440,9 @@ def init_paypal_checkout(
                 return current
             raise
 
-    SUCCESS_PAGE = """<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Buchung bestätigt</title><style>body{font-family:Arial,sans-serif;background:#f4f8f5;color:#17372f;margin:0;padding:32px}.card{max-width:680px;margin:6vh auto;background:white;padding:30px;border-radius:18px;box-shadow:0 18px 45px rgba(23,55,47,.12)}h1{color:#176b5a}.ok{font-size:42px}.btn{display:inline-block;margin-top:18px;padding:12px 18px;border-radius:10px;background:#176b5a;color:white;text-decoration:none;font-weight:800}</style></head><body><main class='card'><div class='ok'>✅</div><h1>Zahlung erfolgreich – Buchung bestätigt</h1><p>Vielen Dank, {{ name }}. Ihr Zimmer <strong>{{ room }}</strong> ist von <strong>{{ arrival }}</strong> bis <strong>{{ departure }}</strong> verbindlich für Sie reserviert.</p><p>Bezahlt: <strong>{{ total }} EUR</strong><br>PayPal-Transaktion: {{ capture }}</p><p>Wir freuen uns auf Ihren Aufenthalt bei Zuhause am Bach.</p><a class='btn' href='https://topdiveair-sketch.github.io/Direcktbuchungen/index'>Zurück zu Zuhause am Bach</a></main></body></html>"""
+    SUCCESS_PAGE = """<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Buchung bestätigt</title><style>body{font-family:Arial,sans-serif;background:#f4f8f5;color:#17372f;margin:0;padding:32px}.card{max-width:680px;margin:6vh auto;background:white;padding:30px;border-radius:18px;box-shadow:0 18px 45px rgba(23,55,47,.12)}h1{color:#176b5a}.ok{font-size:42px}.btn{display:inline-block;margin-top:18px;padding:12px 18px;border-radius:10px;background:#176b5a;color:white;text-decoration:none;font-weight:800}</style></head><body><main class='card'><div class='ok'>✅</div><h1>Zahlung erfolgreich – Buchung bestätigt</h1><p>Vielen Dank, {{ name }}. Ihr Zimmer <strong>{{ room }}</strong> ist von <strong>{{ arrival }}</strong> bis <strong>{{ departure }}</strong> verbindlich für Sie reserviert.</p><p>Bezahlt: <strong>{{ total }} EUR</strong><br>PayPal-Transaktion: {{ capture }}</p><p>Wir freuen uns auf Ihren Aufenthalt bei Zuhause am Bach.</p><a class='btn' href='https://www.zuhauseambach-wachau.at/'>Zurück zu Zuhause am Bach</a></main></body></html>"""
 
-    ERROR_PAGE = """<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Zahlung nicht abgeschlossen</title><style>body{font-family:Arial,sans-serif;background:#fff8ef;color:#4d3820;margin:0;padding:32px}.card{max-width:680px;margin:6vh auto;background:white;padding:30px;border-radius:18px;box-shadow:0 18px 45px rgba(70,45,20,.12)}h1{color:#9a351f}.btn{display:inline-block;margin-top:18px;padding:12px 18px;border-radius:10px;background:#176b5a;color:white;text-decoration:none;font-weight:800}</style></head><body><main class='card'><h1>Zahlung nicht abgeschlossen</h1><p>{{ message }}</p><p>Es wurde keine bestätigte Direktbuchung erzeugt.</p><a class='btn' href='https://topdiveair-sketch.github.io/Direcktbuchungen/index'>Zurück zur Buchung</a></main></body></html>"""
+    ERROR_PAGE = """<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Zahlung nicht abgeschlossen</title><style>body{font-family:Arial,sans-serif;background:#fff8ef;color:#4d3820;margin:0;padding:32px}.card{max-width:680px;margin:6vh auto;background:white;padding:30px;border-radius:18px;box-shadow:0 18px 45px rgba(70,45,20,.12)}h1{color:#9a351f}.btn{display:inline-block;margin-top:18px;padding:12px 18px;border-radius:10px;background:#176b5a;color:white;text-decoration:none;font-weight:800}</style></head><body><main class='card'><h1>Zahlung nicht abgeschlossen</h1><p>{{ message }}</p><p>Es wurde keine bestätigte Direktbuchung erzeugt.</p><a class='btn' href='https://www.zuhauseambach-wachau.at/'>Zurück zur Buchung</a></main></body></html>"""
 
     @app.get("/paypal/return")
     def paypal_return():
@@ -466,7 +464,7 @@ def init_paypal_checkout(
         if booking["paid"] and booking["status"] == "confirmed":
             return render_template_string(
                 SUCCESS_PAGE,
-                name=booking["first_name"], room=booking["room"], arrival=booking["arrival"],
+                name=booking["first_name"], room=("Gartenblick" if booking["room"] == "Bachblick" else booking["room"]), arrival=booking["arrival"],
                 departure=booking["departure"], total=f"{booking['total']:.2f}", capture=booking["paypal_capture_id"] or order_id,
             )
 
@@ -494,9 +492,15 @@ def init_paypal_checkout(
                     (paid_at, capture_id, booking_id),
                 )
 
+            if app.extensions.get("zab_send_confirmation"):
+                try:
+                    app.extensions["zab_send_confirmation"](booking_id)
+                except Exception:
+                    pass
+
             return render_template_string(
                 SUCCESS_PAGE,
-                name=booking["first_name"], room=booking["room"], arrival=booking["arrival"],
+                name=booking["first_name"], room=("Gartenblick" if booking["room"] == "Bachblick" else booking["room"]), arrival=booking["arrival"],
                 departure=booking["departure"], total=f"{booking['total']:.2f}", capture=capture_id,
             )
         except Exception as exc:

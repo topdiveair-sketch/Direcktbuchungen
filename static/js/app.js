@@ -5,6 +5,7 @@ const adults = document.getElementById("adults");
 const extraIds=["breakfast","jause","luggage","dog","baby_bed"];
 const extraInputs=extraIds.map(x=>document.getElementById(x)).filter(Boolean);
 const priceBreakdown=document.getElementById("priceBreakdown");
+const couponCode = document.getElementById("couponCode");
 const nightsEl = document.getElementById("nights");
 const totalPrice = document.getElementById("totalPrice");
 const result = document.getElementById("availabilityResult");
@@ -13,6 +14,9 @@ const roomRadios = [...document.querySelectorAll('input[name="room"]')];
 const bookingSubmit = document.getElementById("bookingSubmit");
 const stickyLabel = document.getElementById("stickyLabel");
 const stickyCta = document.getElementById("stickyCta");
+const paymentRadios = [...document.querySelectorAll('input[name="payment_method"]')];
+const paymentNotice = document.getElementById("paymentNotice");
+const bankTransferDetails = document.getElementById("bankTransferDetails");
 let checkoutOpen = false;
 let bookingSubmitted = false;
 
@@ -65,6 +69,31 @@ function updateRoomRelease() {
   updateTotals();
 }
 
+function selectedPayment() {
+  return document.querySelector('input[name="payment_method"]:checked')?.value || "PayPal";
+}
+
+function updatePaymentUI() {
+  const method = selectedPayment();
+
+  bookingSubmit.disabled = false;
+  bookingSubmit.removeAttribute("aria-busy");
+
+  if (bankTransferDetails) {
+    bankTransferDetails.classList.toggle("hidden", method !== "Banküberweisung");
+  }
+
+  if (method === "PayPal") {
+    bookingSubmit.textContent = "MIT PAYPAL BEZAHLEN";
+    if (paymentNotice) paymentNotice.textContent = "Nach dem Klick wird der Termin nochmals geprüft und anschließend der sichere PayPal-Checkout geöffnet.";
+  } else if (method === "Banküberweisung") {
+    bookingSubmit.textContent = "ANFRAGE SENDEN & BANKDATEN ERHALTEN";
+    if (paymentNotice) paymentNotice.textContent = "Die Bankverbindung wird direkt angezeigt. Der Termin wird erst nach persönlicher Bestätigung verbindlich reserviert.";
+  } else {
+    bookingSubmit.textContent = "BUCHUNGSANFRAGE SENDEN";
+    if (paymentNotice) paymentNotice.textContent = "Der Termin wird erst nach persönlicher Bestätigung verbindlich reserviert. Zahlung erfolgt bei Anreise.";
+  }
+}
 function resetAvailability() {
   result.classList.add("hidden");
   guestArea.classList.add("hidden");
@@ -102,6 +131,7 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
   fd.append("room", selectedRoom().value);
   fd.append("adults", adults.value);
   extraIds.forEach(id=>{const el=document.getElementById(id);fd.append(id,el&&el.checked?"true":"false")});
+  fd.append("coupon_code", couponCode?.value.trim() || "");
 
   result.textContent = "Verfügbarkeit wird geprüft …";
   result.className = "availability-result";
@@ -118,7 +148,8 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
       guestArea.classList.remove("hidden");
       checkoutOpen = true;
       track("checkout_started");
-      bookingSubmit.textContent = status === "free" ? "JETZT DIREKT BUCHEN" : "VERFÜGBARKEIT PERSÖNLICH ANFRAGEN";
+      if (status === "free") updatePaymentUI();
+      else bookingSubmit.textContent = "VERFÜGBARKEIT PERSÖNLICH ANFRAGEN";
       stickyLabel.textContent = status === "free" ? "Jetzt direkt buchen" : "Persönlich anfragen";
       stickyCta.textContent = status === "free" ? "Buchen" : "Anfragen";
       totalPrice.textContent=euro(data.total); if(data.breakdown){let h=`<div><span>Zimmer</span><strong>${euro(data.breakdown.room_total)}</strong></div>`;data.breakdown.extras.forEach(x=>h+=`<div><span>${x.label}</span><strong>${euro(x.amount)}</strong></div>`);data.breakdown.discounts.forEach(x=>h+=`<div class="discount-line"><span>${x.label} (${x.percent}%)</span><strong>− ${euro(x.amount)}</strong></div>`);priceBreakdown.innerHTML=h;}
@@ -131,13 +162,91 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
   }
 });
 
-document.getElementById("bookingForm").addEventListener("submit", () => {
-  bookingSubmitted = true;
+paymentRadios.forEach(radio => radio.addEventListener("change", () => {
+  bookingSubmitted = false;
+  updatePaymentUI();
+}));
+
+document.getElementById("bookingForm").addEventListener("submit", async (event) => {
+  const method = selectedPayment();
+  if (method !== "PayPal") {
+    bookingSubmitted = true;
+    bookingSubmit.disabled = true;
+    bookingSubmit.textContent = method === "Banküberweisung" ? "Anfrage wird gesendet …" : "Anfrage wird gesendet …";
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const form = event.currentTarget;
+  if (!form.reportValidity()) return;
+
+  const payload = {
+    room: selectedRoom()?.value || "",
+    arrival: arrival.value,
+    departure: departure.value,
+    adults: Number(adults.value || 2),
+    first_name: form.querySelector('[name="first_name"]')?.value.trim() || "",
+    last_name: form.querySelector('[name="last_name"]')?.value.trim() || "",
+    email: form.querySelector('[name="email"]')?.value.trim() || "",
+    phone: form.querySelector('[name="phone"]')?.value.trim() || "",
+    message: form.querySelector('[name="message"]')?.value.trim() || "",
+    coupon_code: couponCode?.value.trim() || "",
+    extras: {
+      breakfast: Boolean(document.getElementById("breakfast")?.checked),
+      jause: Boolean(document.getElementById("jause")?.checked),
+      luggage: Boolean(document.getElementById("luggage")?.checked)
+    }
+  };
+
   bookingSubmit.disabled = true;
-  bookingSubmit.textContent = "Wird sicher gespeichert …";
+  bookingSubmit.textContent = "PAYPAL WIRD VORBEREITET …";
+  if (paymentNotice) paymentNotice.textContent = "Verfügbarkeit und Preis werden nochmals sicher geprüft.";
+
+  try {
+    const quoteResponse = await fetch("/api/paypal/quote", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      cache: "no-store",
+      body: JSON.stringify(payload)
+    });
+    const quote = await quoteResponse.json();
+    if (!quoteResponse.ok || !quote.ok || !quote.available) {
+      throw new Error(quote.message || "Termin ist nicht mehr verfügbar.");
+    }
+
+    const orderResponse = await fetch("/api/paypal/create-order", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      cache: "no-store",
+      body: JSON.stringify(payload)
+    });
+    const order = await orderResponse.json();
+    if (!orderResponse.ok || !order.ok || !order.approval_url) {
+      throw new Error(order.message || "PayPal konnte nicht gestartet werden.");
+    }
+
+    bookingSubmitted = true;
+    bookingSubmit.textContent = "PAYPAL WIRD GEÖFFNET …";
+    window.location.assign(order.approval_url);
+  } catch (error) {
+    bookingSubmit.disabled = false;
+    bookingSubmit.textContent = "MIT PAYPAL BEZAHLEN";
+    if (paymentNotice) paymentNotice.textContent = "⚠️ " + (error?.message || "PayPal konnte nicht gestartet werden.");
+  }
 });
 window.addEventListener("pagehide", () => {
   if (checkoutOpen && !bookingSubmitted) track("booking_abandoned");
+});
+
+window.addEventListener("pageshow", () => {
+  bookingSubmitted = false;
+  if (bookingSubmit) {
+    bookingSubmit.disabled = false;
+    bookingSubmit.removeAttribute("aria-busy");
+  }
+  updatePaymentUI();
 });
 
 // Live calendar
@@ -157,6 +266,17 @@ async function renderCalendar() {
   const data = await response.json();
   cal.innerHTML = "";
 
+  let statusNote = document.getElementById("calendarStatusNote");
+  if (!statusNote) {
+    statusNote = document.createElement("div");
+    statusNote.id = "calendarStatusNote";
+    statusNote.className = "calendar-status-note";
+    cal.parentElement.insertBefore(statusNote, cal);
+  }
+  statusNote.textContent = data.live
+    ? `Live-Kalender aktuell${data.updatedAt ? " · Stand " + data.updatedAt : ""}`
+    : "Live-Kalender derzeit nicht erreichbar – freie Tage werden nicht automatisch bestätigt.";
+
   ["Mo","Di","Mi","Do","Fr","Sa","So"].forEach(d => {
     const e = document.createElement("div");
     e.className = "cal-head";
@@ -175,7 +295,7 @@ async function renderCalendar() {
   const daysInMonth = new Date(year, month, 0).getDate();
   for (let day=1;day<=daysInMonth;day++) {
     const key = `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-    const state = data.days[key] || "free";
+    const state = data.days[key] || "unknown";
     const e = document.createElement("div");
     e.className = `cal-day ${state}`;
     e.textContent = day;
@@ -188,4 +308,5 @@ calRoom.addEventListener("change",renderCalendar);
 
 updateRoomRelease();
 updateTotals();
+updatePaymentUI();
 renderCalendar();

@@ -980,24 +980,43 @@
       .tour-plan { padding: 40px 18px; }
     }
 
-  </style>
+  
+    .open-dates-section{display:grid;gap:18px}
+    .open-dates-panel{max-width:760px;padding:20px;border:1px solid #dbe6e1;border-radius:16px;background:#fff;box-shadow:0 12px 34px rgba(23,55,47,.09)}
+    .open-dates-toolbar{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:10px;margin-bottom:12px}
+    .open-dates-toolbar strong{text-align:center;font-size:20px;color:var(--brand)}
+    .open-dates-toolbar button{min-height:42px;border:1px solid #c8d9d1;border-radius:10px;background:#f4f8f6;color:var(--brand);font-size:25px;cursor:pointer}
+    .open-dates-weekdays,.open-dates-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .open-dates-weekdays span{text-align:center;font-size:12px;font-weight:900;color:var(--muted);padding:5px}
+    .open-date{display:grid;place-items:center;min-height:48px;border-radius:9px;font-weight:900;border:1px solid transparent}
+    .open-date.empty{visibility:hidden}
+    .open-date.free{background:#e8f6ee;color:#176b5a;border-color:#b9dfca;cursor:pointer}
+    .open-date.blocked{background:#fff0eb;color:#9a351f;border-color:#f1c1b1}
+    .open-date.past{background:#f2f2ef;color:#969c98}
+    .open-date.today{outline:2px solid var(--brand);outline-offset:1px}
+    .open-dates-legend{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0 8px;font-size:12px;font-weight:800;color:var(--muted)}
+    .open-dates-legend span{display:flex;align-items:center;gap:6px}.open-dates-legend i{width:13px;height:13px;border-radius:4px;display:inline-block}
+    .open-dates-legend .is-free{background:#e8f6ee;border:1px solid #b9dfca}.open-dates-legend .is-blocked{background:#fff0eb;border:1px solid #f1c1b1}.open-dates-legend .is-past{background:#f2f2ef;border:1px solid #ddd}
+    .open-dates-note{font-size:12px;color:var(--muted)}
+    @media(max-width:600px){.open-dates-panel{padding:13px}.open-date{min-height:40px;font-size:13px}.open-dates-weekdays,.open-dates-grid{gap:3px}}
+</style>
 
-  <link rel="canonical" href="https://topdiveair-sketch.github.io/Direcktbuchungen/">
-  <link rel="alternate" hreflang="de-AT" href="https://topdiveair-sketch.github.io/Direcktbuchungen/">
-  <link rel="alternate" hreflang="en" href="https://topdiveair-sketch.github.io/Direcktbuchungen/en/">
-  <link rel="alternate" hreflang="cs" href="https://topdiveair-sketch.github.io/Direcktbuchungen/cs/">
-  <link rel="alternate" hreflang="sk" href="https://topdiveair-sketch.github.io/Direcktbuchungen/sk/">
-  <link rel="alternate" hreflang="hu" href="https://topdiveair-sketch.github.io/Direcktbuchungen/hu/">
-  <link rel="alternate" hreflang="pl" href="https://topdiveair-sketch.github.io/Direcktbuchungen/pl/">
-  <link rel="alternate" hreflang="nl" href="https://topdiveair-sketch.github.io/Direcktbuchungen/nl/">
-  <link rel="alternate" hreflang="x-default" href="https://topdiveair-sketch.github.io/Direcktbuchungen/">
+  <link rel="canonical" href="https://zuhauseambach-wachau.at/">
+  <link rel="alternate" hreflang="de-AT" href="https://zuhauseambach-wachau.at/">
+  <link rel="alternate" hreflang="en" href="https://zuhauseambach-wachau.at/en/">
+  <link rel="alternate" hreflang="cs" href="https://zuhauseambach-wachau.at/cs/">
+  <link rel="alternate" hreflang="sk" href="https://zuhauseambach-wachau.at/sk/">
+  <link rel="alternate" hreflang="hu" href="https://zuhauseambach-wachau.at/hu/">
+  <link rel="alternate" hreflang="pl" href="https://zuhauseambach-wachau.at/pl/">
+  <link rel="alternate" hreflang="nl" href="https://zuhauseambach-wachau.at/nl/">
+  <link rel="alternate" hreflang="x-default" href="https://zuhauseambach-wachau.at/">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <meta property="og:locale" content="de_AT">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Unterkunft Wachau direkt buchen | Zuhause am Bach">
   <meta property="og:description" content="Unterkunft in Aggsbach Markt direkt beim Gastgeber buchen – für Wachau, Donauradweg und Welterbesteig.">
-  <meta property="og:url" content="https://topdiveair-sketch.github.io/Direcktbuchungen/">
-  <meta property="og:image" content="https://topdiveair-sketch.github.io/Direcktbuchungen/images/aggsbach-markt-luftbild.webp">
+  <meta property="og:url" content="https://zuhauseambach-wachau.at/">
+  <meta property="og:image" content="https://zuhauseambach-wachau.at/images/aggsbach-markt-luftbild.webp">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Unterkunft Wachau direkt buchen | Zuhause am Bach">
   <meta name="twitter:description" content="Direkt buchen mit Live-Verfügbarkeit, transparentem Preis und sicherer PayPal-Zahlung.">
@@ -1005,11 +1024,11 @@
   {
     "@context": "https://schema.org",
     "@type": ["LodgingBusiness", "BedAndBreakfast"],
-    "@id": "https://topdiveair-sketch.github.io/Direcktbuchungen/#lodging",
+    "@id": "https://zuhauseambach-wachau.at/#lodging",
     "name": "Zuhause am Bach – Wachau",
     "description": "Ruhige Unterkunft in der Wachau für Wanderer am Welterbesteig, Radfahrer am Donauradweg und Erholungssuchende.",
-    "url": "https://topdiveair-sketch.github.io/Direcktbuchungen/",
-    "image": "https://topdiveair-sketch.github.io/Direcktbuchungen/images/aggsbach-markt-luftbild.webp",
+    "url": "https://zuhauseambach-wachau.at/",
+    "image": "https://zuhauseambach-wachau.at/images/aggsbach-markt-luftbild.webp",
     "telephone": "+436646437526",
     "email": "Zuhause.am.Bach@outlook.com",
     "dateModified": "2026-09-18",
@@ -1047,7 +1066,7 @@
     "potentialAction": {
       "@type": "ReserveAction",
       "name": "Direkt bei Zuhause am Bach buchen",
-      "target": "https://topdiveair-sketch.github.io/Direcktbuchungen/#booking-title"
+      "target": "https://zuhauseambach-wachau.at/#booking-title"
     },
     "sameAs": [
       "https://www.donau.com/wachau-nibelungengau-kremstal/unterkunft/zu-hause-am-bach-wachau",
@@ -1079,8 +1098,8 @@
   </script>
   <script type="application/ld+json">
   {"@context":"https://schema.org","@graph":[
-    {"@type":"WebSite","@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#website","name":"Zuhause am Bach","url":"https://topdiveair-sketch.github.io/Direcktbuchungen/","inLanguage":"de-AT"},
-    {"@type":"WebPage","@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#webpage","name":"Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau","url":"https://topdiveair-sketch.github.io/Direcktbuchungen/","isPartOf":{"@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#website"},"about":{"@id":"https://topdiveair-sketch.github.io/Direcktbuchungen/#lodging"},"dateModified":"2026-09-13","inLanguage":"de-AT"}
+    {"@type":"WebSite","@id":"https://zuhauseambach-wachau.at/#website","name":"Zuhause am Bach","url":"https://zuhauseambach-wachau.at/","inLanguage":"de-AT"},
+    {"@type":"WebPage","@id":"https://zuhauseambach-wachau.at/#webpage","name":"Zuhause am Bach – Unterkunft am Donauradweg & Welterbesteig Wachau","url":"https://zuhauseambach-wachau.at/","isPartOf":{"@id":"https://zuhauseambach-wachau.at/#website"},"about":{"@id":"https://zuhauseambach-wachau.at/#lodging"},"dateModified":"2026-09-13","inLanguage":"de-AT"}
   ]}
   </script>
 <style id="zab-gepaeckfrei-style">
@@ -1213,7 +1232,7 @@
             <div class="rooms">
               <label class="choice">
                 <input type="radio" name="room" value="Bachblick" data-price="99" checked>
-                <span><strong>Bachblick</strong><small>Termin wählen – die Verfügbarkeit wird live geprüft.</small></span>
+                <span><strong>Gartenzimmer</strong><small>Termin wählen – die Verfügbarkeit wird live geprüft.</small></span>
                 <b class="price">ab 99 EUR</b>
               </label>
             </div>
@@ -1425,6 +1444,36 @@
   </div>
 </section>
 
+<section id="warum-zuhause-am-bach" style="display:grid;gap:22px;padding:34px;border:1px solid #d8e2dd;border-radius:18px;background:linear-gradient(135deg,#fffaf0,#eef5f0);box-shadow:0 14px 35px rgba(20,38,32,.10)">
+  <div class="section-head" style="margin:0"><span class="eyebrow">Mehr als nur übernachten</span><h2>Hier beginnt Ihre Wachau-Geschichte schon vor der Haustür</h2><p>Zuhause am Bach verbindet ruhiges Wohnen mit genau den Dingen, die einen Wachau-Aufenthalt besonders machen: der Welterbesteig, der Donauradweg, persönliche Tipps, die Wilden Wachauer Windis und eine digitale Gäste-App, die Sie durch den Aufenthalt begleitet.</p></div>
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px">
+    <article class="room-card"><img src="images/rooms/bachblick.webp" alt="Gartenzimmer bei Zuhause am Bach" loading="lazy"><div><h3>Ankommen & durchatmen</h3><p>Ein ruhiger Rückzugsort nach einer Etappe, einer Radtour oder einem Tag zwischen Marillen, Donau und Weinbergen.</p></div></article>
+    <article class="room-card"><img src="images/tips/burgruine-aggstein.jpg" alt="Burgruine Aggstein in der Wachau" loading="lazy"><div><h3>Die Wachau direkt erleben</h3><p>Welterbesteig, Donauradweg und Wachau-Ausflüge sind nicht nur Prospektmotive, sondern Teil Ihres Tages bei uns.</p></div></article>
+    <article class="room-card"><img src="https://gaeste.zuhauseambach-wachau.at/hero-windis.webp" alt="Die Wilden Wachauer Windis bei Zuhause am Bach" loading="lazy"><div><h3>Mit den Windis unterwegs</h3><p>Fidel, Gloria und Pia gehören zur Welt von Zuhause am Bach und begleiten Gäste mit Geschichten, Tipps und kleinen Wachau-Momenten.</p></div></article>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px"><a class="btn" href="#booking-title">Verfügbarkeit prüfen</a><a class="btn secondary" href="#gaesteapp">Gäste-App entdecken</a><a class="btn secondary" href="wilde-wachauer-windis/">Die Windis kennenlernen</a></div>
+</section>
+
+<section id="freie-termine" class="open-dates-section">
+  <div class="section-head">
+    <span class="eyebrow">Live-Kalender</span>
+    <h2>Freie Termine auf einen Blick</h2>
+    <p>Der Kalender wird automatisch mit der aktuellen Belegung abgeglichen. Grün bedeutet derzeit frei, Rot belegt. Für die verbindliche Buchung wählen Sie anschließend An- und Abreise im Direktbuchungsformular.</p>
+  </div>
+  <div class="open-dates-panel">
+    <div class="open-dates-toolbar">
+      <button type="button" id="openDatesPrev" aria-label="Vorheriger Monat">‹</button>
+      <strong id="openDatesMonth">Kalender wird geladen …</strong>
+      <button type="button" id="openDatesNext" aria-label="Nächster Monat">›</button>
+    </div>
+    <div class="open-dates-weekdays" aria-hidden="true"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div>
+    <div id="openDatesGrid" class="open-dates-grid" aria-live="polite"></div>
+    <div class="open-dates-legend"><span><i class="is-free"></i> frei</span><span><i class="is-blocked"></i> belegt</span><span><i class="is-past"></i> vergangen</span></div>
+    <p id="openDatesNote" class="open-dates-note">Live-Belegung wird geladen …</p>
+    <a class="btn" href="#booking-title">Freien Termin direkt buchen</a>
+  </div>
+</section>
+
 <section id="zimmer">
       <div class="section-head">
         <span class="eyebrow">Zimmer</span>
@@ -1433,10 +1482,10 @@
       </div>
       <div class="room-grid">
         <article class="room-card">
-          <img width="1137" height="800" loading="lazy" decoding="async" src="images/rooms/bachblick.webp" alt="Ruhiges Doppelzimmer Bachblick bei Zuhause am Bach in Aggsbach Markt">
+          <img width="1137" height="800" loading="lazy" decoding="async" src="images/rooms/bachblick.webp" alt="Ruhiges Gartenzimmer bei Zuhause am Bach in Aggsbach Markt">
           <div>
-            <h3>Bachblick</h3>
-            <p>Doppelzimmer mit Blick auf den Bach. Gemütlich, ruhig und zum Wohlfühlen.</p>
+            <h3>Gartenzimmer</h3>
+            <p>Ruhiges Doppelzimmer mit persönlicher Atmosphäre – gemütlich und zum Wohlfühlen.</p>
             <strong>ab 99 EUR pro Nacht</strong>
           </div>
         </article>
@@ -1473,9 +1522,9 @@
           <span><strong>Gloria</strong>Genuss, Hausinfo und gute Ordnung</span>
           <span><strong>Pia</strong>Kinderwelt, Quiz und kleine Geheimnisse</span>
         </div>
-        <a class="btn" href="https://topdiveair-sketch.github.io/Gaeste/index" target="_blank" rel="noopener">Gästeapp öffnen</a>
+        <a class="btn" href="https://gaeste.zuhauseambach-wachau.at/" target="_blank" rel="noopener">Gästeapp öffnen</a>
       </div>
-      <a class="guest-app-qr" href="https://topdiveair-sketch.github.io/Gaeste/index" target="_blank" rel="noopener">
+      <a class="guest-app-qr" href="https://gaeste.zuhauseambach-wachau.at/" target="_blank" rel="noopener">
         <img width="410" height="410" loading="lazy" decoding="async" src="images/gaesteapp-qr.png" alt="QR-Code zur Gästeapp">
         <span>Direkt am Smartphone öffnen</span>
       </a>
@@ -1483,7 +1532,7 @@
 
     <section id="wachau-geschichte" aria-labelledby="wachau-geschichte-title">
       <div class="section-head"><span class="eyebrow">Windi-Chronik</span><h2 id="wachau-geschichte-title">Werde Teil unserer Wachau-Geschichte</h2><p>Hausgäste können ihre Wanderung, Radtour oder einen besonderen Wachau-Moment freiwillig in der digitalen Windi-Chronik festhalten. Ausgewählte Geschichten können – nur nach Zustimmung – in eine jährliche Chronik aufgenommen werden.</p></div>
-      <a class="btn" href="https://topdiveair-sketch.github.io/Gaeste/index#chronik" target="_blank" rel="noopener">Windi-Chronik ansehen</a>
+      <a class="btn" href="https://gaeste.zuhauseambach-wachau.at/#chronik" target="_blank" rel="noopener">Windi-Chronik ansehen</a>
     </section>
 
     <section id="infos">
@@ -1650,7 +1699,7 @@
         "1 Person": "1 guest",
         "2 Personen": "2 guests",
         "Nächte": "Nights",
-        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Currently only Bachblick can be requested. Other rooms are currently not bookable.",
+        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Currently only the Garden Room can be requested. Other rooms are currently not bookable.",
         "Zusatzleistungen": "Extras",
         "Frühstück": "Breakfast",
         "12,00 EUR pro Person/Nacht": "12.00 EUR per person/night",
@@ -1795,7 +1844,7 @@
         "1 Person": "1 host",
         "2 Personen": "2 hosté",
         "Nächte": "Noci",
-        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Aktuálně lze poptat pouze Bachblick. Ostatní pokoje nejsou v současnosti k dispozici.",
+        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Aktuálně lze poptat pouze zahradní pokoj. Ostatní pokoje nejsou v současnosti k dispozici.",
         "Zusatzleistungen": "Doplňkové služby",
         "Frühstück": "Snídaně",
         "12,00 EUR pro Person/Nacht": "12,00 EUR za osobu/noc",
@@ -1911,7 +1960,7 @@
         "1 Person": "1 vendég",
         "2 Personen": "2 vendég",
         "Nächte": "Éjszakák",
-        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Jelenleg csak a Bachblick kérhető. A többi szoba jelenleg nem foglalható.",
+        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Jelenleg csak a kerti szoba kérhető. A többi szoba jelenleg nem foglalható.",
         "Zusatzleistungen": "Kiegészítő szolgáltatások",
         "Frühstück": "Reggeli",
         "12,00 EUR pro Person/Nacht": "12,00 EUR személyenként/éjszakánként",
@@ -2027,7 +2076,7 @@
         "1 Person": "1 persona",
         "2 Personen": "2 personas",
         "Nächte": "Noches",
-        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Actualmente solo se puede solicitar Bachblick. Las demás habitaciones no están disponibles actualmente.",
+        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Actualmente solo se puede solicitar la habitación Jardín. Las demás habitaciones no están disponibles actualmente.",
         "Zusatzleistungen": "Servicios extra",
         "Frühstück": "Desayuno",
         "12,00 EUR pro Person/Nacht": "12,00 EUR por persona/noche",
@@ -2143,7 +2192,7 @@
         "1 Person": "1 personne",
         "2 Personen": "2 personnes",
         "Nächte": "Nuits",
-        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Actuellement, seule Bachblick peut être demandée. Les autres chambres ne sont pas disponibles.",
+        "Ruhig wohnen, persönlich betreut werden und die Wachau direkt vor der Haustür erleben.": "Actuellement, seule la chambre Jardin peut être demandée. Les autres chambres ne sont pas disponibles.",
         "Zusatzleistungen": "Services supplémentaires",
         "Frühstück": "Petit-déjeuner",
         "12,00 EUR pro Person/Nacht": "12,00 EUR par personne/nuit",
@@ -2377,13 +2426,13 @@
     });
     const UI_I18N = {
       de: {
-        selectDatesLive: "Datum und Zimmer wählen, dann wird Bachblick mit dem aktuellen Booking-Kalender geprüft.",
+        selectDatesLive: "Datum und Zimmer wählen, dann wird das Gartenzimmer mit dem aktuellen Booking-Kalender geprüft.",
         selectDatesWorker: "Bitte Reisedaten wählen und Anfrage senden. Wir bestätigen die Verfügbarkeit persönlich.",
         notReleased: "{room} ist derzeit nicht buchbar.",
         beforeRelease: "{room} ist derzeit nicht buchbar.",
         noIcal: "{room} ist noch nicht mit Booking-iCal verbunden. Verfügbarkeit wird persönlich bestätigt.",
-        blocked: "Bachblick ist laut Booking-Kalender in diesem Zeitraum belegt oder geschlossen.",
-        free: "Bachblick ist laut Kalenderprüfung in diesem Zeitraum frei. Sie können die Anfrage senden; verbindlich wird die Buchung erst nach persönlicher Bestätigung.",
+        blocked: "Das Gartenzimmer ist laut Booking-Kalender in diesem Zeitraum belegt oder geschlossen.",
+        free: "Das Gartenzimmer ist laut Kalenderprüfung in diesem Zeitraum frei. Sie können die Anfrage senden; verbindlich wird die Buchung erst nach persönlicher Bestätigung.",
         calendarStale: "Die Verfügbarkeit wird persönlich bestätigt. Bitte Anfrage senden.",
         modeLive: "aktueller Booking-Kalender",
         modeSnapshot: "Booking-Kalenderstand",
@@ -2418,7 +2467,7 @@
         labelCalendar: "Kalenderprüfung",
         labelPayment: "Zahlung erst nach persönlicher Buchungsbestätigung",
         paypalHint: "Bei freiem Termin können Sie {amount} per PayPal an topdiveair@gmail.com zahlen. Bitte Name und Reisedatum als Hinweis angeben.",
-        labelGuestApp: "Gästeapp: https://topdiveair-sketch.github.io/Gaeste/index",
+        labelGuestApp: "Gästeapp: https://gaeste.zuhauseambach-wachau.at/",
         labelMessage: "Nachricht",
         noteCheck: "Hinweis: Verfügbarkeit bitte manuell prüfen und bestätigen.",
         rain: "Regen",
@@ -2431,13 +2480,13 @@
       }
     };
     UI_I18N.en = {
-      selectDatesLive: "Choose dates and a room, then Bachblick is checked with the current Booking calendar.",
+      selectDatesLive: "Choose dates and a room, then the Garden Room is checked with the current Booking calendar.",
       selectDatesWorker: "Please select your travel dates and send the request. We will confirm availability personally.",
       notReleased: "{room} is currently not bookable.",
       beforeRelease: "{room} is currently not bookable.",
       noIcal: "{room} is not connected to Booking iCal yet. Availability will be confirmed personally.",
-      blocked: "According to the Booking calendar, Bachblick is occupied or closed for this period.",
-      free: "According to the calendar check, Bachblick is available for this period. You can send a request; the booking becomes binding only after personal confirmation.",
+      blocked: "According to the Booking calendar, the Garden Room is occupied or closed for this period.",
+      free: "According to the calendar check, the Garden Room is available for this period. You can send a request; the booking becomes binding only after personal confirmation.",
       calendarStale: "Availability will be confirmed personally. Please send the request.",
       modeLive: "current Booking calendar",
       modeSnapshot: "Booking calendar status",
@@ -2474,7 +2523,7 @@
       labelCalendar: "Calendar check",
       labelPayment: "Payment only after personal booking confirmation",
       paypalHint: "If the date is free, you can pay {amount} by PayPal to topdiveair@gmail.com. Please include your name and travel dates as a note.",
-      labelGuestApp: "Guest app: https://topdiveair-sketch.github.io/Gaeste/index",
+      labelGuestApp: "Guest app: https://gaeste.zuhauseambach-wachau.at/",
       labelMessage: "Message",
       noteCheck: "Note: please check and confirm availability manually.",
       rain: "Rain",
@@ -2498,8 +2547,8 @@
       notReleased: "{room} je připraven od 15. 8. 2026, ale zatím není uvolněn.",
       beforeRelease: "{room} lze rezervovat až od 15. 8. 2026.",
       noIcal: "{room} zatím není připojen k Booking iCal. Dostupnost bude potvrzena osobně.",
-      blocked: "Podle kalendáře Booking je Bachblick v tomto období obsazený nebo uzavřený.",
-      free: "Podle kalendáře je Bachblick v tomto období volný. Můžete odeslat poptávku; rezervace je závazná až po osobním potvrzení.",
+      blocked: "Podle kalendáře Booking je zahradní pokoj v tomto období obsazený nebo uzavřený.",
+      free: "Podle kalendáře je zahradní pokoj v tomto období volný. Můžete odeslat poptávku; rezervace je závazná až po osobním potvrzení.",
       calendarStale: "Dostupnost potvrdíme osobně. Odešlete prosím poptávku.",
       modeLive: "aktuální Booking kalendář",
       modeSnapshot: "stavu Booking kalendáře",
@@ -2526,13 +2575,13 @@
       chooseDatesButton: "Válasszon utazási dátumokat",
       priceDisclaimer: "Szobaár és kiválasztott kiegészítők – csak személyes visszaigazolás után kötelező.",
       paymentPending: "Kérjük, még ne fizessen. A(z) {amount} fizetési adatait személyes foglalási visszaigazolásunk után kapja meg.",
-      selectDatesLive: "Válasszon dátumot és szobát, ezután a Bachblick az aktuális Booking-naptár alapján ellenőrzésre kerül.",
+      selectDatesLive: "Válasszon dátumot és szobát, ezután a kerti szoba az aktuális Booking-naptár alapján ellenőrzésre kerül.",
       selectDatesWorker: "Kérjük, válassza ki az utazási dátumokat, és küldje el a kérést. A rendelkezésre állást személyesen igazoljuk vissza.",
       notReleased: "{room} 2026.08.15-től előkészítve, de még nincs felszabadítva.",
       beforeRelease: "{room} csak 2026.08.15-től foglalható.",
       noIcal: "{room} még nincs összekötve a Booking iCal-lal. A rendelkezésre állást személyesen igazoljuk vissza.",
-      blocked: "A Booking-naptár szerint a Bachblick ebben az időszakban foglalt vagy zárva van.",
-      free: "A naptár szerint a Bachblick ebben az időszakban szabad. Kérés küldhető; a foglalás csak személyes visszaigazolás után kötelező.",
+      blocked: "A Booking-naptár szerint a kerti szoba ebben az időszakban foglalt vagy zárva van.",
+      free: "A naptár szerint a kerti szoba ebben az időszakban szabad. Kérés küldhető; a foglalás csak személyes visszaigazolás után kötelező.",
       calendarStale: "A rendelkezésre állást személyesen igazoljuk vissza. Kérjük, küldje el a kérést.",
       modeLive: "aktuális Booking-naptár",
       modeSnapshot: "Booking-naptár állapota",
@@ -2559,13 +2608,13 @@
       chooseDatesButton: "Seleccione las fechas",
       priceDisclaimer: "Precio de habitación y extras seleccionados; vinculante solo tras la confirmación personal.",
       paymentPending: "No pague todavía. Recibirá la información de pago de {amount} después de nuestra confirmación personal.",
-      selectDatesLive: "Elija fecha y habitación; Bachblick se comprobará con el calendario Booking actual.",
+      selectDatesLive: "Elija fecha y habitación; la habitación Jardín se comprobará con el calendario Booking actual.",
       selectDatesWorker: "Seleccione las fechas de viaje y envíe la solicitud. Confirmaremos la disponibilidad personalmente.",
       notReleased: "{room} no está disponible actualmente.",
       beforeRelease: "{room} no está disponible actualmente.",
       noIcal: "{room} aún no está conectada con Booking iCal. La disponibilidad se confirma personalmente.",
-      blocked: "Según el calendario de Booking, Bachblick está ocupada o cerrada en este periodo.",
-      free: "Según el calendario, Bachblick está disponible en este periodo. Puede enviar una solicitud; la reserva solo es vinculante tras la confirmación personal.",
+      blocked: "Según el calendario de Booking, la habitación Jardín está ocupada o cerrada en este periodo.",
+      free: "Según el calendario, la habitación Jardín está disponible en este periodo. Puede enviar una solicitud; la reserva solo es vinculante tras la confirmación personal.",
       calendarStale: "La disponibilidad se confirma personalmente. Envíe la solicitud.",
       modeLive: "calendario Booking actual",
       modeSnapshot: "estado del calendario Booking",
@@ -2592,13 +2641,13 @@
       chooseDatesButton: "Choisissez les dates",
       priceDisclaimer: "Prix de la chambre et options choisies – ferme uniquement après confirmation personnelle.",
       paymentPending: "Veuillez ne pas encore payer. Vous recevrez les informations de paiement pour {amount} après notre confirmation personnelle.",
-      selectDatesLive: "Choisissez dates et chambre, puis Bachblick est vérifiée avec le calendrier Booking actuel.",
+      selectDatesLive: "Choisissez dates et chambre, puis la chambre Jardin est vérifiée avec le calendrier Booking actuel.",
       selectDatesWorker: "Veuillez choisir vos dates de séjour et envoyer la demande. Nous confirmerons la disponibilité personnellement.",
       notReleased: "{room} est préparée à partir du 15/08/2026, mais pas encore libérée.",
       beforeRelease: "{room} est réservable à partir du 15/08/2026.",
       noIcal: "{room} n'est pas encore connectée à Booking iCal. La disponibilité sera confirmée personnellement.",
-      blocked: "Selon le calendrier Booking, Bachblick est occupée ou fermée pendant cette période.",
-      free: "Selon le calendrier, Bachblick est disponible pour cette période. Vous pouvez envoyer une demande; la réservation devient ferme uniquement après confirmation personnelle.",
+      blocked: "Selon le calendrier Booking, la chambre Jardin est occupée ou fermée pendant cette période.",
+      free: "Selon le calendrier, la chambre Jardin est disponible pour cette période. Vous pouvez envoyer une demande; la réservation devient ferme uniquement après confirmation personnelle.",
       calendarStale: "La disponibilité sera confirmée personnellement. Envoyez la demande.",
       modeLive: "calendrier Booking actuel",
       modeSnapshot: "état du calendrier Booking",
@@ -2766,6 +2815,10 @@
 
     function selectedRoom() {
       return form.querySelector('input[name="room"]:checked');
+    }
+
+    function publicRoomName(roomValue) {
+      return roomValue === "Bachblick" ? "Gartenzimmer" : roomValue;
     }
 
     function selectedExtras() {
@@ -2982,7 +3035,7 @@
         tr("labelDeparture") + ": " + departure.value,
         tr("labelNights") + ": " + n,
         tr("labelGuests") + ": " + adults.value,
-        tr("labelRoom") + ": " + (room ? room.value : ""),
+        tr("labelRoom") + ": " + (room ? publicRoomName(room.value) : ""),
         tr("labelExtras") + ": " + extras,
         tr("labelDirectPrice") + ": " + money(sum),
         tr("labelPriceRule") + ": " + tr("priceRuleDiscount"),
@@ -3193,6 +3246,47 @@
         weatherHint.textContent = tr("weatherUnavailableHint");
       }
     }
+
+    let openDatesCursor = new Date(today.getFullYear(), today.getMonth(), 1);
+    const openDatesMonth = document.getElementById("openDatesMonth");
+    const openDatesGrid = document.getElementById("openDatesGrid");
+    const openDatesNote = document.getElementById("openDatesNote");
+    function isoLocal(date){ const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,"0"),d=String(date.getDate()).padStart(2,"0"); return y+"-"+m+"-"+d; }
+    function isBlockedDay(date){
+      const start=new Date(date); start.setHours(0,0,0,0);
+      const end=new Date(start); end.setDate(end.getDate()+1);
+      return Boolean(blockedCalendarEntry(start,end));
+    }
+    function renderOpenDatesCalendar(){
+      if(!openDatesGrid || !openDatesMonth) return;
+      openDatesMonth.textContent=openDatesCursor.toLocaleDateString("de-AT",{month:"long",year:"numeric"});
+      openDatesGrid.innerHTML="";
+      const first=new Date(openDatesCursor.getFullYear(),openDatesCursor.getMonth(),1);
+      const offset=(first.getDay()+6)%7;
+      for(let i=0;i<offset;i++){const x=document.createElement("span");x.className="open-date empty";openDatesGrid.appendChild(x);}
+      const last=new Date(openDatesCursor.getFullYear(),openDatesCursor.getMonth()+1,0).getDate();
+      for(let day=1;day<=last;day++){
+        const date=new Date(openDatesCursor.getFullYear(),openDatesCursor.getMonth(),day);
+        const cell=document.createElement("button"); cell.type="button"; cell.className="open-date"; cell.textContent=String(day);
+        const past=date<today, blocked=isBlockedDay(date);
+        if(isoLocal(date)===todayIso) cell.classList.add("today");
+        if(past){cell.classList.add("past");cell.disabled=true;cell.title="Vergangen";}
+        else if(blocked){cell.classList.add("blocked");cell.disabled=true;cell.title="Belegt";}
+        else if(liveBookingCalendarLoaded && calendarIsFresh()){
+          cell.classList.add("free"); cell.title="Derzeit frei – als Anreise wählen";
+          cell.addEventListener("click",()=>{arrival.value=isoLocal(date);const dep=new Date(date);dep.setDate(dep.getDate()+1);departure.value=isoLocal(dep);departure.min=isoLocal(dep);loadLivePrices();calculate();document.getElementById("booking-title").scrollIntoView({behavior:"smooth",block:"start"});});
+        } else {cell.classList.add("past");cell.disabled=true;cell.title="Live-Kalender wird geprüft";}
+        openDatesGrid.appendChild(cell);
+      }
+      if(openDatesNote) openDatesNote.textContent=(liveBookingCalendarLoaded && calendarIsFresh())
+        ? "Live-Abgleich aktuell · freie Tage können direkt als Anreise gewählt werden."
+        : "Eine Frei-Meldung wird erst angezeigt, wenn der Live-Kalender aktuell bestätigt ist.";
+    }
+    document.getElementById("openDatesPrev")?.addEventListener("click",()=>{const min=new Date(today.getFullYear(),today.getMonth(),1);const prev=new Date(openDatesCursor.getFullYear(),openDatesCursor.getMonth()-1,1);if(prev>=min){openDatesCursor=prev;renderOpenDatesCalendar();}});
+    document.getElementById("openDatesNext")?.addEventListener("click",()=>{openDatesCursor=new Date(openDatesCursor.getFullYear(),openDatesCursor.getMonth()+1,1);renderOpenDatesCalendar();});
+    const originalCalculate=calculate;
+    calculate=function(){const result=originalCalculate();renderOpenDatesCalendar();return result;};
+    renderOpenDatesCalendar();
 
     loadLiveBookingCalendar();
     loadLivePrices();

@@ -153,7 +153,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         c.setFont("Helvetica", 11)
         lines = [
             f"Gast: {booking['first_name']} {booking['last_name']}",
-            f"Zimmer: {booking['room']}",
+            f"Zimmer: {'Gartenblick' if booking['room'] == 'Bachblick' else booking['room']}",
             f"Aufenthalt: {booking['arrival']} bis {booking['departure']}",
             f"Personen: {booking['adults']}",
             f"Zahlungsart: {booking['payment_method']}",
@@ -173,30 +173,92 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
     def send_booking_confirmation(booking_id):
         public_token, cancel_token, invoice_number = ensure_booking_tokens(booking_id)
         with db() as conn:
-            b = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
-        base_url = settings().get("public_base_url", request.url_root.rstrip("/"))
-        body = (
-            f"Hallo {b['first_name']},\n\n"
-            f"deine Buchungsanfrage für {b['room']} von {b['arrival']} bis {b['departure']} "
-            f"wurde gespeichert.\nGesamtbetrag: {b['total']:.2f} EUR\n"
-            f"Zahlungsart: {b['payment_method']}\n\n"
-            f"Gästeportal: {base_url}/guest/{public_token}\n"
-            f"Stornierung: {base_url}/cancel/{cancel_token}\n"
-            f"Rechnung: {base_url}/invoice/{public_token}.pdf\n\n"
-            "Bitte PayPal erst nach persönlicher Bestätigung verwenden.\n"
+            booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
+        cfg = settings()
+        site_url = os.environ.get("PUBLIC_SITE_URL", "https://www.zuhauseambach-wachau.at").rstrip("/")
+        room_name = "Gartenblick" if booking["room"] == "Bachblick" else booking["room"]
+        is_confirmed = booking["status"] == "confirmed"
+        is_paid = bool(booking["paid"])
+        payment_method = booking["payment_method"]
+
+        guest_subject = (
+            "Buchungsbestätigung – Zuhause am Bach"
+            if is_confirmed else
+            "Buchungsanfrage eingegangen – Zuhause am Bach"
+        )
+
+        if is_confirmed:
+            intro = (
+                f"deine Buchung für {room_name} von {booking['arrival']} bis {booking['departure']} "
+                "ist bestätigt."
+            )
+        else:
+            intro = (
+                f"deine Buchungsanfrage für {room_name} von {booking['arrival']} bis {booking['departure']} "
+                "ist eingegangen. Der Termin wird erst nach unserer persönlichen Bestätigung verbindlich reserviert."
+            )
+
+        payment_info = ""
+        if payment_method == "Banküberweisung":
+            holder = os.environ.get("BANK_ACCOUNT_HOLDER", "").strip()
+            iban = os.environ.get("BANK_IBAN", "").strip()
+            iban_display = " ".join(iban[i:i+4] for i in range(0, len(iban), 4)) if iban else ""
+            payment_info = (
+                "\nBanküberweisung:\n"
+                f"Kontoinhaber: {holder}\n"
+                f"IBAN: {iban_display}\n"
+                f"Betrag: {booking['total']:.2f} EUR\n"
+                f"Verwendungszweck: ZAB-{booking_id:06d} · {booking['first_name']}\n"
+                "Bitte erst nach unserer persönlichen Buchungsbestätigung überweisen.\n"
+            )
+        elif payment_method == "PayPal":
+            payment_info = (
+                "\nPayPal-Zahlung: erfolgreich bestätigt.\n"
+                if is_paid else
+                "\nPayPal-Zahlung: noch nicht abgeschlossen.\n"
+            )
+        elif payment_method == "Vor Ort":
+            payment_info = "\nZahlung: bei Anreise vor Ort.\n"
+
+        guest_body = (
+            f"Hallo {booking['first_name']},\n\n"
+            f"{intro}\n"
+            f"Gesamtbetrag: {booking['total']:.2f} EUR\n"
+            f"Zahlungsart: {payment_method}\n"
+            f"{payment_info}\n"
+            f"Gästeportal: {site_url}/guest/{public_token}\n"
+            f"Stornierung: {site_url}/cancel/{cancel_token}\n"
+            f"Rechnung: {site_url}/invoice/{public_token}.pdf\n\n"
+            "Wir freuen uns auf deinen Aufenthalt.\n"
             "Zuhause am Bach"
         )
-        ok_guest, msg_guest = smtp_send(b["email"], "Buchungsanfrage – Zuhause am Bach", body)
-        owner = settings().get("email", PAYPAL_EMAIL)
-        ok_owner, msg_owner = smtp_send(
-            owner,
-            f"Neue Direktbuchung: {b['room']}",
-            f"{b['first_name']} {b['last_name']}\n{b['arrival']} bis {b['departure']}\n{b['total']:.2f} EUR\nTelefon: {b['phone']}",
+        ok_guest, msg_guest = smtp_send(booking["email"], guest_subject, guest_body)
+
+        owner = cfg.get("email", PAYPAL_EMAIL)
+        owner_subject = f"Neue Direktbuchung: {room_name}"
+        owner_body = (
+            f"{booking['first_name']} {booking['last_name']}\n"
+            f"{room_name}\n"
+            f"{booking['arrival']} bis {booking['departure']}\n"
+            f"{booking['total']:.2f} EUR\n"
+            f"Zahlungsart: {payment_method}\n"
+            f"Status: {booking['status']}\n"
+            f"Telefon: {booking['phone']}\n"
+            f"E-Mail: {booking['email']}"
         )
+        ok_owner, msg_owner = smtp_send(owner, owner_subject, owner_body)
+
+        created_at = datetime.now().isoformat(timespec="seconds")
         with db() as conn:
-            conn.execute("INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
-                         (booking_id,b["email"],"Buchungsanfrage",msg_guest,datetime.now().isoformat(timespec="seconds")))
-        return ok_guest or ok_owner
+            conn.execute(
+                "INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
+                (booking_id, booking["email"], guest_subject, msg_guest, created_at),
+            )
+            conn.execute(
+                "INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
+                (booking_id, owner, owner_subject, msg_owner, created_at),
+            )
+        return ok_guest and ok_owner
 
     app.extensions["zab_send_confirmation"] = send_booking_confirmation
     app.extensions["zab_ensure_tokens"] = ensure_booking_tokens
@@ -208,7 +270,14 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             return "Buchung nicht gefunden", 404
         with db() as conn:
             orders = conn.execute("SELECT * FROM guest_orders WHERE booking_id=? ORDER BY created_at DESC", (b["id"],)).fetchall()
-        return render_template("guest_portal.html", booking=b, orders=orders, settings=settings())
+        cfg = settings()
+        return render_template(
+            "guest_portal.html",
+            booking=b,
+            orders=orders,
+            settings=cfg,
+            guest_app_url=cfg.get("public_base_url", "https://topdiveair-sketch.github.io/Gaeste/"),
+        )
 
     @app.post("/guest/<token>/message")
     def guest_message(token):
@@ -284,11 +353,78 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             conn.execute("UPDATE guest_orders SET status='erledigt' WHERE id=?",(order_id,))
         return redirect(url_for("dashboard"))
 
+    @app.post("/admin/booking/<int:booking_id>/confirm")
+    def confirm_booking(booking_id):
+        if not require_admin():
+            return redirect(url_for("admin_login"))
+
+        sync_room = app.extensions.get("zab_sync_room")
+        if sync_room:
+            try:
+                with db() as conn:
+                    current = conn.execute("SELECT room FROM bookings WHERE id=?", (booking_id,)).fetchone()
+                if current:
+                    sync_room(current["room"])
+            except Exception:
+                pass
+
+        with db() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
+            if not booking:
+                conn.rollback()
+                flash("Buchungsanfrage wurde nicht gefunden.", "error")
+                return redirect(url_for("dashboard"))
+            if booking["status"] == "confirmed":
+                conn.rollback()
+                flash("Buchung ist bereits bestätigt.", "success")
+                return redirect(url_for("dashboard"))
+            if booking["status"] != "inquiry":
+                conn.rollback()
+                flash("Diese Buchung kann in diesem Status nicht bestätigt werden.", "error")
+                return redirect(url_for("dashboard"))
+
+            local_conflict = conn.execute(
+                """SELECT id FROM bookings
+                   WHERE id<>? AND room=? AND status IN ('pending','confirmed')
+                     AND arrival < ? AND departure > ?
+                   LIMIT 1""",
+                (booking_id, booking["room"], booking["departure"], booking["arrival"]),
+            ).fetchone()
+            external_conflict = conn.execute(
+                """SELECT id FROM external_blocks
+                   WHERE room=? AND start_date < ? AND end_date > ?
+                   LIMIT 1""",
+                (booking["room"], booking["departure"], booking["arrival"]),
+            ).fetchone()
+
+            if local_conflict or external_conflict:
+                conn.rollback()
+                flash("Nicht bestätigt: Der Zeitraum ist inzwischen belegt.", "error")
+                return redirect(url_for("dashboard"))
+
+            conn.execute("UPDATE bookings SET status='confirmed' WHERE id=?", (booking_id,))
+
+        try:
+            send_booking_confirmation(booking_id)
+        except Exception:
+            pass
+        flash("Buchungsanfrage wurde bestätigt und der Zeitraum ist jetzt reserviert.", "success")
+        return redirect(url_for("dashboard"))
+
+
     @app.post("/admin/booking/<int:booking_id>/paid")
     def mark_paid(booking_id):
         if not require_admin():
             return redirect(url_for("admin_login"))
         with db() as conn:
+            booking = conn.execute("SELECT status FROM bookings WHERE id=?", (booking_id,)).fetchone()
+            if not booking:
+                flash("Buchung wurde nicht gefunden.", "error")
+                return redirect(url_for("dashboard"))
+            if booking["status"] == "inquiry":
+                flash("Bitte die Anfrage zuerst bestätigen. Erst danach kann sie als bezahlt markiert werden.", "error")
+                return redirect(url_for("dashboard"))
             conn.execute("UPDATE bookings SET paid=1,status='confirmed' WHERE id=?",(booking_id,))
         return redirect(url_for("dashboard"))
 

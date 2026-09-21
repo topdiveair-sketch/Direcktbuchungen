@@ -1,18 +1,24 @@
-
 <!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Buchungsanfrage gespeichert</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <title>Buchung bei Zuhause am Bach</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260921-10">
 </head>
 <body class="plain-page">
   <main class="success-shell">
     <div class="success-card">
-      <span class="eyebrow">{{ 'Buchungsanfrage gespeichert' if booking.status == 'inquiry' else 'Direktbuchung vorgemerkt' }}</span>
-      <h1>Willkommen bei Zuhause am Bach 🐾</h1>
-      <p>Danke, {{ booking.first_name }}. {{ 'Die Verfügbarkeit wird persönlich bestätigt.' if booking.status == 'inquiry' else 'Der Zeitraum wurde sicher vorgemerkt. Die persönliche Bestätigung folgt.' }}</p>
+      <span class="eyebrow">{{ 'Buchung bestätigt' if booking.status == 'confirmed' else 'Buchungsanfrage gesendet' }}</span>
+      <h1>Danke für deine Buchung 🐾</h1>
+      <p>
+        Danke, {{ booking.first_name }}.
+        {% if booking.status == 'confirmed' %}
+          Deine Buchung ist bestätigt.
+        {% else %}
+          Deine Anfrage wurde gesendet. Der Termin wird erst nach persönlicher Bestätigung verbindlich reserviert.
+        {% endif %}
+      </p>
 
       <div class="booking-summary">
         <p><strong>Buchungsnummer:</strong> {{ booking.booking_number }}</p>
@@ -22,21 +28,40 @@
         <p><strong>Personen:</strong> {{ booking.adults }}</p>
         <p><strong>Frühstück:</strong> {{ 'Ja' if booking.breakfast else 'Nein' }}</p>
         <p><strong>Zahlung:</strong> {{ booking.payment_method }}</p>
-        <p><strong>Zahlungsstatus:</strong> Ausstehend – erst nach persönlicher Bestätigung</p>
+        <p><strong>Zahlungsstatus:</strong>
+          {% if booking.payment_method == 'Banküberweisung' %}Zahlung erst nach Bestätigung
+          {% elif booking.payment_method == 'Vor Ort' %}Zahlung nach Bestätigung bei Anreise
+          {% elif booking.status == 'confirmed' %}Bezahlt
+          {% else %}Ausstehend{% endif %}
+        </p>
         <p class="summary-total"><strong>Gesamt:</strong> {{ '%.2f'|format(booking.total)|replace('.', ',') }} €</p>
       </div>
 
-      {% if booking.payment_method == 'PayPal' %}
+      {% if booking.payment_method == 'Banküberweisung' %}
       <div class="paypal-note">
-        PayPal-Empfänger: <strong>{{ paypal_email }}</strong><br>
-        Bitte erst nach der persönlichen Buchungsbestätigung bezahlen.
+        <strong>Banküberweisung</strong><br>
+        Kontoinhaber: <strong>{{ bank_account_holder }}</strong><br>
+        IBAN: <strong>{{ bank_iban_display or bank_iban }}</strong><br>
+        Betrag: <strong>{{ '%.2f'|format(booking.total)|replace('.', ',') }} €</strong><br>
+        Verwendungszweck: <strong>{{ booking.booking_number }} · {{ booking.first_name }}</strong><br>
+        <strong>Bitte erst nach unserer persönlichen Buchungsbestätigung überweisen.</strong>
+      </div>
+      {% elif booking.payment_method == 'Vor Ort' %}
+      <div class="paypal-note">
+        <strong>Zahlung vor Ort</strong><br>
+        Der Betrag wird bei der Anreise bezahlt.
       </div>
       {% endif %}
 
       <p class="muted">Der persönliche Online-Check-in-Link wird mit der Bestätigung versendet.</p>
       <p><strong>Check-in:</strong> ab 14:00 · <strong>Check-out:</strong> bis 10:00</p>
       <p>Aggsbach Markt 82, 3641 Aggsbach Markt</p>
-      <p><a class="btn secondary" href="https://www.google.com/maps/dir/?api=1&destination=Aggsbach+Markt+82%2C+3641+Aggsbach+Markt">Route öffnen</a> <a class="btn secondary" href="{{ guest_app_url }}">Gäste-App öffnen</a> <a class="btn secondary" href="mailto:{{ settings.email }}">Kontakt</a></p>
+      <p>
+        <a class="btn secondary" href="https://www.google.com/maps/dir/?api=1&destination=Aggsbach+Markt+82%2C+3641+Aggsbach+Markt">Route öffnen</a>
+        <a class="btn secondary" href="{{ guest_app_url }}">Gäste-App öffnen</a>
+        <a class="btn secondary" href="mailto:{{ settings.email }}">Kontakt</a>
+      </p>
+      <p><a href="{{ url_for('index') }}">Zurück zur Homepage</a></p>
     </div>
   </main>
 </body>

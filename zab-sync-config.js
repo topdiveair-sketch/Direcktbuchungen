@@ -6,67 +6,49 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-2b242.up.railway.app
 (function () {
   "use strict";
 
-  /* Zusatzzimmer nur nach ausdruecklicher manueller Freigabe anzeigen. */
+  /* Auf der Homepage wird ausschließlich das Gartenzimmer angeboten.
+     Der technische Zimmerwert "Bachblick" bleibt für die bestehende Backend-Schnittstelle erhalten. */
   window.SHOW_ADDITIONAL_ROOMS = false;
 
-  const blockedRooms = new Set(["Marillenzimmer", "Weinbergzimmer", "Donauzimmer"]);
   const API_BASE = String(window.ZAB_DIRECT_BOOKING_API_URL || "").replace(/\/+$/, "");
   const ATTRIBUTION_KEY = "zab_attribution_v1";
 
   function removeUnreleasedRooms() {
-    if (window.SHOW_ADDITIONAL_ROOMS === true) return;
-
     document.querySelectorAll("[data-future-room]").forEach((element) => element.remove());
 
     document.querySelectorAll('input[name="room"]').forEach((input) => {
-      if (blockedRooms.has(input.value)) input.closest(".choice")?.remove();
+      if (input.value !== "Bachblick") input.closest(".choice")?.remove();
     });
 
-    /* Auch in statischen Zimmerkarten keinerlei Freigabedatum oder Prognose zeigen. */
     document.querySelectorAll(".room-card").forEach((card) => {
       const title = (card.querySelector("h3")?.textContent || "").trim();
-      if (!blockedRooms.has(title)) return;
-      card.querySelectorAll("small, p, strong, span").forEach((node) => {
-        const text = (node.textContent || "").trim();
-        if (/15[./-]0?8[./-]2026|2026-0?8-1[56]|freigabe|buchbar ab|available from|prepared from|od 15|desde 15|à partir du 15/i.test(text)) {
-          node.remove();
-        }
-      });
-      if (!card.querySelector(".zab-room-status")) {
-        const status = document.createElement("p");
-        status.className = "zab-room-status";
-        status.textContent = "Derzeit nicht buchbar.";
-        card.querySelector("div")?.appendChild(status);
-      }
+      if (title && title !== "Gartenzimmer") card.remove();
     });
 
-    const bachblick = document.querySelector('input[name="room"][value="Bachblick"]');
-    if (bachblick) {
-      bachblick.disabled = false;
-      bachblick.checked = true;
+    const primaryRoom = document.querySelector('input[name="room"][value="Bachblick"]');
+    if (primaryRoom) {
+      primaryRoom.disabled = false;
+      primaryRoom.checked = true;
     }
-  }
 
-  function scrubReleaseDates(root = document) {
-    if (window.SHOW_ADDITIONAL_ROOMS === true) return;
-    const walker = document.createTreeWalker(root.body || root, NodeFilter.SHOW_TEXT);
-    const replacements = [
-      [/ab\s+15\.08\.2026,?\s*erst nach Freigabe/gi, "derzeit nicht buchbar"],
-      [/ab\s+15\.08\.2026/gi, ""],
-      [/from\s+15\/08\/2026,?\s*after release/gi, "currently not bookable"],
-      [/prepared from\s+15\/08\/2026[^.]*\.?/gi, "currently not bookable."],
-      [/od\s+15\.\s*8\.\s*2026[^,.;]*/gi, "zatím nelze rezervovat"],
-      [/2026\.08\.15-től[^,.;]*/gi, "jelenleg nem foglalható"],
-      [/desde\s+15\/08\/2026[^,.;]*/gi, "actualmente no reservable"],
-      [/à partir du\s+15\/08\/2026[^,.;]*/gi, "actuellement non réservable"]
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const removePatterns = [
+      /Bis einschließlich\s*15\.08\.2026[^.]*\./gi,
+      /Ab\s*16\.08\.2026[^.]*\./gi,
+      /nur das Zimmer\s*Bachblick[^.]*\./gi,
+      /alle vier Zimmer[^.]*\./gi
     ];
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach((textNode) => {
-      let value = textNode.nodeValue || "";
-      replacements.forEach(([pattern, replacement]) => { value = value.replace(pattern, replacement); });
-      textNode.nodeValue = value;
+    nodes.forEach((node) => {
+      let value = node.nodeValue || "";
+      removePatterns.forEach((pattern) => { value = value.replace(pattern, ""); });
+      node.nodeValue = value;
     });
+  }
+
+  function scrubReleaseDates() {
+    /* Keine Freigabedaten oder Hinweise auf weitere Zimmer öffentlich anzeigen. */
   }
 
   function captureAttribution() {
@@ -288,6 +270,109 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-2b242.up.railway.app
     if (heroEyebrow) heroEyebrow.textContent = "Direktpreis statt Plattform-Umweg";
   }
 
+  function installSalesHomepageUpgrade() {
+    const path = window.location.pathname || "";
+    if (/\/(en|cs|sk|hu|pl|nl)\//.test(path) || document.getElementById("zab-sales-upgrade")) return;
+
+    const style = document.createElement("style");
+    style.id = "zab-sales-upgrade";
+    style.textContent = `
+      .zab-sales-proof{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:18px}
+      .zab-sales-proof span{padding:12px;border:1px solid rgba(255,255,255,.4);border-radius:12px;background:rgba(12,42,34,.62);color:#fff;font-size:13px;font-weight:850;text-align:center;backdrop-filter:blur(4px)}
+      .zab-booking-reasons{display:grid;gap:9px;margin:4px 0 2px;padding:13px;border-radius:12px;background:#fff7e8;border:1px solid #ead8b6}
+      .zab-booking-reasons strong{color:#17372f;font-size:14px}
+      .zab-booking-reasons ul{display:grid;gap:5px;margin:0;padding-left:20px;color:#455e56;font-size:13px;font-weight:750}
+      .zab-sales-section{padding:46px min(5vw,56px);background:#fffaf0}
+      .zab-sales-section h2{margin:0 0 10px;font-size:clamp(28px,4vw,42px);color:#17372f}
+      .zab-sales-section>p{max-width:820px;margin:0 0 22px;color:#5f6f69}
+      .zab-sales-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+      .zab-sales-card{padding:20px;border:1px solid #d8e2dd;border-radius:16px;background:#fff;box-shadow:0 10px 25px rgba(20,38,32,.07)}
+      .zab-sales-card strong{display:block;margin-bottom:7px;color:#176b5a;font-size:18px}
+      .zab-sales-card p{margin:0;color:#5f6f69;font-size:14px}
+      .zab-sales-cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:22px}
+      .zab-sales-cta a{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:11px 18px;border-radius:9px;background:#176b5a;color:#fff;text-decoration:none;font-weight:900}
+      .zab-sales-cta small{color:#5f6f69;font-weight:750}
+      @media(max-width:760px){.zab-sales-proof,.zab-sales-grid{grid-template-columns:1fr 1fr}.zab-sales-proof span{font-size:12px}}
+      @media(max-width:480px){.zab-sales-proof,.zab-sales-grid{grid-template-columns:1fr}}
+    `;
+    document.head.appendChild(style);
+
+    const heroP = document.querySelector(".hero-copy > p:not(.mobile-hero-benefits)");
+    if (heroP) heroP.textContent = "Ihre persönliche Wachau-Basis direkt am Welterbesteig und nahe dem Donauradweg: ruhig schlafen, Fahrrad sicher abstellen, E-Bike laden und auf Wunsch mit Frühstück in den Tag starten.";
+
+    const trust = document.querySelector(".hero-trust");
+    if (trust) {
+      trust.innerHTML = "<span>✓ Persönlich geführt</span><span>✓ Fahrrad sicher</span><span>✓ E-Bike laden</span><span>✓ Frühstück auf Wunsch</span>";
+      const proof = document.createElement("div");
+      proof.className = "zab-sales-proof";
+      proof.innerHTML = "<span>🚴 Für Donauradweg-Gäste</span><span>🥾 Für Welterbesteig-Wanderer</span><span>🅿 Kostenlos parken</span><span>📱 Digitale Gäste-App</span>";
+      trust.after(proof);
+    }
+
+    const intro = document.querySelector(".booking-intro");
+    if (intro) intro.textContent = "In weniger als einer Minute: Reisedaten wählen, Live-Verfügbarkeit prüfen, Direktpreis sehen und bei freiem Termin direkt bezahlen.";
+
+    const directTrust = document.querySelector(".direct-booking-trust");
+    if (directTrust) {
+      directTrust.innerHTML = "<strong>Direkt buchen statt Plattform-Umweg</strong><span>Live-Verfügbarkeit und transparenter Direktpreis direkt bei Zuhause am Bach.</span><small>Persönliche Gastgeber bleiben Ihre direkten Ansprechpartner.</small>";
+      const reasons = document.createElement("div");
+      reasons.className = "zab-booking-reasons";
+      reasons.innerHTML = "<strong>Darum passt Zuhause am Bach zu Ihrer Wachau-Reise:</strong><ul><li>ruhiger Ausgangspunkt zwischen Melk und Dürnstein</li><li>abschließbare Fahrrad-Unterbringung und E-Bike-Lademöglichkeit</li><li>Trockenmöglichkeit für Wander- und Radbekleidung</li><li>Frühstück auf Vorbestellung, auch vegetarisch oder vegan</li></ul>";
+      directTrust.after(reasons);
+    }
+
+    const header = document.querySelector("header.top");
+    if (header) {
+      const section = document.createElement("section");
+      section.className = "zab-sales-section";
+      section.setAttribute("aria-label","Warum Zuhause am Bach");
+      section.innerHTML = `
+        <h2>Die Wachau erleben – ohne an Kleinigkeiten denken zu müssen</h2>
+        <p>Zuhause am Bach ist bewusst keine anonyme Großunterkunft. Sie wohnen persönlich, ruhig und mit genau den Leistungen, die für eine Wander-, Rad- oder Genussreise in der Wachau praktisch sind.</p>
+        <div class="zab-sales-grid">
+          <article class="zab-sales-card"><strong>Für Radfahrer</strong><p>Fahrrad sicher unterbringen, E-Bike laden und am nächsten Morgen direkt weiter Richtung Melk, Spitz oder Dürnstein.</p></article>
+          <article class="zab-sales-card"><strong>Für Wanderer</strong><p>Welterbesteig vor der Haustür, Trockenmöglichkeit für Kleidung und Unterstützung beim Gepäcktransport nach Vereinbarung.</p></article>
+          <article class="zab-sales-card"><strong>Für Genießer</strong><p>Ruhige Nächte, Frühstück auf Wunsch und persönliche Empfehlungen für Heurige, Ausflüge und besondere Plätze der Wachau.</p></article>
+        </div>
+        <div class="zab-sales-cta"><a href="#booking-title">Jetzt Verfügbarkeit prüfen</a><small>Reisedaten eingeben → Direktpreis sehen → freien Termin buchen</small></div>
+      `;
+      header.after(section);
+
+      const proofSection = document.createElement("section");
+      proofSection.className = "zab-sales-section";
+      proofSection.setAttribute("aria-label","Gästestimmen und Passung");
+      proofSection.innerHTML = `
+        <h2>Persönlich geführt – und genau dafür geschätzt</h2>
+        <p>Gäste bewerten besonders die herzliche Betreuung, die ruhige Lage, das Frühstück und die Eignung für Radreisen. Auf Booking.com liegt Zuhause am Bach aktuell bei 8,8/10, die Gastgeberbewertung bei 9,8/10 und das Preis-Leistungs-Verhältnis bei 9,2/10 (Stand September 2026).</p>
+        <div class="zab-sales-grid">
+          <article class="zab-sales-card"><strong>„Ideal mit dem Fahrrad“</strong><p>Mehrere Gäste heben die sichere Fahrradunterbringung, die ruhige Lage und die gute Eignung für eine Donauradweg-Etappe hervor.</p></article>
+          <article class="zab-sales-card"><strong>Frühstück, das in Erinnerung bleibt</strong><p>Bewertungen beschreiben das Frühstück wiederholt als reichhaltig, liebevoll vorbereitet und besonders angenehm vor einem aktiven Tag.</p></article>
+          <article class="zab-sales-card"><strong>Persönlich statt anonym</strong><p>Die Unterkunft ist bewusst privat geführt. Wer direkten Kontakt, ehrliche Wachau-Tipps und eine familiäre Atmosphäre schätzt, ist hier richtig.</p></article>
+        </div>
+        <div class="zab-sales-cta"><a href="https://www.booking.com/hotel/at/zu-hause-am-bach.de.html" target="_blank" rel="noopener">Aktuelle Gästebewertungen ansehen</a><small>Externe Bewertungen bei Booking.com</small></div>
+      `;
+      section.after(proofSection);
+
+      const fitSection = document.createElement("section");
+      fitSection.className = "zab-sales-section";
+      fitSection.setAttribute("aria-label","Passt Zuhause am Bach zu mir");
+      fitSection.innerHTML = `
+        <h2>Passt Zuhause am Bach zu Ihrer Reise?</h2>
+        <p>Wir möchten, dass die Unterkunft wirklich zu Ihnen passt. Das verhindert Enttäuschungen und macht den Aufenthalt für beide Seiten angenehmer.</p>
+        <div class="zab-sales-grid">
+          <article class="zab-sales-card"><strong>Sehr passend, wenn …</strong><p>Sie die Wachau aktiv erleben, ruhig schlafen, persönliche Gastgeber schätzen und lieber direkt als anonym übernachten.</p></article>
+          <article class="zab-sales-card"><strong>Gut zu wissen</strong><p>Zum Zuhause gehören die freundlichen Windhunde Fidel, Gloria und Pia. Bei Hundeangst oder Hundeallergie ist die Unterkunft daher möglicherweise nicht die beste Wahl.</p></article>
+          <article class="zab-sales-card"><strong>Klare Hausregeln</strong><p>Nichtraucher-Unterkunft, keine Partys und keine mitgebrachten Haustiere. So bleibt es ruhig und angenehm für alle Gäste.</p></article>
+        </div>
+        <div class="zab-sales-cta"><a href="#booking-title">Passt für mich – Verfügbarkeit prüfen</a><small>Direktpreis und freie Termine sofort prüfen</small></div>
+      `;
+      proofSection.after(fitSection);
+    }
+
+    const submit = document.getElementById("submitRequest");
+    if (submit && !submit.disabled && !/^✓/.test(submit.textContent || "")) submit.textContent = "Jetzt Verfügbarkeit & Direktpreis prüfen";
+  }
+
   function loadWinterJauerlingPromo() {
     const path = window.location.pathname || "";
     const isGermanHome = !/\/(en|cs|sk|hu|pl|nl)\//.test(path);
@@ -310,7 +395,8 @@ window.ZAB_DIRECT_BOOKING_API_URL = "https://web-production-2b242.up.railway.app
     installOneClickInquiry();
     loadWinterJauerlingPromo();
     optimizeDirectBookingCopy();
-    setTimeout(optimizeDirectBookingCopy, 0);
+    installSalesHomepageUpgrade();
+    setTimeout(() => { optimizeDirectBookingCopy(); installSalesHomepageUpgrade(); }, 0);
 
     const form = document.getElementById("requestForm");
     ["input", "change"].forEach((eventName) => {

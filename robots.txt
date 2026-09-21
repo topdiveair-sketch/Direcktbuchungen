@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
 Disallow: /.github/
-Sitemap: https://topdiveair-sketch.github.io/Direcktbuchungen/sitemap.xml
-Sitemap: https://topdiveair-sketch.github.io/Direcktbuchungen/gaeste/sitemap.xml
+Sitemap: https://zuhauseambach-wachau.at/sitemap.xml
+Sitemap: https://zuhauseambach-wachau.at/gaeste/sitemap.xml
