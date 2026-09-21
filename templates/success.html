@@ -16,7 +16,7 @@
 
       <div class="booking-summary">
         <p><strong>Buchungsnummer:</strong> {{ booking.booking_number }}</p>
-        <p><strong>Zimmer:</strong> {{ booking.room }}</p>
+        <p><strong>Zimmer:</strong> {{ "Gartenblick" if booking.room == "Bachblick" else booking.room }}</p>
         <p><strong>Anreise:</strong> {{ booking.arrival }}</p>
         <p><strong>Abreise:</strong> {{ booking.departure }}</p>
         <p><strong>Personen:</strong> {{ booking.adults }}</p>
