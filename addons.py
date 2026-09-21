@@ -184,7 +184,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         guest_subject = (
             "Buchungsbestätigung – Zuhause am Bach"
             if is_confirmed else
-            "Buchung vorgemerkt – Zuhause am Bach"
+            "Buchungsanfrage eingegangen – Zuhause am Bach"
         )
 
         if is_confirmed:
@@ -194,8 +194,8 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             )
         else:
             intro = (
-                f"deine Buchung für {room_name} von {booking['arrival']} bis {booking['departure']} "
-                "wurde vorgemerkt. Die persönliche Bestätigung folgt."
+                f"deine Buchungsanfrage für {room_name} von {booking['arrival']} bis {booking['departure']} "
+                "ist eingegangen. Der Termin wird erst nach unserer persönlichen Bestätigung verbindlich reserviert."
             )
 
         payment_info = ""
@@ -209,6 +209,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                 f"IBAN: {iban_display}\n"
                 f"Betrag: {booking['total']:.2f} EUR\n"
                 f"Verwendungszweck: ZAB-{booking_id:06d} · {booking['first_name']}\n"
+                "Bitte erst nach unserer persönlichen Buchungsbestätigung überweisen.\n"
             )
         elif payment_method == "PayPal":
             payment_info = (
@@ -351,6 +352,66 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         with db() as conn:
             conn.execute("UPDATE guest_orders SET status='erledigt' WHERE id=?",(order_id,))
         return redirect(url_for("dashboard"))
+
+    @app.post("/admin/booking/<int:booking_id>/confirm")
+    def confirm_booking(booking_id):
+        if not require_admin():
+            return redirect(url_for("admin_login"))
+
+        sync_room = app.extensions.get("zab_sync_room")
+        if sync_room:
+            try:
+                with db() as conn:
+                    current = conn.execute("SELECT room FROM bookings WHERE id=?", (booking_id,)).fetchone()
+                if current:
+                    sync_room(current["room"])
+            except Exception:
+                pass
+
+        with db() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
+            if not booking:
+                conn.rollback()
+                flash("Buchungsanfrage wurde nicht gefunden.", "error")
+                return redirect(url_for("dashboard"))
+            if booking["status"] == "confirmed":
+                conn.rollback()
+                flash("Buchung ist bereits bestätigt.", "success")
+                return redirect(url_for("dashboard"))
+            if booking["status"] != "inquiry":
+                conn.rollback()
+                flash("Diese Buchung kann in diesem Status nicht bestätigt werden.", "error")
+                return redirect(url_for("dashboard"))
+
+            local_conflict = conn.execute(
+                """SELECT id FROM bookings
+                   WHERE id<>? AND room=? AND status IN ('pending','confirmed')
+                     AND arrival < ? AND departure > ?
+                   LIMIT 1""",
+                (booking_id, booking["room"], booking["departure"], booking["arrival"]),
+            ).fetchone()
+            external_conflict = conn.execute(
+                """SELECT id FROM external_blocks
+                   WHERE room=? AND start_date < ? AND end_date > ?
+                   LIMIT 1""",
+                (booking["room"], booking["departure"], booking["arrival"]),
+            ).fetchone()
+
+            if local_conflict or external_conflict:
+                conn.rollback()
+                flash("Nicht bestätigt: Der Zeitraum ist inzwischen belegt.", "error")
+                return redirect(url_for("dashboard"))
+
+            conn.execute("UPDATE bookings SET status='confirmed' WHERE id=?", (booking_id,))
+
+        try:
+            send_booking_confirmation(booking_id)
+        except Exception:
+            pass
+        flash("Buchungsanfrage wurde bestätigt und der Zeitraum ist jetzt reserviert.", "success")
+        return redirect(url_for("dashboard"))
+
 
     @app.post("/admin/booking/<int:booking_id>/paid")
     def mark_paid(booking_id):
