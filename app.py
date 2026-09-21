@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import base64
 import json
 import sqlite3
 import urllib.request
@@ -556,6 +557,21 @@ def globals_for_templates():
         "extras": pricing_data()[2],
         "price_settings": pricing_data()[0],
     }
+
+
+@app.get("/media/gartenblick.jpg")
+def gartenblick_image():
+    parts = [
+        BASE / "static" / "images" / "rooms" / f"gartenblick-part-{i}.txt"
+        for i in range(1, 6)
+    ]
+    encoded = "".join(part.read_text(encoding="utf-8").strip() for part in parts)
+    image_bytes = base64.b64decode(encoded)
+    return Response(
+        image_bytes,
+        mimetype="image/jpeg",
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
 
 
 @app.get("/")
