@@ -115,15 +115,15 @@
           </div>
         </section>
 
-        <h3 class="subheading">Gartenzimmer</h3>
+        <h3 class="subheading">Gartenblick</h3>
         <div id="zimmer" class="room-list">
           {% set info = rooms['Bachblick'] %}
           <label class="room-option">
             <input type="radio" name="room" value="Bachblick" data-price="{{ info.price }}"
                    data-from="{{ info.available_from.isoformat() }}" checked>
-            <img src="{{ url_for('static', filename='images/rooms/' + room_images['Bachblick']) }}" alt="Gartenzimmer bei Zuhause am Bach" loading="lazy" decoding="async">
+            <img src="{{ url_for('static', filename='images/rooms/' + room_images['Bachblick']) }}" alt="Zimmer Gartenblick bei Zuhause am Bach" loading="lazy" decoding="async">
             <span class="room-copy">
-              <strong>Gartenzimmer</strong>
+              <strong>Gartenblick</strong>
               <small>Ruhiges Doppelzimmer mit persönlicher Atmosphäre – gemütlich und zum Wohlfühlen.</small>
               <span class="room-features">Doppelbett · eigenes Bad · WLAN · ruhige Lage</span>
             </span>
@@ -195,7 +195,7 @@
         <h2>Freie und belegte Tage</h2>
       </div>
       <select id="calendarRoom" aria-label="Zimmer">
-        <option value="Bachblick">Gartenzimmer</option>
+        <option value="Bachblick">Gartenblick</option>
       </select>
     </div>
     <div class="calendar-controls">
