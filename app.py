@@ -190,6 +190,13 @@ def init_db() -> None:
                )"""
         )
 
+        conn.execute(
+            """UPDATE bookings
+               SET status='inquiry'
+               WHERE status='pending'
+                 AND payment_method IN ('Banküberweisung','Vor Ort')"""
+        )
+
         for room, data in ROOMS.items():
             conn.execute(
                 "INSERT OR IGNORE INTO ical_settings(room, import_url) VALUES (?, '')",
@@ -845,7 +852,7 @@ def book():
                 (uid, room, arrival, departure, adults, breakfast, first_name,
                  last_name, email, phone, message, payment_method, total, status,
                  created_at, idempotency_key)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inquiry', ?, ?)
                 """,
                 (
                     uid, room, arrival.isoformat(), departure.isoformat(), adults,
