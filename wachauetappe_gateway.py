@@ -498,3 +498,57 @@ def wachauetappe_production_health():
 @app.get("/health/wachauetappe-production")
 def wachauetappe_production_health_legacy():
     return wachauetappe_production_health()
+
+
+# SEO, browser metadata and baseline security hardening for the public site.
+from flask import Response
+
+_CANONICAL_ORIGIN = "https://www.zuhauseambach-wachau.at"
+
+@app.get("/robots.txt")
+def public_robots():
+    body = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin/\n"
+        "Disallow: /api/\n"
+        f"Sitemap: {_CANONICAL_ORIGIN}/sitemap.xml\n"
+    )
+    return Response(body, mimetype="text/plain"), 200, {"Cache-Control": "public, max-age=3600"}
+
+@app.get("/sitemap.xml")
+def public_sitemap():
+    urls = ["/", "/legal/impressum", "/legal/datenschutz", "/legal/agb"]
+    entries = "".join(
+        f"<url><loc>{_CANONICAL_ORIGIN}{path}</loc></url>" for path in urls
+    )
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        + entries +
+        "</urlset>"
+    )
+    return Response(body, mimetype="application/xml"), 200, {"Cache-Control": "public, max-age=3600"}
+
+@app.get("/favicon.ico")
+def public_favicon():
+    svg = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<rect width="64" height="64" rx="14" fill="#f2eadc"/>
+<path d="M12 31 32 14l20 17v21H39V38H25v14H12z" fill="#4d5b45"/>
+<path d="M25 52V38h14v14" fill="#fffaf2"/>
+</svg>"""
+    return Response(svg, mimetype="image/svg+xml"), 200, {"Cache-Control": "public, max-age=86400"}
+
+@app.after_request
+def public_security_and_seo_headers(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    if request.path.startswith("/admin"):
+        response.headers.setdefault("X-Robots-Tag", "noindex, nofollow, noarchive")
+        response.headers.setdefault("Cache-Control", "no-store")
+    elif request.path in {"/", "/legal/impressum", "/legal/datenschutz", "/legal/agb"}:
+        canonical = _CANONICAL_ORIGIN + request.path
+        response.headers.setdefault("Link", f'<{canonical}>; rel="canonical"')
+    return response
