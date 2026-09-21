@@ -13,6 +13,8 @@ const roomRadios = [...document.querySelectorAll('input[name="room"]')];
 const bookingSubmit = document.getElementById("bookingSubmit");
 const stickyLabel = document.getElementById("stickyLabel");
 const stickyCta = document.getElementById("stickyCta");
+const paymentRadios = [...document.querySelectorAll('input[name="payment_method"]')];
+const paymentNotice = document.getElementById("paymentNotice");
 let checkoutOpen = false;
 let bookingSubmitted = false;
 
@@ -118,7 +120,8 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
       guestArea.classList.remove("hidden");
       checkoutOpen = true;
       track("checkout_started");
-      bookingSubmit.textContent = status === "free" ? "JETZT DIREKT BUCHEN" : "VERFÜGBARKEIT PERSÖNLICH ANFRAGEN";
+      if (status === "free") updatePaymentUI();
+      else bookingSubmit.textContent = "VERFÜGBARKEIT PERSÖNLICH ANFRAGEN";
       stickyLabel.textContent = status === "free" ? "Jetzt direkt buchen" : "Persönlich anfragen";
       stickyCta.textContent = status === "free" ? "Buchen" : "Anfragen";
       totalPrice.textContent=euro(data.total); if(data.breakdown){let h=`<div><span>Zimmer</span><strong>${euro(data.breakdown.room_total)}</strong></div>`;data.breakdown.extras.forEach(x=>h+=`<div><span>${x.label}</span><strong>${euro(x.amount)}</strong></div>`);data.breakdown.discounts.forEach(x=>h+=`<div class="discount-line"><span>${x.label} (${x.percent}%)</span><strong>− ${euro(x.amount)}</strong></div>`);priceBreakdown.innerHTML=h;}
@@ -131,10 +134,75 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
   }
 });
 
-document.getElementById("bookingForm").addEventListener("submit", () => {
-  bookingSubmitted = true;
+paymentRadios.forEach(radio => radio.addEventListener("change", updatePaymentUI));
+
+document.getElementById("bookingForm").addEventListener("submit", async (event) => {
+  const method = selectedPayment();
+  if (method !== "PayPal") {
+    bookingSubmitted = true;
+    bookingSubmit.disabled = true;
+    bookingSubmit.textContent = method === "Banküberweisung" ? "Buchung wird gespeichert …" : "Wird sicher gespeichert …";
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const form = event.currentTarget;
+  if (!form.reportValidity()) return;
+
+  const payload = {
+    room: selectedRoom()?.value || "",
+    arrival: arrival.value,
+    departure: departure.value,
+    adults: Number(adults.value || 2),
+    first_name: form.querySelector('[name="first_name"]')?.value.trim() || "",
+    last_name: form.querySelector('[name="last_name"]')?.value.trim() || "",
+    email: form.querySelector('[name="email"]')?.value.trim() || "",
+    phone: form.querySelector('[name="phone"]')?.value.trim() || "",
+    message: form.querySelector('[name="message"]')?.value.trim() || "",
+    extras: {
+      breakfast: Boolean(document.getElementById("breakfast")?.checked),
+      jause: Boolean(document.getElementById("jause")?.checked),
+      luggage: Boolean(document.getElementById("luggage")?.checked)
+    }
+  };
+
   bookingSubmit.disabled = true;
-  bookingSubmit.textContent = "Wird sicher gespeichert …";
+  bookingSubmit.textContent = "PAYPAL WIRD VORBEREITET …";
+  if (paymentNotice) paymentNotice.textContent = "Verfügbarkeit und Preis werden nochmals sicher geprüft.";
+
+  try {
+    const quoteResponse = await fetch("/api/paypal/quote", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      cache: "no-store",
+      body: JSON.stringify(payload)
+    });
+    const quote = await quoteResponse.json();
+    if (!quoteResponse.ok || !quote.ok || !quote.available) {
+      throw new Error(quote.message || "Termin ist nicht mehr verfügbar.");
+    }
+
+    const orderResponse = await fetch("/api/paypal/create-order", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      cache: "no-store",
+      body: JSON.stringify(payload)
+    });
+    const order = await orderResponse.json();
+    if (!orderResponse.ok || !order.ok || !order.approval_url) {
+      throw new Error(order.message || "PayPal konnte nicht gestartet werden.");
+    }
+
+    bookingSubmitted = true;
+    bookingSubmit.textContent = "PAYPAL WIRD GEÖFFNET …";
+    window.location.assign(order.approval_url);
+  } catch (error) {
+    bookingSubmit.disabled = false;
+    bookingSubmit.textContent = "MIT PAYPAL BEZAHLEN";
+    if (paymentNotice) paymentNotice.textContent = "⚠️ " + (error?.message || "PayPal konnte nicht gestartet werden.");
+  }
 });
 window.addEventListener("pagehide", () => {
   if (checkoutOpen && !bookingSubmitted) track("booking_abandoned");
