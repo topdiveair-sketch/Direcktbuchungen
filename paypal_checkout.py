@@ -207,7 +207,7 @@ def init_paypal_checkout(
         except Exception as exc:
             raise ValueError("Bitte gültige Reisedaten eingeben.") from exc
         if room != "Bachblick":
-            raise ValueError("Derzeit ist ausschließlich Bachblick für Direktbuchungen freigegeben.")
+            raise ValueError("Derzeit ist ausschließlich Gartenblick für Direktbuchungen freigegeben.")
         if room not in rooms or departure <= arrival:
             raise ValueError("Bitte gültiges Zimmer sowie An- und Abreise wählen.")
         extras_raw = data.get("extras") if isinstance(data.get("extras"), dict) else {}
@@ -466,7 +466,7 @@ def init_paypal_checkout(
         if booking["paid"] and booking["status"] == "confirmed":
             return render_template_string(
                 SUCCESS_PAGE,
-                name=booking["first_name"], room=booking["room"], arrival=booking["arrival"],
+                name=booking["first_name"], room=("Gartenblick" if booking["room"] == "Bachblick" else booking["room"]), arrival=booking["arrival"],
                 departure=booking["departure"], total=f"{booking['total']:.2f}", capture=booking["paypal_capture_id"] or order_id,
             )
 
