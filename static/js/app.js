@@ -87,11 +87,11 @@ function updatePaymentUI() {
     bookingSubmit.textContent = "MIT PAYPAL BEZAHLEN";
     if (paymentNotice) paymentNotice.textContent = "Nach dem Klick wird der Termin nochmals geprüft und anschließend der sichere PayPal-Checkout geöffnet.";
   } else if (method === "Banküberweisung") {
-    bookingSubmit.textContent = "JETZT BUCHEN";
-    if (paymentNotice) paymentNotice.textContent = "Die Bankverbindung wird direkt angezeigt. Nach der Buchung erhalten Sie Betrag und Verwendungszweck nochmals bestätigt.";
+    bookingSubmit.textContent = "ANFRAGE SENDEN & BANKDATEN ERHALTEN";
+    if (paymentNotice) paymentNotice.textContent = "Die Bankverbindung wird direkt angezeigt. Der Termin wird erst nach persönlicher Bestätigung verbindlich reserviert.";
   } else {
-    bookingSubmit.textContent = "JETZT DIREKT BUCHEN";
-    if (paymentNotice) paymentNotice.textContent = "Zahlung erfolgt bei Anreise.";
+    bookingSubmit.textContent = "BUCHUNGSANFRAGE SENDEN";
+    if (paymentNotice) paymentNotice.textContent = "Der Termin wird erst nach persönlicher Bestätigung verbindlich reserviert. Zahlung erfolgt bei Anreise.";
   }
 }
 function resetAvailability() {
@@ -172,7 +172,7 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
   if (method !== "PayPal") {
     bookingSubmitted = true;
     bookingSubmit.disabled = true;
-    bookingSubmit.textContent = method === "Banküberweisung" ? "Buchung wird gespeichert …" : "Wird sicher gespeichert …";
+    bookingSubmit.textContent = method === "Banküberweisung" ? "Anfrage wird gesendet …" : "Anfrage wird gesendet …";
     return;
   }
 
