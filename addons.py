@@ -153,7 +153,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         c.setFont("Helvetica", 11)
         lines = [
             f"Gast: {booking['first_name']} {booking['last_name']}",
-            f"Zimmer: {booking['room']}",
+            f"Zimmer: {'Gartenblick' if booking['room'] == 'Bachblick' else booking['room']}",
             f"Aufenthalt: {booking['arrival']} bis {booking['departure']}",
             f"Personen: {booking['adults']}",
             f"Zahlungsart: {booking['payment_method']}",
@@ -175,20 +175,60 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         with db() as conn:
             booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
         cfg = settings()
-        base_url = cfg.get("public_base_url", request.url_root.rstrip("/")).rstrip("/")
-        room_name = "Gartenzimmer" if booking["room"] == "Bachblick" else booking["room"]
+        site_url = os.environ.get("PUBLIC_SITE_URL", "https://www.zuhauseambach-wachau.at").rstrip("/")
+        room_name = "Gartenblick" if booking["room"] == "Bachblick" else booking["room"]
+        is_confirmed = booking["status"] == "confirmed"
+        is_paid = bool(booking["paid"])
+        payment_method = booking["payment_method"]
 
-        guest_subject = "Buchungsanfrage – Zuhause am Bach"
+        guest_subject = (
+            "Buchungsbestätigung – Zuhause am Bach"
+            if is_confirmed else
+            "Buchung vorgemerkt – Zuhause am Bach"
+        )
+
+        if is_confirmed:
+            intro = (
+                f"deine Buchung für {room_name} von {booking['arrival']} bis {booking['departure']} "
+                "ist bestätigt."
+            )
+        else:
+            intro = (
+                f"deine Buchung für {room_name} von {booking['arrival']} bis {booking['departure']} "
+                "wurde vorgemerkt. Die persönliche Bestätigung folgt."
+            )
+
+        payment_info = ""
+        if payment_method == "Banküberweisung":
+            holder = os.environ.get("BANK_ACCOUNT_HOLDER", "").strip()
+            iban = os.environ.get("BANK_IBAN", "").strip()
+            iban_display = " ".join(iban[i:i+4] for i in range(0, len(iban), 4)) if iban else ""
+            payment_info = (
+                "\nBanküberweisung:\n"
+                f"Kontoinhaber: {holder}\n"
+                f"IBAN: {iban_display}\n"
+                f"Betrag: {booking['total']:.2f} EUR\n"
+                f"Verwendungszweck: ZAB-{booking_id:06d} · {booking['first_name']}\n"
+            )
+        elif payment_method == "PayPal":
+            payment_info = (
+                "\nPayPal-Zahlung: erfolgreich bestätigt.\n"
+                if is_paid else
+                "\nPayPal-Zahlung: noch nicht abgeschlossen.\n"
+            )
+        elif payment_method == "Vor Ort":
+            payment_info = "\nZahlung: bei Anreise vor Ort.\n"
+
         guest_body = (
             f"Hallo {booking['first_name']},\n\n"
-            f"deine Buchungsanfrage für das {room_name} von {booking['arrival']} bis {booking['departure']} "
-            f"wurde gespeichert.\n"
+            f"{intro}\n"
             f"Gesamtbetrag: {booking['total']:.2f} EUR\n"
-            f"Zahlungsart: {booking['payment_method']}\n\n"
-            f"Gästeportal: {base_url}/guest/{public_token}\n"
-            f"Stornierung: {base_url}/cancel/{cancel_token}\n"
-            f"Rechnung: {base_url}/invoice/{public_token}.pdf\n\n"
-            "Bitte PayPal erst nach persönlicher Bestätigung verwenden.\n"
+            f"Zahlungsart: {payment_method}\n"
+            f"{payment_info}\n"
+            f"Gästeportal: {site_url}/guest/{public_token}\n"
+            f"Stornierung: {site_url}/cancel/{cancel_token}\n"
+            f"Rechnung: {site_url}/invoice/{public_token}.pdf\n\n"
+            "Wir freuen uns auf deinen Aufenthalt.\n"
             "Zuhause am Bach"
         )
         ok_guest, msg_guest = smtp_send(booking["email"], guest_subject, guest_body)
@@ -200,7 +240,8 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             f"{room_name}\n"
             f"{booking['arrival']} bis {booking['departure']}\n"
             f"{booking['total']:.2f} EUR\n"
-            f"Zahlungsart: {booking['payment_method']}\n"
+            f"Zahlungsart: {payment_method}\n"
+            f"Status: {booking['status']}\n"
             f"Telefon: {booking['phone']}\n"
             f"E-Mail: {booking['email']}"
         )
@@ -228,7 +269,14 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             return "Buchung nicht gefunden", 404
         with db() as conn:
             orders = conn.execute("SELECT * FROM guest_orders WHERE booking_id=? ORDER BY created_at DESC", (b["id"],)).fetchall()
-        return render_template("guest_portal.html", booking=b, orders=orders, settings=settings())
+        cfg = settings()
+        return render_template(
+            "guest_portal.html",
+            booking=b,
+            orders=orders,
+            settings=cfg,
+            guest_app_url=cfg.get("public_base_url", "https://topdiveair-sketch.github.io/Gaeste/"),
+        )
 
     @app.post("/guest/<token>/message")
     def guest_message(token):
