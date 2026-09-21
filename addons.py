@@ -418,6 +418,13 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         if not require_admin():
             return redirect(url_for("admin_login"))
         with db() as conn:
+            booking = conn.execute("SELECT status FROM bookings WHERE id=?", (booking_id,)).fetchone()
+            if not booking:
+                flash("Buchung wurde nicht gefunden.", "error")
+                return redirect(url_for("dashboard"))
+            if booking["status"] == "inquiry":
+                flash("Bitte die Anfrage zuerst bestätigen. Erst danach kann sie als bezahlt markiert werden.", "error")
+                return redirect(url_for("dashboard"))
             conn.execute("UPDATE bookings SET paid=1,status='confirmed' WHERE id=?",(booking_id,))
         return redirect(url_for("dashboard"))
 
