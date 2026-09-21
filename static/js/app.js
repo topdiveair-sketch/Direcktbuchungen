@@ -74,18 +74,25 @@ function selectedPayment() {
 
 function updatePaymentUI() {
   const method = selectedPayment();
+
+  bookingSubmit.disabled = false;
+  bookingSubmit.removeAttribute("aria-busy");
+
+  if (bankTransferDetails) {
+    bankTransferDetails.classList.toggle("hidden", method !== "Banküberweisung");
+  }
+
   if (method === "PayPal") {
     bookingSubmit.textContent = "MIT PAYPAL BEZAHLEN";
     if (paymentNotice) paymentNotice.textContent = "Nach dem Klick wird der Termin nochmals geprüft und anschließend der sichere PayPal-Checkout geöffnet.";
   } else if (method === "Banküberweisung") {
-    bookingSubmit.textContent = "BUCHEN & BANKDATEN ERHALTEN";
-    if (paymentNotice) paymentNotice.textContent = "Die Buchung wird vorgemerkt. Danach werden die Bankdaten für die Überweisung angezeigt.";
+    bookingSubmit.textContent = "JETZT BUCHEN";
+    if (paymentNotice) paymentNotice.textContent = "Die Bankverbindung wird direkt angezeigt. Nach der Buchung erhalten Sie Betrag und Verwendungszweck nochmals bestätigt.";
   } else {
     bookingSubmit.textContent = "JETZT DIREKT BUCHEN";
     if (paymentNotice) paymentNotice.textContent = "Zahlung erfolgt bei Anreise.";
   }
 }
-
 function resetAvailability() {
   result.classList.add("hidden");
   guestArea.classList.add("hidden");
