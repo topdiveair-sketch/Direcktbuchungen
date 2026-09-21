@@ -29,7 +29,7 @@
     "checkoutTime":"10:00"
   }
   </script>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260921-10">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260921-11">
 </head>
 <body>
 <header class="hero" id="start">
@@ -167,7 +167,7 @@
             <strong>Banküberweisung</strong><br>
             Kontoinhaber: <strong>{{ bank_account_holder }}</strong><br>
             IBAN: <strong>{{ bank_iban_display or bank_iban }}</strong><br>
-            Der genaue Betrag und Verwendungszweck werden nach der Buchung nochmals bestätigt.
+            Der genaue Betrag und Verwendungszweck werden angezeigt. Bitte erst nach unserer persönlichen Buchungsbestätigung überweisen.
           </div>
 
           <button class="btn full" id="bookingSubmit" type="submit">JETZT DIREKT BUCHEN</button>
@@ -257,6 +257,6 @@
 
 <div class="mobile-conversion-bar"><span id="stickyLabel">Verfügbarkeit &amp; Preis</span><a href="#booking" id="stickyCta">Prüfen</a></div>
 
-<script src="{{ url_for('static', filename='js/app.js') }}?v=20260921-10"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}?v=20260921-11"></script>
 </body>
 </html>
