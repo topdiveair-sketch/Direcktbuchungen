@@ -5,6 +5,7 @@ const adults = document.getElementById("adults");
 const extraIds=["breakfast","jause","luggage","dog","baby_bed"];
 const extraInputs=extraIds.map(x=>document.getElementById(x)).filter(Boolean);
 const priceBreakdown=document.getElementById("priceBreakdown");
+const couponCode = document.getElementById("couponCode");
 const nightsEl = document.getElementById("nights");
 const totalPrice = document.getElementById("totalPrice");
 const result = document.getElementById("availabilityResult");
@@ -130,6 +131,7 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
   fd.append("room", selectedRoom().value);
   fd.append("adults", adults.value);
   extraIds.forEach(id=>{const el=document.getElementById(id);fd.append(id,el&&el.checked?"true":"false")});
+  fd.append("coupon_code", couponCode?.value.trim() || "");
 
   result.textContent = "Verfügbarkeit wird geprüft …";
   result.className = "availability-result";
@@ -190,6 +192,7 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
     email: form.querySelector('[name="email"]')?.value.trim() || "",
     phone: form.querySelector('[name="phone"]')?.value.trim() || "",
     message: form.querySelector('[name="message"]')?.value.trim() || "",
+    coupon_code: couponCode?.value.trim() || "",
     extras: {
       breakfast: Boolean(document.getElementById("breakfast")?.checked),
       jause: Boolean(document.getElementById("jause")?.checked),
