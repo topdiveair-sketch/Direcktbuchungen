@@ -9,14 +9,14 @@
 <body class="plain-page">
   <main class="success-shell">
     <div class="success-card">
-      <span class="eyebrow">{{ 'Buchung bestätigt' if booking.status == 'confirmed' else 'Buchung vorgemerkt' }}</span>
+      <span class="eyebrow">{{ 'Buchung bestätigt' if booking.status == 'confirmed' else 'Buchungsanfrage gesendet' }}</span>
       <h1>Danke für deine Buchung 🐾</h1>
       <p>
         Danke, {{ booking.first_name }}.
         {% if booking.status == 'confirmed' %}
           Deine Buchung ist bestätigt.
         {% else %}
-          Dein Zeitraum wurde vorgemerkt. Die persönliche Bestätigung folgt.
+          Deine Anfrage wurde gesendet. Der Termin wird erst nach persönlicher Bestätigung verbindlich reserviert.
         {% endif %}
       </p>
 
@@ -29,8 +29,8 @@
         <p><strong>Frühstück:</strong> {{ 'Ja' if booking.breakfast else 'Nein' }}</p>
         <p><strong>Zahlung:</strong> {{ booking.payment_method }}</p>
         <p><strong>Zahlungsstatus:</strong>
-          {% if booking.payment_method == 'Banküberweisung' %}Überweisung ausstehend
-          {% elif booking.payment_method == 'Vor Ort' %}Zahlung bei Anreise
+          {% if booking.payment_method == 'Banküberweisung' %}Zahlung erst nach Bestätigung
+          {% elif booking.payment_method == 'Vor Ort' %}Zahlung nach Bestätigung bei Anreise
           {% elif booking.status == 'confirmed' %}Bezahlt
           {% else %}Ausstehend{% endif %}
         </p>
@@ -43,7 +43,8 @@
         Kontoinhaber: <strong>{{ bank_account_holder }}</strong><br>
         IBAN: <strong>{{ bank_iban_display or bank_iban }}</strong><br>
         Betrag: <strong>{{ '%.2f'|format(booking.total)|replace('.', ',') }} €</strong><br>
-        Verwendungszweck: <strong>{{ booking.booking_number }} · {{ booking.first_name }}</strong>
+        Verwendungszweck: <strong>{{ booking.booking_number }} · {{ booking.first_name }}</strong><br>
+        <strong>Bitte erst nach unserer persönlichen Buchungsbestätigung überweisen.</strong>
       </div>
       {% elif booking.payment_method == 'Vor Ort' %}
       <div class="paypal-note">
