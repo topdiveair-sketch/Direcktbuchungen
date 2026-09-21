@@ -15,6 +15,7 @@ const stickyLabel = document.getElementById("stickyLabel");
 const stickyCta = document.getElementById("stickyCta");
 const paymentRadios = [...document.querySelectorAll('input[name="payment_method"]')];
 const paymentNotice = document.getElementById("paymentNotice");
+const bankTransferDetails = document.getElementById("bankTransferDetails");
 let checkoutOpen = false;
 let bookingSubmitted = false;
 
@@ -152,7 +153,10 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
   }
 });
 
-paymentRadios.forEach(radio => radio.addEventListener("change", updatePaymentUI));
+paymentRadios.forEach(radio => radio.addEventListener("change", () => {
+  bookingSubmitted = false;
+  updatePaymentUI();
+}));
 
 document.getElementById("bookingForm").addEventListener("submit", async (event) => {
   const method = selectedPayment();
@@ -224,6 +228,15 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
 });
 window.addEventListener("pagehide", () => {
   if (checkoutOpen && !bookingSubmitted) track("booking_abandoned");
+});
+
+window.addEventListener("pageshow", () => {
+  bookingSubmitted = false;
+  if (bookingSubmit) {
+    bookingSubmit.disabled = false;
+    bookingSubmit.removeAttribute("aria-busy");
+  }
+  updatePaymentUI();
 });
 
 // Live calendar
