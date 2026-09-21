@@ -583,6 +583,8 @@ def index():
         room_images=get_room_images(),
         rooms={"Bachblick": ROOMS["Bachblick"]},
         price_settings=pricing_data()[0], discounts=pricing_data()[1], extras_cfg=pricing_data()[2], seasons=pricing_data()[3],
+        bank_account_holder=env_value("BANK_ACCOUNT_HOLDER"),
+        bank_iban=env_value("BANK_IBAN"),
     ))
     # Preview/Homepage immer frisch ausliefern, damit alte Zimmertexte nicht aus dem Browser-Cache kommen.
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
