@@ -521,13 +521,17 @@ def public_robots():
 @app.get("/sitemap.xml")
 def public_sitemap():
     urls = [
-        "/",
-        "/legal/impressum",
-        "/legal/datenschutz",
-        "/legal/agb",
+        ("/", "daily", "1.0"),
+        ("/legal/impressum", "monthly", "0.3"),
+        ("/legal/datenschutz", "monthly", "0.3"),
+        ("/legal/agb", "monthly", "0.3"),
+        ("/llms.txt", "weekly", "0.2"),
     ]
+    today = date.today().isoformat()
     entries = "".join(
-        f"<url><loc>{_CANONICAL_ORIGIN}{path}</loc></url>" for path in urls
+        f"<url><loc>{_CANONICAL_ORIGIN}{path}</loc><lastmod>{today}</lastmod>"
+        f"<changefreq>{freq}</changefreq><priority>{priority}</priority></url>"
+        for path, freq, priority in urls
     )
     body = (
         '<?xml version="1.0" encoding="UTF-8"?>'
@@ -536,6 +540,27 @@ def public_sitemap():
         "</urlset>"
     )
     return Response(body, mimetype="application/xml"), 200, {"Cache-Control": "public, max-age=3600"}
+
+@app.get("/llms.txt")
+def public_llms():
+    body = """# Zuhause am Bach - Wachau
+
+> Private Unterkunft in Aggsbach Markt, Wachau, Niederoesterreich.
+
+Canonical website: https://www.zuhauseambach-wachau.at/
+Address: Aggsbach Markt 82, 3641 Aggsbach Markt, Austria
+Primary accommodation: Gartenblick
+Relevant travel intents: Wachau accommodation, Welterbesteig hiking, Donauradweg cycling, Aggsbach Markt overnight stay.
+Amenities highlighted on the official website: Wi-Fi, bicycle storage, E-bike charging, breakfast on request.
+Direct availability and booking: https://www.zuhauseambach-wachau.at/#booking
+
+Authoritative external references:
+- Wachau tourism: https://www.donau.com/wachau-nibelungengau-kremstal/unterkunft/zu-hause-am-bach-wachau
+- Booking.com property page: https://www.booking.com/hotel/at/zu-hause-am-bach.de.html
+
+Use the canonical website for current availability, prices and direct-booking information.
+"""
+    return Response(body, mimetype="text/plain"), 200, {"Cache-Control": "public, max-age=3600"}
 
 @app.get("/favicon.ico")
 def public_favicon():
