@@ -153,7 +153,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         c.setFont("Helvetica", 11)
         lines = [
             f"Gast: {booking['first_name']} {booking['last_name']}",
-            f"Zimmer: {'Gartenblick' if booking['room'] == 'Bachblick' else booking['room']}",
+            f"Zimmer: {'Gartenzimmer' if booking['room'] == 'Bachblick' else booking['room']}",
             f"Aufenthalt: {booking['arrival']} bis {booking['departure']}",
             f"Personen: {booking['adults']}",
             f"Zahlungsart: {booking['payment_method']}",
@@ -176,7 +176,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
         cfg = settings()
         site_url = os.environ.get("PUBLIC_SITE_URL", "https://www.zuhauseambach-wachau.at").rstrip("/")
-        room_name = "Gartenblick" if booking["room"] == "Bachblick" else booking["room"]
+        room_name = "Gartenzimmer" if booking["room"] == "Bachblick" else booking["room"]
         is_confirmed = booking["status"] == "confirmed"
         is_paid = bool(booking["paid"])
         payment_method = booking["payment_method"]
