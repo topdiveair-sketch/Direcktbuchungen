@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import os
+import base64
+import json
 import sqlite3
 import urllib.request
 import urllib.error
@@ -41,6 +43,14 @@ def env_value(*names: str) -> str:
             return value
     return ""
 
+def format_iban(value: str) -> str:
+    clean = "".join(ch for ch in (value or "") if ch.isalnum()).upper()
+    return " ".join(clean[i:i+4] for i in range(0, len(clean), 4))
+
+
+def public_room_name(room: str) -> str:
+    return "Gartenblick" if room == "Bachblick" else room
+
 
 PRODUCTION_MODE = (
     env_flag("REQUIRE_PRODUCTION_SECRETS")
@@ -68,7 +78,7 @@ app.config.update(
 )
 ADMIN_PASSWORD = ADMIN_PASSWORD or "windis2026"
 PAYPAL_EMAIL = os.environ.get("PAYPAL_EMAIL", "topdiveair@gmail.com")
-GUEST_APP_URL = "https://topdiveair-sketch.github.io/Gaeste/"
+GUEST_APP_URL = os.environ.get("GUEST_APP_URL", "https://topdiveair-sketch.github.io/Gaeste/")
 ROOM_RELEASE_DATE = date(2026, 8, 16)
 BREAKFAST_PRICE = 12.0
 
@@ -165,6 +175,28 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS extras (key TEXT PRIMARY KEY, label TEXT NOT NULL, price REAL NOT NULL, unit TEXT NOT NULL, enabled INTEGER NOT NULL DEFAULT 1);
             """
         )
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(bookings)")}
+        if "idempotency_key" not in cols:
+            conn.execute("ALTER TABLE bookings ADD COLUMN idempotency_key TEXT DEFAULT ''")
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_idempotency "
+            "ON bookings(idempotency_key) WHERE idempotency_key <> ''"
+        )
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS site_events(
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   event TEXT NOT NULL,
+                   created_at TEXT NOT NULL
+               )"""
+        )
+
+        conn.execute(
+            """UPDATE bookings
+               SET status='inquiry'
+               WHERE status='pending'
+                 AND payment_method IN ('Banküberweisung','Vor Ort')"""
+        )
+
         for room, data in ROOMS.items():
             conn.execute(
                 "INSERT OR IGNORE INTO ical_settings(room, import_url) VALUES (?, '')",
@@ -340,20 +372,60 @@ def room_available_in_conn(conn: sqlite3.Connection, room: str, arrival: date, d
     return True, "Das Zimmer ist verfügbar."
 
 
+MASTER_CALENDAR_URL = "https://web-production-907d68.up.railway.app/api/direct-booking-calendar"
+
+def live_master_availability(arrival: date, departure: date) -> tuple[bool | None, str]:
+    """Return True=free, False=blocked, None=live check unavailable."""
+    try:
+        req = urllib.request.Request(
+            MASTER_CALENDAR_URL,
+            headers={"Cache-Control": "no-cache", "User-Agent": "ZAB-Homepage/1.0"},
+        )
+        with urllib.request.urlopen(req, timeout=8) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        events = payload.get("events")
+        if payload.get("ok") is not True or not isinstance(events, list):
+            return None, "Live-Kalender konnte nicht bestätigt werden."
+        for event in events:
+            if not event.get("start") or not event.get("end"):
+                continue
+            start_d = parse_date(str(event["start"])[:10])
+            end_d = parse_date(str(event["end"])[:10])
+            if overlaps(arrival, departure, start_d, end_d):
+                return False, "Das Gartenzimmer ist in diesem Zeitraum bereits belegt."
+        return True, "Das Gartenzimmer ist laut Live-Kalender verfügbar."
+    except Exception:
+        return None, "Live-Kalender derzeit nicht erreichbar. Bitte Termin später erneut prüfen oder direkt anfragen."
+
+
 def room_available(room: str, arrival: date, departure: date) -> tuple[bool, str]:
-    if room not in ROOMS:
+    if room != "Bachblick":
         return False, "Unbekanntes Zimmer."
     if departure <= arrival:
         return False, "Die Abreise muss nach der Anreise liegen."
     if arrival < ROOMS[room]["available_from"]:
-        return False, f"{room} ist erst ab {ROOMS[room]['available_from'].strftime('%d.%m.%Y')} buchbar."
+        return False, "Das Gartenzimmer ist für diesen Zeitraum nicht buchbar."
     if app.extensions.get("v6_maintenance_conflict"):
         conflict, reason = app.extensions["v6_maintenance_conflict"](room, arrival, departure)
         if conflict:
-            return False, f"Das Zimmer ist wegen {reason} gesperrt."
+            return False, f"Das Gartenzimmer ist wegen {reason} gesperrt."
+
+    # Booking/iCal ist die unabhängige Sicherheitsquelle. Vor jeder
+    # Verfügbarkeitsprüfung frisch synchronisieren, damit eine neue
+    # Booking-Sperre nie durch einen leeren/stalen Masterkalender als frei gilt.
+    sync_room(room)
+
+    live_ok, live_message = live_master_availability(arrival, departure)
+    if live_ok is None:
+        return False, live_message
+    if live_ok is False:
+        return False, live_message
 
     with db() as conn:
-        return room_available_in_conn(conn, room, arrival, departure)
+        local_ok, local_message = room_available_in_conn(conn, room, arrival, departure)
+    if not local_ok:
+        return False, local_message
+    return True, live_message
 
 def calculate_total(room: str, arrival: date, departure: date, adults: int, breakfast: bool) -> float:
     return price_breakdown(room,arrival,departure,adults,{"breakfast":breakfast})["total"]
@@ -517,15 +589,59 @@ def globals_for_templates():
     }
 
 
+@app.get("/media/gartenblick.jpg")
+def gartenblick_image():
+    parts = [
+        BASE / "static" / "images" / "rooms" / f"gartenblick-part-{i}.txt"
+        for i in range(1, 6)
+    ]
+    encoded = "".join(part.read_text(encoding="utf-8").strip() for part in parts)
+    image_bytes = base64.b64decode(encoded)
+    return Response(
+        image_bytes,
+        mimetype="image/jpeg",
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
+
+
 @app.get("/")
 def index():
-    return render_template(
+    response = Response(render_template(
         "index.html",
         today=date.today().isoformat(),
         settings=get_settings(),
         room_images=get_room_images(),
+        rooms={"Bachblick": ROOMS["Bachblick"]},
         price_settings=pricing_data()[0], discounts=pricing_data()[1], extras_cfg=pricing_data()[2], seasons=pricing_data()[3],
+        bank_account_holder=env_value("BANK_ACCOUNT_HOLDER"),
+        bank_iban=env_value("BANK_IBAN"),
+        bank_iban_display=format_iban(env_value("BANK_IBAN")),
+        paypal_email=PAYPAL_EMAIL,
+    ))
+    # Preview/Homepage immer frisch ausliefern, damit alte Zimmertexte nicht aus dem Browser-Cache kommen.
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
+@app.post("/api/events")
+def api_events():
+    payload = request.get_json(silent=True) or {}
+    event = str(payload.get("event", "")).strip()[:64]
+    allowed_prefixes = (
+        "landing_view", "room_selected", "extras_selected",
+        "availability_started", "availability_result_",
+        "checkout_started", "booking_abandoned",
     )
+    if not event or not any(event == prefix or event.startswith(prefix) for prefix in allowed_prefixes):
+        return Response(status=204)
+    with db() as conn:
+        conn.execute(
+            "INSERT INTO site_events(event, created_at) VALUES (?, ?)",
+            (event, datetime.now().isoformat(timespec="seconds")),
+        )
+    return Response(status=204)
 
 
 @app.post("/api/availability")
@@ -557,24 +673,53 @@ def api_calendar():
     year = int(request.args.get("year", date.today().year))
     month = int(request.args.get("month", date.today().month))
 
-    if room not in ROOMS:
+    if room != "Bachblick":
         return jsonify(error="Unbekanntes Zimmer"), 400
 
     first = date(year, month, 1)
     next_month = date(year + (month == 12), 1 if month == 12 else month + 1, 1)
 
+    # Grundzustand nur dann "free", wenn der Live-Masterkalender erfolgreich gelesen wurde.
     states = {}
-    current = first
-    while current < next_month:
-        states[current.isoformat()] = "free"
-        current += timedelta(days=1)
-
-    if first < ROOMS[room]["available_from"]:
+    live_ok = False
+    live_updated = ""
+    live_source = ""
+    try:
+        live_url = "https://web-production-907d68.up.railway.app/api/direct-booking-calendar"
+        req = urllib.request.Request(live_url, headers={"Cache-Control": "no-cache", "User-Agent": "ZAB-Homepage/1.0"})
+        with urllib.request.urlopen(req, timeout=8) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        events = payload.get("events")
+        if payload.get("ok") is True and isinstance(events, list):
+            live_ok = True
+            live_updated = str(payload.get("updatedAt") or "")
+            live_source = str(payload.get("source") or "Live-Kalender")
+            current = first
+            while current < next_month:
+                states[current.isoformat()] = "free"
+                current += timedelta(days=1)
+            for event in events:
+                if not event.get("start") or not event.get("end"):
+                    continue
+                start_d = parse_date(event["start"][:10])
+                end_d = parse_date(event["end"][:10])
+                current = max(first, start_d)
+                while current < min(next_month, end_d):
+                    states[current.isoformat()] = "booking"
+                    current += timedelta(days=1)
+    except Exception:
         current = first
-        while current < min(next_month, ROOMS[room]["available_from"]):
-            states[current.isoformat()] = "unreleased"
+        while current < next_month:
+            states[current.isoformat()] = "unknown"
             current += timedelta(days=1)
 
+    # Booking/iCal vor der Anzeige frisch synchronisieren und seine Sperren
+    # als Sicherheitsnetz über den Masterkalender legen. Der Master kann leer
+    # oder verzögert sein; Booking-Belegungen dürfen dadurch nie "free" werden.
+    sync_room(room)
+
+    # Eigene Direktbuchungen und Booking/iCal-Sperren werden immer zusätzlich
+    # berücksichtigt.
     with db() as conn:
         local = conn.execute(
             """
@@ -584,26 +729,55 @@ def api_calendar():
             (room,),
         ).fetchall()
         external = conn.execute(
-            "SELECT start_date, end_date FROM external_blocks WHERE room=?",
+            """
+            SELECT start_date, end_date FROM external_blocks
+            WHERE room=? AND source='booking_ical'
+            """,
             (room,),
         ).fetchall()
 
     for row in external:
-        start, end = parse_date(row["start_date"]), parse_date(row["end_date"])
-        current = max(first, start)
-        while current < min(next_month, end):
+        start_d, end_d = parse_date(row["start_date"]), parse_date(row["end_date"])
+        current = max(first, start_d)
+        while current < min(next_month, end_d):
             states[current.isoformat()] = "booking"
             current += timedelta(days=1)
 
     for row in local:
-        start, end = parse_date(row["arrival"]), parse_date(row["departure"])
-        current = max(first, start)
+        start_d, end_d = parse_date(row["arrival"]), parse_date(row["departure"])
+        current = max(first, start_d)
         state = "direct" if row["status"] == "confirmed" else "pending"
-        while current < min(next_month, end):
+        while current < min(next_month, end_d):
             states[current.isoformat()] = state
             current += timedelta(days=1)
 
-    return jsonify(room=room, year=year, month=month, days=states)
+    return jsonify(
+        room="Gartenblick",
+        roomTechnical="Bachblick",
+        year=year,
+        month=month,
+        days=states,
+        live=live_ok,
+        updatedAt=live_updated,
+        source=live_source,
+    )
+
+def booking_success_response(booking):
+    data = dict(booking)
+    booking_id = int(data.get("id") or 0)
+    data["booking_number"] = data.get("booking_number") or (f"ZAB-{booking_id:06d}" if booking_id else "ZAB")
+    data["room"] = public_room_name(str(data.get("room", "")))
+    settings = get_settings()
+    return render_template(
+        "success.html",
+        booking=data,
+        settings=settings,
+        bank_account_holder=env_value("BANK_ACCOUNT_HOLDER"),
+        bank_iban=env_value("BANK_IBAN"),
+        bank_iban_display=format_iban(env_value("BANK_IBAN")),
+        paypal_email=PAYPAL_EMAIL,
+        guest_app_url=settings.get("public_base_url", "https://topdiveair-sketch.github.io/Gaeste/"),
+    )
 
 
 @app.post("/book")
@@ -614,16 +788,33 @@ def book():
         departure = parse_date(request.form["departure"])
         adults = max(1, min(2, int(request.form["adults"])))
         breakfast = request.form.get("breakfast") == "on"
-        chosen={k:request.form.get(k)=="on" for k in ("breakfast","jause","luggage","dog","baby_bed")}
-        coupon_code=request.form.get("coupon_code","")
+        chosen = {k: request.form.get(k) == "on" for k in ("breakfast", "jause", "luggage", "dog", "baby_bed")}
+        coupon_code = request.form.get("coupon_code", "").strip()
         first_name = request.form["first_name"].strip()
         last_name = request.form["last_name"].strip()
         email = request.form["email"].strip()
         phone = request.form["phone"].strip()
-        payment_method = request.form["payment_method"]
+        payment_method = request.form["payment_method"].strip()
+        idempotency_key = request.form.get("idempotency_key", "").strip()[:120]
     except (KeyError, ValueError):
         flash("Bitte alle Pflichtfelder korrekt ausfüllen.", "error")
         return redirect(url_for("index") + "#booking")
+
+    if payment_method == "PayPal":
+        flash("PayPal-Zahlungen bitte über den sicheren PayPal-Button starten.", "error")
+        return redirect(url_for("index") + "#booking")
+    if payment_method not in {"Banküberweisung", "Vor Ort"}:
+        flash("Bitte eine gültige Zahlungsart wählen.", "error")
+        return redirect(url_for("index") + "#booking")
+
+    if idempotency_key:
+        with db() as conn:
+            existing = conn.execute(
+                "SELECT * FROM bookings WHERE idempotency_key=?",
+                (idempotency_key,),
+            ).fetchone()
+        if existing:
+            return booking_success_response(existing)
 
     ok, message = room_available(room, arrival, departure)
     if not ok:
@@ -634,30 +825,55 @@ def book():
         flash("Bitte Name, E-Mail und Telefonnummer ausfüllen.", "error")
         return redirect(url_for("index") + "#booking")
 
-    total = price_breakdown(room,arrival,departure,adults,chosen,coupon_code)["total"]
+    total = price_breakdown(room, arrival, departure, adults, chosen, coupon_code)["total"]
     uid = f"ZAB-{uuid4()}@zuhause-am-bach"
 
-    with db() as conn:
-        conn.execute("BEGIN IMMEDIATE")
-        ok, message = room_available_in_conn(conn, room, arrival, departure)
-        if not ok:
-            flash(message, "error")
-            return redirect(url_for("index") + "#booking")
-        cur = conn.execute(
-            """
-            INSERT INTO bookings
-            (uid, room, arrival, departure, adults, breakfast, first_name,
-             last_name, email, phone, message, payment_method, total, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
-            """,
-            (
-                uid, room, arrival.isoformat(), departure.isoformat(), adults,
-                1 if breakfast else 0, first_name, last_name, email, phone,
-                request.form.get("message", "").strip(), payment_method, total,
-                datetime.now().isoformat(timespec="seconds"),
-            ),
-        )
-        booking_id = cur.lastrowid
+    try:
+        with db() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            if idempotency_key:
+                existing = conn.execute(
+                    "SELECT * FROM bookings WHERE idempotency_key=?",
+                    (idempotency_key,),
+                ).fetchone()
+                if existing:
+                    conn.rollback()
+                    return booking_success_response(existing)
+
+            ok, message = room_available_in_conn(conn, room, arrival, departure)
+            if not ok:
+                conn.rollback()
+                flash(message, "error")
+                return redirect(url_for("index") + "#booking")
+
+            cur = conn.execute(
+                """
+                INSERT INTO bookings
+                (uid, room, arrival, departure, adults, breakfast, first_name,
+                 last_name, email, phone, message, payment_method, total, status,
+                 created_at, idempotency_key)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inquiry', ?, ?)
+                """,
+                (
+                    uid, room, arrival.isoformat(), departure.isoformat(), adults,
+                    1 if breakfast else 0, first_name, last_name, email, phone,
+                    request.form.get("message", "").strip(), payment_method, total,
+                    datetime.now().isoformat(timespec="seconds"), idempotency_key,
+                ),
+            )
+            booking_id = cur.lastrowid
+    except sqlite3.IntegrityError:
+        if idempotency_key:
+            with db() as conn:
+                existing = conn.execute(
+                    "SELECT * FROM bookings WHERE idempotency_key=?",
+                    (idempotency_key,),
+                ).fetchone()
+            if existing:
+                return booking_success_response(existing)
+        flash("Die Buchung wurde bereits verarbeitet. Bitte Seite aktualisieren.", "error")
+        return redirect(url_for("index") + "#booking")
+
     if app.extensions.get("zab_ensure_tokens"):
         app.extensions["zab_ensure_tokens"](booking_id)
     if app.extensions.get("v6_ensure_checkin_token"):
@@ -668,20 +884,9 @@ def book():
         except Exception:
             pass
 
-    return render_template(
-        "success.html",
-        booking={
-            "room": room,
-            "arrival": arrival,
-            "departure": departure,
-            "adults": adults,
-            "breakfast": breakfast,
-            "payment_method": payment_method,
-            "total": total,
-            "first_name": first_name,
-        },
-        settings=get_settings(),
-    )
+    with db() as conn:
+        booking_row = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
+    return booking_success_response(booking_row)
 
 
 @app.get("/calendar/<room>.ics")
