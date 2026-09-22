@@ -49,7 +49,7 @@ def format_iban(value: str) -> str:
 
 
 def public_room_name(room: str) -> str:
-    return "Gartenblick" if room == "Bachblick" else room
+    return "Gartenzimmer" if room == "Bachblick" else room
 
 
 PRODUCTION_MODE = (
@@ -752,7 +752,7 @@ def api_calendar():
             current += timedelta(days=1)
 
     return jsonify(
-        room="Gartenblick",
+        room="Gartenzimmer",
         roomTechnical="Bachblick",
         year=year,
         month=month,
