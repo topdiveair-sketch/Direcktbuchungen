@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Unterkunft Wachau in Aggsbach Markt | Zuhause am Bach</title>
-  <meta name="description" content="Zuhause am Bach: ruhige Unterkunft in Aggsbach Markt in der Wachau für Welterbesteig-Wanderer und Donauradweg-Radfahrer. Gartenblick direkt buchen oder anfragen.">
+  <meta name="description" content="Zuhause am Bach: ruhige Unterkunft in Aggsbach Markt in der Wachau für Welterbesteig-Wanderer und Donauradweg-Radfahrer. Gartenzimmer direkt buchen oder anfragen.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <link rel="canonical" href="https://www.zuhauseambach-wachau.at/">
   <meta property="og:type" content="website">
@@ -19,6 +19,7 @@
   {
     "@context":"https://schema.org",
     "@type":"BedAndBreakfast",
+    "@id":"https://www.zuhauseambach-wachau.at/#unterkunft",
     "name":"Zuhause am Bach – Wachau",
     "url":"https://www.zuhauseambach-wachau.at/",
     "description":"Ruhige Unterkunft in Aggsbach Markt in der Wachau für Wanderer am Welterbesteig, Radfahrer am Donauradweg und Wachau-Gäste.",
@@ -26,7 +27,17 @@
     "telephone":"{{ settings.phone }}",
     "email":"{{ settings.email }}",
     "checkinTime":"14:00",
-    "checkoutTime":"10:00"
+    "checkoutTime":"10:00",
+    "amenityFeature":[
+      {"@type":"LocationFeatureSpecification","name":"WLAN","value":true},
+      {"@type":"LocationFeatureSpecification","name":"Fahrradunterbringung","value":true},
+      {"@type":"LocationFeatureSpecification","name":"E-Bike-Lademöglichkeit","value":true},
+      {"@type":"LocationFeatureSpecification","name":"Frühstück auf Wunsch","value":true}
+    ],
+    "sameAs":[
+      "https://www.booking.com/hotel/at/zu-hause-am-bach.de.html",
+      "https://www.donau.com/wachau-nibelungengau-kremstal/unterkunft/zu-hause-am-bach-wachau"
+    ]
   }
   </script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260921-11">
@@ -117,15 +128,15 @@
           </div>
         </section>
 
-        <h3 class="subheading">Gartenblick</h3>
+        <h3 class="subheading">Gartenzimmer</h3>
         <div id="zimmer" class="room-list">
           {% set info = rooms['Bachblick'] %}
           <label class="room-option">
             <input type="radio" name="room" value="Bachblick" data-price="{{ info.price }}"
                    data-from="{{ info.available_from.isoformat() }}" checked>
-            <img src="{{ url_for('gartenblick_image') }}" alt="Zimmer Gartenblick bei Zuhause am Bach" loading="lazy" decoding="async">
+            <img src="{{ url_for('gartenblick_image') }}" alt="Gartenzimmer bei Zuhause am Bach in der Wachau" loading="lazy" decoding="async">
             <span class="room-copy">
-              <strong>Gartenblick</strong>
+              <strong>Gartenzimmer</strong>
               <small>Ruhiges Doppelzimmer mit persönlicher Atmosphäre – gemütlich und zum Wohlfühlen.</small>
               <span class="room-features">Doppelbett · eigenes Bad · WLAN · ruhige Lage</span>
             </span>
@@ -204,7 +215,7 @@
         <h2>Freie und belegte Tage</h2>
       </div>
       <select id="calendarRoom" aria-label="Zimmer">
-        <option value="Bachblick">Gartenblick</option>
+        <option value="Bachblick">Gartenzimmer</option>
       </select>
     </div>
     <div class="calendar-controls">
@@ -220,6 +231,23 @@
       <span><i class="unknown"></i> Prüfung erforderlich</span>
     </div>
     <div id="liveCalendar" class="live-calendar"></div>
+  </section>
+
+  <section id="reiseplanung" class="story-section">
+    <div>
+      <span class="eyebrow">Wachau planen</span>
+      <h2>Unterkunft für Welterbesteig, Donauradweg und Aggsbach Markt</h2>
+      <p>Je nach Reiseart findest du hier die passende Information zur direkten Übernachtungsplanung:</p>
+      <p><a href="/unterkunft-welterbesteig-wachau">Unterkunft am Welterbesteig Wachau</a></p>
+      <p><a href="/unterkunft-donauradweg-wachau">Unterkunft am Donauradweg Wachau</a></p>
+      <p><a href="/uebernachten-aggsbach-markt">Übernachten in Aggsbach Markt</a></p>
+      <p><a href="/radfahrer-unterkunft-wachau">Radfahrer-Unterkunft in der Wachau</a></p>
+    </div>
+    <div class="review-box">
+      <strong>Direkt statt Umweg</strong>
+      <small>Freie Termine und Preis direkt bei Zuhause am Bach prüfen.</small>
+      <a href="#booking">Verfügbarkeit prüfen</a>
+    </div>
   </section>
 
   <section id="umgebung" class="story-section">
