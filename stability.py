@@ -53,64 +53,91 @@ def init_stability(app, DB_PATH, db, require_admin, ROOMS):
         for k,(title,content) in legal_defaults.items():
             conn.execute("INSERT OR IGNORE INTO legal_pages(key,title,content) VALUES(?,?,?)",(k,title,content))
         legal_live_defaults = {
-            "impressum": ("Impressum", """Angaben gemaess Informationspflichten:
+            "impressum": ("Impressum", """Zuhause am Bach - Wachau
 
-Zuhause am Bach - Wachau
-Betreiberin: Laura Prem
+Betreiberin:
+Laura Prem
 Aggsbach Markt 82
 3641 Aggsbach Markt
-Oesterreich
+Österreich
 
 Telefon: +43 664 6437526
-E-Mail: topdiveair@gmail.com
-Website: https://topdiveair-sketch.github.io/Gaeste/
+E-Mail: Zuhause.am.Bach@outlook.com
+Website: https://www.zuhauseambach-wachau.at/
 
-Unternehmensgegenstand: Beherbergung / Privatzimmervermietung.
+Unternehmensgegenstand:
+Beherbergung / Privatzimmervermietung.
 
-Hinweis: Bitte UID-Nummer, Gewerbe-/Behoerdenangaben, Aufsichtsbehoerde, Kammerzugehoerigkeit und weitere Pflichtangaben vor dem Livegang juristisch pruefen und ergaenzen, falls zutreffend."""),
-            "datenschutz": ("Datenschutzerklaerung", """Datenschutzerklaerung
+Verbraucher können sich bei Fragen oder Beschwerden direkt über die oben genannten Kontaktdaten an uns wenden."""),
+            "datenschutz": ("Datenschutzerklärung", """Datenschutzerklärung
 
 Verantwortliche Stelle:
-Zuhause am Bach - Wachau, Laura Prem, Aggsbach Markt 82, 3641 Aggsbach Markt, Oesterreich.
-Kontakt: topdiveair@gmail.com, +43 664 6437526.
+Zuhause am Bach - Wachau
+Laura Prem
+Aggsbach Markt 82
+3641 Aggsbach Markt
+Österreich
+E-Mail: Zuhause.am.Bach@outlook.com
+Telefon: +43 664 6437526
 
-Wir verarbeiten personenbezogene Daten, die Gaeste im Rahmen einer Anfrage, Buchung, Online-Check-in-Nutzung oder Kontaktaufnahme angeben. Dazu gehoeren insbesondere Name, Kontaktdaten, Reisedaten, Zimmer, Zahlungsart, Nachrichten, Angaben zum Check-in und technisch notwendige Protokolldaten.
+Welche Daten verarbeitet werden
+Wir verarbeiten personenbezogene Daten, die im Rahmen einer Anfrage, Buchung, Zahlung, Kontaktaufnahme oder Nutzung des Gästeportals angegeben werden. Dazu können insbesondere Name, Kontaktdaten, Reisedaten, Zahlungsart, Nachrichten, Check-in-Angaben und technisch notwendige Protokolldaten gehören.
 
-Zwecke der Verarbeitung sind die Bearbeitung von Buchungsanfragen, Durchfuehrung des Aufenthalts, Kommunikation mit Gaesten, Rechnungslegung, gesetzliche Aufbewahrungspflichten, Sicherheit des Betriebs und Verbesserung des Angebots.
+Zwecke und Rechtsgrundlagen
+Die Verarbeitung erfolgt zur Bearbeitung von Buchungen und Anfragen, zur Durchführung des Aufenthalts, zur Kommunikation mit Gästen, zur Zahlungsabwicklung, zur Rechnungslegung, zur Erfüllung gesetzlicher Pflichten sowie zur Sicherstellung eines stabilen und sicheren Betriebs. Rechtsgrundlagen sind insbesondere Vertragserfüllung bzw. vorvertragliche Maßnahmen, gesetzliche Verpflichtungen und berechtigte Interessen am sicheren Betrieb.
 
-Rechtsgrundlagen sind Vertragserfuellung bzw. vorvertragliche Massnahmen, gesetzliche Verpflichtungen und berechtigte Interessen am sicheren und ordnungsgemaessen Betrieb.
+Zahlungsabwicklung
+Bei Auswahl von PayPal werden die für die Zahlung erforderlichen Daten im Rahmen des PayPal-Checkouts verarbeitet. PayPal verarbeitet Zahlungsdaten nach den eigenen Datenschutzbestimmungen. Bei Banküberweisung werden auf dieser Website unsere Bankdaten angezeigt; die eigentliche Überweisung erfolgt über das vom Gast verwendete Kreditinstitut.
 
-Daten werden nur so lange gespeichert, wie es fuer die genannten Zwecke erforderlich ist oder gesetzliche Aufbewahrungspflichten bestehen. Eine Weitergabe erfolgt nur, wenn sie fuer Buchung, Zahlungsabwicklung, E-Mail-Versand, IT-Betrieb oder gesetzliche Pflichten erforderlich ist.
+Technischer Betrieb
+Die Website und zugehörige Serverfunktionen werden auf Railway betrieben. Für den E-Mail-Versand wird ein SMTP-Dienst genutzt. Externe Links, etwa zu Google Maps oder zur Gäste-App, werden erst durch aktives Anklicken aufgerufen.
 
-Betroffene Personen haben nach Massgabe der DSGVO Rechte auf Auskunft, Berichtigung, Loeschung, Einschraenkung, Datenuebertragbarkeit, Widerspruch und Beschwerde bei der Datenschutzbehoerde.
+Speicherdauer
+Personenbezogene Daten werden nur so lange gespeichert, wie dies für die genannten Zwecke erforderlich ist oder gesetzliche Aufbewahrungspflichten bestehen.
 
-Hinweis: Diese Datenschutzerklaerung ist ein technischer Entwurf und muss vor dem Livegang rechtlich geprueft und an die tatsaechlich eingesetzten Dienste angepasst werden."""),
+Empfänger
+Eine Weitergabe erfolgt nur, soweit sie für Buchungsabwicklung, Zahlung, Kommunikation, IT-Betrieb oder gesetzliche Verpflichtungen erforderlich ist.
+
+Rechte betroffener Personen
+Betroffene Personen haben nach Maßgabe der DSGVO insbesondere Rechte auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Beschwerden können an die zuständige Datenschutzbehörde gerichtet werden.
+
+Kontakt für Datenschutzanfragen:
+Zuhause.am.Bach@outlook.com"""),
             "agb": ("Buchungsbedingungen", """Buchungsbedingungen
 
-Eine Buchung ueber diese Website ist zunaechst eine Buchungsanfrage. Der Beherbergungsvertrag kommt erst zustande, wenn Zuhause am Bach - Wachau die Buchung ausdruecklich bestaetigt.
+1. Buchungsweg
+Die auf der Website angezeigte Verfügbarkeit wird unmittelbar vor Abschluss erneut geprüft.
 
-Preise verstehen sich in Euro und gelten fuer den jeweils angezeigten Zeitraum, das gewaehlte Zimmer und die ausgewaehlten Zusatzleistungen. Abgaben, Ortstaxen oder sonstige gesetzliche Gebuehren koennen zusaetzlich anfallen, sofern sie nicht ausdruecklich enthalten sind.
+Bei erfolgreicher PayPal-Zahlung wird die Buchung nach serverseitiger Zahlungsbestätigung als bestätigt markiert und der Zeitraum verbindlich reserviert.
 
-Die Zahlung erfolgt nach Vereinbarung, insbesondere per Ueberweisung, PayPal oder vor Ort. PayPal-Zahlungen sollen erst nach persoenlicher Bestaetigung der Buchung erfolgen.
+Bei Auswahl von Banküberweisung oder Zahlung vor Ort wird zunächst eine Buchungsanfrage übermittelt. Diese Anfrage blockiert den Zeitraum noch nicht. Erst nach persönlicher Bestätigung wird der Termin verbindlich reserviert.
 
-Check-in und Check-out richten sich nach den in der Buchungsbestaetigung angegebenen Zeiten. Aenderungen sind nur nach vorheriger Ruecksprache moeglich.
+2. Preise
+Alle auf der Website dargestellten Preise verstehen sich in Euro. Der im Buchungsprozess ausgewiesene Gesamtpreis berücksichtigt die ausgewählten Zusatzleistungen und gegebenenfalls gültige Rabatte. Gesetzliche Abgaben oder Ortstaxen können zusätzlich anfallen, sofern sie nicht ausdrücklich als enthalten ausgewiesen sind.
 
-Gaeste verpflichten sich zu sorgsamem Umgang mit Unterkunft, Inventar und Hausumgebung. Schaeden sind unverzueglich zu melden. Rauchen, Haustiere, zusaetzliche Gaeste oder Veranstaltungen sind nur erlaubt, wenn sie ausdruecklich bestaetigt wurden.
+3. Zahlung
+PayPal-Zahlungen werden über den sicheren PayPal-Checkout abgewickelt und führen nach erfolgreicher serverseitiger Zahlungsbestätigung zur verbindlichen Reservierung. Bei Banküberweisung werden Kontoinhaber, IBAN, Betrag und Verwendungszweck angezeigt; die Überweisung soll erst nach persönlicher Buchungsbestätigung erfolgen. Bei Zahlung vor Ort ist der Betrag nach bestätigter Buchung bei Anreise fällig, sofern nichts anderes vereinbart wurde.
 
-Es gilt oesterreichisches Recht, soweit keine zwingenden Verbraucherschutzvorschriften entgegenstehen.
+4. Check-in und Check-out
+Check-in ist grundsätzlich ab 14:00 Uhr möglich, Check-out bis 10:00 Uhr. Abweichungen bedürfen einer vorherigen Vereinbarung.
 
-Hinweis: Diese Buchungsbedingungen sind ein Entwurf und muessen vor dem Livegang rechtlich geprueft werden."""),
+5. Nutzung der Unterkunft
+Gäste verpflichten sich zu einem sorgfältigen Umgang mit Unterkunft, Inventar und Hausumgebung. Schäden sind unverzüglich zu melden. Zusätzliche Gäste, Veranstaltungen, Rauchen oder Haustiere bedürfen einer ausdrücklichen Vereinbarung, soweit sie nicht bereits Bestandteil der bestätigten Buchung sind.
+
+6. Stornierung
+Es gelten die auf der Website veröffentlichten Stornobedingungen sowie gegebenenfalls abweichende Bedingungen in der individuellen Buchungsbestätigung.
+
+7. Anwendbares Recht
+Es gilt österreichisches Recht, soweit keine zwingenden verbraucherschützenden Vorschriften entgegenstehen."""),
             "storno": ("Stornobedingungen", """Stornobedingungen
 
-Eine Stornierung ist bis 7 Tage vor Anreise kostenlos moeglich, sofern in der Buchungsbestaetigung nichts Abweichendes vereinbart wurde.
+Eine Stornierung ist bis 7 Tage vor Anreise kostenlos möglich, sofern in der individuellen Buchungsbestätigung nichts Abweichendes vereinbart wurde.
 
-Bei spaeterer Stornierung, Nichtanreise oder vorzeitiger Abreise koennen Stornokosten anfallen. Die konkrete Hoehe richtet sich nach der bestaetigten Buchung, der Aufenthaltsdauer, dem Zeitpunkt der Stornierung und einer moeglichen Weitervermietung.
+Bei späterer Stornierung, Nichtanreise oder vorzeitiger Abreise können Stornokosten anfallen. Die konkrete Höhe richtet sich nach den bestätigten Buchungsbedingungen, dem Zeitpunkt der Stornierung, der Aufenthaltsdauer und einer möglichen Weitervermietung.
 
-Stornierungen muessen schriftlich per E-Mail an topdiveair@gmail.com erfolgen. Massgeblich ist der Zeitpunkt des Eingangs.
+Stornierungen sollen über den persönlichen Stornierungslink aus der Buchungsbestätigung oder schriftlich per E-Mail an Zuhause.am.Bach@outlook.com erfolgen. Maßgeblich ist der Zeitpunkt des Eingangs.
 
-Bei aussergewoehnlichen Umstaenden kann Zuhause am Bach - Wachau im Einzelfall kulante Loesungen anbieten; ein Anspruch darauf besteht nicht.
-
-Hinweis: Diese Stornobedingungen sind ein Entwurf und muessen vor dem Livegang rechtlich geprueft werden."""),
+Bei außergewöhnlichen Umständen kann Zuhause am Bach - Wachau im Einzelfall eine kulante Lösung anbieten; ein Anspruch darauf besteht nicht."""),
         }
         for k,(title,content) in legal_live_defaults.items():
             conn.execute(
