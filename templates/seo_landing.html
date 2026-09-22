@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ title }}</title>
+  <meta name="description" content="{{ description }}">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <link rel="canonical" href="{{ canonical }}">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="de_AT">
+  <meta property="og:title" content="{{ title }}">
+  <meta property="og:description" content="{{ description }}">
+  <meta property="og:url" content="{{ canonical }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260922-seo">
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"WebPage",
+    "name":{{ title|tojson }},
+    "url":{{ canonical|tojson }},
+    "description":{{ description|tojson }},
+    "isPartOf":{"@type":"WebSite","name":"Zuhause am Bach – Wachau","url":"https://www.zuhauseambach-wachau.at/"},
+    "about":{
+      "@type":"BedAndBreakfast",
+      "@id":"https://www.zuhauseambach-wachau.at/#unterkunft",
+      "name":"Zuhause am Bach – Wachau",
+      "url":"https://www.zuhauseambach-wachau.at/",
+      "address":{"@type":"PostalAddress","streetAddress":"Aggsbach Markt 82","postalCode":"3641","addressLocality":"Aggsbach Markt","addressRegion":"Niederösterreich","addressCountry":"AT"},
+      "sameAs":[
+        "https://www.booking.com/hotel/at/zu-hause-am-bach.de.html",
+        "https://www.donau.com/wachau-nibelungengau-kremstal/unterkunft/zu-hause-am-bach-wachau"
+      ]
+    }
+  }
+  </script>
+</head>
+<body>
+<header class="hero" id="start">
+  <nav class="topbar">
+    <a class="brand" href="{{ url_for('index') }}"><span class="logo-mark">⌂</span><span>Zuhause am Bach<small>Gästehaus Wachau</small></span></a>
+    <div class="nav-links">
+      <a href="{{ url_for('index') }}#booking">Direkt buchen</a>
+      <a href="{{ url_for('index') }}#kalender">Kalender</a>
+      <a href="{{ url_for('index') }}#kontakt">Kontakt</a>
+    </div>
+    <a href="{{ url_for('index') }}#booking" class="btn top-btn">Verfügbarkeit prüfen</a>
+  </nav>
+  <div class="hero-content">
+    <h1>{{ h1 }}</h1>
+    <p>{{ lead }}</p>
+    <span>Zuhause am Bach · Aggsbach Markt · Wachau</span>
+  </div>
+</header>
+
+<main>
+  <section class="story-section">
+    <div>
+      <span class="eyebrow">{{ eyebrow }}</span>
+      <h2>{{ subheading }}</h2>
+      {% for paragraph in paragraphs %}<p>{{ paragraph }}</p>{% endfor %}
+    </div>
+    <div class="review-box">
+      <strong>Direkt bei uns anfragen</strong>
+      <small>Freie Termine und Preis direkt auf der offiziellen Website prüfen.</small>
+      <a href="{{ url_for('index') }}#booking">Verfügbarkeit &amp; Preis</a>
+    </div>
+  </section>
+
+  <section class="feature-strip">
+    {% for feature in features %}
+    <article><span>{{ feature[0] }}</span><strong>{{ feature[1] }}</strong><small>{{ feature[2] }}</small></article>
+    {% endfor %}
+  </section>
+
+  <section class="story-section">
+    <div>
+      <span class="eyebrow">Gartenzimmer</span>
+      <h2>Ruhig übernachten und die Wachau erleben</h2>
+      <p>Das Gartenzimmer ist das aktuell direkt angebotene Doppelzimmer bei Zuhause am Bach. Verfügbarkeit und Preis werden über den Live-Kalender der offiziellen Website geprüft.</p>
+      <p>Für aktuelle Preise, freie Termine und Zusatzleistungen gilt immer die Direktbuchungsseite von Zuhause am Bach.</p>
+    </div>
+    <div class="review-box">
+      <strong>Offizielle Unterkunftsseite</strong>
+      <small>Einheitliche Informationen für Google, Suchmaschinen und KI-Systeme.</small>
+      <a href="{{ url_for('index') }}">Zuhause am Bach öffnen</a>
+    </div>
+  </section>
+
+  <section class="story-section">
+    <div>
+      <span class="eyebrow">Weitere Wachau-Themen</span>
+      <h2>Passend zu deiner Reiseplanung</h2>
+      <p><a href="/unterkunft-welterbesteig-wachau">Unterkunft am Welterbesteig Wachau</a></p>
+      <p><a href="/unterkunft-donauradweg-wachau">Unterkunft am Donauradweg Wachau</a></p>
+      <p><a href="/uebernachten-aggsbach-markt">Übernachten in Aggsbach Markt</a></p>
+      <p><a href="/radfahrer-unterkunft-wachau">Radfahrer-Unterkunft in der Wachau</a></p>
+    </div>
+  </section>
+</main>
+
+<footer id="kontakt">
+  <div><strong>Zuhause am Bach</strong><span>Aggsbach Markt 82 · 3641 Aggsbach Markt</span></div>
+  <div><a href="{{ url_for('index') }}#kontakt">Kontakt &amp; Direktbuchung</a></div>
+  <a class="admin-link" href="{{ url_for('legal_page',key='impressum') }}">Impressum</a>
+  <a class="admin-link" href="{{ url_for('legal_page',key='datenschutz') }}">Datenschutz</a>
+</footer>
+</body>
+</html>
