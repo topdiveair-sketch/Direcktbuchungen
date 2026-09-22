@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from urllib.parse import urlsplit
 
 from flask import jsonify, redirect, request, url_for
@@ -167,6 +167,48 @@ def init_direct_booking_metrics(app, db, require_admin):
             pass
         return response
 
+    def _forward_occupancy(window_days=30, room="Bachblick"):
+        window_days = max(1, min(int(window_days or 30), 365))
+        start = date.today()
+        end = start + timedelta(days=window_days)
+        blocked = set()
+        with db() as conn:
+            direct_rows = conn.execute(
+                """SELECT arrival,departure,status FROM bookings
+                   WHERE room=? AND status IN ('pending','confirmed')
+                     AND arrival<? AND departure>?""",
+                (room, end.isoformat(), start.isoformat()),
+            ).fetchall()
+            external_rows = conn.execute(
+                """SELECT start_date,end_date,source FROM external_blocks
+                   WHERE room=? AND start_date<? AND end_date>?""",
+                (room, end.isoformat(), start.isoformat()),
+            ).fetchall()
+
+        for row in direct_rows:
+            a = max(start, date.fromisoformat(row["arrival"]))
+            d = min(end, date.fromisoformat(row["departure"]))
+            while a < d:
+                blocked.add(a.isoformat())
+                a += timedelta(days=1)
+        for row in external_rows:
+            a = max(start, date.fromisoformat(row["start_date"]))
+            d = min(end, date.fromisoformat(row["end_date"]))
+            while a < d:
+                blocked.add(a.isoformat())
+                a += timedelta(days=1)
+
+        blocked_nights = len(blocked)
+        return {
+            "window_days": window_days,
+            "from": start.isoformat(),
+            "to": end.isoformat(),
+            "blocked_nights": blocked_nights,
+            "open_nights": max(0, window_days - blocked_nights),
+            "occupancy_or_block_pct": round(blocked_nights * 100.0 / window_days, 1),
+            "basis": "direct_pending_confirmed_plus_external_calendar_blocks",
+        }
+
     def summary(days=30):
         days = max(1, min(int(days or 30), 3650))
         since = (datetime.now() - timedelta(days=days)).isoformat(timespec="seconds")
@@ -223,6 +265,7 @@ def init_direct_booking_metrics(app, db, require_admin):
                 "estimated_platform_commission_saved_eur": saved,
                 "commission_basis": "configured_contract_rate" if pct is not None else "not_configured",
             },
+            "occupancy_next_30_days": _forward_occupancy(30),
             "sources": [dict(row) for row in source_rows],
         }
 
@@ -241,7 +284,8 @@ def init_direct_booking_metrics(app, db, require_admin):
         e = data["economics"]
         saved = "nicht konfiguriert" if e["estimated_platform_commission_saved_eur"] is None else f"{e['estimated_platform_commission_saved_eur']:.2f} EUR"
         pct = "–" if e["comparison_commission_pct"] is None else f"{e['comparison_commission_pct']:.2f} %"
-        html = f"""<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Direktbuchungs-Cockpit</title><style>body{{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:#f4f7f5;color:#17372f}}main{{max-width:1100px;margin:auto;padding:28px 18px 60px}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:22px 0}}.kpi{{background:#fff;border:1px solid #d8e4dc;border-radius:14px;padding:18px}}.kpi strong{{display:block;font-size:28px;margin-top:5px}}.label{{font-size:12px;text-transform:uppercase;font-weight:800;color:#667a72}}.note{{padding:14px 16px;background:#fff7df;border:1px solid #ead9a6;border-radius:12px;color:#6d5717}}</style></head><body><main><h1>📈 ZAB Direktbuchungs-Cockpit</h1><p>Reale Serverstrecke: Verfügbarkeit → PayPal-Checkout → bestätigte Zahlung. Zeitraum: {data['period_days']} Tage.</p><div class='grid'><div class='kpi'><span class='label'>Verfügbare Quotes</span><strong>{f['quotes_available']}</strong></div><div class='kpi'><span class='label'>PayPal-Starts</span><strong>{f['checkout_starts']}</strong></div><div class='kpi'><span class='label'>Bezahlte Direktbuchungen</span><strong>{f['confirmed_paid_bookings']}</strong></div><div class='kpi'><span class='label'>Checkout → Buchung</span><strong>{f['checkout_to_booking_pct'] if f['checkout_to_booking_pct'] is not None else '–'} %</strong></div><div class='kpi'><span class='label'>Direktumsatz</span><strong>{e['direct_revenue_eur']:.2f} EUR</strong></div><div class='kpi'><span class='label'>Vergleichsprovision</span><strong>{pct}</strong></div><div class='kpi'><span class='label'>Geschätzte Provision gespart</span><strong>{saved}</strong></div></div><p class='note'>Der Provisions-Eurobetrag wird nur berechnet, wenn DIRECT_BOOKING_PLATFORM_COMMISSION_PCT (oder OTA_COMMISSION_PCT) mit dem tatsächlichen Vergleichssatz gesetzt ist. Ohne Vertragssatz wird keine Ersparnis behauptet.</p></main></body></html>"""
+        occ = data["occupancy_next_30_days"]
+        html = f"""<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Direktbuchungs-Cockpit</title><style>body{{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:#f4f7f5;color:#17372f}}main{{max-width:1100px;margin:auto;padding:28px 18px 60px}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:22px 0}}.kpi{{background:#fff;border:1px solid #d8e4dc;border-radius:14px;padding:18px}}.kpi strong{{display:block;font-size:28px;margin-top:5px}}.label{{font-size:12px;text-transform:uppercase;font-weight:800;color:#667a72}}.note{{padding:14px 16px;background:#fff7df;border:1px solid #ead9a6;border-radius:12px;color:#6d5717}}.focus{{margin-top:22px;padding:18px;background:#fff;border:1px solid #d8e4dc;border-radius:14px}}.focus b{{display:inline-block;margin:5px 12px 5px 0}}</style></head><body><main><h1>📈 ZAB Direktbuchungs-Cockpit</h1><p>Reale Serverstrecke: Verfügbarkeit → PayPal-Checkout → bestätigte Zahlung. Zeitraum: {data['period_days']} Tage.</p><div class='grid'><div class='kpi'><span class='label'>Verfügbare Quotes</span><strong>{f['quotes_available']}</strong></div><div class='kpi'><span class='label'>PayPal-Starts</span><strong>{f['checkout_starts']}</strong></div><div class='kpi'><span class='label'>Bezahlte Direktbuchungen</span><strong>{f['confirmed_paid_bookings']}</strong></div><div class='kpi'><span class='label'>Checkout → Buchung</span><strong>{f['checkout_to_booking_pct'] if f['checkout_to_booking_pct'] is not None else '–'} %</strong></div><div class='kpi'><span class='label'>Direktumsatz</span><strong>{e['direct_revenue_eur']:.2f} EUR</strong></div><div class='kpi'><span class='label'>Provision gespart</span><strong>{saved}</strong></div><div class='kpi'><span class='label'>Belegt/gesperrt nächste 30 Tage</span><strong>{occ['occupancy_or_block_pct']:.1f} %</strong><small>{occ['blocked_nights']} von {occ['window_days']} Nächten</small></div><div class='kpi'><span class='label'>Noch offen nächste 30 Tage</span><strong>{occ['open_nights']}</strong><small>Nächte</small></div></div><p class='note'>Der Provisions-Eurobetrag wird nur berechnet, wenn DIRECT_BOOKING_PLATFORM_COMMISSION_PCT (oder OTA_COMMISSION_PCT) mit dem tatsächlichen Vergleichssatz gesetzt ist. Ohne Vertragssatz wird keine Ersparnis behauptet. Die 30-Tage-Belegung zählt direkte Vormerkungen/Bestätigungen plus externe Kalenderblöcke.</p><div class='focus'><h2>Wirtschaftlicher Fokus</h2><b>50 % Direktbuchung + SEO</b><b>25 % Unterkunft / Preis / Auslastung</b><b>15 % OS &amp; Messung</b><b>10 % Windis / Bücher / Experimente</b><p>Primäre KPIs: Direktumsatz · eingesparte Plattformprovision · Belegung der nächsten 30 Tage.</p></div></main></body></html>"""
         return html, 200
 
     app.extensions["zab_direct_booking_metrics_initialized"] = True
