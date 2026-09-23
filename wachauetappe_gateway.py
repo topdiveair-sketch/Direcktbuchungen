@@ -527,6 +527,8 @@ def public_sitemap():
         ("/unterkunft-donauradweg-wachau", "weekly", "0.9"),
         ("/uebernachten-aggsbach-markt", "weekly", "0.9"),
         ("/radfahrer-unterkunft-wachau", "weekly", "0.9"),
+        ("/unterkunft-jauerling-wachau", "weekly", "0.95"),
+        ("/skifahren-jauerling-unterkunft-wachau", "weekly", "0.9"),
         ("/legal/impressum", "monthly", "0.3"),
         ("/legal/datenschutz", "monthly", "0.3"),
         ("/legal/agb", "monthly", "0.3"),
@@ -689,6 +691,69 @@ def seo_radfahrer():
             ("⚡","E-Bike","Lademöglichkeit während des Aufenthalts."),
             ("📍","Aggsbach Markt","Standort in der Wachau für weitere Radtouren."),
             ("💶","Direkt anfragen","Preis und Verfügbarkeit auf der offiziellen Website."),
+        ],
+    )
+
+
+
+@app.get("/unterkunft-jauerling-wachau")
+def seo_jauerling():
+    return _seo_landing(
+        title="Unterkunft Jauerling Wachau | Zuhause am Bach",
+        description="Unterkunft für Jauerling-Gäste in der Wachau: ruhig in Aggsbach Markt übernachten, Parkplatz, WLAN und Frühstück auf Wunsch. Direktpreis und Verfügbarkeit prüfen.",
+        canonical=_CANONICAL_ORIGIN + "/unterkunft-jauerling-wachau",
+        h1="Unterkunft am Jauerling in der Wachau",
+        lead="Ruhig in Aggsbach Markt übernachten und den Jauerling mit Natur, Wandern oder Winteraktivitäten verbinden.",
+        eyebrow="Jauerling · Wachau · Aggsbach Markt",
+        subheading="Persönliche Unterkunft als Ausgangspunkt für den Jauerling",
+        paragraphs=[
+            "Zuhause am Bach in Aggsbach Markt ist eine kleine persönliche Unterkunft für Gäste, die einen Aufenthalt in der Wachau mit einem Ausflug zum Jauerling verbinden möchten.",
+            "Das direkt angebotene Gartenzimmer ist für maximal zwei Personen vorgesehen. WLAN und Parkplatz gehören zur Unterkunft; Frühstück kann auf Wunsch ergänzt werden.",
+            "Aktuelle Verfügbarkeit und Preise werden direkt auf der offiziellen Website geprüft. Für wetter- oder saisonabhängige Angebote am Jauerling sollten Gäste den jeweiligen Betreiber vor der Anreise prüfen.",
+            "Die Unterkunft eignet sich damit sowohl für Wander- und Naturtage als auch für winterliche Aufenthalte in der Region.",
+        ],
+        features=[
+            ("🏔️","Jauerling","Ausgangspunkt für Natur, Wandern und saisonale Aktivitäten rund um den Jauerling."),
+            ("🛏️","Für zwei Gäste","Ruhiges Gartenzimmer für maximal zwei Personen."),
+            ("🍳","Frühstück auf Wunsch","Optional zur Übernachtung buchbar."),
+            ("💶","Direktpreis","Preis und freie Termine direkt bei Zuhause am Bach prüfen."),
+        ],
+        faq=[
+            {"@type":"Question","name":"Welche Unterkunft eignet sich für einen Besuch am Jauerling?","acceptedAnswer":{"@type":"Answer","text":"Zuhause am Bach in Aggsbach Markt bietet ein ruhiges Gartenzimmer für maximal zwei Gäste und kann als Ausgangspunkt für Ausflüge zum Jauerling genutzt werden."}},
+            {"@type":"Question","name":"Kann ich die Unterkunft direkt buchen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Verfügbarkeit und aktueller Preis können direkt auf der offiziellen Website von Zuhause am Bach geprüft werden."}},
+            {"@type":"Question","name":"Gibt es Parkplatz und WLAN?","acceptedAnswer":{"@type":"Answer","text":"Ja. Parkplatz und WLAN werden als Leistungen der Unterkunft angeboten."}},
+            {"@type":"Question","name":"Ist die Unterkunft auch außerhalb des Winters interessant?","acceptedAnswer":{"@type":"Answer","text":"Ja. Der Jauerling und die Wachau sind auch für Natur- und Wandertage relevant; die Unterkunft ist nicht auf die Wintersaison beschränkt."}},
+        ],
+    )
+
+
+@app.get("/skifahren-jauerling-unterkunft-wachau")
+def seo_jauerling_ski():
+    return _seo_landing(
+        title="Skifahren Jauerling Unterkunft Wachau | Zuhause am Bach",
+        description="Skifahren am Jauerling mit Unterkunft in der Wachau: ruhig in Aggsbach Markt übernachten, Parkplatz, WLAN und Frühstück auf Wunsch. Direktpreis prüfen.",
+        canonical=_CANONICAL_ORIGIN + "/skifahren-jauerling-unterkunft-wachau",
+        h1="Skifahren am Jauerling – Unterkunft in der Wachau",
+        lead="Jauerling-Wintertag mit ruhiger Übernachtung in Aggsbach Markt verbinden.",
+        eyebrow="Jauerling · Winter · Wachau",
+        subheading="Ruhige Übernachtung für ein Jauerling-Wochenende",
+        paragraphs=[
+            "Zuhause am Bach richtet sich an Gäste, die einen Wintertag am Jauerling mit einer persönlichen Übernachtung in der Wachau verbinden möchten.",
+            "Das Gartenzimmer ist für maximal zwei Personen buchbar. Parkplatz, WLAN und optionales Frühstück ergänzen den Aufenthalt.",
+            "Schnee, Liftbetrieb und Öffnungszeiten am Jauerling sind wetter- und betriebsabhängig. Diese Informationen sollten vor der Anreise direkt beim jeweiligen Betreiber geprüft werden.",
+            "Den aktuellen Zimmerpreis und freie Termine zeigt die offizielle Direktbuchungsseite von Zuhause am Bach.",
+        ],
+        features=[
+            ("🎿","Jauerling-Wintertag","Unterkunft für Gäste mit Winterplänen rund um den Jauerling."),
+            ("🛏️","Ruhig übernachten","Persönliches Gartenzimmer in Aggsbach Markt."),
+            ("🚗","Parkplatz","Parkmöglichkeit bei der Unterkunft."),
+            ("📅","Live-Verfügbarkeit","Freie Termine direkt auf der offiziellen Website prüfen."),
+        ],
+        faq=[
+            {"@type":"Question","name":"Passt Zuhause am Bach für ein Jauerling-Wochenende?","acceptedAnswer":{"@type":"Answer","text":"Ja. Die Unterkunft kann als ruhige Übernachtungsbasis für zwei Gäste genutzt werden, die einen Wintertag am Jauerling planen."}},
+            {"@type":"Question","name":"Ist ein Skipass im Zimmerpreis enthalten?","acceptedAnswer":{"@type":"Answer","text":"Nein. Skipass, Skikurs oder Skiverleih sind nicht Bestandteil der Unterkunftsbuchung."}},
+            {"@type":"Question","name":"Wie viele Gäste können im Gartenzimmer übernachten?","acceptedAnswer":{"@type":"Answer","text":"Das direkt angebotene Gartenzimmer ist für maximal zwei Personen vorgesehen."}},
+            {"@type":"Question","name":"Wo sehe ich den aktuellen Zimmerpreis?","acceptedAnswer":{"@type":"Answer","text":"Der aktuelle Direktpreis wird nach Auswahl des Reisedatums auf der offiziellen Website von Zuhause am Bach angezeigt."}},
         ],
     )
 
