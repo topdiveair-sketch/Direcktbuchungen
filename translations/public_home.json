@@ -49,7 +49,17 @@
     "direct_contact": "Persönlicher Kontakt",
     "direct_extras": "Extras direkt wählbar",
     "direct_price": "Klarer Gesamtpreis",
-    "direct_cta": "Verfügbarkeit & Preis prüfen"
+    "direct_cta": "Verfügbarkeit & Preis prüfen",
+    "svc_eyebrow": "Für aktive Wachau-Gäste",
+    "svc_title": "Mehr Komfort für Radfahrer, Wanderer und Genießer",
+    "svc_transport_title": "Transportservice auf Anfrage",
+    "svc_repair_title": "Kleine Fahrrad-Hilfe",
+    "svc_trail_title": "Welterbesteig",
+    "svc_cycle_title": "Donauradweg",
+    "svc_kitchen_title": "Gästeküche",
+    "svc_bath_title": "Bad & Sauberkeit",
+    "svc_taste_title": "Regionale Genussmomente",
+    "svc_cta": "Verfügbarkeit & Preis prüfen"
   },
   "en": {
     "lang_name": "EN",
@@ -101,7 +111,17 @@
     "direct_contact": "Personal contact",
     "direct_extras": "Choose extras directly",
     "direct_price": "Clear total price",
-    "direct_cta": "Check availability & price"
+    "direct_cta": "Check availability & price",
+    "svc_eyebrow": "For active Wachau guests",
+    "svc_title": "More comfort for cyclists, hikers and food lovers",
+    "svc_transport_title": "Transport service on request",
+    "svc_repair_title": "Small bicycle repairs",
+    "svc_trail_title": "World Heritage Trail",
+    "svc_cycle_title": "Danube Cycle Path",
+    "svc_kitchen_title": "Guest kitchen",
+    "svc_bath_title": "Bathroom & cleanliness",
+    "svc_taste_title": "Regional flavours",
+    "svc_cta": "Check availability & price"
   },
   "cs": {
     "lang_name": "CZ",
@@ -153,7 +173,17 @@
     "direct_contact": "Osobní kontakt",
     "direct_extras": "Doplňky přímo",
     "direct_price": "Jasná celková cena",
-    "direct_cta": "Ověřit dostupnost a cenu"
+    "direct_cta": "Ověřit dostupnost a cenu",
+    "svc_eyebrow": "Pro aktivní hosty ve Wachau",
+    "svc_title": "Více pohodlí pro cyklisty, turisty a milovníky regionu",
+    "svc_transport_title": "Přeprava na vyžádání",
+    "svc_repair_title": "Drobná pomoc s kolem",
+    "svc_trail_title": "Welterbesteig",
+    "svc_cycle_title": "Dunajská cyklostezka",
+    "svc_kitchen_title": "Kuchyň pro hosty",
+    "svc_bath_title": "Koupelna a čistota",
+    "svc_taste_title": "Regionální chutě",
+    "svc_cta": "Ověřit dostupnost a cenu"
   },
   "sk": {
     "lang_name": "SK",
@@ -205,7 +235,17 @@
     "direct_contact": "Osobný kontakt",
     "direct_extras": "Doplnky priamo",
     "direct_price": "Jasná celková cena",
-    "direct_cta": "Overiť dostupnosť a cenu"
+    "direct_cta": "Overiť dostupnosť a cenu",
+    "svc_eyebrow": "Pre aktívnych hostí vo Wachau",
+    "svc_title": "Viac pohodlia pre cyklistov, turistov a milovníkov regiónu",
+    "svc_transport_title": "Preprava na požiadanie",
+    "svc_repair_title": "Drobná pomoc s bicyklom",
+    "svc_trail_title": "Welterbesteig",
+    "svc_cycle_title": "Dunajská cyklotrasa",
+    "svc_kitchen_title": "Kuchyňa pre hostí",
+    "svc_bath_title": "Kúpeľňa a čistota",
+    "svc_taste_title": "Regionálne chute",
+    "svc_cta": "Overiť dostupnosť a cenu"
   },
   "hu": {
     "lang_name": "HU",
@@ -257,7 +297,17 @@
     "direct_contact": "Személyes kapcsolat",
     "direct_extras": "Extrák közvetlenül",
     "direct_price": "Átlátható teljes ár",
-    "direct_cta": "Elérhetőség és ár ellenőrzése"
+    "direct_cta": "Elérhetőség és ár ellenőrzése",
+    "svc_eyebrow": "Aktív Wachau-vendégeknek",
+    "svc_title": "Több kényelem kerékpárosoknak, túrázóknak és ínyenceknek",
+    "svc_transport_title": "Transzfer kérésre",
+    "svc_repair_title": "Kisebb kerékpáros segítség",
+    "svc_trail_title": "Welterbesteig",
+    "svc_cycle_title": "Duna menti kerékpárút",
+    "svc_kitchen_title": "Vendégkonyha",
+    "svc_bath_title": "Fürdőszoba és tisztaság",
+    "svc_taste_title": "Regionális ízek",
+    "svc_cta": "Elérhetőség és ár ellenőrzése"
   },
   "es": {
     "lang_name": "ES",
@@ -309,7 +359,17 @@
     "direct_contact": "Contacto personal",
     "direct_extras": "Extras directamente",
     "direct_price": "Precio total claro",
-    "direct_cta": "Consultar disponibilidad y precio"
+    "direct_cta": "Consultar disponibilidad y precio",
+    "svc_eyebrow": "Para huéspedes activos en Wachau",
+    "svc_title": "Más comodidad para ciclistas, senderistas y amantes de la gastronomía",
+    "svc_transport_title": "Transporte bajo petición",
+    "svc_repair_title": "Pequeña ayuda para bicicletas",
+    "svc_trail_title": "Welterbesteig",
+    "svc_cycle_title": "Ruta ciclista del Danubio",
+    "svc_kitchen_title": "Cocina para huéspedes",
+    "svc_bath_title": "Baño y limpieza",
+    "svc_taste_title": "Sabores regionales",
+    "svc_cta": "Consultar disponibilidad y precio"
   },
   "fr": {
     "lang_name": "FR",
@@ -361,6 +421,16 @@
     "direct_contact": "Contact personnel",
     "direct_extras": "Options en direct",
     "direct_price": "Prix total clair",
-    "direct_cta": "Voir les disponibilités et le prix"
+    "direct_cta": "Voir les disponibilités et le prix",
+    "svc_eyebrow": "Pour les hôtes actifs dans la Wachau",
+    "svc_title": "Plus de confort pour cyclistes, randonneurs et gourmets",
+    "svc_transport_title": "Transport sur demande",
+    "svc_repair_title": "Petite aide vélo",
+    "svc_trail_title": "Welterbesteig",
+    "svc_cycle_title": "Véloroute du Danube",
+    "svc_kitchen_title": "Cuisine des hôtes",
+    "svc_bath_title": "Salle de bain et propreté",
+    "svc_taste_title": "Saveurs régionales",
+    "svc_cta": "Voir les disponibilités et le prix"
   }
 }
