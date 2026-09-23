@@ -623,9 +623,9 @@ def seo_welterbesteig():
 def seo_donauradweg():
     return _seo_landing(
         title="Unterkunft am Donauradweg Wachau | Zuhause am Bach",
-        description="Unterkunft für Radfahrer am Donauradweg in Aggsbach Markt. Fahrradunterbringung, E-Bike-Lademöglichkeit und Direktbuchung bei Zuhause am Bach.",
+        description="Fahrradfreundliche Unterkunft in der Wachau für Radfahrer am Donauradweg: Fahrradunterbringung, E-Bike-Lademöglichkeit und Direktbuchung in Aggsbach Markt.",
         canonical=_CANONICAL_ORIGIN + "/unterkunft-donauradweg-wachau",
-        h1="Unterkunft am Donauradweg in der Wachau",
+        h1="Fahrradfreundliche Unterkunft am Donauradweg in der Wachau",
         lead="Übernachten in Aggsbach Markt mit praktischen Leistungen für Radreisende.",
         eyebrow="Donauradweg Wachau",
         subheading="Für Radfahrer auf der Wachau-Etappe",
@@ -679,7 +679,7 @@ def seo_aggsbach():
 def seo_radfahrer():
     return _seo_landing(
         title="Radfahrer-Unterkunft Wachau | Zuhause am Bach",
-        description="Radfahrer-Unterkunft in der Wachau: Gartenzimmer in Aggsbach Markt mit Fahrradunterbringung, E-Bike-Lademöglichkeit und Direktbuchung.",
+        description="Fahrradfreundliche Unterkunft in der Wachau: Gartenzimmer in Aggsbach Markt mit Fahrradunterbringung, E-Bike-Lademöglichkeit und Direktbuchung.",
         canonical=_CANONICAL_ORIGIN + "/radfahrer-unterkunft-wachau",
         h1="Radfahrer-Unterkunft in der Wachau",
         lead="Für Radurlaub, Donauradweg und E-Bike-Touren rund um Aggsbach Markt.",
