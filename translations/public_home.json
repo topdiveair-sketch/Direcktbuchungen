@@ -36,7 +36,12 @@
     "stories_title": "Geschichten am Bach",
     "stories_text": "Persönliche Buchlesungen und kleine Gesprächsrunden schaffen Raum für neue Geschichten und Ideen.",
     "windis_title": "Fidel, Gloria & Pia",
-    "windis_text": "Die Wilden Wachauer Windis sind Teil unserer Marke und machen Zuhause am Bach persönlich und wiedererkennbar."
+    "windis_text": "Die Wilden Wachauer Windis sind Teil unserer Marke und machen Zuhause am Bach persönlich und wiedererkennbar.",
+    "film_eyebrow": "Vergessene Filmgeschichte · 1961",
+    "film_title": "Mariandl und das ehemalige Hotel Post in Aggsbach Markt",
+    "film_text1": "Der österreichische Filmklassiker Mariandl aus dem Jahr 1961 ist Teil der Wachauer Filmgeschichte. Nach lokaler Überlieferung und unserer Dokumentation wurden die Unfallszene sowie Aufnahmen beim damaligen Hotel Post in Aggsbach Markt gedreht.",
+    "film_text2": "Das Hotel Post besteht heute nicht mehr. Mit historischen Bildern und Erinnerungen möchten wir diesen fast vergessenen Teil der Ortsgeschichte bewahren und wieder sichtbar machen.",
+    "film_note": "Der konkrete Aggsbach-Drehort wird als lokal überlieferte und von uns dokumentierte Ortsgeschichte wiedergegeben."
   },
   "en": {
     "lang_name": "EN",
@@ -75,7 +80,12 @@
     "stories_title": "Stories by the stream",
     "stories_text": "Personal readings and small conversation evenings create space for new stories and ideas.",
     "windis_title": "Fidel, Gloria & Pia",
-    "windis_text": "The Wild Wachau Windis are part of our identity and make Zuhause am Bach personal and memorable."
+    "windis_text": "The Wild Wachau Windis are part of our identity and make Zuhause am Bach personal and memorable.",
+    "film_eyebrow": "Forgotten film history · 1961",
+    "film_title": "Mariandl and the former Hotel Post in Aggsbach Markt",
+    "film_text1": "The Austrian film classic Mariandl from 1961 is part of Wachau film history. According to local tradition and our documentation, the accident scene and shots at the former Hotel Post were filmed in Aggsbach Markt.",
+    "film_text2": "The Hotel Post no longer exists. With historic images and memories, we want to preserve this almost forgotten part of local history and make it visible to Wachau guests again.",
+    "film_note": "The specific Aggsbach filming location is presented as locally preserved and documented history."
   },
   "cs": {
     "lang_name": "CZ",
@@ -114,7 +124,12 @@
     "stories_title": "Příběhy u potoka",
     "stories_text": "Osobní čtení a malé večerní rozhovory vytvářejí prostor pro nové příběhy a nápady.",
     "windis_title": "Fidel, Gloria a Pia",
-    "windis_text": "Divocí wachauští Windis jsou součástí naší identity a dělají Zuhause am Bach osobním a nezaměnitelným."
+    "windis_text": "Divocí wachauští Windis jsou součástí naší identity a dělají Zuhause am Bach osobním a nezaměnitelným.",
+    "film_eyebrow": "Zapomenutá filmová historie · 1961",
+    "film_title": "Mariandl a bývalý Hotel Post v Aggsbach Markt",
+    "film_text1": "Rakouský filmový klasik Mariandl z roku 1961 patří k filmové historii Wachau. Podle místního podání a naší dokumentace se nehoda i záběry u tehdejšího Hotelu Post natáčely v Aggsbach Markt.",
+    "film_text2": "Hotel Post dnes již neexistuje. Historickými snímky a vzpomínkami chceme tuto téměř zapomenutou část místní historie uchovat a znovu ji přiblížit návštěvníkům Wachau.",
+    "film_note": "Konkrétní místo natáčení v Aggsbach je uvedeno jako místně tradovaná a námi dokumentovaná historie."
   },
   "sk": {
     "lang_name": "SK",
@@ -153,7 +168,12 @@
     "stories_title": "Príbehy pri potoku",
     "stories_text": "Osobné čítania a malé večerné rozhovory vytvárajú priestor pre nové príbehy a nápady.",
     "windis_title": "Fidel, Gloria a Pia",
-    "windis_text": "Divokí wachauskí Windis sú súčasťou našej identity a robia Zuhause am Bach osobným a nezameniteľným."
+    "windis_text": "Divokí wachauskí Windis sú súčasťou našej identity a robia Zuhause am Bach osobným a nezameniteľným.",
+    "film_eyebrow": "Zabudnutá filmová história · 1961",
+    "film_title": "Mariandl a bývalý Hotel Post v Aggsbach Markt",
+    "film_text1": "Rakúska filmová klasika Mariandl z roku 1961 patrí k filmovej histórii Wachau. Podľa miestnej tradície a našej dokumentácie sa nehoda aj zábery pri vtedajšom Hoteli Post natáčali v Aggsbach Markt.",
+    "film_text2": "Hotel Post už dnes neexistuje. Historickými zábermi a spomienkami chceme túto takmer zabudnutú časť miestnej histórie zachovať a znovu ju priblížiť návštevníkom Wachau.",
+    "film_note": "Konkrétne miesto natáčania v Aggsbach uvádzame ako miestne tradovanú a nami dokumentovanú históriu."
   },
   "hu": {
     "lang_name": "HU",
@@ -192,7 +212,12 @@
     "stories_title": "Történetek a pataknál",
     "stories_text": "Személyes felolvasások és kis beszélgetős esték adnak teret új történeteknek és ötleteknek.",
     "windis_title": "Fidel, Gloria és Pia",
-    "windis_text": "A Vad Wachaui Windik a márkánk részei, és személyessé, emlékezetessé teszik a Zuhause am Bachot."
+    "windis_text": "A Vad Wachaui Windik a márkánk részei, és személyessé, emlékezetessé teszik a Zuhause am Bachot.",
+    "film_eyebrow": "Elfeledett filmtörténet · 1961",
+    "film_title": "Mariandl és az egykori Hotel Post Aggsbach Marktban",
+    "film_text1": "Az 1961-es osztrák filmklasszikus, a Mariandl a Wachau filmtörténetének része. A helyi hagyomány és dokumentációnk szerint a baleseti jelenetet, valamint az akkori Hotel Postnál készült felvételeket Aggsbach Marktban forgatták.",
+    "film_text2": "A Hotel Post ma már nem létezik. Történelmi képekkel és emlékekkel szeretnénk megőrizni és újra láthatóvá tenni ezt a majdnem elfeledett helytörténeti fejezetet.",
+    "film_note": "Az aggbsbachi forgatási helyszínt helyi hagyományként és általunk dokumentált történetként mutatjuk be."
   },
   "es": {
     "lang_name": "ES",
@@ -231,7 +256,12 @@
     "stories_title": "Historias junto al arroyo",
     "stories_text": "Lecturas personales y pequeñas veladas de conversación crean espacio para nuevas historias e ideas.",
     "windis_title": "Fidel, Gloria y Pia",
-    "windis_text": "Los Wild Wachau Windis forman parte de nuestra identidad y hacen que Zuhause am Bach sea personal y fácil de recordar."
+    "windis_text": "Los Wild Wachau Windis forman parte de nuestra identidad y hacen que Zuhause am Bach sea personal y fácil de recordar.",
+    "film_eyebrow": "Historia cinematográfica olvidada · 1961",
+    "film_title": "Mariandl y el antiguo Hotel Post de Aggsbach Markt",
+    "film_text1": "El clásico austríaco Mariandl, de 1961, forma parte de la historia cinematográfica de Wachau. Según la tradición local y nuestra documentación, la escena del accidente y varias tomas del antiguo Hotel Post se rodaron en Aggsbach Markt.",
+    "film_text2": "El Hotel Post ya no existe. Con imágenes históricas y recuerdos queremos conservar esta parte casi olvidada de la historia local y volver a mostrarla a los visitantes de Wachau.",
+    "film_note": "La localización concreta de Aggsbach se presenta como historia transmitida localmente y documentada por nosotros."
   },
   "fr": {
     "lang_name": "FR",
@@ -270,6 +300,11 @@
     "stories_title": "Histoires au bord du ruisseau",
     "stories_text": "Des lectures personnelles et de petites soirées d’échange ouvrent la voie à de nouvelles histoires et idées.",
     "windis_title": "Fidel, Gloria et Pia",
-    "windis_text": "Les Wild Wachau Windis font partie de notre identité et rendent Zuhause am Bach personnel et mémorable."
+    "windis_text": "Les Wild Wachau Windis font partie de notre identité et rendent Zuhause am Bach personnel et mémorable.",
+    "film_eyebrow": "Histoire du cinéma oubliée · 1961",
+    "film_title": "Mariandl et l’ancien Hotel Post à Aggsbach Markt",
+    "film_text1": "Le classique autrichien Mariandl, sorti en 1961, fait partie de l’histoire cinématographique de la Wachau. Selon la tradition locale et notre documentation, la scène de l’accident ainsi que des prises de vue de l’ancien Hotel Post ont été tournées à Aggsbach Markt.",
+    "film_text2": "L’Hotel Post n’existe plus aujourd’hui. À travers des images historiques et des souvenirs, nous souhaitons préserver cette partie presque oubliée de l’histoire locale et la rendre à nouveau visible aux visiteurs de la Wachau.",
+    "film_note": "Le lieu précis de tournage à Aggsbach est présenté comme une histoire transmise localement et documentée par nos soins."
   }
-}\n
+}
