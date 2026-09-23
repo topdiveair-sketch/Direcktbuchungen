@@ -14,7 +14,7 @@
   <meta property="og:title" content="{{ tr.title }}">
   <meta property="og:description" content="{{ tr.description }}">
   <meta property="og:url" content="{{ canonical }}">
-  <meta property="og:image" content="{{ origin }}/media/gartenblick.jpg">
+  <meta property="og:image" content="{{ origin }}/static/images/aggsbach-markt-luftbild.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260923-i18n">
   <script type="application/ld+json">
@@ -58,7 +58,7 @@
       <a href="{{ origin }}/?lang={{ lang }}#booking">{{ tr.booking_cta }}</a>
     </div>
   </section>
-  <section class="feature-strip">
+  <section class="feature-strip feature-strip-i18n">
     <article><span>🚲</span><strong>{{ tr.cyclists_title }}</strong><small>{{ tr.cyclists }}</small></article>
     <article><span>🥾</span><strong>{{ tr.hikers_title }}</strong><small>{{ tr.hikers }}</small></article>
     <article><span>🏡</span><strong>{{ tr.guests_title }}</strong><small>{{ tr.guests }}</small></article>
