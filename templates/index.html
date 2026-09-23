@@ -343,8 +343,8 @@
       <article class="active-service-card"><img src="{{ url_for('static', filename='images/fahrradservice-donauradweg-wachau.webp') }}?v=20260923-hq2" alt="Fahrradservice mit Werkzeug, Luftpumpe und E-Bike-Lademöglichkeit am Donauradweg Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Kleine Fahrrad-Hilfe</h3><p>Luft, Werkzeug und Unterstützung bei kleinen Reparaturen.</p></div></article>
       <article class="active-service-card"><img src="{{ url_for('static', filename='images/welterbesteig-wachau-wanderer.webp') }}?v=20260923-hq2" alt="Wanderer am Welterbesteig Wachau oberhalb der Donau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Welterbesteig</h3><p>Etappenstempel, persönliche Tipps und passende Extras für unterwegs.</p></div></article>
       <article class="active-service-card"><img src="{{ url_for('static', filename='images/donauradweg-wachau-radfahrer.webp') }}?v=20260923-hq2" alt="Radfahrer am Donauradweg in der Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Donauradweg</h3><p>Fahrradunterbringung, E-Bike-Lademöglichkeit und praktische Unterstützung.</p></div></article>
-      <article class="active-service-card"><img src="{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-v2.webp') }}?v=20260923-hq2" alt="Gemütliche Gästeküche bei Zuhause am Bach in der Wachau mit Kaffee, Tee und Getränkebereich" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Gästeküche</h3><p>Kaffee, Tee, Getränke und ein gemütlicher Platz für eine Pause.</p></div></article>
-      <article class="active-service-card"><img src="{{ url_for('static', filename='images/bad-zuhause-am-bach-v2.webp') }}?v=20260923-hq2" alt="Helles gepflegtes Badezimmer bei Zuhause am Bach in Aggsbach Markt in der Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Bad &amp; Sauberkeit</h3><p>Gepflegte Ausstattung und ein klarer Standard, den Gäste vor der Buchung sehen können.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-wachau.jpg') }}?v=20260923-hq2" alt="Gemütliche Gästeküche bei Zuhause am Bach in der Wachau mit Kaffee, Tee und Getränkebereich" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Gästeküche</h3><p>Kaffee, Tee, Getränke und ein gemütlicher Platz für eine Pause.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/bad-zuhause-am-bach-wachau.jpg') }}?v=20260923-hq2" alt="Helles gepflegtes Badezimmer bei Zuhause am Bach in Aggsbach Markt in der Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Bad &amp; Sauberkeit</h3><p>Gepflegte Ausstattung und ein klarer Standard, den Gäste vor der Buchung sehen können.</p></div></article>
       <article class="active-service-card"><img src="{{ url_for('static', filename='images/wachauer-wein-marille-v2.webp') }}?v=20260923-hq2" alt="Wachauer Wein, Marillenschnaps und Marillen mit Blick auf die Donau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Regionale Genussmomente</h3><p>Wachauer Wein, Marillenprodukte und regionale Spezialitäten bringen ein Stück Region direkt in den Aufenthalt.</p></div></article>
     </div>
     <div class="active-service-cta"><strong>Etappe planen, Zimmer prüfen, direkt buchen.</strong><a class="btn" href="#booking">Verfügbarkeit &amp; Preis prüfen</a></div>
@@ -406,5 +406,17 @@
 <div class="mobile-conversion-bar"><span id="stickyLabel">Verfügbarkeit &amp; Preis</span><a href="#booking" id="stickyCta">Prüfen</a></div>
 
 <script src="{{ url_for('static', filename='js/app.js') }}?v=20260921-11"></script>
+<script id="image-fallback-hardened-20260923">
+(function(){
+  const fallback="{{ url_for('static', filename='images/aggsbach-markt-luftbild.webp') }}?v=20260923-hq3";
+  document.querySelectorAll('img').forEach(function(img){
+    img.addEventListener('error', function(){
+      if (img.dataset.fallbackApplied) return;
+      img.dataset.fallbackApplied='1';
+      img.src=fallback;
+    });
+  });
+})();
+</script>
 </body>
 </html>
