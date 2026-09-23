@@ -1,0 +1,31 @@
+name: Homepage translations guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate seven-language catalog
+        run: python scripts/check_homepage_translations.py
+      - name: Require translation update when homepage changes
+        shell: bash
+        run: |
+          if git rev-parse HEAD^ >/dev/null 2>&1; then
+            CHANGED="$(git diff --name-only HEAD^ HEAD)"
+            if echo "$CHANGED" | grep -qx "templates/index.html"; then
+              echo "$CHANGED" | grep -qx "translations/public_home.json" || {
+                echo "templates/index.html changed without translations/public_home.json"
+                exit 1
+              }
+            fi
+          fi
