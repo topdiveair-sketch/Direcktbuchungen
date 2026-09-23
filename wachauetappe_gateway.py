@@ -505,7 +505,7 @@ def wachauetappe_production_health_legacy():
 # by the same canonical www host as the booking application.
 from flask import Response, redirect, render_template
 
-PUBLIC_HOME_TRANSLATIONS = json.loads((BASE / "translations" / "public_home.json").read_text(encoding="utf-8"))
+PUBLIC_HOME_TRANSLATIONS = json.loads((legacy_app.BASE / "translations" / "public_home.json").read_text(encoding="utf-8"))
 
 _CANONICAL_ORIGIN = "https://www.zuhauseambach-wachau.at"
 
