@@ -12,6 +12,8 @@
   <meta property="og:title" content="{{ title }}">
   <meta property="og:description" content="{{ description }}">
   <meta property="og:url" content="{{ canonical }}">
+  <meta property="og:image" content="https://www.zuhauseambach-wachau.at/media/gartenblick.jpg">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260922-seo">
   <script type="application/ld+json">
   {
@@ -20,12 +22,14 @@
     "name":{{ title|tojson }},
     "url":{{ canonical|tojson }},
     "description":{{ description|tojson }},
+    "inLanguage":"de-AT",
     "isPartOf":{"@type":"WebSite","name":"Zuhause am Bach – Wachau","url":"https://www.zuhauseambach-wachau.at/"},
     "about":{
       "@type":"BedAndBreakfast",
       "@id":"https://www.zuhauseambach-wachau.at/#unterkunft",
       "name":"Zuhause am Bach – Wachau",
       "url":"https://www.zuhauseambach-wachau.at/",
+      "potentialAction":{"@type":"ReserveAction","target":"https://www.zuhauseambach-wachau.at/#booking","name":"Direkt Verfügbarkeit prüfen und buchen"},
       "address":{"@type":"PostalAddress","streetAddress":"Aggsbach Markt 82","postalCode":"3641","addressLocality":"Aggsbach Markt","addressRegion":"Niederösterreich","addressCountry":"AT"},
       "sameAs":[
         "https://www.booking.com/hotel/at/zu-hause-am-bach.de.html",
@@ -34,6 +38,7 @@
     }
   }
   </script>
+  {% if faq %}<script type="application/ld+json">{{ {"@context":"https://schema.org","@type":"FAQPage","mainEntity": faq}|tojson }}</script>{% endif %}
 </head>
 <body>
 <header class="hero" id="start">
@@ -91,6 +96,7 @@
     <div>
       <span class="eyebrow">Weitere Wachau-Themen</span>
       <h2>Passend zu deiner Reiseplanung</h2>
+      <p><a href="/unterkunft-wachau">Unterkunft in der Wachau</a></p>
       <p><a href="/unterkunft-welterbesteig-wachau">Unterkunft am Welterbesteig Wachau</a></p>
       <p><a href="/unterkunft-donauradweg-wachau">Unterkunft am Donauradweg Wachau</a></p>
       <p><a href="/uebernachten-aggsbach-markt">Übernachten in Aggsbach Markt</a></p>
