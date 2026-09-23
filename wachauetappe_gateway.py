@@ -505,6 +505,8 @@ def wachauetappe_production_health_legacy():
 # by the same canonical www host as the booking application.
 from flask import Response, redirect, render_template
 
+PUBLIC_HOME_TRANSLATIONS = json.loads((BASE / "translations" / "public_home.json").read_text(encoding="utf-8"))
+
 _CANONICAL_ORIGIN = "https://www.zuhauseambach-wachau.at"
 
 @app.get("/robots.txt")
@@ -529,6 +531,12 @@ def public_sitemap():
         ("/radfahrer-unterkunft-wachau", "weekly", "0.9"),
         ("/unterkunft-jauerling-wachau", "weekly", "0.95"),
         ("/skifahren-jauerling-unterkunft-wachau", "weekly", "0.9"),
+        ("/en/", "weekly", "0.8"),
+        ("/cs/", "weekly", "0.8"),
+        ("/sk/", "weekly", "0.8"),
+        ("/hu/", "weekly", "0.8"),
+        ("/es/", "weekly", "0.8"),
+        ("/fr/", "weekly", "0.8"),
         ("/legal/impressum", "monthly", "0.3"),
         ("/legal/datenschutz", "monthly", "0.3"),
         ("/legal/agb", "monthly", "0.3"),
@@ -694,6 +702,52 @@ def seo_radfahrer():
         ],
     )
 
+
+
+
+def _public_home_language(lang: str):
+    if lang not in PUBLIC_HOME_TRANSLATIONS:
+        return redirect(_CANONICAL_ORIGIN + "/", code=302)
+    tr = PUBLIC_HOME_TRANSLATIONS[lang]
+    canonical = _CANONICAL_ORIGIN + ("/" if lang == "de" else f"/{lang}/")
+    return render_template(
+        "public_home_i18n.html",
+        tr=tr,
+        lang=lang,
+        languages=PUBLIC_HOME_TRANSLATIONS,
+        canonical=canonical,
+        origin=_CANONICAL_ORIGIN,
+    )
+
+
+@app.get("/en/")
+def public_home_en():
+    return _public_home_language("en")
+
+
+@app.get("/cs/")
+def public_home_cs():
+    return _public_home_language("cs")
+
+
+@app.get("/sk/")
+def public_home_sk():
+    return _public_home_language("sk")
+
+
+@app.get("/hu/")
+def public_home_hu():
+    return _public_home_language("hu")
+
+
+@app.get("/es/")
+def public_home_es():
+    return _public_home_language("es")
+
+
+@app.get("/fr/")
+def public_home_fr():
+    return _public_home_language("fr")
 
 
 @app.get("/unterkunft-jauerling-wachau")
