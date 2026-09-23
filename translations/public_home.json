@@ -41,7 +41,15 @@
     "film_title": "Mariandl und das ehemalige Hotel Post in Aggsbach Markt",
     "film_text1": "Der österreichische Filmklassiker Mariandl aus dem Jahr 1961 ist Teil der Wachauer Filmgeschichte. Nach lokaler Überlieferung und unserer Dokumentation wurden die Unfallszene sowie Aufnahmen beim damaligen Hotel Post in Aggsbach Markt gedreht.",
     "film_text2": "Das Hotel Post besteht heute nicht mehr. Mit historischen Bildern und Erinnerungen möchten wir diesen fast vergessenen Teil der Ortsgeschichte bewahren und wieder sichtbar machen.",
-    "film_note": "Der konkrete Aggsbach-Drehort wird als lokal überlieferte und von uns dokumentierte Ortsgeschichte wiedergegeben."
+    "film_note": "Der konkrete Aggsbach-Drehort wird als lokal überlieferte und von uns dokumentierte Ortsgeschichte wiedergegeben.",
+    "direct_eyebrow": "Direkt buchen",
+    "direct_title": "Kurzer Weg vom Wunsch zur Buchung",
+    "direct_text": "Freie Termine und Preis direkt auf der offiziellen Website prüfen. Fragen, Sonderwünsche und Extras landen ohne Portal-Umweg direkt bei uns.",
+    "direct_live": "Live-Verfügbarkeit",
+    "direct_contact": "Persönlicher Kontakt",
+    "direct_extras": "Extras direkt wählbar",
+    "direct_price": "Klarer Gesamtpreis",
+    "direct_cta": "Verfügbarkeit & Preis prüfen"
   },
   "en": {
     "lang_name": "EN",
@@ -85,7 +93,15 @@
     "film_title": "Mariandl and the former Hotel Post in Aggsbach Markt",
     "film_text1": "The Austrian film classic Mariandl from 1961 is part of Wachau film history. According to local tradition and our documentation, the accident scene and shots at the former Hotel Post were filmed in Aggsbach Markt.",
     "film_text2": "The Hotel Post no longer exists. With historic images and memories, we want to preserve this almost forgotten part of local history and make it visible to Wachau guests again.",
-    "film_note": "The specific Aggsbach filming location is presented as locally preserved and documented history."
+    "film_note": "The specific Aggsbach filming location is presented as locally preserved and documented history.",
+    "direct_eyebrow": "Book direct",
+    "direct_title": "A short route from idea to booking",
+    "direct_text": "Check dates and price on the official website. Questions, requests and extras reach us directly without a booking-portal detour.",
+    "direct_live": "Live availability",
+    "direct_contact": "Personal contact",
+    "direct_extras": "Choose extras directly",
+    "direct_price": "Clear total price",
+    "direct_cta": "Check availability & price"
   },
   "cs": {
     "lang_name": "CZ",
@@ -129,7 +145,15 @@
     "film_title": "Mariandl a bývalý Hotel Post v Aggsbach Markt",
     "film_text1": "Rakouský filmový klasik Mariandl z roku 1961 patří k filmové historii Wachau. Podle místního podání a naší dokumentace se nehoda i záběry u tehdejšího Hotelu Post natáčely v Aggsbach Markt.",
     "film_text2": "Hotel Post dnes již neexistuje. Historickými snímky a vzpomínkami chceme tuto téměř zapomenutou část místní historie uchovat a znovu ji přiblížit návštěvníkům Wachau.",
-    "film_note": "Konkrétní místo natáčení v Aggsbach je uvedeno jako místně tradovaná a námi dokumentovaná historie."
+    "film_note": "Konkrétní místo natáčení v Aggsbach je uvedeno jako místně tradovaná a námi dokumentovaná historie.",
+    "direct_eyebrow": "Rezervace přímo",
+    "direct_title": "Krátká cesta od přání k rezervaci",
+    "direct_text": "Volné termíny a cenu ověříte přímo na oficiálním webu. Dotazy, přání a doplňky jdou přímo k nám bez prostředníka.",
+    "direct_live": "Živá dostupnost",
+    "direct_contact": "Osobní kontakt",
+    "direct_extras": "Doplňky přímo",
+    "direct_price": "Jasná celková cena",
+    "direct_cta": "Ověřit dostupnost a cenu"
   },
   "sk": {
     "lang_name": "SK",
@@ -173,7 +197,15 @@
     "film_title": "Mariandl a bývalý Hotel Post v Aggsbach Markt",
     "film_text1": "Rakúska filmová klasika Mariandl z roku 1961 patrí k filmovej histórii Wachau. Podľa miestnej tradície a našej dokumentácie sa nehoda aj zábery pri vtedajšom Hoteli Post natáčali v Aggsbach Markt.",
     "film_text2": "Hotel Post už dnes neexistuje. Historickými zábermi a spomienkami chceme túto takmer zabudnutú časť miestnej histórie zachovať a znovu ju priblížiť návštevníkom Wachau.",
-    "film_note": "Konkrétne miesto natáčania v Aggsbach uvádzame ako miestne tradovanú a nami dokumentovanú históriu."
+    "film_note": "Konkrétne miesto natáčania v Aggsbach uvádzame ako miestne tradovanú a nami dokumentovanú históriu.",
+    "direct_eyebrow": "Rezervovať priamo",
+    "direct_title": "Krátka cesta od želania k rezervácii",
+    "direct_text": "Voľné termíny a cenu overíte priamo na oficiálnej stránke. Otázky, želania a doplnky idú priamo k nám bez portálovej obchádzky.",
+    "direct_live": "Živá dostupnosť",
+    "direct_contact": "Osobný kontakt",
+    "direct_extras": "Doplnky priamo",
+    "direct_price": "Jasná celková cena",
+    "direct_cta": "Overiť dostupnosť a cenu"
   },
   "hu": {
     "lang_name": "HU",
@@ -217,7 +249,15 @@
     "film_title": "Mariandl és az egykori Hotel Post Aggsbach Marktban",
     "film_text1": "Az 1961-es osztrák filmklasszikus, a Mariandl a Wachau filmtörténetének része. A helyi hagyomány és dokumentációnk szerint a baleseti jelenetet, valamint az akkori Hotel Postnál készült felvételeket Aggsbach Marktban forgatták.",
     "film_text2": "A Hotel Post ma már nem létezik. Történelmi képekkel és emlékekkel szeretnénk megőrizni és újra láthatóvá tenni ezt a majdnem elfeledett helytörténeti fejezetet.",
-    "film_note": "Az aggbsbachi forgatási helyszínt helyi hagyományként és általunk dokumentált történetként mutatjuk be."
+    "film_note": "Az aggbsbachi forgatási helyszínt helyi hagyományként és általunk dokumentált történetként mutatjuk be.",
+    "direct_eyebrow": "Közvetlen foglalás",
+    "direct_title": "Rövid út az ötlettől a foglalásig",
+    "direct_text": "A szabad időpontokat és az árat közvetlenül a hivatalos oldalon ellenőrizheti. Kérdései, kérései és extrái közvetlenül hozzánk jutnak.",
+    "direct_live": "Élő elérhetőség",
+    "direct_contact": "Személyes kapcsolat",
+    "direct_extras": "Extrák közvetlenül",
+    "direct_price": "Átlátható teljes ár",
+    "direct_cta": "Elérhetőség és ár ellenőrzése"
   },
   "es": {
     "lang_name": "ES",
@@ -261,7 +301,15 @@
     "film_title": "Mariandl y el antiguo Hotel Post de Aggsbach Markt",
     "film_text1": "El clásico austríaco Mariandl, de 1961, forma parte de la historia cinematográfica de Wachau. Según la tradición local y nuestra documentación, la escena del accidente y varias tomas del antiguo Hotel Post se rodaron en Aggsbach Markt.",
     "film_text2": "El Hotel Post ya no existe. Con imágenes históricas y recuerdos queremos conservar esta parte casi olvidada de la historia local y volver a mostrarla a los visitantes de Wachau.",
-    "film_note": "La localización concreta de Aggsbach se presenta como historia transmitida localmente y documentada por nosotros."
+    "film_note": "La localización concreta de Aggsbach se presenta como historia transmitida localmente y documentada por nosotros.",
+    "direct_eyebrow": "Reserva directa",
+    "direct_title": "Del deseo a la reserva por el camino más corto",
+    "direct_text": "Consulta fechas y precio en la web oficial. Las preguntas, peticiones y extras nos llegan directamente, sin pasar por un portal.",
+    "direct_live": "Disponibilidad en tiempo real",
+    "direct_contact": "Contacto personal",
+    "direct_extras": "Extras directamente",
+    "direct_price": "Precio total claro",
+    "direct_cta": "Consultar disponibilidad y precio"
   },
   "fr": {
     "lang_name": "FR",
@@ -305,6 +353,14 @@
     "film_title": "Mariandl et l’ancien Hotel Post à Aggsbach Markt",
     "film_text1": "Le classique autrichien Mariandl, sorti en 1961, fait partie de l’histoire cinématographique de la Wachau. Selon la tradition locale et notre documentation, la scène de l’accident ainsi que des prises de vue de l’ancien Hotel Post ont été tournées à Aggsbach Markt.",
     "film_text2": "L’Hotel Post n’existe plus aujourd’hui. À travers des images historiques et des souvenirs, nous souhaitons préserver cette partie presque oubliée de l’histoire locale et la rendre à nouveau visible aux visiteurs de la Wachau.",
-    "film_note": "Le lieu précis de tournage à Aggsbach est présenté comme une histoire transmise localement et documentée par nos soins."
+    "film_note": "Le lieu précis de tournage à Aggsbach est présenté comme une histoire transmise localement et documentée par nos soins.",
+    "direct_eyebrow": "Réserver en direct",
+    "direct_title": "Le chemin le plus court vers votre réservation",
+    "direct_text": "Consultez les dates et le prix sur le site officiel. Questions, demandes et options nous parviennent directement, sans détour par une plateforme.",
+    "direct_live": "Disponibilités en temps réel",
+    "direct_contact": "Contact personnel",
+    "direct_extras": "Options en direct",
+    "direct_price": "Prix total clair",
+    "direct_cta": "Voir les disponibilités et le prix"
   }
 }

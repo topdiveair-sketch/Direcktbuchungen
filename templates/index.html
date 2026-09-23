@@ -65,7 +65,7 @@
     <h1>Unterkunft in der Wachau – Zuhause am Bach</h1>
     <p>Ruhiges Privatzimmer in Aggsbach Markt · für Donauradweg &amp; Welterbesteig</p>
     {% if google_landing %}<div class="google-trust">🚴 Fahrradunterbringung · ⚡ E-Bike laden · 🥾 Welterbesteig · 🍳 Frühstück auf Wunsch</div>{% endif %}
-    <span>Mit Fidel, Gloria und Pia – den Wilden Wachauer Windis.</span>
+    <span>Mit Fidel, Gloria und Pia – den Wilden Wachauer Windis.</span>\n    <div class="hero-actions"><a class="btn" href="#booking">Verfügbarkeit &amp; Preis prüfen</a><a class="hero-secondary" href="#basislager">Warum Zuhause am Bach?</a></div>\n    <div class="hero-proof">Direkter Kontakt · Live-Verfügbarkeit · persönliche Bestätigung · Extras direkt wählbar</div>
   </div>
 </header>
 
@@ -198,7 +198,21 @@
     </aside>
   </section>
 
-  <section id="ausstattung" class="feature-strip">
+
+  <section class="direct-value" aria-labelledby="direct-value-title">
+    <div>
+      <span class="eyebrow">Direkt buchen</span>
+      <h2 id="direct-value-title">Kurzer Weg vom Wunsch zur Buchung</h2>
+      <p>Bei uns prüfst du freie Termine und Preis direkt auf der offiziellen Website. Fragen, Sonderwünsche und Extras landen ohne Portal-Umweg direkt bei uns.</p>
+    </div>
+    <div class="direct-value-grid">
+      <article><strong>✓ Live-Verfügbarkeit</strong><small>Kalender und Terminprüfung direkt auf der Website.</small></article>
+      <article><strong>✓ Persönlicher Kontakt</strong><small>Fragen und Wünsche gehen direkt an Zuhause am Bach.</small></article>
+      <article><strong>✓ Extras im selben Ablauf</strong><small>Frühstück, Jause und Gepäcktransport gleich mit auswählen.</small></article>
+      <article><strong>✓ Klarer Gesamtpreis</strong><small>Nach der Verfügbarkeitsprüfung siehst du den Preis inklusive gewählter Extras.</small></article>
+    </div>
+  </section>
+\n  <section id="ausstattung" class="feature-strip">
     <article><span>♨</span><strong>Frühstück mit Liebe</strong><small>Regional, vegetarisch oder vegan.</small></article>
     <article><span>🚲</span><strong>E-Bike willkommen</strong><small>Laden, Werkzeug, Luft und Unterstand.</small></article>
     <article><span>🥾</span><strong>Wanderer & Radfahrer</strong><small>Gepäcktransport auf Anfrage.</small></article>
@@ -225,7 +239,7 @@
         <a href="/unterkunft-welterbesteig-wachau">Für Wanderer</a> · <a href="/unterkunft-donauradweg-wachau">Für Radfahrer</a>
       </article>
       <article class="identity-card identity-card-media">
-        <img src="https://topdiveair-sketch.github.io/Direcktbuchungen/images/wachau-etappenstempel-zuhause-am-bach.jpg" alt="Zuhause-am-Bach Etappenstempel für Welterbesteig und Donauradweg in Aggsbach Markt" loading="lazy" decoding="async">
+        <img src="{{ url_for('static', filename='images/wachau-etappenstempel-zuhause-am-bach.jpg') }}" alt="Zuhause-am-Bach Etappenstempel für Welterbesteig und Donauradweg in Aggsbach Markt" loading="lazy" decoding="async">
         <div><h3>Unser eigener Etappenstempel</h3><p>Wer am Welterbesteig oder Donauradweg unterwegs ist, kann sich bei uns eine persönliche Erinnerung an die Wachau-Etappe holen.</p></div>
       </article>
       <article class="identity-card">
@@ -235,7 +249,7 @@
         <a href="#booking">Bei der Buchung Extras wählen</a>
       </article>
       <article class="identity-card identity-card-media">
-        <img src="https://topdiveair-sketch.github.io/Direcktbuchungen/images/windis-wachau-app.webp" alt="Die Wilden Wachauer Windis von Zuhause am Bach" loading="lazy" decoding="async">
+        <img src="{{ url_for('static', filename='images/windis-wachau-app.webp') }}" alt="Die Wilden Wachauer Windis von Zuhause am Bach" loading="lazy" decoding="async">
         <div><h3>Windi-Chronik &amp; Gäste-App</h3><p>Fotos, Erlebnisse und Geschichten dürfen weiterleben. Unsere Gäste-App begleitet den Aufenthalt und die Windi-Chronik sammelt Erinnerungen aus der Wachau.</p><a href="{{ guest_app_url }}" target="_blank" rel="noopener">Gäste-App öffnen</a></div>
       </article>
       <article class="identity-card">
@@ -294,7 +308,17 @@
     <div id="liveCalendar" class="live-calendar"></div>
   </section>
 
-  <section id="reiseplanung" class="story-section">
+
+  <section class="sales-faq" aria-labelledby="sales-faq-title">
+    <span class="eyebrow">Gut zu wissen</span>
+    <h2 id="sales-faq-title">Häufige Fragen vor der Buchung</h2>
+    <details><summary>Kann ich direkt bei Zuhause am Bach buchen?</summary><p>Ja. Reisedaten wählen, Verfügbarkeit prüfen und anschließend direkt über die offizielle Website buchen oder anfragen.</p></details>
+    <details><summary>Ist die Unterkunft für Radfahrer am Donauradweg geeignet?</summary><p>Ja. Fahrradunterbringung, E-Bike-Lademöglichkeit, Werkzeug und weitere Services für Radreisende gehören zu unserer Ausrichtung.</p></details>
+    <details><summary>Ist Zuhause am Bach für Wanderer am Welterbesteig geeignet?</summary><p>Ja. Aggsbach Markt ist ein guter Ausgangs- und Zwischenpunkt für Wachau-Wanderungen; zusätzlich gibt es persönliche Tipps und unseren Etappenstempel.</p></details>
+    <details><summary>Kann ich Frühstück oder eine Jause dazubuchen?</summary><p>Verfügbare Zusatzleistungen werden direkt im Buchungsbereich angezeigt und können dort ausgewählt werden.</p></details>
+    <details><summary>Was macht Zuhause am Bach anders?</summary><p>Neben der persönlichen Unterkunft verbinden wir Wachau-Erlebnis, Windis, Gäste-App, Windi-Chronik, Etappenstempel, Jausenangebote und lokale Geschichten zu einem sehr persönlichen Aufenthalt.</p></details>
+  </section>
+\n  <section id="reiseplanung" class="story-section">
     <div>
       <span class="eyebrow">Wachau planen</span>
       <h2>Unterkunft für Welterbesteig, Donauradweg und Aggsbach Markt</h2>

@@ -58,7 +58,22 @@
       <a href="{{ origin }}/?lang={{ lang }}#booking">{{ tr.booking_cta }}</a>
     </div>
   </section>
-  <section class="feature-strip feature-strip-i18n">
+
+  <section class="direct-value">
+    <div>
+      <span class="eyebrow">{{ tr.direct_eyebrow }}</span>
+      <h2>{{ tr.direct_title }}</h2>
+      <p>{{ tr.direct_text }}</p>
+      <a class="btn" href="{{ origin }}/?lang={{ lang }}#booking">{{ tr.direct_cta }}</a>
+    </div>
+    <div class="direct-value-grid">
+      <article><strong>✓ {{ tr.direct_live }}</strong></article>
+      <article><strong>✓ {{ tr.direct_contact }}</strong></article>
+      <article><strong>✓ {{ tr.direct_extras }}</strong></article>
+      <article><strong>✓ {{ tr.direct_price }}</strong></article>
+    </div>
+  </section>
+\n  <section class="feature-strip feature-strip-i18n">
     <article><span>🚲</span><strong>{{ tr.cyclists_title }}</strong><small>{{ tr.cyclists }}</small></article>
     <article><span>🥾</span><strong>{{ tr.hikers_title }}</strong><small>{{ tr.hikers }}</small></article>
     <article><span>🏡</span><strong>{{ tr.guests_title }}</strong><small>{{ tr.guests }}</small></article>
