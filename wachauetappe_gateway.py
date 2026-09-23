@@ -522,6 +522,7 @@ def public_robots():
 def public_sitemap():
     urls = [
         ("/", "daily", "1.0"),
+        ("/unterkunft-wachau", "weekly", "1.0"),
         ("/unterkunft-welterbesteig-wachau", "weekly", "0.9"),
         ("/unterkunft-donauradweg-wachau", "weekly", "0.9"),
         ("/uebernachten-aggsbach-markt", "weekly", "0.9"),
@@ -545,7 +546,39 @@ def public_sitemap():
     return Response(body, mimetype="application/xml"), 200, {"Cache-Control": "public, max-age=3600"}
 
 def _seo_landing(**kwargs):
+    kwargs.setdefault("faq", [])
     return render_template("seo_landing.html", **kwargs)
+
+
+
+@app.get("/unterkunft-wachau")
+def seo_unterkunft_wachau():
+    return _seo_landing(
+        title="Unterkunft Wachau direkt buchen | Zuhause am Bach Aggsbach",
+        description="Unterkunft in der Wachau direkt beim Gastgeber buchen: ruhiges Privatzimmer in Aggsbach Markt für Donauradweg, Welterbesteig und E-Bike. Verfügbarkeit und Preis direkt prüfen.",
+        canonical=_CANONICAL_ORIGIN + "/unterkunft-wachau",
+        h1="Unterkunft in der Wachau direkt beim Gastgeber",
+        lead="Ruhiges Privatzimmer in Aggsbach Markt für Donauradweg, Welterbesteig und entspannte Wachau-Tage.",
+        eyebrow="Unterkunft Wachau · Direktbuchung",
+        subheading="Persönlich übernachten statt über ein Buchungsportal",
+        paragraphs=[
+            "Zuhause am Bach ist eine kleine persönlich geführte Unterkunft in Aggsbach Markt in der Wachau. Das Gartenzimmer ist für maximal zwei Personen ausgelegt und kann direkt über die offizielle Website angefragt beziehungsweise gebucht werden.",
+            "Besonders passend ist die Unterkunft für Radfahrer am Donauradweg, Wanderer am Welterbesteig und Gäste, die eine ruhige Übernachtung mit direktem Kontakt zu den Gastgebern suchen.",
+            "Freie Termine, aktuelle Preise und Zusatzleistungen wie Frühstück, Wachauer Jause oder Gepäcktransport werden direkt auf der offiziellen Website angezeigt.",
+        ],
+        features=[
+            ("🏡","Persönliche Unterkunft","Kleines Gästehaus mit direktem Kontakt zu den Gastgebern."),
+            ("🚲","Donauradweg","Fahrradunterbringung und E-Bike-Lademöglichkeit für Radreisende."),
+            ("🥾","Welterbesteig","Geeignet als ruhiger Etappenstopp in der Wachau."),
+            ("💶","Direkt buchen","Verfügbarkeit und Preis ohne Umweg über ein Buchungsportal prüfen."),
+        ],
+        faq=[
+            {"@type":"Question","name":"Kann ich Zuhause am Bach direkt buchen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Verfügbarkeit und Preis können direkt auf der offiziellen Website von Zuhause am Bach geprüft werden."}},
+            {"@type":"Question","name":"Ist die Unterkunft für Radfahrer am Donauradweg geeignet?","acceptedAnswer":{"@type":"Answer","text":"Ja. Die Unterkunft nennt Fahrradunterbringung und E-Bike-Lademöglichkeit als Leistungen für Gäste."}},
+            {"@type":"Question","name":"Ist Frühstück verfügbar?","acceptedAnswer":{"@type":"Answer","text":"Frühstück kann auf Wunsch als Zusatzleistung gewählt werden."}},
+            {"@type":"Question","name":"Wo liegt Zuhause am Bach?","acceptedAnswer":{"@type":"Answer","text":"Zuhause am Bach liegt in Aggsbach Markt 82, 3641 Aggsbach Markt, in der Wachau in Niederösterreich."}},
+        ],
+    )
 
 
 @app.get("/unterkunft-welterbesteig-wachau")
@@ -561,6 +594,11 @@ def seo_welterbesteig():
         paragraphs=[
             "Zuhause am Bach liegt in Aggsbach Markt und richtet sich an Gäste, die die Wachau zu Fuß erleben möchten.",
             "Das Gartenzimmer ist direkt über die offizielle Website anfragbar. Frühstück ist auf Wunsch möglich; aktuelle freie Termine zeigt der Live-Kalender.",
+        ],
+        faq=[
+            {"@type":"Question","name":"Ist Zuhause am Bach für den Welterbesteig geeignet?","acceptedAnswer":{"@type":"Answer","text":"Die Unterkunft in Aggsbach Markt richtet sich ausdrücklich auch an Wanderer am Welterbesteig Wachau."}},
+            {"@type":"Question","name":"Kann ich Frühstück dazubuchen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Frühstück ist auf Wunsch als Zusatzleistung verfügbar."}},
+            {"@type":"Question","name":"Wo prüfe ich freie Termine?","acceptedAnswer":{"@type":"Answer","text":"Freie Termine und Preise werden im Live-Buchungsbereich der offiziellen Website angezeigt."}},
         ],
         features=[
             ("🥾","Für Wanderer","Passend für die Planung von Etappen am Welterbesteig."),
@@ -585,6 +623,11 @@ def seo_donauradweg():
             "Zuhause am Bach ist auf Gäste vorbereitet, die mit dem Fahrrad durch die Wachau reisen.",
             "Fahrradunterbringung und E-Bike-Lademöglichkeit gehören zu den auf der offiziellen Website ausgewiesenen Leistungen. Freie Termine und Preise werden direkt geprüft.",
         ],
+        faq=[
+            {"@type":"Question","name":"Kann ich mein Fahrrad sicher unterbringen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Die offizielle Website weist eine Fahrradunterbringung für Gäste aus."}},
+            {"@type":"Question","name":"Kann ich ein E-Bike laden?","acceptedAnswer":{"@type":"Answer","text":"Ja. Eine E-Bike-Lademöglichkeit wird als Leistung der Unterkunft ausgewiesen."}},
+            {"@type":"Question","name":"Kann ich direkt beim Gastgeber buchen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Verfügbarkeit und Preis können direkt auf der offiziellen Website geprüft werden."}},
+        ],
         features=[
             ("🚲","Fahrradunterbringung","Praktisch für Radreisende und Touren durch die Wachau."),
             ("⚡","E-Bike laden","Lademöglichkeit für E-Bikes vor Ort."),
@@ -608,6 +651,11 @@ def seo_aggsbach():
             "Zuhause am Bach befindet sich in Aggsbach Markt in Niederösterreich und bietet Gästen einen ruhigen Ausgangspunkt für Aufenthalte in der Wachau.",
             "Das Gartenzimmer kann direkt auf der offiziellen Website angefragt werden. Aktuelle Preise und freie Termine werden im Buchungsbereich angezeigt.",
         ],
+        faq=[
+            {"@type":"Question","name":"Wo liegt die Unterkunft in Aggsbach Markt?","acceptedAnswer":{"@type":"Answer","text":"Zuhause am Bach liegt in Aggsbach Markt 82, 3641 Aggsbach Markt."}},
+            {"@type":"Question","name":"Wie viele Personen können im Gartenzimmer übernachten?","acceptedAnswer":{"@type":"Answer","text":"Das direkt angebotene Gartenzimmer ist für maximal zwei Personen vorgesehen."}},
+            {"@type":"Question","name":"Kann ich online die Verfügbarkeit prüfen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Die offizielle Website zeigt einen Live-Kalender sowie den Direktbuchungsbereich."}},
+        ],
         features=[
             ("🏡","Persönlich wohnen","Kleine Unterkunft statt anonymer Großbetrieb."),
             ("🥾","Wachau erwandern","Guter Ausgangspunkt für Wanderpläne in der Region."),
@@ -630,6 +678,11 @@ def seo_radfahrer():
         paragraphs=[
             "Bei Zuhause am Bach stehen die Bedürfnisse von Radreisenden sichtbar im Mittelpunkt.",
             "Die offizielle Website nennt Fahrradunterbringung und E-Bike-Lademöglichkeit. Das Gartenzimmer wird direkt angeboten; Verfügbarkeit und Preis sind online prüfbar.",
+        ],
+        faq=[
+            {"@type":"Question","name":"Ist die Unterkunft für Radfahrer geeignet?","acceptedAnswer":{"@type":"Answer","text":"Ja. Fahrradunterbringung und E-Bike-Lademöglichkeit werden auf der offiziellen Website ausdrücklich genannt."}},
+            {"@type":"Question","name":"Gibt es Frühstück für Radreisende?","acceptedAnswer":{"@type":"Answer","text":"Frühstück kann auf Wunsch zur Übernachtung gewählt werden."}},
+            {"@type":"Question","name":"Wo kann ich direkt buchen?","acceptedAnswer":{"@type":"Answer","text":"Direkt auf www.zuhauseambach-wachau.at über den Bereich Verfügbarkeit und Preis."}},
         ],
         features=[
             ("🚲","Radfreundlich","Fahrradunterbringung für Gäste."),
