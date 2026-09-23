@@ -591,17 +591,12 @@ def globals_for_templates():
 
 @app.get("/media/gartenblick.jpg")
 def gartenblick_image():
-    parts = [
-        BASE / "static" / "images" / "rooms" / f"gartenblick-part-{i}.txt"
-        for i in range(1, 6)
-    ]
-    encoded = "".join(part.read_text(encoding="utf-8").strip() for part in parts)
-    image_bytes = base64.b64decode(encoded)
-    return Response(
-        image_bytes,
-        mimetype="image/jpeg",
-        headers={"Cache-Control": "public, max-age=31536000, immutable"},
-    )
+    # Compatibility endpoint for older links. The room image is now stored
+    # as a normal static asset, avoiding runtime reconstruction from removed
+    # base64 fragment files.
+    response = app.send_static_file("images/rooms/bachblick.jpg")
+    response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    return response
 
 
 @app.get("/")
