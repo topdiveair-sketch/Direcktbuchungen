@@ -13,7 +13,7 @@
   <meta property="og:title" content="Zuhause am Bach – Unterkunft in der Wachau">
   <meta property="og:description" content="Ruhig übernachten in Aggsbach Markt – für Welterbesteig, Donauradweg und entspannte Tage in der Wachau.">
   <meta property="og:url" content="https://www.zuhauseambach-wachau.at/">
-  <meta property="og:image" content="https://www.zuhauseambach-wachau.at/static/images/rooms/bachblick.jpg">
+  <meta property="og:image" content="https://www.zuhauseambach-wachau.at/static/images/gartenzimmer-direktbuchung-v2.webp">
   <meta name="twitter:card" content="summary_large_image">
   <script type="application/ld+json">
   {
@@ -136,7 +136,7 @@
           <label class="room-option">
             <input type="radio" name="room" value="Bachblick" data-price="{{ info.price }}"
                    data-from="{{ info.available_from.isoformat() }}" checked>
-            <img src="{{ url_for('static', filename='images/rooms/bachblick.jpg') }}" alt="Gartenzimmer bei Zuhause am Bach in der Wachau" loading="lazy" decoding="async">
+            <img src="{{ url_for('static', filename='images/gartenzimmer-direktbuchung-v2.webp') }}" alt="Gartenzimmer bei Zuhause am Bach in der Wachau" loading="lazy" decoding="async">
             <span class="room-copy">
               <strong>Gartenzimmer</strong>
               <small>Ruhiges Doppelzimmer mit persönlicher Atmosphäre – gemütlich und zum Wohlfühlen.</small>
@@ -242,25 +242,21 @@
         <img src="{{ url_for('static', filename='images/wachau-etappenstempel-zuhause-am-bach.jpg') }}" alt="Zuhause-am-Bach Etappenstempel für Welterbesteig und Donauradweg in Aggsbach Markt" loading="lazy" decoding="async">
         <div><h3>Unser eigener Etappenstempel</h3><p>Wer am Welterbesteig oder Donauradweg unterwegs ist, kann sich bei uns eine persönliche Erinnerung an die Wachau-Etappe holen.</p></div>
       </article>
-      <article class="identity-card">
-        <div class="identity-icon">🥪🍎</div>
-        <h3>Windi-Jausenpackerl</h3>
-        <p>Praktische Jausenpakete für Wanderer und Radfahrer – für die nächste Etappe, den Aussichtspunkt oder eine Pause an der Donau.</p>
-        <a href="#booking">Bei der Buchung Extras wählen</a>
+      <article class="identity-card identity-card-media">
+        <img src="{{ url_for('static', filename='images/windi-jausenpackerl-v2.webp') }}" alt="Windi-Jausenpackerl von Zuhause am Bach für Wanderer und Radfahrer in der Wachau" loading="lazy" decoding="async">
+        <div><h3>Windi-Jausenpackerl</h3><p>Praktische Jausenpakete für Wanderer und Radfahrer – für die nächste Etappe, den Aussichtspunkt oder eine Pause an der Donau.</p><a href="#booking">Bei der Buchung Extras wählen</a></div>
       </article>
       <article class="identity-card identity-card-media">
         <img src="{{ url_for('static', filename='images/windis-wachau-app.webp') }}" alt="Die Wilden Wachauer Windis von Zuhause am Bach" loading="lazy" decoding="async">
         <div><h3>Windi-Chronik &amp; Gäste-App</h3><p>Fotos, Erlebnisse und Geschichten dürfen weiterleben. Unsere Gäste-App begleitet den Aufenthalt und die Windi-Chronik sammelt Erinnerungen aus der Wachau.</p><a href="{{ guest_app_url }}" target="_blank" rel="noopener">Gäste-App öffnen</a></div>
       </article>
-      <article class="identity-card">
-        <div class="identity-icon">📚🍷</div>
-        <h3>Geschichten am Bach</h3>
-        <p>Persönliche Buchlesungen und kleine Gesprächsrunden schaffen Raum für neue Geschichten – manchmal entstehen daraus sogar Ideen für weitere Bücher.</p>
+      <article class="identity-card identity-card-media">
+        <img src="{{ url_for('static', filename='images/buchlesung-zuhause-am-bach-v2.webp') }}" alt="Persönliche Buchlesung und Gesprächsrunde mit Gästen bei Zuhause am Bach in der Wachau" loading="lazy" decoding="async">
+        <div><h3>Geschichten am Bach</h3><p>Persönliche Buchlesungen und kleine Gesprächsrunden schaffen Raum für neue Geschichten – manchmal entstehen daraus sogar Ideen für weitere Bücher.</p></div>
       </article>
-      <article class="identity-card">
-        <div class="identity-icon">🐾</div>
-        <h3>Fidel, Gloria &amp; Pia</h3>
-        <p>Die Wilden Wachauer Windis sind Teil unserer Marke und unseres Hauses. Sie machen Zuhause am Bach persönlich, wiedererkennbar und ein bisschen anders.</p>
+      <article class="identity-card identity-card-media">
+        <img src="{{ url_for('static', filename='images/windis-fidel-gloria-pia-v2.webp') }}" alt="Die Wilden Wachauer Windis Fidel, Gloria und Pia" loading="lazy" decoding="async">
+        <div><h3>Fidel, Gloria &amp; Pia</h3><p>Die Wilden Wachauer Windis sind Teil unserer Marke und unseres Hauses. Sie machen Zuhause am Bach persönlich, wiedererkennbar und ein bisschen anders.</p></div>
       </article>
     </div>
     <div class="identity-cta">
@@ -330,9 +326,9 @@
       <article class="active-service-card"><img src="{{ url_for('static', filename='images/fahrradservice-donauradweg-wachau.webp') }}" alt="Fahrradservice mit Werkzeug, Luftpumpe und E-Bike-Lademöglichkeit am Donauradweg Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Kleine Fahrrad-Hilfe</h3><p>Luft, Werkzeug und Unterstützung bei kleinen Reparaturen.</p></div></article>
       <article class="active-service-card"><img src="{{ url_for('static', filename='images/welterbesteig-wachau-wanderer.webp') }}" alt="Wanderer am Welterbesteig Wachau oberhalb der Donau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Welterbesteig</h3><p>Etappenstempel, persönliche Tipps und passende Extras für unterwegs.</p></div></article>
       <article class="active-service-card"><img src="{{ url_for('static', filename='images/donauradweg-wachau-radfahrer.webp') }}" alt="Radfahrer am Donauradweg in der Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Donauradweg</h3><p>Fahrradunterbringung, E-Bike-Lademöglichkeit und praktische Unterstützung.</p></div></article>
-      <article class="active-service-card"><img src="{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-wachau.jpg') }}" alt="Gemütliche Gästeküche bei Zuhause am Bach in der Wachau mit Kaffee, Tee und Getränkebereich" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Gästeküche</h3><p>Kaffee, Tee, Getränke und ein gemütlicher Platz für eine Pause.</p></div></article>
-      <article class="active-service-card"><img src="{{ url_for('static', filename='images/bad-zuhause-am-bach-wachau.jpg') }}" alt="Helles gepflegtes Badezimmer bei Zuhause am Bach in Aggsbach Markt in der Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Bad &amp; Sauberkeit</h3><p>Gepflegte Ausstattung und ein klarer Standard, den Gäste vor der Buchung sehen können.</p></div></article>
-      <article class="active-service-card"><img src="{{ url_for('static', filename='images/wachauer-wein-marillenschnaps.jpg') }}" alt="Wachauer Wein, Marillenschnaps und Marillen mit Blick auf die Donau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Regionale Genussmomente</h3><p>Wachauer Wein, Marillenprodukte und regionale Spezialitäten bringen ein Stück Region direkt in den Aufenthalt.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-v2.webp') }}" alt="Gemütliche Gästeküche bei Zuhause am Bach in der Wachau mit Kaffee, Tee und Getränkebereich" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Gästeküche</h3><p>Kaffee, Tee, Getränke und ein gemütlicher Platz für eine Pause.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/bad-zuhause-am-bach-v2.webp') }}" alt="Helles gepflegtes Badezimmer bei Zuhause am Bach in Aggsbach Markt in der Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Bad &amp; Sauberkeit</h3><p>Gepflegte Ausstattung und ein klarer Standard, den Gäste vor der Buchung sehen können.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/wachauer-wein-marille-v2.webp') }}" alt="Wachauer Wein, Marillenschnaps und Marillen mit Blick auf die Donau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Regionale Genussmomente</h3><p>Wachauer Wein, Marillenprodukte und regionale Spezialitäten bringen ein Stück Region direkt in den Aufenthalt.</p></div></article>
     </div>
     <div class="active-service-cta"><strong>Etappe planen, Zimmer prüfen, direkt buchen.</strong><a class="btn" href="#booking">Verfügbarkeit &amp; Preis prüfen</a></div>
   </section>
