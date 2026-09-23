@@ -153,3 +153,19 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
   .language-switcher{order:3;width:100%;justify-content:center}
   .feature-strip.feature-strip-i18n{grid-template-columns:1fr}
 }
+\n
+.hero-room{background-image:linear-gradient(to bottom,rgba(0,0,0,.18),rgba(0,0,0,.58)),url("/static/images/rooms/bachblick.jpg");background-position:center 48%}
+.identity-section{margin:26px 0 46px;padding:36px;background:#fff;border-radius:18px;box-shadow:var(--shadow)}
+.identity-intro{max-width:880px;margin:0 auto 26px;text-align:center}
+.identity-intro h2{font:clamp(2rem,4vw,3.5rem)/1.05 Georgia,serif;margin:.45rem 0 1rem}
+.identity-intro p{font-size:1.05rem;color:var(--muted);margin:0 auto}
+.identity-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.identity-card{border:1px solid var(--line);border-radius:16px;padding:21px;background:linear-gradient(180deg,#fff,#fafbf7);min-width:0}
+.identity-card h3{margin:.4rem 0 .55rem;font-size:1.18rem}.identity-card p{color:var(--muted);margin:.35rem 0 .7rem}
+.identity-card a{font-weight:800;color:var(--green-dark)}.identity-icon{font-size:2rem}
+.identity-card-media{padding:0;overflow:hidden}.identity-card-media img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.identity-card-media>div{padding:18px 20px}
+.identity-cta{margin-top:20px;background:var(--soft);border-radius:14px;padding:20px;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;text-align:center}
+.identity-cta strong{font:1.35rem Georgia,serif}.identity-cta span{color:var(--muted)}
+@media(max-width:980px){.identity-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){.identity-section{padding:22px 16px}.identity-grid{grid-template-columns:1fr}.hero-room{background-position:center}.identity-cta{align-items:stretch}.identity-cta .btn{width:100%}}
