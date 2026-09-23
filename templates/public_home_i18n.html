@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="{{ tr.html_lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ tr.title }}</title>
+  <meta name="description" content="{{ tr.description }}">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <link rel="canonical" href="{{ canonical }}">
+  {% for code, item in languages.items() %}<link rel="alternate" hreflang="{{ item.html_lang }}" href="{{ origin }}{% if code == 'de' %}/{% else %}/{{ code }}/{% endif %}">
+  {% endfor %}<link rel="alternate" hreflang="x-default" href="{{ origin }}/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="{{ tr.html_lang|replace('-', '_') }}">
+  <meta property="og:title" content="{{ tr.title }}">
+  <meta property="og:description" content="{{ tr.description }}">
+  <meta property="og:url" content="{{ canonical }}">
+  <meta property="og:image" content="{{ origin }}/media/gartenblick.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260923-i18n">
+  <script type="application/ld+json">
+  {{ {
+    "@context":"https://schema.org",
+    "@type":"BedAndBreakfast",
+    "@id": origin + "/#unterkunft",
+    "name":"Zuhause am Bach – Wachau",
+    "url":origin + "/",
+    "description":tr.description,
+    "address":{"@type":"PostalAddress","streetAddress":"Aggsbach Markt 82","postalCode":"3641","addressLocality":"Aggsbach Markt","addressRegion":"Niederösterreich","addressCountry":"AT"},
+    "potentialAction":{"@type":"ReserveAction","target":origin + "/?lang=" + lang + "#booking","name":tr.booking_cta}
+  }|tojson }}
+  </script>
+</head>
+<body>
+<header class="hero" id="start">
+  <nav class="topbar">
+    <a class="brand" href="{{ origin }}/"><span class="logo-mark">⌂</span><span>Zuhause am Bach<small>Wachau</small></span></a>
+    <div class="nav-links">
+      <a href="{{ origin }}/?lang={{ lang }}#booking">{{ tr.booking_title }}</a>
+      <a href="{{ origin }}/unterkunft-jauerling-wachau">{{ tr.jauerling }}</a>
+    </div>
+    <a href="{{ origin }}/?lang={{ lang }}#booking" class="btn top-btn">{{ tr.booking_cta }}</a>
+  </nav>
+  <div class="hero-content">
+    <span class="eyebrow">{{ tr.eyebrow }}</span>
+    <h1>{{ tr.h1 }}</h1>
+    <p>{{ tr.lead }}</p>
+  </div>
+</header>
+<main>
+  <section class="story-section">
+    <div>
+      <h2>{{ tr.intro_title }}</h2>
+      <p>{{ tr.intro }}</p>
+    </div>
+    <div class="review-box">
+      <strong>{{ tr.booking_title }}</strong>
+      <small>{{ tr.booking_text }}</small>
+      <a href="{{ origin }}/?lang={{ lang }}#booking">{{ tr.booking_cta }}</a>
+    </div>
+  </section>
+  <section class="feature-strip">
+    <article><span>🚲</span><strong>{{ tr.cyclists_title }}</strong><small>{{ tr.cyclists }}</small></article>
+    <article><span>🥾</span><strong>{{ tr.hikers_title }}</strong><small>{{ tr.hikers }}</small></article>
+    <article><span>🏡</span><strong>{{ tr.guests_title }}</strong><small>{{ tr.guests }}</small></article>
+  </section>
+  <section class="story-section">
+    <div>
+      <h2>{{ tr.booking_title }}</h2>
+      <p>{{ tr.booking_text }}</p>
+      <p><a href="{{ origin }}/unterkunft-donauradweg-wachau">{{ tr.danube }}</a></p>
+      <p><a href="{{ origin }}/unterkunft-welterbesteig-wachau">{{ tr.trail }}</a></p>
+      <p><a href="{{ origin }}/unterkunft-jauerling-wachau">{{ tr.jauerling }}</a></p>
+    </div>
+    <div class="review-box">
+      <strong>{{ tr.booking_cta }}</strong>
+      <a href="{{ origin }}/?lang={{ lang }}#booking">{{ tr.booking_cta }}</a>
+    </div>
+  </section>
+  <section class="story-section">
+    <div>
+      <span class="eyebrow">Languages</span>
+      <p>
+      {% for code, item in languages.items() %}
+        <a href="{{ origin }}{% if code == 'de' %}/{% else %}/{{ code }}/{% endif %}"{% if code == lang %} aria-current="page"{% endif %}>{{ item.lang_name }}</a>{% if not loop.last %} · {% endif %}
+      {% endfor %}
+      </p>
+    </div>
+  </section>
+</main>
+<footer id="kontakt">
+  <div><strong>Zuhause am Bach – Wachau</strong><span>{{ tr.footer }}</span></div>
+</footer>
+</body>
+</html>
