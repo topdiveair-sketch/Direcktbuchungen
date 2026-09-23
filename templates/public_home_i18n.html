@@ -91,6 +91,20 @@
       <a href="{{ origin }}/?lang={{ lang }}#booking">{{ tr.booking_cta }}</a>
     </div>
   </section>
+  <section class="active-service">
+    <div class="active-service-head"><span class="eyebrow">{{ tr.svc_eyebrow }}</span><h2>{{ tr.svc_title }}</h2></div>
+    <div class="active-service-grid">
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/gepaeckservice-welterbesteig-wachau.webp') }}" alt="{{ tr.svc_transport_title }}" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>{{ tr.svc_transport_title }}</h3></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/fahrradservice-donauradweg-wachau.webp') }}" alt="{{ tr.svc_repair_title }}" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>{{ tr.svc_repair_title }}</h3></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/welterbesteig-wachau-wanderer.webp') }}" alt="{{ tr.svc_trail_title }}" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>{{ tr.svc_trail_title }}</h3></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/donauradweg-wachau-radfahrer.webp') }}" alt="{{ tr.svc_cycle_title }}" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>{{ tr.svc_cycle_title }}</h3></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-wachau.jpg') }}" alt="{{ tr.svc_kitchen_title }}" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>{{ tr.svc_kitchen_title }}</h3></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/bad-zuhause-am-bach-wachau.jpg') }}" alt="{{ tr.svc_bath_title }}" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>{{ tr.svc_bath_title }}</h3></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/wachauer-wein-marillenschnaps.jpg') }}" alt="{{ tr.svc_taste_title }}" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>{{ tr.svc_taste_title }}</h3></div></article>
+    </div>
+    <div class="active-service-cta"><a class="btn" href="{{ origin }}/?lang={{ lang }}#booking">{{ tr.svc_cta }}</a></div>
+  </section>
+
   <section class="story-section">
     <div>
       <span class="eyebrow">Languages</span>
