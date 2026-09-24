@@ -415,3 +415,34 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
   #vier-einblicke .active-service-grid--three{grid-template-columns:1fr}
   #vier-einblicke .active-service-grid--three .active-service-card--welterbesteig img{height:auto}
 }
+
+
+/* Image quality fix 2026-09-24: avoid enlarging compressed assets into 500px-tall cards */
+#vier-einblicke .active-service-grid--three .active-service-card img,
+#aktiv-service .active-service-card img,
+#erlebnisse-bilder .active-service-card img{
+  width:100%;
+  height:260px;
+  min-height:0;
+  aspect-ratio:auto;
+  object-fit:cover;
+  object-position:center center;
+}
+#vier-einblicke .active-service-card--genuss img{
+  object-fit:contain;
+  background:#f4f1e8;
+}
+.identity-card-media img{
+  width:100%;
+  max-height:300px;
+  object-fit:cover;
+}
+@media(max-width:700px){
+  #vier-einblicke .active-service-grid--three .active-service-card img,
+  #aktiv-service .active-service-card img,
+  #erlebnisse-bilder .active-service-card img{
+    height:auto;
+    max-height:none;
+    aspect-ratio:4/3;
+  }
+}
