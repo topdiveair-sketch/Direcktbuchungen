@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zuhause am Bach bewerten | Danke für deinen Aufenthalt</title>
+<meta name="description" content="Zuhause am Bach in Aggsbach Markt bewerten: ehrliches Feedback hilft zukünftigen Gästen bei ihrer Entscheidung.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://www.zuhauseambach-wachau.at/bewertung">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260924-platzhirsch2">
+<style>
+.review-main{max-width:820px;margin:auto;padding:42px 18px 80px}.review-box{padding:34px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(145deg,#f4faf7,#fff9ed);box-shadow:0 14px 38px rgba(23,55,47,.09)}.review-box h1{font-size:clamp(36px,6vw,58px);margin:8px 0 14px}.review-box p{font-size:17px;line-height:1.7;color:var(--muted)}.review-note{margin-top:18px;padding:16px;border-radius:14px;background:#fff;border:1px solid var(--line)}
+</style></head><body>
+<header class="topbar" style="max-width:1180px;margin:auto;padding:18px"><a class="brand" href="{{ url_for('index') }}"><span class="logo-mark">⌂</span><span>Zuhause am Bach<small>Gästehaus Wachau</small></span></a></header>
+<main class="review-main"><section class="review-box">
+<span class="eyebrow">Danke für deinen Aufenthalt</span>
+<h1>Wie war deine Zeit bei Zuhause am Bach?</h1>
+<p>Eine ehrliche Bewertung hilft anderen Gästen, eine passende Unterkunft in der Wachau zu finden. Schreib einfach, was dir besonders gefallen hat oder was wir verbessern können.</p>
+{% if settings.google_review_url %}
+<a class="btn" href="{{ settings.google_review_url }}" target="_blank" rel="noopener">Google-Bewertung schreiben</a>
+{% else %}
+<a class="btn" href="mailto:{{ settings.email }}?subject=Feedback%20zu%20Zuhause%20am%20Bach">Feedback per E-Mail senden</a>
+{% endif %}
+<div class="review-note"><strong>Wichtig:</strong> Wir bitten um deine persönliche und unverfälschte Meinung. Es gibt keine Vorgabe, welche Bewertung oder Formulierungen du verwenden sollst.</div>
+</section></main></body></html>
