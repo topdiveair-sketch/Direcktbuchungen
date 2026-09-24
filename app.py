@@ -604,6 +604,7 @@ def index():
     response = Response(render_template(
         "index.html",
         today=date.today().isoformat(),
+        booking_horizon_year=date.today().year + 2,
         settings=get_settings(),
         room_images=get_room_images(),
         rooms={"Bachblick": ROOMS["Bachblick"]},
@@ -618,6 +619,96 @@ def index():
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     return response
+
+
+def activity_landing_context(kind: str) -> dict:
+    horizon = date.today().year + 2
+    if kind == "bike":
+        return {
+            "kind": "bike",
+            "page_title": "Donauradweg Unterkunft Wachau | Zuhause am Bach Aggsbach",
+            "meta_description": "Fahrradfreundliche Unterkunft am Donauradweg in der Wachau: sichere Fahrradunterbringung, E-Bike laden, Frühstück und Gepäcktransport. Termine bis %s früh anfragen." % horizon,
+            "canonical": "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
+            "eyebrow": "Donauradweg Wachau · Aggsbach Markt",
+            "headline": "Unterkunft am Donauradweg in der Wachau",
+            "intro": "Zuhause am Bach ist ein ruhiger Etappenstopp in Aggsbach Markt für Radreisende in der Wachau – mit sicherer Fahrradunterbringung, E-Bike-Lademöglichkeit und persönlichem Kontakt.",
+            "benefits": [
+                "Sichere Unterbringung für Fahrräder",
+                "E-Bike-Lademöglichkeit",
+                "Frühstück auf Wunsch",
+                "Trocknungsmöglichkeit für Radbekleidung",
+                "Gepäcktransport auf Anfrage",
+                "Persönliche Tipps für die nächste Wachau-Etappe",
+            ],
+            "planning_title": "Radetappe früh sichern – bis %s planbar" % horizon,
+            "planning_text": "Beliebte Wochenenden und starke Wachau-Termine werden früh nachgefragt. Deshalb können Radreisende ihre Übernachtung bei uns weit im Voraus anfragen, statt erst wenige Wochen vor der Tour zu suchen.",
+            "cta": "Donauradweg-Termin direkt prüfen",
+            "audience": "Radfahrer und E-Bike-Reisende",
+        }
+    return {
+        "kind": "hike",
+        "page_title": "Welterbesteig Unterkunft Wachau | Zuhause am Bach Aggsbach",
+        "meta_description": "Wanderfreundliche Unterkunft am Welterbesteig Wachau in Aggsbach Markt: Frühstück, Gepäcktransport, Etappentipps und ruhige Übernachtung. Termine bis %s früh anfragen." % horizon,
+        "canonical": "https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau",
+        "eyebrow": "Welterbesteig Wachau · Aggsbach Markt",
+        "headline": "Unterkunft am Welterbesteig Wachau",
+        "intro": "Zuhause am Bach ist ein ruhiger Ausgangspunkt und Etappenstopp für Wanderer am Welterbesteig Wachau – persönlich, überschaubar und auf die nächste Etappe ausgerichtet.",
+        "benefits": [
+            "Ruhige Übernachtung in Aggsbach Markt",
+            "Frühstück auf Wunsch vor der nächsten Etappe",
+            "Trocknungsmöglichkeit für Wanderbekleidung",
+            "Gepäcktransport auf Anfrage",
+            "Persönliche Etappen- und Wachau-Tipps",
+            "Wachau-Etappenstempel als Haussouvenir",
+        ],
+        "planning_title": "Wanderetappe früh sichern – bis %s planbar" % horizon,
+        "planning_text": "Gerade an beliebten Wanderwochenenden ist ein kleiner Betrieb schnell ausgebucht. Deshalb nehmen wir Anfragen für den Welterbesteig bewusst weit im Voraus an.",
+        "cta": "Welterbesteig-Termin direkt prüfen",
+        "audience": "Wanderer und Etappengäste",
+    }
+
+
+@app.get("/unterkunft-donauradweg-wachau")
+def activity_donauradweg():
+    return render_template(
+        "activity_landing.html",
+        **activity_landing_context("bike"),
+        booking_horizon_year=date.today().year + 2,
+        settings=get_settings(),
+    )
+
+
+@app.get("/unterkunft-welterbesteig-wachau")
+def activity_welterbesteig():
+    return render_template(
+        "activity_landing.html",
+        **activity_landing_context("hike"),
+        booking_horizon_year=date.today().year + 2,
+        settings=get_settings(),
+    )
+
+
+@app.get("/sitemap.xml")
+def sitemap():
+    today_iso = date.today().isoformat()
+    urls = [
+        "https://www.zuhauseambach-wachau.at/",
+        "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
+        "https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau",
+    ]
+    body = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for url in urls:
+        body.append(f"<url><loc>{url}</loc><lastmod>{today_iso}</lastmod><changefreq>weekly</changefreq></url>")
+    body.append("</urlset>")
+    return Response("\n".join(body), mimetype="application/xml")
+
+
+@app.get("/robots.txt")
+def robots():
+    return Response(
+        "User-agent: *\nAllow: /\nSitemap: https://www.zuhauseambach-wachau.at/sitemap.xml\n",
+        mimetype="text/plain",
+    )
 
 
 @app.post("/api/events")
