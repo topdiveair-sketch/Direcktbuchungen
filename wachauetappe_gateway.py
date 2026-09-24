@@ -557,6 +557,13 @@ def public_sitemap():
 
 def _seo_landing(**kwargs):
     kwargs.setdefault("faq", [])
+    kwargs.setdefault("hero_image", None)
+    kwargs.setdefault("hero_image_alt", "")
+    kwargs.setdefault("hero_image_caption", "")
+    kwargs.setdefault("secondary_image", None)
+    kwargs.setdefault("secondary_image_alt", "")
+    kwargs.setdefault("secondary_image_caption", "")
+    kwargs.setdefault("_CANONICAL_ORIGIN", _CANONICAL_ORIGIN)
     return render_template("seo_landing.html", **kwargs)
 
 
@@ -756,6 +763,12 @@ def seo_jauerling():
         title="Unterkunft Jauerling Wachau | Zuhause am Bach",
         description="Unterkunft für Jauerling-Gäste in der Wachau: ruhig in Aggsbach Markt übernachten, Parkplatz, WLAN und Frühstück auf Wunsch. Direktpreis und Verfügbarkeit prüfen.",
         canonical=_CANONICAL_ORIGIN + "/unterkunft-jauerling-wachau",
+        hero_image="images/rooms/bachblick.jpg",
+        hero_image_alt="Gartenzimmer bei Zuhause am Bach als Unterkunft für einen Aufenthalt rund um Jauerling und Wachau",
+        hero_image_caption="Das Gartenzimmer bei Zuhause am Bach in Aggsbach Markt.",
+        secondary_image="images/bach-hinterm-haus-v11.webp",
+        secondary_image_alt="Bach hinter Zuhause am Bach in Aggsbach Markt in der Wachau",
+        secondary_image_caption="Ruhige Lage in Aggsbach Markt als Ausgangspunkt für Wachau und Jauerling.",
         h1="Unterkunft am Jauerling in der Wachau",
         lead="Ruhig in Aggsbach Markt übernachten und den Jauerling mit Natur, Wandern oder Winteraktivitäten verbinden.",
         eyebrow="Jauerling · Wachau · Aggsbach Markt",
@@ -787,6 +800,12 @@ def seo_jauerling_ski():
         title="Skifahren Jauerling Unterkunft Wachau | Zuhause am Bach",
         description="Skifahren am Jauerling mit Unterkunft in der Wachau: ruhig in Aggsbach Markt übernachten, Parkplatz, WLAN und Frühstück auf Wunsch. Direktpreis prüfen.",
         canonical=_CANONICAL_ORIGIN + "/skifahren-jauerling-unterkunft-wachau",
+        hero_image="images/rooms/bachblick.jpg",
+        hero_image_alt="Gartenzimmer bei Zuhause am Bach für ein Winterwochenende am Jauerling",
+        hero_image_caption="Ruhig übernachten in Aggsbach Markt nach einem Wintertag am Jauerling.",
+        secondary_image="images/bach-hinterm-haus-v11.webp",
+        secondary_image_alt="Ruhige Umgebung bei Zuhause am Bach in Aggsbach Markt",
+        secondary_image_caption="Persönliche Unterkunft in der Wachau für zwei Gäste.",
         h1="Skifahren am Jauerling – Unterkunft in der Wachau",
         lead="Jauerling-Wintertag mit ruhiger Übernachtung in Aggsbach Markt verbinden.",
         eyebrow="Jauerling · Winter · Wachau",
