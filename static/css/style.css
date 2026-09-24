@@ -380,3 +380,21 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
 @media(max-width:700px){
   .room-option .booking-room-thumb{width:96px;height:88px;min-width:96px}
 }
+
+
+/* Vier Einblicke: requested three-card order 2026-09-24 */
+#vier-einblicke .active-service-grid--three{grid-template-columns:repeat(3,minmax(0,1fr))}
+#vier-einblicke .active-service-grid--three .active-service-card img{
+  width:100%;
+  height:500px;
+  aspect-ratio:auto;
+  object-fit:cover;
+  object-position:center center;
+}
+#vier-einblicke .active-service-grid--three .active-service-card--gartenzimmer img{object-position:center center}
+#vier-einblicke .active-service-grid--three .active-service-card--donauradweg img,
+#vier-einblicke .active-service-grid--three .active-service-card--genuss img{object-fit:contain;background:#f4f1e8}
+@media(max-width:900px){
+  #vier-einblicke .active-service-grid--three{grid-template-columns:1fr}
+  #vier-einblicke .active-service-grid--three .active-service-card img{height:auto;max-height:none;aspect-ratio:auto}
+}
