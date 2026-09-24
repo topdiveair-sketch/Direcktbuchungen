@@ -59,7 +59,7 @@ function updateRoomRelease() {
   const selectedArrival = arrival.value;
   roomRadios.forEach(radio => {
     const card = radio.closest(".room-option");
-    const disabled = !selectedArrival || selectedArrival < radio.dataset.from;
+    const disabled = Boolean(selectedArrival && selectedArrival < radio.dataset.from);
     radio.disabled = disabled;
     card.classList.toggle("disabled", disabled);
   });
