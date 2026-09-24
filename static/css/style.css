@@ -370,3 +370,12 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
   #vier-einblicke .active-service-grid--four{grid-template-columns:1fr}
   #vier-einblicke .active-service-grid--four .active-service-card img{height:auto;max-height:none}
 }
+
+
+/* Quality guard for remaining low-resolution experience images */
+#erlebnisse-bilder .active-service-card img[src*="bach-hinterm-haus-v11.webp"],
+#erlebnisse-bilder .active-service-card img[src*="gaestekueche-zuhause-am-bach-wachau.jpg"]{
+  height:220px;
+  object-fit:contain;
+  background:#f4f1e8;
+}
