@@ -742,6 +742,120 @@ def activity_landing_context(kind: str) -> dict:
     }
 
 
+def seo_landing_context(slug: str) -> dict:
+    common_features = [
+        ("⌂", "Aggsbach Markt", "Ruhige Basis am nördlichen Wachauufer."),
+        ("🍳", "Frühstück auf Wunsch", "Vegetarisch oder vegan nach Absprache."),
+        ("🧳", "Gepäcktransport", "Für Etappengäste auf Anfrage."),
+        ("📅", "Direkt planen", "Verfügbarkeit bis %s prüfen." % (date.today().year + 2)),
+    ]
+    faq_direct = [
+        {"@type":"Question","name":"Kann ich direkt bei Zuhause am Bach buchen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Verfügbarkeit, Preis und Zusatzleistungen können auf der offiziellen Website direkt geprüft werden."}},
+        {"@type":"Question","name":"Wie weit im Voraus kann ich planen?","acceptedAnswer":{"@type":"Answer","text":"Zuhause am Bach kommuniziert aktuell einen Planungshorizont bis %s." % (date.today().year + 2)}},
+    ]
+    pages = {
+        "wachau": {
+            "title":"Unterkunft Wachau direkt buchen | Zuhause am Bach Aggsbach",
+            "description":"Ruhige Unterkunft in der Wachau in Aggsbach Markt: Gartenzimmer, Frühstück, Donauradweg, Welterbesteig und Direktbuchung bis %s." % (date.today().year + 2),
+            "canonical":"https://www.zuhauseambach-wachau.at/unterkunft-wachau",
+            "h1":"Unterkunft in der Wachau – ruhig in Aggsbach Markt übernachten",
+            "lead":"Zuhause am Bach ist eine kleine, persönliche Unterkunft für Gäste, die Wachau, Donau, Weinorte, Radwege und Wanderwege ohne großes Hotel suchen.",
+            "eyebrow":"Wachau direkt erleben",
+            "subheading":"Kleine Unterkunft statt anonymer Bettenburg",
+            "paragraphs":["Das Gartenzimmer ist für maximal zwei Gäste gedacht und liegt in Aggsbach Markt am nördlichen Wachauufer.","Donauradweg und Welterbesteig lassen sich mit persönlichen Tipps, Frühstück auf Wunsch und direktem Gastgeberkontakt verbinden.","Wer starke Wochenenden oder Veranstaltungen bereits kennt, kann seinen Termin früh direkt prüfen."],
+            "features":common_features,
+            "hero_image":"images/gartenzimmer-04-web.jpg","hero_image_alt":"Gartenzimmer bei Zuhause am Bach in Aggsbach Markt","hero_image_caption":"Das direkt angebotene Gartenzimmer.",
+            "secondary_image":"images/bach-hinterm-haus-v11.webp","secondary_image_alt":"Bach hinter Zuhause am Bach in Aggsbach Markt","secondary_image_caption":"Ruhige Wege beginnen direkt hinter dem Haus.",
+            "faq":faq_direct,
+        },
+        "aggsbach": {
+            "title":"Übernachten Aggsbach Markt | Zuhause am Bach Wachau",
+            "description":"Übernachten in Aggsbach Markt: ruhiges Gartenzimmer für zwei Gäste, Welterbesteig, Donauradweg, Frühstück und Direktbuchung bei Zuhause am Bach.",
+            "canonical":"https://www.zuhauseambach-wachau.at/uebernachten-aggsbach-markt",
+            "h1":"Übernachten in Aggsbach Markt",
+            "lead":"Zuhause am Bach bietet eine persönliche Übernachtungsmöglichkeit direkt in Aggsbach Markt – für Wanderer, Radfahrer und Wachau-Gäste.",
+            "eyebrow":"Aggsbach Markt · Wachau",
+            "subheading":"Direkt im Ort schlafen und die Wachau weiterziehen",
+            "paragraphs":["Aggsbach Markt ist ein ruhiger Etappenort am nördlichen Donauufer. Das Gartenzimmer ist aktuell unser direkt angebotenes Zimmer für maximal zwei Personen.","Welterbesteig, Donauradweg und Ausflüge in die Wachau können von hier aus gut kombiniert werden.","Frühstück, Gepäcktransport und persönliche Tipps sind auf Wunsch Teil der Reiseplanung."],
+            "features":common_features,
+            "hero_image":"images/bach-hinterm-haus-v11.webp","hero_image_alt":"Bach und Weg hinter Zuhause am Bach in Aggsbach Markt","hero_image_caption":"Aggsbach Markt: ruhig ankommen und weiterziehen.",
+            "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer in Aggsbach Markt","secondary_image_caption":"Das Gartenzimmer für maximal zwei Gäste.",
+            "faq":faq_direct,
+        },
+        "radfahrer": {
+            "title":"Radfahrer Unterkunft Wachau | Donauradweg Zuhause am Bach",
+            "description":"Radfahrer-Unterkunft in der Wachau: sichere Fahrradunterbringung, E-Bike-Laden, Frühstück, Trocknung und Gepäcktransport in Aggsbach Markt.",
+            "canonical":"https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
+            "h1":"Radfahrer-Unterkunft in der Wachau",
+            "lead":"Für Radreisende am Donauradweg bietet Zuhause am Bach einen kleinen, persönlichen Etappenstopp mit sicherer Fahrradunterbringung und E-Bike-Lademöglichkeit.",
+            "eyebrow":"Für Radreisende",
+            "subheading":"Fahrrad sicher abstellen, laden und am nächsten Morgen weiter",
+            "paragraphs":["Fahrräder können geschützt untergebracht werden; für E-Bikes gibt es eine Lademöglichkeit.","Frühstück auf Wunsch, Trocknungsmöglichkeit für Radbekleidung und Gepäcktransport auf Anfrage unterstützen die Etappenreise.","Starke Wachau-Wochenenden können früh knapp werden, weil nur ein Gartenzimmer direkt angeboten wird."],
+            "features":[("🚲","Fahrrad sicher","Geschützte Unterbringung."),("⚡","E-Bike laden","Lademöglichkeit am Haus."),("👕","Trocknen","Für nasse Radbekleidung."),("🧳","Gepäcktransport","Auf Anfrage für die nächste Etappe.")],
+            "hero_image":"images/donauradweg-web.jpg","hero_image_alt":"Donauradweg bei Zuhause am Bach in der Wachau","hero_image_caption":"Direkt auf Radreisende ausgerichtet.",
+            "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer für Radfahrer in der Wachau","secondary_image_caption":"Ruhige Nacht zwischen zwei Etappen.",
+            "faq":faq_direct,
+        },
+        "jauerling": {
+            "title":"Unterkunft Jauerling Wachau | Zuhause am Bach Aggsbach",
+            "description":"Unterkunft nahe Jauerling und Wachau: ruhig in Aggsbach Markt übernachten, wandern, Naturpark erleben und direkt bei Zuhause am Bach buchen.",
+            "canonical":"https://www.zuhauseambach-wachau.at/unterkunft-jauerling-wachau",
+            "h1":"Unterkunft für Jauerling & Wachau",
+            "lead":"Wer Naturpark Jauerling-Wachau, Welterbesteig und Donau verbinden möchte, findet bei Zuhause am Bach eine ruhige Basis in Aggsbach Markt.",
+            "eyebrow":"Jauerling · Naturpark · Wachau",
+            "subheading":"Natur, Wanderwege und ruhige Übernachtung verbinden",
+            "paragraphs":["Zuhause am Bach liegt in Aggsbach Markt und eignet sich als Basis für Ausflüge Richtung Jauerling und für Wanderetappen in der Wachau.","Frühstück auf Wunsch, Trocknungsmöglichkeit und persönliche Tipps sind besonders für aktive Gäste praktisch.","Aktuelle Öffnungs-, Wege- und Saisoninformationen für Ausflugsziele sollten vor der Anreise immer bei den jeweiligen offiziellen Betreibern geprüft werden."],
+            "features":common_features,
+            "hero_image":"images/welterbesteig-original.jpg","hero_image_alt":"Welterbesteig und Wachau nahe Jauerling","hero_image_caption":"Wandern zwischen Donau und Jauerling.",
+            "secondary_image":"images/bach-hinterm-haus-v11.webp","secondary_image_alt":"Ruhiger Bachweg hinter Zuhause am Bach","secondary_image_caption":"Ruhiger Ausgangspunkt in Aggsbach Markt.",
+            "faq":faq_direct,
+        },
+        "ski": {
+            "title":"Skifahren Jauerling Unterkunft Wachau | Zuhause am Bach",
+            "description":"Winter-Unterkunft für Ausflüge zum Jauerling: in Aggsbach Markt übernachten, aktuelle Liftzeiten offiziell prüfen und direkt bei Zuhause am Bach buchen.",
+            "canonical":"https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau",
+            "h1":"Unterkunft für Wintertage am Jauerling",
+            "lead":"Zuhause am Bach ist eine ruhige Wachau-Unterkunft für Gäste, die einen Winterausflug Richtung Jauerling mit einer Übernachtung in Aggsbach Markt verbinden möchten.",
+            "eyebrow":"Winter in der Wachau",
+            "subheading":"Jauerling-Ausflug und ruhige Nacht kombinieren",
+            "paragraphs":["Das Gartenzimmer bietet eine kleine, persönliche Basis in Aggsbach Markt.","Winterbetrieb, Liftzeiten, Schnee- und Pistenstatus hängen von Saison und Wetter ab und werden deshalb nicht pauschal versprochen. Bitte vor der Fahrt die offiziellen Jauerling-Informationen prüfen.","Für nasse Outdoorbekleidung gibt es eine Trocknungsmöglichkeit; Frühstück ist auf Wunsch verfügbar."],
+            "features":[("❄️","Winterbasis","Ruhig in Aggsbach Markt übernachten."),("👕","Trocknung","Für nasse Outdoorbekleidung."),("🍳","Frühstück","Auf Wunsch vor dem Ausflug."),("📅","Direkt planen","Termin früh prüfen.")],
+            "hero_image":"images/welterbesteig-original.jpg","hero_image_alt":"Winter- und Wanderregion Wachau Jauerling","hero_image_caption":"Wachau und Jauerling als Winterausflug verbinden.",
+            "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer als Winterunterkunft in der Wachau","secondary_image_caption":"Ruhige Übernachtung in Aggsbach Markt.",
+            "faq":faq_direct,
+        },
+    }
+    data = pages.get(slug)
+    if not data:
+        abort(404)
+    return data
+
+
+@app.get("/unterkunft-wachau")
+def seo_unterkunft_wachau():
+    return render_template("seo_landing.html", **seo_landing_context("wachau"))
+
+
+@app.get("/uebernachten-aggsbach-markt")
+def seo_aggsbach_markt():
+    return render_template("seo_landing.html", **seo_landing_context("aggsbach"))
+
+
+@app.get("/radfahrer-unterkunft-wachau")
+def seo_radfahrer_wachau():
+    return render_template("seo_landing.html", **seo_landing_context("radfahrer"))
+
+
+@app.get("/unterkunft-jauerling-wachau")
+def seo_jauerling():
+    return render_template("seo_landing.html", **seo_landing_context("jauerling"))
+
+
+@app.get("/skifahren-jauerling-unterkunft-wachau")
+def seo_ski_jauerling():
+    return render_template("seo_landing.html", **seo_landing_context("ski"))
+
+
 @app.get("/unterkunft-donauradweg-wachau")
 def activity_donauradweg():
     return render_template(
@@ -911,6 +1025,11 @@ def sitemap():
     today_iso = date.today().isoformat()
     urls = [
         "https://www.zuhauseambach-wachau.at/",
+        "https://www.zuhauseambach-wachau.at/unterkunft-wachau",
+        "https://www.zuhauseambach-wachau.at/uebernachten-aggsbach-markt",
+        "https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
+        "https://www.zuhauseambach-wachau.at/unterkunft-jauerling-wachau",
+        "https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau",
         "https://www.zuhauseambach-wachau.at/wachau-aktivurlaub-2027-2028",
