@@ -339,3 +339,7 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
     margin-top:0;
   }
 }
+
+/* Gartenzimmer card crop tuning 2026-09-24 */
+.active-service-card--gartenzimmer img{object-fit:cover;object-position:center 68%;background:#f4f1e8}
+@media(max-width:760px){.active-service-card--gartenzimmer img{object-position:center 62%}}
