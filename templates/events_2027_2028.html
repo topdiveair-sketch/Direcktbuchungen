@@ -28,14 +28,14 @@
   <section class="event-grid">
     <article class="event-card">
       <span class="eyebrow">Noch 2026 relevant</span>
-      <h2>Kremser Adventzauber</h2>
+      <h2><a href="{{ url_for('event_advent_2026') }}">Kremser Adventzauber</a></h2>
       <div class="event-meta">19. November–23. Dezember 2026</div>
       <p>An Freitag, Samstag und Sonntag schützen wir die stärkere Adventnachfrage mit Eventpreis und zwei Nächten Mindestaufenthalt. Wer einen Adventtermin möchte, kann ihn direkt früh sichern.</p>
       <p class="official"><a href="https://www.krems.info/kremser-adventzauber" target="_blank" rel="noopener">Offizielle Veranstaltungsinfo</a></p>
     </article>
     <article class="event-card">
       <span class="eyebrow">Frühling 2027</span>
-      <h2>Kremser Marillenblütenmarkt</h2>
+      <h2><a href="{{ url_for('event_marillenbluete_2027') }}">Kremser Marillenblütenmarkt</a></h2>
       <div class="event-meta">26.–27. März &amp; 2.–3. April 2027</div>
       <p>Früher Reiseanlass in der Wachau. Für diese bestätigten Termine berücksichtigt unser Direktpreis bereits die stärkere Nachfrage.</p>
       <p class="official"><a href="https://www.krems.info/r-marillenbluetenmarkt" target="_blank" rel="noopener">Offizielle Veranstaltungsinfo</a></p>
@@ -43,15 +43,15 @@
 
     <article class="event-card">
       <span class="eyebrow">Premium-Termin</span>
-      <h2>Wachauer Sonnenwende</h2>
+      <h2><a href="{{ url_for('event_sonnenwende_2027') }}">Wachauer Sonnenwende</a></h2>
       <div class="event-meta">19. Juni 2027 · 17. Juni 2028</div>
       <p>Die Sonnenwende zählt zu den stärksten Wachau-Terminen. Für diese Nächte gelten Premiumpreis und zwei Nächte Mindestaufenthalt.</p>
-      <p class="official"><a href="https://www.donau.com/wachau-nibelungengau-kremstal/sonnenwende" target="_blank" rel="noopener">Offizielle Veranstaltungsinfo</a></p>
+      <p class="official"><a href="{{ url_for('event_sonnenwende_2028') }}">Sonnenwende 2028 früh planen</a> · <a href="https://www.donau.com/sonnenwende" target="_blank" rel="noopener">Offizielle Veranstaltungsinfo</a></p>
     </article>
 
     <article class="event-card">
       <span class="eyebrow">Sommer 2027</span>
-      <h2>ALLES MARILLE!</h2>
+      <h2><a href="{{ url_for('event_marille_2027') }}">ALLES MARILLE!</a></h2>
       <div class="event-meta">8.–25. Juli 2027</div>
       <p>Drei Juli-Wochenenden rund um die Wachauer Marille. Freitag- und Samstagnächte sind bei uns als starke Nachfragezeiten mit zwei Nächten Mindestaufenthalt geschützt.</p>
       <p class="official"><a href="https://www.krems.info/alles-marille" target="_blank" rel="noopener">Offizielle Veranstaltungsinfo</a></p>
@@ -70,6 +70,7 @@
     <h2>Unsere Preisregel: gute Termine schützen statt verramschen.</h2>
     <p>Es gibt keine automatischen Last-Minute-, Frühbucher- oder Langzeitrabatte. Direktbuchung bleibt wirtschaftlich attraktiv, weil wir Provisionen sparen. Bei bestätigten Top-Events steigt der Preis automatisch; ausgewählte Spitzentermine haben einen Mindestaufenthalt.</p>
     <a class="btn" href="{{ url_for('future_planning') }}">Wachau 2027/2028 planen</a>
+    <a class="btn" href="{{ url_for('index') }}#booking">Direkt Termin prüfen</a>
   </section>
 </main>
 </body></html>
