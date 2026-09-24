@@ -104,6 +104,12 @@
       <strong>2027/2028 bereits planen?</strong>
       <span>Unsere Frühplaner-Seite bündelt Rad- und Wandertermine für die kommenden Saisonen.</span>
       <a class="btn" href="{{ url_for('future_planning') }}">Wachau 2027/2028 planen</a>
+      <a class="hero-secondary" href="{{ url_for('wachau_events') }}">Starke Wachau-Termine 2027/2028</a>
+    </div>
+    <div class="identity-cta">
+      <strong>Nur ein Gartenzimmer.</strong>
+      <span>Ein Wunschtermin kann deshalb nur einmal vergeben werden. Wer seine Etappe oder Veranstaltung schon kennt, sollte früh direkt prüfen.</span>
+      <a class="btn" href="#booking">Wunschtermin prüfen</a>
     </div>
   </section>
 
@@ -121,10 +127,10 @@
         <input type="hidden" name="idempotency_key" id="idempotencyKey">
         <div class="booking-grid">
           <label>Anreise
-            <input type="date" id="arrival" name="arrival" min="{{ today }}" required>
+            <input type="date" id="arrival" name="arrival" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
           </label>
           <label>Abreise
-            <input type="date" id="departure" name="departure" min="{{ today }}" required>
+            <input type="date" id="departure" name="departure" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
           </label>
           <label>Nächte
             <input type="text" id="nights" value="0" readonly>
@@ -484,7 +490,7 @@
   <a class="admin-link" href="{{ url_for('legal_page',key='agb') }}">Buchungsbedingungen</a>
   <a class="admin-link" href="{{ url_for('admin_login') }}">Verwaltung</a>
 
-  <div class="footer-links" style="margin-top:12px"><a href="{{ url_for('partner_page') }}">Partner & Kooperation</a> · <a href="{{ url_for('review_page') }}">Aufenthalt bewerten</a> · <a href="{{ url_for('future_planning') }}">Wachau 2027/2028 planen</a></div>
+  <div class="footer-links" style="margin-top:12px"><a href="{{ url_for('partner_page') }}">Partner & Kooperation</a> · <a href="{{ url_for('review_page') }}">Aufenthalt bewerten</a> · <a href="{{ url_for('future_planning') }}">Wachau 2027/2028 planen</a> · <a href="{{ url_for('wachau_events') }}">Events 2027/2028</a></div>
 </footer>
 
 <div class="mobile-conversion-bar"><span id="stickyLabel">Verfügbarkeit &amp; Preis</span><a href="#booking" id="stickyCta">Prüfen</a></div>
