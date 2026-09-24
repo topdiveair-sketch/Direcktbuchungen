@@ -100,6 +100,11 @@
         </div>
       </article>
     </div>
+    <div class="identity-cta">
+      <strong>2027/2028 bereits planen?</strong>
+      <span>Unsere Frühplaner-Seite bündelt Rad- und Wandertermine für die kommenden Saisonen.</span>
+      <a class="btn" href="{{ url_for('future_planning') }}">Wachau 2027/2028 planen</a>
+    </div>
   </section>
 
   <section id="booking" class="booking-shell">
@@ -478,6 +483,8 @@
   <a class="admin-link" href="{{ url_for('legal_page',key='datenschutz') }}">Datenschutz</a>
   <a class="admin-link" href="{{ url_for('legal_page',key='agb') }}">Buchungsbedingungen</a>
   <a class="admin-link" href="{{ url_for('admin_login') }}">Verwaltung</a>
+
+  <div class="footer-links" style="margin-top:12px"><a href="{{ url_for('partner_page') }}">Partner & Kooperation</a> · <a href="{{ url_for('review_page') }}">Aufenthalt bewerten</a> · <a href="{{ url_for('future_planning') }}">Wachau 2027/2028 planen</a></div>
 </footer>
 
 <div class="mobile-conversion-bar"><span id="stickyLabel">Verfügbarkeit &amp; Preis</span><a href="#booking" id="stickyCta">Prüfen</a></div>
