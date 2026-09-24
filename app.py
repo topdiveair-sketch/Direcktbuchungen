@@ -688,6 +688,31 @@ def activity_welterbesteig():
     )
 
 
+@app.get("/wachau-aktivurlaub-2027-2028")
+def future_planning():
+    return render_template(
+        "future_planning.html",
+        booking_horizon_year=date.today().year + 2,
+        settings=get_settings(),
+    )
+
+
+@app.get("/bewertung")
+def review_page():
+    return render_template(
+        "review.html",
+        settings=get_settings(),
+    )
+
+
+@app.get("/partner")
+def partner_page():
+    return render_template(
+        "partner.html",
+        settings=get_settings(),
+    )
+
+
 @app.get("/sitemap.xml")
 def sitemap():
     today_iso = date.today().isoformat()
@@ -695,6 +720,9 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/",
         "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau",
+        "https://www.zuhauseambach-wachau.at/wachau-aktivurlaub-2027-2028",
+        "https://www.zuhauseambach-wachau.at/bewertung",
+        "https://www.zuhauseambach-wachau.at/partner",
     ]
     body = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for url in urls:
