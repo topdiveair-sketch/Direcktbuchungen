@@ -796,6 +796,116 @@ def wachau_events():
     )
 
 
+def event_landing_context(slug: str) -> dict:
+    horizon = date.today().year + 2
+    events = {
+        "kremser-adventzauber-2026": {
+            "page_title": "Kremser Adventzauber 2026 Unterkunft Wachau | Zuhause am Bach",
+            "meta_description": "Unterkunft für den Kremser Adventzauber 2026: ruhig in Aggsbach Markt übernachten, direkt buchen und Adventwochenenden früh sichern.",
+            "canonical": "https://www.zuhauseambach-wachau.at/kremser-adventzauber-2026-unterkunft",
+            "event_name": "Kremser Adventzauber 2026",
+            "start_date": "2026-11-19", "end_date": "2026-12-23",
+            "display_date": "19. Nov.–23. Dez. 2026",
+            "event_location": "Kremser Altstadt", "event_city": "Krems an der Donau",
+            "official_url": "https://www.krems.info/kremser-adventzauber",
+            "event_description": "Adventveranstaltungen, Märkte und Programm in der Kremser Altstadt.",
+            "eyebrow": "Advent in der Wachau",
+            "headline": "Unterkunft zum Kremser Adventzauber 2026",
+            "intro": "Wer Advent in Krems mit einer ruhigen Übernachtung in der Wachau verbinden möchte, kann bei Zuhause am Bach in Aggsbach Markt früh direkt prüfen.",
+            "scarcity_text": "An starken Adventwochenenden ist ein einzelnes Zimmer schnell vergeben. Freitag bis Sonntag schützen wir diese Nachfrage mit Eventpreis und zwei Nächten Mindestaufenthalt.",
+        },
+        "marillenbluetenmarkt-2027": {
+            "page_title": "Marillenblütenmarkt Krems 2027 Unterkunft | Zuhause am Bach Wachau",
+            "meta_description": "Unterkunft zum Kremser Marillenblütenmarkt 2027: 26.–27. März und 2.–3. April. Ruhig in Aggsbach Markt übernachten und direkt buchen.",
+            "canonical": "https://www.zuhauseambach-wachau.at/marillenbluetenmarkt-krems-2027-unterkunft",
+            "event_name": "Kremser Marillenblütenmarkt 2027",
+            "start_date": "2027-03-26", "end_date": "2027-04-03",
+            "display_date": "26.–27. März & 2.–3. April 2027",
+            "event_location": "Kremser Altstadt", "event_city": "Krems an der Donau",
+            "official_url": "https://www.krems.info/r-marillenbluetenmarkt",
+            "event_description": "Kremser Marillenblütenmarkt an zwei Wochenenden in der Altstadt.",
+            "eyebrow": "Marillenblüte 2027",
+            "headline": "Unterkunft zum Marillenblütenmarkt 2027",
+            "intro": "Die Marillenblüte ist ein früher Reiseanlass in der Wachau. Zuhause am Bach bietet eine ruhige Basis in Aggsbach Markt für Gäste, die Krems und die Wachau verbinden möchten.",
+            "scarcity_text": "Die bestätigten Markttermine werden als stärkere Nachfragezeiten bepreist. Wer genau an einem dieser Wochenenden kommen möchte, sollte seinen Termin früh prüfen.",
+        },
+        "sonnenwende-wachau-2027": {
+            "page_title": "Wachauer Sonnenwende 2027 Unterkunft | Zuhause am Bach",
+            "meta_description": "Unterkunft zur Wachauer Sonnenwende am 19. Juni 2027. Wunschtermin in Aggsbach Markt früh direkt prüfen; nur ein Gartenzimmer.",
+            "canonical": "https://www.zuhauseambach-wachau.at/wachauer-sonnenwende-2027-unterkunft",
+            "event_name": "Wachauer Sonnenwende 2027",
+            "start_date": "2027-06-19", "end_date": "2027-06-19",
+            "display_date": "19. Juni 2027",
+            "event_location": "Wachau", "event_city": "Wachau",
+            "official_url": "https://www.donau.com/sonnenwende",
+            "event_description": "Sonnwendfeiern in der Wachau mit Lichtern und Feuerspektakel entlang der Donau.",
+            "eyebrow": "Premium-Termin 2027",
+            "headline": "Unterkunft zur Wachauer Sonnenwende 2027",
+            "intro": "Die Wachauer Sonnenwende gehört zu den stärksten Terminen des Jahres. Für den 19. Juni 2027 kann das Gartenzimmer früh direkt angefragt werden.",
+            "scarcity_text": "Für die Sonnenwende gilt ein Premiumpreis und ein Mindestaufenthalt von zwei Nächten. Bei nur einem Gartenzimmer ist dieser Termin besonders knapp.",
+        },
+        "alles-marille-2027": {
+            "page_title": "ALLES MARILLE 2027 Unterkunft Wachau | Zuhause am Bach",
+            "meta_description": "Unterkunft für ALLES MARILLE! 2027 in Krems vom 8.–25. Juli. Ruhig in Aggsbach Markt übernachten und starke Juli-Wochenenden früh sichern.",
+            "canonical": "https://www.zuhauseambach-wachau.at/alles-marille-2027-unterkunft",
+            "event_name": "ALLES MARILLE! 2027",
+            "start_date": "2027-07-08", "end_date": "2027-07-25",
+            "display_date": "8.–25. Juli 2027",
+            "event_location": "Kremser Altstadt", "event_city": "Krems an der Donau",
+            "official_url": "https://www.krems.info/alles-marille",
+            "event_description": "Marillenfest in der Kremser Altstadt an drei Juli-Wochenenden.",
+            "eyebrow": "Marillenzeit 2027",
+            "headline": "Unterkunft zu ALLES MARILLE! 2027",
+            "intro": "Drei Juli-Wochenenden stehen in Krems im Zeichen der Wachauer Marille. Zuhause am Bach ist die ruhige Wachau-Basis für Gäste, die Genuss und Aktivurlaub verbinden.",
+            "scarcity_text": "Freitag- und Samstagnächte während ALLES MARILLE! sind als starke Nachfragezeiten mit zwei Nächten Mindestaufenthalt geschützt.",
+        },
+        "sonnenwende-wachau-2028": {
+            "page_title": "Wachauer Sonnenwende 2028 Unterkunft | Zuhause am Bach",
+            "meta_description": "Unterkunft zur Wachauer Sonnenwende am 17. Juni 2028. Termin in Aggsbach Markt weit im Voraus direkt prüfen.",
+            "canonical": "https://www.zuhauseambach-wachau.at/wachauer-sonnenwende-2028-unterkunft",
+            "event_name": "Wachauer Sonnenwende 2028",
+            "start_date": "2028-06-17", "end_date": "2028-06-17",
+            "display_date": "17. Juni 2028",
+            "event_location": "Wachau", "event_city": "Wachau",
+            "official_url": "https://www.donau.com/sonnenwende",
+            "event_description": "Sonnwendfeier in der Wachau am 17. Juni 2028.",
+            "eyebrow": "Premium-Termin 2028",
+            "headline": "Unterkunft zur Wachauer Sonnenwende 2028",
+            "intro": "Auch die Wachauer Sonnenwende 2028 ist offiziell terminiert. Wer diesen Abend mit einer Wachau-Reise verbinden möchte, kann den Wunschtermin schon früh prüfen.",
+            "scarcity_text": "Für die Sonnenwende gilt ein Premiumpreis und ein Mindestaufenthalt von zwei Nächten. Frühplanung sichert den Termin, nicht einen Rabatt.",
+        },
+    }
+    data = events.get(slug)
+    if not data:
+        abort(404)
+    return {**data, "booking_horizon_year": horizon, "settings": get_settings()}
+
+
+@app.get("/kremser-adventzauber-2026-unterkunft")
+def event_advent_2026():
+    return render_template("event_landing.html", **event_landing_context("kremser-adventzauber-2026"))
+
+
+@app.get("/marillenbluetenmarkt-krems-2027-unterkunft")
+def event_marillenbluete_2027():
+    return render_template("event_landing.html", **event_landing_context("marillenbluetenmarkt-2027"))
+
+
+@app.get("/wachauer-sonnenwende-2027-unterkunft")
+def event_sonnenwende_2027():
+    return render_template("event_landing.html", **event_landing_context("sonnenwende-wachau-2027"))
+
+
+@app.get("/alles-marille-2027-unterkunft")
+def event_marille_2027():
+    return render_template("event_landing.html", **event_landing_context("alles-marille-2027"))
+
+
+@app.get("/wachauer-sonnenwende-2028-unterkunft")
+def event_sonnenwende_2028():
+    return render_template("event_landing.html", **event_landing_context("sonnenwende-wachau-2028"))
+
+
 @app.get("/sitemap.xml")
 def sitemap():
     today_iso = date.today().isoformat()
@@ -805,6 +915,11 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau",
         "https://www.zuhauseambach-wachau.at/wachau-aktivurlaub-2027-2028",
         "https://www.zuhauseambach-wachau.at/wachau-events-2027-2028",
+        "https://www.zuhauseambach-wachau.at/kremser-adventzauber-2026-unterkunft",
+        "https://www.zuhauseambach-wachau.at/marillenbluetenmarkt-krems-2027-unterkunft",
+        "https://www.zuhauseambach-wachau.at/wachauer-sonnenwende-2027-unterkunft",
+        "https://www.zuhauseambach-wachau.at/alles-marille-2027-unterkunft",
+        "https://www.zuhauseambach-wachau.at/wachauer-sonnenwende-2028-unterkunft",
         "https://www.zuhauseambach-wachau.at/bewertung",
         "https://www.zuhauseambach-wachau.at/partner",
     ]
