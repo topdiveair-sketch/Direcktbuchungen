@@ -253,3 +253,89 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
 .active-service-card{overflow:hidden}
 .active-service-card img{min-height:180px}
 @media(max-width:700px){.identity-card-media img{max-height:none}.active-service-card img{min-height:0}}
+
+
+/* Mobile hero repair 2026-09-24 */
+@media(max-width:700px){
+  .hero-mobile-clean{
+    min-height:520px;
+    height:auto;
+    padding-bottom:28px;
+    overflow:hidden;
+  }
+  .hero-mobile-clean .topbar{
+    position:relative;
+    z-index:2;
+    width:100%;
+    padding:12px 14px 8px;
+  }
+  .hero-mobile-clean .brand{
+    font-size:.82rem;
+    line-height:1.05;
+    gap:6px;
+    overflow:visible;
+  }
+  .hero-mobile-clean .brand small{
+    font-size:.48rem;
+    letter-spacing:.1em;
+  }
+  .hero-mobile-clean .logo-mark{
+    font-size:1.25rem;
+    flex:0 0 auto;
+  }
+  .hero-mobile-clean .top-btn{
+    padding:10px 14px;
+    font-size:.78rem;
+    border-radius:12px;
+  }
+  .hero-mobile-clean .hero-content{
+    position:relative;
+    left:auto;
+    right:auto;
+    bottom:auto;
+    padding:38px 18px 8px;
+    text-align:center;
+  }
+  .hero-mobile-clean .hero-content h1{
+    font-size:clamp(2.35rem,11vw,3.35rem);
+    line-height:.96;
+    margin:0 auto;
+    max-width:10.5ch;
+    overflow-wrap:normal;
+    word-break:normal;
+    hyphens:none;
+  }
+  .hero-mobile-clean .hero-content p{
+    font-size:1.08rem;
+    line-height:1.28;
+    margin:18px auto 0;
+    max-width:31ch;
+  }
+  .hero-mobile-clean .hero-content>span{
+    display:block;
+    margin:18px auto 0;
+    max-width:31ch;
+    font-size:.95rem;
+    line-height:1.35;
+  }
+  .hero-mobile-clean .hero-actions{
+    margin-top:22px;
+    gap:10px;
+  }
+  .hero-mobile-clean .hero-actions .btn,
+  .hero-mobile-clean .hero-actions .hero-secondary{
+    min-height:54px;
+    padding:14px 16px;
+    font-size:1rem;
+    border-radius:12px;
+  }
+  .hero-mobile-clean .hero-proof{
+    margin-top:16px;
+    padding:0 4px;
+    font-size:.82rem;
+    line-height:1.45;
+  }
+  .booking-shell{
+    margin-top:0;
+  }
+}
