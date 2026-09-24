@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Wachau Events 2027 & 2028 | Früh buchen bei Zuhause am Bach</title>
+  <meta name="description" content="Wachau Events 2027 und 2028 früh planen: Sonnenwende, Alles Marille, Marillenblütenmarkt und Wachauer Volksfest. Unterkunft in Aggsbach Markt direkt anfragen.">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <link rel="canonical" href="https://www.zuhauseambach-wachau.at/wachau-events-2027-2028">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260924-events">
+  <style>
+    .event-main{max-width:1120px;margin:auto;padding:34px 18px 80px}.event-hero{padding:34px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(145deg,#f4faf7,#fff7e8);box-shadow:0 14px 36px rgba(23,55,47,.08)}
+    .event-hero h1{font-size:clamp(38px,6vw,64px);line-height:1.02;margin:8px 0 14px}.event-hero p{max-width:850px;color:var(--muted);font-size:18px;line-height:1.65}
+    .event-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:22px}.event-card{padding:24px;border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:0 10px 28px rgba(23,55,47,.07)}
+    .event-card h2{margin:5px 0 10px}.event-card p{line-height:1.65;color:var(--muted)}.event-meta{font-weight:900;color:var(--brand)}.event-note{margin-top:22px;padding:24px;border-radius:20px;background:#153f35;color:#fff}.event-note h2{color:#fff;margin-top:0}.event-note p{color:#e8f3ef}
+    .official{font-size:13px}.official a{font-weight:800}@media(max-width:760px){.event-grid{grid-template-columns:1fr}.event-hero{padding:24px}}
+  </style>
+</head>
+<body>
+<header class="topbar" style="max-width:1180px;margin:auto;padding:18px"><a class="brand" href="{{ url_for('index') }}"><span class="logo-mark">⌂</span><span>Zuhause am Bach<small>Gästehaus Wachau</small></span></a><a class="btn top-btn" href="{{ url_for('index') }}#booking">Termin prüfen</a></header>
+<main class="event-main">
+  <section class="event-hero">
+    <span class="eyebrow">Starke Wachau-Termine</span>
+    <h1>Events 2027 &amp; 2028 früh sichern</h1>
+    <p>Wir haben nur ein Gartenzimmer. Deshalb kann ein guter Termin nur einmal vergeben werden. Wer für Sonnenwende, Marillenzeit oder ein starkes Wachau-Wochenende kommen möchte, kann seinen Wunschtermin früh direkt anfragen.</p>
+    <a class="btn" href="{{ url_for('index') }}#booking">Wunschtermin bis {{ booking_horizon_year }} prüfen</a>
+  </section>
+
+  <section class="event-grid">
+    <article class="event-card">
+      <span class="eyebrow">Frühling 2027</span>
+      <h2>Kremser Marillenblütenmarkt</h2>
+      <div class="event-meta">26.–27. März &amp; 2.–3. April 2027</div>
+      <p>Früher Reiseanlass in der Wachau. Für diese bestätigten Termine berücksichtigt unser Direktpreis bereits die stärkere Nachfrage.</p>
+      <p class="official"><a href="https://www.krems.info/r-marillenbluetenmarkt" target="_blank" rel="noopener">Offizielle Veranstaltungsinfo</a></p>
+    </article>
+
+    <article class="event-card">
+      <span class="eyebrow">Premium-Termin</span>
+      <h2>Wachauer Sonnenwende</h2>
+      <div class="event-meta">19. Juni 2027 · 17. Juni 2028</div>
+      <p>Die Sonnenwende zählt zu den stärksten Wachau-Terminen. Für diese Nächte gelten Premiumpreis und zwei Nächte Mindestaufenthalt.</p>
+      <p class="official"><a href="https://www.donau.com/wachau-nibelungengau-kremstal/sonnenwende" target="_blank" rel="noopener">Offizielle Veranstaltungsinfo</a></p>
+    </article>
+
+    <article class="event-card">
+      <span class="eyebrow">Sommer 2027</span>
+      <h2>ALLES MARILLE!</h2>
+      <div class="event-meta">8.–25. Juli 2027</div>
+      <p>Drei Juli-Wochenenden rund um die Wachauer Marille. Freitag- und Samstagnächte sind bei uns als starke Nachfragezeiten mit zwei Nächten Mindestaufenthalt geschützt.</p>
+      <p class="official"><a href="https://www.krems.info/alles-marille" target="_blank" rel="noopener">Offizielle Veranstaltungsinfo</a></p>
+    </article>
+
+    <article class="event-card">
+      <span class="eyebrow">Sommerausklang 2027</span>
+      <h2>Wachauer Volksfest</h2>
+      <div class="event-meta">26. August–5. September 2027</div>
+      <p>Ein starker regionaler Reiseanlass in Krems. Die Direktpreise berücksichtigen die erhöhte Nachfrage automatisch.</p>
+      <p class="official"><a href="https://www.krems.info/veranstaltungen-erleben" target="_blank" rel="noopener">Offizielle Veranstaltungsinfo</a></p>
+    </article>
+  </section>
+
+  <section class="event-note">
+    <h2>Unsere Preisregel: gute Termine schützen statt verramschen.</h2>
+    <p>Es gibt keine automatischen Last-Minute-, Frühbucher- oder Langzeitrabatte. Direktbuchung bleibt wirtschaftlich attraktiv, weil wir Provisionen sparen. Bei bestätigten Top-Events steigt der Preis automatisch; ausgewählte Spitzentermine haben einen Mindestaufenthalt.</p>
+    <a class="btn" href="{{ url_for('future_planning') }}">Wachau 2027/2028 planen</a>
+  </section>
+</main>
+</body></html>
