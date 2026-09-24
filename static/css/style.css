@@ -398,3 +398,20 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
   #vier-einblicke .active-service-grid--three{grid-template-columns:1fr}
   #vier-einblicke .active-service-grid--three .active-service-card img{height:auto;max-height:none;aspect-ratio:auto}
 }
+
+
+/* Vier Einblicke: Welterbesteig as fourth card */
+#vier-einblicke .active-service-grid--three{grid-template-columns:repeat(4,minmax(0,1fr))}
+#vier-einblicke .active-service-grid--three .active-service-card--welterbesteig img{
+  width:100%;
+  height:500px;
+  object-fit:cover;
+  object-position:center center;
+}
+@media(max-width:1100px){
+  #vier-einblicke .active-service-grid--three{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  #vier-einblicke .active-service-grid--three{grid-template-columns:1fr}
+  #vier-einblicke .active-service-grid--three .active-service-card--welterbesteig img{height:auto}
+}
