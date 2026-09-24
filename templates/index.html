@@ -225,6 +225,56 @@
   </section>
 
 
+  <section id="vier-einblicke" class="active-service" aria-labelledby="vier-einblicke-title">
+    <div class="active-service-head">
+      <span class="eyebrow">Vier Einblicke</span>
+      <h2 id="vier-einblicke-title">Zimmer, Donauradweg, Genuss &amp; Geschichten</h2>
+      <p>Diese vier Motive zeigen direkt, was Zuhause am Bach und die Wachau ausmacht.</p>
+    </div>
+    <div class="active-service-grid">
+      <article class="active-service-card">
+        <img src="{{ url_for('static', filename='images/rooms/bachblick.jpg') }}?v=20260924-fourcards"
+             data-fallback="{{ url_for('static', filename='images/gartenzimmer-direktbuchung-v2.webp') }}?v=20260924-fourcards"
+             alt="Gartenzimmer bei Zuhause am Bach in Aggsbach Markt in der Wachau"
+             loading="eager" decoding="async" width="800" height="600">
+        <div class="active-service-card-body">
+          <h3>Gartenzimmer</h3>
+          <p>Das direkt buchbare Doppelzimmer für zwei Gäste – ruhig, persönlich und mit kurzem Weg zur Wachau.</p>
+        </div>
+      </article>
+      <article class="active-service-card">
+        <img src="{{ url_for('static', filename='images/donauradweg-wachau-radfahrer.webp') }}?v=20260924-fourcards"
+             data-fallback="{{ url_for('static', filename='images/aggsbach-markt-luftbild.png') }}?v=20260924-fourcards"
+             alt="Radfahrer am Donauradweg in der Wachau nahe Zuhause am Bach"
+             loading="lazy" decoding="async" width="800" height="533">
+        <div class="active-service-card-body">
+          <h3>Donauradweg</h3>
+          <p>Fahrradunterbringung, E-Bike-Laden und persönliche Unterstützung für Radreisende durch die Wachau.</p>
+        </div>
+      </article>
+      <article class="active-service-card">
+        <img src="{{ url_for('static', filename='images/wachauer-wein-marille-v2.webp') }}?v=20260924-fourcards"
+             data-fallback="{{ url_for('static', filename='images/wachauer-wein-marillenschnaps.jpg') }}?v=20260924-fourcards"
+             alt="Wachauer Wein und Marillen als regionale Genussmomente bei Zuhause am Bach"
+             loading="lazy" decoding="async" width="800" height="480">
+        <div class="active-service-card-body">
+          <h3>Regionale Genussmomente</h3>
+          <p>Wachauer Wein, Marillenprodukte und regionale Spezialitäten bringen die Region direkt in den Aufenthalt.</p>
+        </div>
+      </article>
+      <article class="active-service-card">
+        <img src="{{ url_for('static', filename='images/buchlesung-zuhause-am-bach-v2.webp') }}?v=20260924-fourcards"
+             data-fallback="{{ url_for('static', filename='images/gaesterunde-kueche-v11.webp') }}?v=20260924-fourcards"
+             alt="Buchlesung und persönliche Geschichten am Bach bei Zuhause am Bach in der Wachau"
+             loading="lazy" decoding="async" width="800" height="587">
+        <div class="active-service-card-body">
+          <h3>Geschichten am Bach</h3>
+          <p>Persönliche Buchlesungen, Gespräche und Begegnungen machen aus einer Übernachtung eine bleibende Geschichte.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
   <section id="basislager" class="identity-section" aria-labelledby="basislager-title">
     <div class="identity-intro">
       <span class="eyebrow">Mehr als nur übernachten</span>
@@ -413,7 +463,7 @@
     img.addEventListener('error', function(){
       if (img.dataset.fallbackApplied) return;
       img.dataset.fallbackApplied='1';
-      img.src=fallback;
+      img.src=img.dataset.fallback || fallback;
     });
   });
 })();
