@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ page_title }}</title>
+  <meta name="description" content="{{ meta_description }}">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <link rel="canonical" href="{{ canonical }}">
+  <meta property="og:type" content="website"><meta property="og:locale" content="de_AT">
+  <meta property="og:title" content="{{ page_title }}"><meta property="og:description" content="{{ meta_description }}">
+  <meta property="og:url" content="{{ canonical }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260924-eventlanding">
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@graph":[
+      {
+        "@type":"Event",
+        "@id":"{{ canonical }}#event",
+        "name":"{{ event_name }}",
+        "startDate":"{{ start_date }}",
+        "endDate":"{{ end_date }}",
+        "eventStatus":"https://schema.org/EventScheduled",
+        "eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode",
+        "location":{"@type":"Place","name":"{{ event_location }}","address":{"@type":"PostalAddress","addressLocality":"{{ event_city }}","addressCountry":"AT"}},
+        "url":"{{ official_url }}",
+        "description":"{{ event_description }}"
+      },
+      {
+        "@type":"WebPage",
+        "@id":"{{ canonical }}#webpage",
+        "url":"{{ canonical }}",
+        "name":"{{ page_title }}",
+        "description":"{{ meta_description }}",
+        "about":{"@id":"{{ canonical }}#event"}
+      },
+      {
+        "@type":"BreadcrumbList",
+        "itemListElement":[
+          {"@type":"ListItem","position":1,"name":"Zuhause am Bach","item":"https://www.zuhauseambach-wachau.at/"},
+          {"@type":"ListItem","position":2,"name":"Wachau Events","item":"https://www.zuhauseambach-wachau.at/wachau-events-2027-2028"},
+          {"@type":"ListItem","position":3,"name":"{{ event_name }}","item":"{{ canonical }}"}
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    .event-main{max-width:1020px;margin:auto;padding:34px 18px 80px}.hero,.card{border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:0 12px 32px rgba(23,55,47,.08)}
+    .hero{padding:34px;background:linear-gradient(145deg,#f4faf7,#fff8ea)}.hero h1{font-size:clamp(38px,6vw,62px);line-height:1.04;margin:8px 0 14px}.hero p,.card p{line-height:1.7;color:var(--muted)}
+    .facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px}.fact{padding:18px;border:1px solid var(--line);border-radius:16px;background:#fff}.fact strong{display:block;font-size:20px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}.card{padding:24px}.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    @media(max-width:760px){.facts,.grid{grid-template-columns:1fr}.hero{padding:24px}}
+  </style>
+</head>
+<body>
+<header class="topbar" style="max-width:1180px;margin:auto;padding:18px"><a class="brand" href="{{ url_for('index') }}"><span class="logo-mark">⌂</span><span>Zuhause am Bach<small>Gästehaus Wachau</small></span></a><a class="btn top-btn" href="{{ url_for('index') }}#booking">Termin prüfen</a></header>
+<main class="event-main">
+  <section class="hero">
+    <span class="eyebrow">{{ eyebrow }}</span>
+    <h1>{{ headline }}</h1>
+    <p>{{ intro }}</p>
+    <div class="facts">
+      <div class="fact"><span>Termin</span><strong>{{ display_date }}</strong></div>
+      <div class="fact"><span>Unterkunft</span><strong>Nur 1 Gartenzimmer</strong></div>
+      <div class="fact"><span>Planung</span><strong>bis {{ booking_horizon_year }}</strong></div>
+    </div>
+    <div class="links"><a class="btn" href="{{ url_for('index') }}#booking">Wunschtermin direkt prüfen</a><a class="hero-secondary" href="{{ official_url }}" target="_blank" rel="noopener">Offizielle Eventinfo</a></div>
+  </section>
+  <section class="grid">
+    <article class="card"><span class="eyebrow">Für den Aufenthalt</span><h2>Warum früh planen?</h2><p>{{ scarcity_text }}</p><p><strong>Früher buchen heißt bei uns: Termin sichern, nicht billiger buchen.</strong></p></article>
+    <article class="card"><span class="eyebrow">Aktiv in der Wachau</span><h2>Donauradweg &amp; Welterbesteig mitdenken</h2><p>Wer das Event mit einer Rad- oder Wandertour verbindet, findet bei uns Fahrradunterbringung, E-Bike-Laden, Frühstück auf Wunsch, Trocknungsmöglichkeit und Gepäcktransport auf Anfrage.</p><div class="links"><a href="{{ url_for('activity_donauradweg') }}">Donauradweg</a><a href="{{ url_for('activity_welterbesteig') }}">Welterbesteig</a></div></article>
+  </section>
+  <section class="card" style="margin-top:22px"><h2>Weitere starke Wachau-Termine</h2><p>Alle bestätigten Nachfragefenster für 2026 bis 2028 sind auf unserer Eventübersicht gebündelt.</p><div class="links"><a class="btn" href="{{ url_for('wachau_events') }}">Eventübersicht öffnen</a><a href="{{ url_for('future_planning') }}">Wachau 2027/2028 planen</a></div></section>
+</main>
+</body></html>
