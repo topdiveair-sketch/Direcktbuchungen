@@ -86,6 +86,7 @@ BREAKFAST_PRICE = 12.0
 # rabattiert, sondern mit einem transparenten Eventfaktor bepreist.
 # factor 1.15 = +15 %, 1.25 = +25 %, 1.35 = +35 %.
 EVENT_PRICING = (
+    (date(2026, 11, 19), date(2026, 12, 24), "Kremser Adventzauber", 1.15, 159.0, 1),
     (date(2027, 3, 26), date(2027, 3, 28), "Kremser Marillenblütenmarkt", 1.15, 169.0, 1),
     (date(2027, 4, 2), date(2027, 4, 4), "Kremser Marillenblütenmarkt", 1.15, 169.0, 1),
     (date(2027, 6, 19), date(2027, 6, 20), "Wachauer Sonnenwende", 1.35, 179.0, 2),
@@ -101,6 +102,11 @@ def event_pricing_for_day(day: date):
             # Bei ALLES MARILLE! gilt der 2-Nächte-Mindestaufenthalt nur
             # für Freitag/Samstag-Nächte, nicht pauschal für Werktage.
             if name == "ALLES MARILLE!" and day.weekday() in (4, 5):
+                min_nights = 2
+            if name == "Kremser Adventzauber":
+                # Adventpreis nur an den nachfragestarken Wochenendtagen.
+                if day.weekday() not in (4, 5, 6):
+                    return None
                 min_nights = 2
             return {
                 "name": name,
