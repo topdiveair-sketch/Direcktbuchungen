@@ -105,8 +105,8 @@ ready(function(){
       <h2 id="zab-einstieg-title">In wenigen Sekunden zum passenden Etappenstopp</h2>
       <p>Wählen Sie Ihren Reisegrund – danach sehen Sie sofort die für Sie wichtigsten Leistungen.</p>
       <div class="zab-entry-grid">
-        <a class="zab-entry-card" href="#zab-radfahrer" data-track="audience_bike"><strong>🚴 Ich fahre den Donauradweg</strong><span>Rad sicher, E-Bike laden, Frühstück und Gepäcktransport.</span></a>
-        <a class="zab-entry-card" href="#zab-wanderer" data-track="audience_hike"><strong>🥾 Ich wandere den Welterbesteig</strong><span>Ruhig schlafen, Frühstück, Etappentipps und Gepäck weiter.</span></a>
+        <a class="zab-entry-card" href="/unterkunft-donauradweg-wachau" data-track="audience_bike"><strong>🚴 Ich fahre den Donauradweg</strong><span>Rad sicher, E-Bike laden, Frühstück, Gepäcktransport und früh planen.</span></a>
+        <a class="zab-entry-card" href="/unterkunft-welterbesteig-wachau" data-track="audience_hike"><strong>🥾 Ich wandere den Welterbesteig</strong><span>Ruhig schlafen, Frühstück, Etappentipps, Gepäcktransport und früh planen.</span></a>
         <a class="zab-entry-card" href="#zimmer" data-track="audience_wachau"><strong>🌿 Ich möchte einfach in die Wachau</strong><span>Persönlich übernachten, Ruhe genießen und die Region entdecken.</span></a>
       </div>
     `);
