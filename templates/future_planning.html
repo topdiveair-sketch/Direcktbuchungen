@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Wachau Aktivurlaub 2027 & 2028 | Donauradweg & Welterbesteig</title>
+  <meta name="description" content="Wachau Aktivurlaub 2027 und 2028 früh planen: Unterkunft für Donauradweg und Welterbesteig in Aggsbach Markt direkt bei Zuhause am Bach anfragen.">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <link rel="canonical" href="https://www.zuhauseambach-wachau.at/wachau-aktivurlaub-2027-2028">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260924-platzhirsch2">
+  <style>
+    .future-main{max-width:1120px;margin:auto;padding:30px 18px 70px}.future-hero,.future-card{border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:0 12px 32px rgba(23,55,47,.08)}
+    .future-hero{padding:34px;background:linear-gradient(145deg,#f2f8f5,#fff8ea)}.future-hero h1{font-size:clamp(38px,6vw,64px);line-height:1.02;margin:8px 0 15px}.future-hero p{max-width:850px;font-size:18px;line-height:1.65;color:var(--muted)}
+    .future-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:22px}.future-card{padding:25px}.future-card h2{margin-top:0}.future-card ul{padding-left:20px;line-height:1.75}
+    .future-banner{margin-top:22px;padding:26px;border-radius:20px;background:#153f35;color:#fff}.future-banner h2{color:#fff;margin-top:0}.future-banner p{color:#e7f3ef;max-width:850px}
+    @media(max-width:760px){.future-grid{grid-template-columns:1fr}.future-hero{padding:24px}}
+  </style>
+</head>
+<body>
+<header class="topbar" style="max-width:1180px;margin:auto;padding:18px"><a class="brand" href="{{ url_for('index') }}"><span class="logo-mark">⌂</span><span>Zuhause am Bach<small>Gästehaus Wachau</small></span></a><a class="btn top-btn" href="{{ url_for('index') }}#booking">Termin prüfen</a></header>
+<main class="future-main">
+  <section class="future-hero">
+    <span class="eyebrow">Wachau 2027 & 2028</span>
+    <h1>Rad- und Wanderurlaub Jahre voraus planen</h1>
+    <p>Wer den Donauradweg oder den Welterbesteig früh plant, soll nicht bis wenige Wochen vor der Reise warten müssen. Zuhause am Bach nimmt deshalb Anfragen weit im Voraus an – besonders für beliebte Wochenenden und starke Wachau-Termine.</p>
+    <a class="btn" href="{{ url_for('index') }}#booking">Wunschtermin direkt prüfen</a>
+  </section>
+
+  <section class="future-grid">
+    <article class="future-card">
+      <span class="eyebrow">🚴 Donauradweg</span>
+      <h2>Radetappe 2027/2028 sichern</h2>
+      <ul>
+        <li>sichere Fahrradunterbringung</li><li>E-Bike-Lademöglichkeit</li><li>Frühstück auf Wunsch</li><li>Trocknungsmöglichkeit für Radbekleidung</li><li>Gepäcktransport auf Anfrage</li>
+      </ul>
+      <a class="btn" href="{{ url_for('activity_donauradweg') }}">Donauradweg-Unterkunft</a>
+    </article>
+    <article class="future-card">
+      <span class="eyebrow">🥾 Welterbesteig</span>
+      <h2>Wanderetappe 2027/2028 sichern</h2>
+      <ul>
+        <li>ruhige Übernachtung in Aggsbach Markt</li><li>Frühstück vor der nächsten Etappe</li><li>Trocknungsmöglichkeit für Wanderbekleidung</li><li>Gepäcktransport auf Anfrage</li><li>persönliche Etappentipps</li>
+      </ul>
+      <a class="btn" href="{{ url_for('activity_welterbesteig') }}">Welterbesteig-Unterkunft</a>
+    </article>
+  </section>
+
+  <section class="future-banner">
+    <h2>Früh buchen heißt bei uns: Termin sichern, nicht billig verkaufen.</h2>
+    <p>Wir setzen bewusst nicht auf pauschale Frühbucherrabatte. Gute Termine werden fair bepreist und können bei hoher Nachfrage Mindestaufenthalte haben. Das Ziel ist Planungssicherheit für Gäste und ein gesunder Direktvertrieb für den Betrieb.</p>
+    <a class="btn" href="{{ url_for('index') }}#booking">Verfügbarkeit bis {{ booking_horizon_year }} prüfen</a>
+  </section>
+</main>
+</body></html>
