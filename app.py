@@ -82,6 +82,48 @@ GUEST_APP_URL = os.environ.get("GUEST_APP_URL", "https://topdiveair-sketch.githu
 ROOM_RELEASE_DATE = date(2026, 8, 16)
 BREAKFAST_PRICE = 12.0
 
+# Ertragsstrategie: starke, offiziell bestätigte Wachau-Termine werden nicht
+# rabattiert, sondern mit einem transparenten Eventfaktor bepreist.
+# factor 1.15 = +15 %, 1.25 = +25 %, 1.35 = +35 %.
+EVENT_PRICING = (
+    (date(2027, 3, 26), date(2027, 3, 28), "Kremser Marillenblütenmarkt", 1.15, 169.0, 1),
+    (date(2027, 4, 2), date(2027, 4, 4), "Kremser Marillenblütenmarkt", 1.15, 169.0, 1),
+    (date(2027, 6, 19), date(2027, 6, 20), "Wachauer Sonnenwende", 1.35, 179.0, 2),
+    (date(2027, 7, 8), date(2027, 7, 26), "ALLES MARILLE!", 1.25, 169.0, 1),
+    (date(2027, 8, 26), date(2027, 9, 6), "Wachauer Volksfest", 1.15, 169.0, 1),
+    (date(2028, 6, 17), date(2028, 6, 18), "Wachauer Sonnenwende", 1.35, 179.0, 2),
+)
+
+
+def event_pricing_for_day(day: date):
+    for start, end_exclusive, name, factor, cap, min_nights in EVENT_PRICING:
+        if start <= day < end_exclusive:
+            # Bei ALLES MARILLE! gilt der 2-Nächte-Mindestaufenthalt nur
+            # für Freitag/Samstag-Nächte, nicht pauschal für Werktage.
+            if name == "ALLES MARILLE!" and day.weekday() in (4, 5):
+                min_nights = 2
+            return {
+                "name": name,
+                "factor": factor,
+                "cap": cap,
+                "min_nights": min_nights,
+            }
+    return None
+
+
+def minimum_stay_for_period(arrival: date, departure: date):
+    required = 1
+    reasons = []
+    cur = arrival
+    while cur < departure:
+        event = event_pricing_for_day(cur)
+        if event and int(event["min_nights"]) > required:
+            required = int(event["min_nights"])
+        if event and int(event["min_nights"]) > 1 and event["name"] not in reasons:
+            reasons.append(str(event["name"]))
+        cur += timedelta(days=1)
+    return required, reasons
+
 ROOMS = {
     "Bachblick": {
         "price": 99.0,
@@ -272,6 +314,24 @@ def init_db() -> None:
         for r,p in price_defaults.items(): conn.execute("INSERT OR IGNORE INTO room_prices VALUES(?,?,?,?)",(r,*p))
         conn.execute("UPDATE room_prices SET standard=99, weekend=109, high=119 WHERE room='Bachblick' AND standard<99")
         for row in [("last_minute",1,10,0,3),("early_bird",0,5,0,60),("three_nights",1,5,3,0),("five_nights",1,8,5,0),("seven_nights",1,12,7,0),("direct_booking",1,3,0,0)]: conn.execute("INSERT OR IGNORE INTO discounts VALUES(?,?,?,?,?)",row)
+        # Einmalige Umstellung auf Knappheits-/Ertragsstrategie:
+        # keine Last-Minute-, Frühbucher- oder Aufenthaltsrabatte; nur der
+        # wirtschaftlich sinnvolle Direktbuchungsvorteil bleibt aktiv.
+        scarcity_done = conn.execute(
+            "SELECT value FROM site_settings WHERE key='scarcity_revenue_v1_applied'"
+        ).fetchone()
+        if not scarcity_done:
+            conn.execute(
+                "UPDATE discounts SET enabled=0 WHERE key IN "
+                "('last_minute','early_bird','three_nights','five_nights','seven_nights')"
+            )
+            conn.execute(
+                "UPDATE discounts SET enabled=1, percent=3 WHERE key='direct_booking'"
+            )
+            conn.execute(
+                "INSERT OR REPLACE INTO site_settings(key,value) VALUES "
+                "('scarcity_revenue_v1_applied','1')"
+            )
         for row in [("breakfast","Frühstück",12,"person_night",1),("jause","Wachauer Jause",29.9,"booking",1),("luggage","Gepäcktransport",15,"booking",1),("dog","Hund",10,"night",1),("baby_bed","Babybett",8,"booking",1)]: conn.execute("INSERT OR IGNORE INTO extras VALUES(?,?,?,?,?)",row)
         conn.execute("UPDATE extras SET price=15 WHERE key='luggage' AND ABS(price - 25) < 0.001")
         conn.execute("INSERT OR IGNORE INTO seasons(id,name,start_date,end_date) VALUES(1,'Hauptsaison Sommer','2026-06-01','2026-09-30')")
@@ -312,6 +372,9 @@ def price_breakdown(room,arrival,departure,adults,chosen,coupon_code=""):
     prices,discounts,extras,seasons=pricing_data(); n=(departure-arrival).days; cur=arrival; room_total=0
     while cur<departure:
         p=prices[room]["high"] if is_high(cur) else (prices[room]["weekend"] if cur.weekday() in (4,5) else prices[room]["standard"])
+        event = event_pricing_for_day(cur)
+        if event:
+            p = min(float(p) * float(event["factor"]), float(event["cap"]))
         room_total+=float(p); cur+=timedelta(days=1)
     extra_total=0; lines=[]
     for k,v in chosen.items():
@@ -403,6 +466,11 @@ def room_available(room: str, arrival: date, departure: date) -> tuple[bool, str
         return False, "Unbekanntes Zimmer."
     if departure <= arrival:
         return False, "Die Abreise muss nach der Anreise liegen."
+    min_nights, min_reasons = minimum_stay_for_period(arrival, departure)
+    actual_nights = (departure - arrival).days
+    if actual_nights < min_nights:
+        reason = " / ".join(min_reasons) if min_reasons else "starker Nachfragezeitraum"
+        return False, f"Für {reason} gilt ein Mindestaufenthalt von {min_nights} Nächten."
     if arrival < ROOMS[room]["available_from"]:
         return False, "Das Gartenzimmer ist für diesen Zeitraum nicht buchbar."
     if app.extensions.get("v6_maintenance_conflict"):
@@ -713,6 +781,15 @@ def partner_page():
     )
 
 
+@app.get("/wachau-events-2027-2028")
+def wachau_events():
+    return render_template(
+        "events_2027_2028.html",
+        booking_horizon_year=date.today().year + 2,
+        settings=get_settings(),
+    )
+
+
 @app.get("/sitemap.xml")
 def sitemap():
     today_iso = date.today().isoformat()
@@ -721,6 +798,7 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau",
         "https://www.zuhauseambach-wachau.at/wachau-aktivurlaub-2027-2028",
+        "https://www.zuhauseambach-wachau.at/wachau-events-2027-2028",
         "https://www.zuhauseambach-wachau.at/bewertung",
         "https://www.zuhauseambach-wachau.at/partner",
     ]
