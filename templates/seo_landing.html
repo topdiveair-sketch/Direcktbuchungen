@@ -12,9 +12,17 @@
   <meta property="og:title" content="{{ title }}">
   <meta property="og:description" content="{{ description }}">
   <meta property="og:url" content="{{ canonical }}">
-  <meta property="og:image" content="https://www.zuhauseambach-wachau.at/media/gartenblick.jpg">
+  <meta property="og:image" content="{{ (_CANONICAL_ORIGIN if _CANONICAL_ORIGIN is defined else 'https://www.zuhauseambach-wachau.at') }}/static/{{ hero_image or 'images/rooms/bachblick.jpg' }}">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260922-seo">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260924-seoimg">
+  <style>
+    .seo-gallery{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;margin:24px 0 38px}
+    .seo-gallery figure{margin:0;background:#fff;border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+    .seo-gallery img{display:block;width:100%;height:320px;object-fit:cover}
+    .seo-gallery figure:nth-child(2) img{height:320px}
+    .seo-gallery figcaption{padding:11px 14px;color:var(--muted);font-size:.9rem}
+    @media(max-width:760px){.seo-gallery{grid-template-columns:1fr}.seo-gallery img,.seo-gallery figure:nth-child(2) img{height:240px}}
+  </style>
   <script type="application/ld+json">
   {
     "@context":"https://schema.org",
@@ -59,6 +67,21 @@
 </header>
 
 <main>
+  {% if hero_image %}
+  <section class="seo-gallery" aria-label="Bilder zur Unterkunft">
+    <figure>
+      <img src="{{ url_for('static', filename=hero_image) }}" alt="{{ hero_image_alt }}" loading="eager" decoding="async">
+      <figcaption>{{ hero_image_caption }}</figcaption>
+    </figure>
+    {% if secondary_image %}
+    <figure>
+      <img src="{{ url_for('static', filename=secondary_image) }}" alt="{{ secondary_image_alt }}" loading="lazy" decoding="async">
+      <figcaption>{{ secondary_image_caption }}</figcaption>
+    </figure>
+    {% endif %}
+  </section>
+  {% endif %}
+
   <section class="story-section">
     <div>
       <span class="eyebrow">{{ eyebrow }}</span>
