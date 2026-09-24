@@ -343,3 +343,22 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
 /* Gartenzimmer card crop tuning 2026-09-24 */
 .active-service-card--gartenzimmer img{object-fit:cover;object-position:center 68%;background:#f4f1e8}
 @media(max-width:760px){.active-service-card--gartenzimmer img{object-position:center 62%}}
+
+
+/* Homepage image placement hardening 2026-09-24 */
+#vier-einblicke .active-service-card img{
+  width:100%;
+  height:auto;
+  aspect-ratio:4/3;
+  min-height:0;
+  object-fit:cover;
+  object-position:center center;
+}
+#vier-einblicke .active-service-card--gartenzimmer img{object-position:center 68%}
+#vier-einblicke .active-service-card--donauradweg img{object-position:center center}
+#vier-einblicke .active-service-card--genuss img{object-position:center center}
+#vier-einblicke .active-service-card--geschichten img{object-position:center center}
+@media(max-width:760px){
+  #vier-einblicke .active-service-card img{aspect-ratio:4/3}
+  #vier-einblicke .active-service-card--gartenzimmer img{object-position:center 62%}
+}
