@@ -4,8 +4,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Unterkunft Wachau direkt buchen | Zuhause am Bach Aggsbach</title>
-  <meta name="description" content="Fahrradfreundliche und wanderfreundliche Unterkunft in Aggsbach Markt für Welterbesteig und Donauradweg: Gartenzimmer, E-Bike-Laden, Frühstück auf Wunsch und Direktbuchung.">
+  <title>Donauradweg & Welterbesteig Unterkunft Wachau | Zuhause am Bach</title>
+  <meta name="description" content="Unterkunft in Aggsbach Markt für Donauradweg und Welterbesteig Wachau: Gartenzimmer, sichere Fahrradunterbringung, E-Bike laden, Frühstück, Gepäcktransport und Direktanfrage bis {{ booking_horizon_year }}.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <link rel="canonical" href="https://www.zuhauseambach-wachau.at/">
   <meta property="og:type" content="website">
@@ -62,12 +62,12 @@
   </nav>
 
   <div class="hero-content">
-    <h1>Unterkunft in der Wachau – Zuhause am Bach</h1>
-    <p>Ruhiges Privatzimmer in Aggsbach Markt · für Donauradweg &amp; Welterbesteig</p>
+    <h1>Donauradweg &amp; Welterbesteig Unterkunft Wachau – Zuhause am Bach</h1>
+    <p>Ruhiges Privatzimmer in Aggsbach Markt · für Donauradweg &amp; Welterbesteig · Termine bis {{ booking_horizon_year }} früh anfragen</p>
     {% if google_landing %}<div class="google-trust">🚴 Fahrradunterbringung · ⚡ E-Bike laden · 🥾 Welterbesteig · 🍳 Frühstück auf Wunsch</div>{% endif %}
     <span>Mit Fidel, Gloria und Pia – den Wilden Wachauer Windis.</span>
     <div class="hero-actions"><a class="btn" href="#booking">Verfügbarkeit &amp; Preis prüfen</a><a class="hero-secondary" href="#basislager">Warum Zuhause am Bach?</a></div>
-    <div class="hero-proof">Direkter Kontakt · Live-Verfügbarkeit · persönliche Bestätigung · Extras direkt wählbar</div>
+    <div class="hero-proof">Direkter Kontakt · Live-Verfügbarkeit · persönliche Bestätigung · Frühplanung bis {{ booking_horizon_year }} · Extras direkt wählbar</div>
   </div>
 </header>
 
@@ -78,13 +78,37 @@
     {% endfor %}
   {% endwith %}
 
+  <section class="active-service" id="fruehplaner" aria-labelledby="fruehplaner-title">
+    <div class="active-service-head">
+      <span class="eyebrow">Platzhirsch für aktive Wachau-Gäste</span>
+      <h2 id="fruehplaner-title">Donauradweg oder Welterbesteig schon für {{ booking_horizon_year }} planen</h2>
+      <p>Gute Wachau-Termine sollen nicht erst kurz vor der Reise gesucht werden. Wer seine Rad- oder Wanderetappe bereits kennt, kann den Wunschtermin bei Zuhause am Bach frühzeitig direkt anfragen.</p>
+    </div>
+    <div class="active-service-grid">
+      <article class="active-service-card">
+        <div>
+          <h3>🚴 Donauradweg Wachau</h3>
+          <p>Sichere Fahrradunterbringung, E-Bike-Laden, Frühstück und Gepäcktransport für deine Etappe.</p>
+          <a class="btn" href="{{ url_for('activity_donauradweg') }}">Donauradweg-Unterkunft ansehen</a>
+        </div>
+      </article>
+      <article class="active-service-card">
+        <div>
+          <h3>🥾 Welterbesteig Wachau</h3>
+          <p>Ruhig schlafen, Frühstück auf Wunsch, Gepäcktransport und persönliche Etappentipps.</p>
+          <a class="btn" href="{{ url_for('activity_welterbesteig') }}">Welterbesteig-Unterkunft ansehen</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
   <section id="booking" class="booking-shell">
     <div class="booking-card">
       <div class="section-heading">
         <span class="section-icon">▣</span>
         <div>
           <h2>Verfügbarkeit &amp; Preis</h2>
-          <p>Einfach anfragen und entspannt ankommen.</p>
+          <p>Auch lange im Voraus planen: Reisedaten bis {{ booking_horizon_year }} prüfen und direkt anfragen.</p>
         </div>
       </div>
 
