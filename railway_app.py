@@ -91,6 +91,40 @@ def _booked_nights_next_30_days(today=None):
     return occupied
 
 
+def revenue_management_status(today=None):
+    """Return the shared live revenue state used by checkout and Zuhause am Bach OS."""
+    today = today or datetime.now(ZoneInfo("Europe/Vienna")).date()
+    occupied = _booked_nights_next_30_days(today)
+    occupancy = round((len(occupied) / 30.0) * 100.0, 1)
+    cfg = pricing_config()
+    add_eur = 0.0
+    for rule in sorted(
+        cfg.get("revenue_rules", {}).get("raise_if_occupancy_next_30_days_percent_gte", []),
+        key=lambda row: float(row.get("occupancy", 0)),
+    ):
+        if occupancy >= float(rule.get("occupancy", 0)):
+            add_eur = max(add_eur, float(rule.get("add_eur", 0)))
+    level = (
+        "PEAK" if occupancy >= 85
+        else "STRONG" if occupancy >= 70
+        else "ACTIVE" if occupancy >= 50
+        else "BASE"
+    )
+    return {
+        "available": True,
+        "occupancy": occupancy,
+        "occupied_nights": len(occupied),
+        "available_nights": 30 - len(occupied),
+        "add_eur": round(add_eur, 2),
+        "level": level,
+        "window_start": today.isoformat(),
+        "window_end": (today + timedelta(days=30)).isoformat(),
+    }
+
+
+app.extensions["zab_revenue_management_status"] = revenue_management_status
+
+
 def _revenue_adjustment_for_day(day, occupied=None, today=None):
     """Apply the configured rolling-occupancy yield rule to near-term nights only."""
     today = today or datetime.now(ZoneInfo("Europe/Vienna")).date()
