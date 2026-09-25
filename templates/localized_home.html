@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="{{ t.html_lang|e }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ t.title }}</title>
+  <meta name="description" content="{{ t.description }}">
+  <link rel="canonical" href="https://www.zuhauseambach-wachau.at/{{ lang }}/">
+  <link rel="alternate" hreflang="de-AT" href="https://www.zuhauseambach-wachau.at/">
+  <link rel="alternate" hreflang="en" href="https://www.zuhauseambach-wachau.at/en/">
+  <link rel="alternate" hreflang="cs" href="https://www.zuhauseambach-wachau.at/cs/">
+  <link rel="alternate" hreflang="sk" href="https://www.zuhauseambach-wachau.at/sk/">
+  <link rel="alternate" hreflang="hu" href="https://www.zuhauseambach-wachau.at/hu/">
+  <link rel="alternate" hreflang="es" href="https://www.zuhauseambach-wachau.at/es/">
+  <link rel="alternate" hreflang="fr" href="https://www.zuhauseambach-wachau.at/fr/">
+  <link rel="alternate" hreflang="x-default" href="https://www.zuhauseambach-wachau.at/">
+  <style>
+    :root{--ink:#17211f;--muted:#60706a;--paper:#f7f7f2;--panel:#fff;--brand:#176b5a;--line:#dfe5e1}
+    *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--paper);color:var(--ink);line-height:1.55}
+    a{color:inherit}.wrap{width:min(1120px,92vw);margin:0 auto}.top{padding:18px 0;border-bottom:1px solid var(--line);background:#fff}
+    .top .wrap{display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap}.brand{text-decoration:none;font-weight:800}
+    .langs{display:flex;gap:10px;flex-wrap:wrap;font-size:14px}.langs a{text-decoration:none}.langs a.active{font-weight:800;text-decoration:underline}
+    .hero{padding:72px 0 52px;background:linear-gradient(180deg,#eef5f0 0%,#f7f7f2 100%)}.eyebrow{font-weight:800;color:var(--brand);letter-spacing:.03em}
+    h1{font-size:clamp(38px,6vw,68px);line-height:1.02;margin:10px 0 16px}.lead{max-width:780px;font-size:21px;color:var(--muted)}
+    .cta{display:inline-block;margin-top:22px;background:var(--brand);color:#fff;text-decoration:none;font-weight:800;padding:13px 18px;border-radius:8px}
+    main{padding:42px 0 60px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px}
+    .card h2,.card h3{margin-top:0}.wide{grid-column:1/-1}.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .small{color:var(--muted)}footer{padding:28px 0;background:#17211f;color:#fff}.footer-cta{margin-bottom:14px}
+    @media(max-width:760px){.grid,.facts{grid-template-columns:1fr}.hero{padding-top:48px}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="/">Zuhause am Bach · Wachau</a>
+      <nav class="langs" aria-label="Languages">
+        <a href="/">DE</a>
+        {% for code in supported_languages if code != "de" %}
+          <a href="/{{ code }}/" class="{{ 'active' if code == lang else '' }}" {% if code == lang %}aria-current="page"{% endif %}>{{ code|upper }}</a>
+        {% endfor %}
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">{{ t.eyebrow }}</div>
+      <h1>{{ t.h1 }}</h1>
+      <p class="lead">{{ t.lead }}</p>
+      <a class="cta" href="/#booking">{{ t.booking_cta }}</a>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <div class="grid">
+      <section class="card wide">
+        <h2>{{ t.intro_title }}</h2>
+        <p>{{ t.intro }}</p>
+      </section>
+
+      <section class="card">
+        <h3>{{ t.cyclists_title }}</h3>
+        <p>{{ t.cyclists }}</p>
+      </section>
+      <section class="card">
+        <h3>{{ t.hikers_title }}</h3>
+        <p>{{ t.hikers }}</p>
+      </section>
+      <section class="card">
+        <h3>{{ t.guests_title }}</h3>
+        <p>{{ t.guests }}</p>
+      </section>
+
+      <section class="card wide">
+        <div class="eyebrow">{{ t.positioning_eyebrow }}</div>
+        <h2>{{ t.positioning_title }}</h2>
+        <p>{{ t.positioning_text }}</p>
+        <div class="facts">
+          <div><strong>{{ t.basecamp_title }}</strong><p class="small">{{ t.basecamp_text }}</p></div>
+          <div><strong>{{ t.stamp_title }}</strong><p class="small">{{ t.stamp_text }}</p></div>
+          <div><strong>{{ t.snack_title }}</strong><p class="small">{{ t.snack_text }}</p></div>
+          <div><strong>{{ t.chronicle_title }}</strong><p class="small">{{ t.chronicle_text }}</p></div>
+        </div>
+      </section>
+
+      <section class="card wide">
+        <div class="eyebrow">{{ t.direct_eyebrow }}</div>
+        <h2>{{ t.direct_title }}</h2>
+        <p>{{ t.direct_text }}</p>
+        <a class="cta" href="/#booking">{{ t.direct_cta }}</a>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer-cta"><a class="cta" href="/#booking">{{ t.booking_cta }}</a></div>
+      <div>{{ t.footer }}</div>
+    </div>
+  </footer>
+</body>
+</html>
