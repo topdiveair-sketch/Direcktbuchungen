@@ -209,6 +209,7 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
 .active-service-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .active-service-grid article.active-service-card{padding:0;overflow:hidden}
 .active-service-card img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;background:#eef0e9}
+.active-service-card--kuechentisch img{object-fit:contain;background:#f4f2ed}
 .active-service-card-body{padding:16px 18px 18px}
 .active-service-card h3{font-size:1.08rem;margin:.1rem 0 .45rem}
 .active-service-card p{color:var(--muted);margin:0}
