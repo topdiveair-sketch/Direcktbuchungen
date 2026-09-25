@@ -1,5 +1,5 @@
 User-agent: *
-Allow: /
-Disallow: /.github/
-Sitemap: https://topdiveair-sketch.github.io/Direcktbuchungen/sitemap.xml
-Sitemap: https://topdiveair-sketch.github.io/Direcktbuchungen/gaeste/sitemap.xml
+Disallow: /
+
+# Legacy GitHub Pages host is intentionally blocked.
+# The canonical public website is https://www.zuhauseambach-wachau.at/
