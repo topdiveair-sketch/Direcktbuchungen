@@ -17,6 +17,36 @@ public static class ZabMasterCalendarService
 
     public static bool IsConfigured => !string.IsNullOrWhiteSpace(ReadAdminPassword());
 
+    public static async Task<(bool Ok, string Message, ZabRevenueStatus? Status)> LoadRevenueStatusAsync()
+    {
+        try
+        {
+            using var req = Request(HttpMethod.Get, "/api/central/revenue-management");
+            using var resp = await Http.SendAsync(req);
+            var text = await resp.Content.ReadAsStringAsync();
+            if (resp.StatusCode == HttpStatusCode.Unauthorized)
+                return (false, "Railway-Admin-Zugang ist ungültig oder fehlt.", null);
+            if (!resp.IsSuccessStatusCode)
+                return (false, ApiError(text, $"HTTP {(int)resp.StatusCode}"), null);
+
+            using var doc = JsonDocument.Parse(text);
+            var root = doc.RootElement;
+            var status = new ZabRevenueStatus(
+                D(root, "occupancy") ?? 0,
+                I(root, "occupied_nights"),
+                I(root, "available_nights"),
+                D(root, "add_eur") ?? 0,
+                S(root, "level"),
+                S(root, "window_start"),
+                S(root, "window_end"));
+            return (true, "Revenue Management geladen.", status);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Revenue Management nicht erreichbar: {ex.Message}", null);
+        }
+    }
+
     public static async Task<(bool Ok, string Message, ZabCalendarSnapshot? Snapshot)> LoadMonthAsync(int year, int month)
     {
         try
@@ -276,3 +306,5 @@ public sealed record ZabCalendarSnapshot(
     bool BookingConnectivityConfigured,
     string BookingConnectivityDetail,
     bool PayPalMasterIndependent);
+
+public sealed record ZabRevenueStatus(double Occupancy, int OccupiedNights, int AvailableNights, double AddEur, string Level, string WindowStart, string WindowEnd);
