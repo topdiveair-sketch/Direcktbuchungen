@@ -501,6 +501,20 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
         payload["paypal_master_independent"] = bool(app.extensions.get("zab_paypal_master_independent"))
         return jsonify(payload), 200, {"Cache-Control": "no-store"}
 
+    @app.get("/api/central/revenue-management")
+    def zab_revenue_management():
+        if not _authorized():
+            return jsonify(ok=False, error="unauthorized"), 401
+        provider = app.extensions.get("zab_revenue_management_status")
+        if not callable(provider):
+            return jsonify(ok=False, error="revenue_management_unavailable"), 503
+        try:
+            payload = dict(provider())
+            payload["ok"] = True
+            return jsonify(payload), 200, {"Cache-Control": "no-store"}
+        except Exception as exc:
+            return jsonify(ok=False, error="revenue_management_failed", message=str(exc)[:700]), 503
+
     @app.post("/api/central/zab-calendar/day-setting")
     def zab_calendar_day_setting():
         if not _authorized():
