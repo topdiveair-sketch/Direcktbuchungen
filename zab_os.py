@@ -217,9 +217,18 @@ def init_zab_os(app, DB_PATH, db, require_admin, ROOMS):
         guardian_state = app.extensions.get("projectos_system_guardian_state") or {}
         guardian_result = guardian_state.get("last_result") if isinstance(guardian_state, dict) else None
 
+        revenue_status = {"available": False}
+        revenue_provider = app.extensions.get("zab_revenue_management_status")
+        if callable(revenue_provider):
+            try:
+                revenue_status = revenue_provider()
+            except Exception as exc:
+                revenue_status = {"available": False, "error": str(exc)}
+
         return render_template(
             "os_dashboard.html",
             guardian_result=guardian_result,
+            revenue_status=revenue_status,
             arrivals=arrivals,
             departures=departures,
             open_tasks=open_tasks,
