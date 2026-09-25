@@ -6,8 +6,32 @@ namespace WachauEtappe.Zentrale;
 
 public partial class MainWindow : Window
 {
-    public MainWindow(){InitializeComponent();Loaded+=(_,_)=>RefreshDashboard();}
+    public MainWindow(){InitializeComponent();Loaded+=async (_,_)=>{RefreshDashboard();await RefreshRevenueAsync();};}
     private void RefreshDashboard(){var db=App.Database;db.EnsureBookingTables();db.EnsureBillingTables();db.EnsureMapTables();OpenTripsValue.Text=db.ScalarInt("SELECT COUNT(*) FROM Trips WHERE Status NOT IN ('completed','cancelled')").ToString();VerifiedHostsValue.Text=db.ScalarInt("SELECT COUNT(*) FROM Hosts WHERE Status='verified' AND Published=1").ToString();CandidatesValue.Text=db.ScalarInt("SELECT COUNT(*) FROM Candidates").ToString();CoverageGapsValue.Text=db.ScalarInt("SELECT COUNT(*) FROM Coverage WHERE Status='gap'").ToString();DatabaseStatus.Text=$"● Lokal bereit · {Path.GetFileName(db.DatabasePath)}";}
+
+    private async Task RefreshRevenueAsync()
+    {
+        RevenueStatusText.Text="Live-Daten werden geladen …";
+        var result=await ZabMasterCalendarService.LoadRevenueStatusAsync();
+        if(!result.Ok||result.Status is null)
+        {
+            RevenueStatusText.Text="Revenue Management offline";
+            RevenueWindowText.Text=result.Message;
+            RevenueOccupancyValue.Text="—";
+            RevenueNightsValue.Text="—";
+            RevenueAddValue.Text="—";
+            RevenueLevelValue.Text="—";
+            return;
+        }
+
+        var r=result.Status;
+        RevenueStatusText.Text=$"{r.Level} · automatische Preissteuerung aktiv";
+        RevenueWindowText.Text=$"{r.WindowStart} bis {r.WindowEnd} · {r.AvailableNights} freie Nächte";
+        RevenueOccupancyValue.Text=$"{r.Occupancy:0.#} %";
+        RevenueNightsValue.Text=$"{r.OccupiedNights}/30";
+        RevenueAddValue.Text=$"+{r.AddEur:0} €";
+        RevenueLevelValue.Text=r.Level;
+    }
 
     private async Task SyncLiveStateAsync()
     {
@@ -41,6 +65,6 @@ public partial class MainWindow : Window
         if(page=="Kandidaten"){new CandidateManagementWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Stornos"){new CancellationWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="System"){new SystemWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
-        if(page=="Dashboard")RefreshDashboard();
+        if(page=="Dashboard"){RefreshDashboard();await RefreshRevenueAsync();}
     }
 }
