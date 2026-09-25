@@ -125,6 +125,19 @@ def revenue_management_status(today=None):
 app.extensions["zab_revenue_management_status"] = revenue_management_status
 
 
+@app.get("/api/public/revenue-status")
+def public_revenue_status():
+    """Public aggregate yield status for the local Zuhause am Bach OS.
+
+    Contains no guest names, booking references, emails or other personal data.
+    """
+    try:
+        payload = dict(revenue_management_status())
+        return jsonify({"ok": True, **payload}), 200, {"Cache-Control": "no-store"}
+    except Exception as exc:
+        return jsonify({"ok": False, "error": "revenue_status_unavailable", "message": str(exc)[:300]}), 503
+
+
 def _revenue_adjustment_for_day(day, occupied=None, today=None):
     """Apply the configured rolling-occupancy yield rule to near-term nights only."""
     today = today or datetime.now(ZoneInfo("Europe/Vienna")).date()
