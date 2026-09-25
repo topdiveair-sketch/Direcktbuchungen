@@ -226,7 +226,34 @@ def init_v6(app, DB_PATH, db, require_admin, ROOMS):
                                  ROUND(AVG(julianday(departure)-julianday(arrival)),1) avg_nights
                                  FROM bookings WHERE status!='cancelled' GROUP BY room""").fetchall()
             sources=[{"source":"Direkt","bookings":conn.execute("SELECT COUNT(*) c FROM bookings WHERE status!='cancelled'").fetchone()["c"]}]
-        return render_template("statistics.html",monthly=monthly,by_room=by_room,sources=sources)
+        revenue_status = {"available": False}
+        try:
+            today_d = date.today()
+            window_end = today_d + timedelta(days=30)
+            occupied = set()
+            with db() as conn:
+                local_rows = conn.execute("""SELECT arrival,departure FROM bookings
+                    WHERE room='Bachblick' AND status='confirmed' AND departure>? AND arrival<?""",
+                    (today_d.isoformat(), window_end.isoformat())).fetchall()
+                external_rows = conn.execute("""SELECT start_date,end_date FROM external_blocks
+                    WHERE room='Bachblick' AND end_date>? AND start_date<?""",
+                    (today_d.isoformat(), window_end.isoformat())).fetchall()
+            for row in list(local_rows) + list(external_rows):
+                start = max(today_d, date.fromisoformat(row[0]))
+                end = min(window_end, date.fromisoformat(row[1]))
+                cur = start
+                while cur < end:
+                    occupied.add(cur)
+                    cur += timedelta(days=1)
+            occupancy = round(len(occupied) / 30 * 100, 1)
+            add_eur = 30 if occupancy >= 85 else 20 if occupancy >= 70 else 10 if occupancy >= 50 else 0
+            level = "PEAK" if occupancy >= 85 else "STRONG" if occupancy >= 70 else "ACTIVE" if occupancy >= 50 else "BASE"
+            revenue_status = {"available": True, "occupancy": occupancy, "occupied_nights": len(occupied),
+                              "available_nights": 30-len(occupied), "add_eur": add_eur, "level": level,
+                              "window_start": today_d.isoformat(), "window_end": window_end.isoformat()}
+        except Exception as exc:
+            revenue_status = {"available": False, "error": str(exc)}
+        return render_template("statistics.html",monthly=monthly,by_room=by_room,sources=sources,revenue_status=revenue_status)
 
     @app.get("/admin/v6-data")
     def v6_admin_data():
