@@ -27,7 +27,7 @@ from paypal_checkout import init_paypal_checkout
 from booking_notifications import init_booking_notifications
 from provider_monitor import init_provider_monitor
 from provider_radar import init_provider_radar
-from pricing_2027 import nightly_direct_rate
+from pricing_2027 import nightly_direct_rate, pricing_config
 from master_calendar import init_master_calendar
 from zab_control_center_v3 import make_master_checkout_sync
 
@@ -54,28 +54,113 @@ PUBLIC_BACHBLICK_NIGHTLY_PRICE = float(
 )
 
 
+def _booked_nights_next_30_days(today=None):
+    """Return unique occupied Bachblick nights in the rolling 30-day window."""
+    today = today or datetime.now(ZoneInfo("Europe/Vienna")).date()
+    window_end = today + timedelta(days=30)
+    occupied = set()
+    with db() as conn:
+        booking_rows = conn.execute(
+            """SELECT arrival, departure
+               FROM bookings
+               WHERE room='Bachblick'
+                 AND status='confirmed'
+                 AND departure > ?
+                 AND arrival < ?""",
+            (today.isoformat(), window_end.isoformat()),
+        ).fetchall()
+        block_rows = conn.execute(
+            """SELECT start_date, end_date
+               FROM external_blocks
+               WHERE room='Bachblick'
+                 AND end_date > ?
+                 AND start_date < ?""",
+            (today.isoformat(), window_end.isoformat()),
+        ).fetchall()
+
+    for row in list(booking_rows) + list(block_rows):
+        try:
+            start = max(today, parse_date(str(row[0])))
+            end = min(window_end, parse_date(str(row[1])))
+        except Exception:
+            continue
+        cur = start
+        while cur < end:
+            occupied.add(cur)
+            cur += timedelta(days=1)
+    return occupied
+
+
+def _revenue_adjustment_for_day(day, occupied=None, today=None):
+    """Apply the configured rolling-occupancy yield rule to near-term nights only."""
+    today = today or datetime.now(ZoneInfo("Europe/Vienna")).date()
+    lead_days = (day - today).days
+    if lead_days < 0 or lead_days >= 30:
+        return 0.0, 0.0
+
+    if occupied is None:
+        occupied = _booked_nights_next_30_days(today)
+    occupancy = (len(occupied) / 30.0) * 100.0
+
+    cfg = pricing_config()
+    add_eur = 0.0
+    rules = cfg.get("revenue_rules", {}).get(
+        "raise_if_occupancy_next_30_days_percent_gte", []
+    )
+    for rule in sorted(rules, key=lambda row: float(row.get("occupancy", 0))):
+        if occupancy >= float(rule.get("occupancy", 0)):
+            add_eur = max(add_eur, float(rule.get("add_eur", 0)))
+    return add_eur, round(occupancy, 1)
+
+
 def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, coupon_code=""):
-    """Return the price that is actually published on the direct-booking page."""
+    """Return the published direct rate with rolling occupancy-based yield management."""
     breakdown = price_breakdown(room, arrival, departure, adults, chosen, coupon_code)
     if room != "Bachblick":
         return breakdown
 
     nights = max(0, (departure - arrival).days)
     dynamic_rates = []
+    yield_details = []
+    today = datetime.now(ZoneInfo("Europe/Vienna")).date()
+    try:
+        occupied = _booked_nights_next_30_days(today)
+    except Exception:
+        occupied = set()
+
     current = arrival
     while current < departure:
         nightly = nightly_direct_rate(current)
         if nightly is None:
             dynamic_rates = []
+            yield_details = []
             break
+
+        base_rate = float(nightly)
+        add_eur, occupancy = _revenue_adjustment_for_day(
+            current, occupied=occupied, today=today
+        )
+        nightly = base_rate + add_eur
+
         price_getter = app.extensions.get("zab_channel_price_for_day")
         if callable(price_getter):
             try:
                 nightly = price_getter(room, "direct", current, float(nightly))
             except Exception:
                 pass
+
         dynamic_rates.append(float(nightly))
+        yield_details.append(
+            {
+                "date": current.isoformat(),
+                "base_rate": round(base_rate, 2),
+                "occupancy_30d_percent": occupancy,
+                "yield_add_eur": round(add_eur, 2),
+                "final_rate": round(float(nightly), 2),
+            }
+        )
         current += timedelta(days=1)
+
     room_total = round(
         sum(dynamic_rates) if dynamic_rates else PUBLIC_BACHBLICK_NIGHTLY_PRICE * nights,
         2,
@@ -88,6 +173,7 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
         **breakdown,
         "room_total": room_total,
         "discounts": [],
+        "revenue_management": yield_details,
         "total": round(room_total + extras_total, 2),
     }
 
