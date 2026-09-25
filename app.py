@@ -695,6 +695,42 @@ def index():
     return response
 
 
+PUBLIC_HOME_LANGUAGES = ("en", "cs", "sk", "hu", "es", "fr")
+
+
+def _public_home_translations() -> dict:
+    """Load curated public homepage translations shipped with the repository."""
+    path = BASE / "translations" / "public_home.json"
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+@app.get("/<lang>/")
+def localized_public_home(lang: str):
+    """Serve real localized landing pages instead of letting language URLs 404."""
+    lang = (lang or "").lower()
+    if lang not in PUBLIC_HOME_LANGUAGES:
+        return Response("Not found", status=404)
+
+    translations = _public_home_translations()
+    copy = translations.get(lang)
+    if not isinstance(copy, dict):
+        return redirect(url_for("index"), code=302)
+
+    response = Response(render_template(
+        "localized_home.html",
+        lang=lang,
+        t=copy,
+        supported_languages=("de",) + PUBLIC_HOME_LANGUAGES,
+    ))
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
 def activity_landing_context(kind: str) -> dict:
     horizon = date.today().year + 2
     if kind == "bike":
