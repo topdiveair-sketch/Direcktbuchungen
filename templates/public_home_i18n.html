@@ -25,7 +25,23 @@
     "name":"Zuhause am Bach – Wachau",
     "url":origin + "/",
     "description":tr.description,
+    "image": origin + "/static/images/aggsbach-markt-luftbild.png",
+    "telephone":"+436646437526",
+    "checkinTime":"14:00",
+    "checkoutTime":"10:00",
     "address":{"@type":"PostalAddress","streetAddress":"Aggsbach Markt 82","postalCode":"3641","addressLocality":"Aggsbach Markt","addressRegion":"Niederösterreich","addressCountry":"AT"},
+    "geo":{"@type":"GeoCoordinates","latitude":48.2945,"longitude":15.4068},
+    "sameAs":[
+      "https://www.donau.com/wachau-nibelungengau-kremstal/unterkunft/zu-hause-am-bach-wachau",
+      "https://www.aggsbach.gv.at/Zuhause_am_Bach_-_Privatzimmervermietung_3",
+      "https://www.booking.com/hotel/at/zu-hause-am-bach.de.html"
+    ],
+    "amenityFeature":[
+      {"@type":"LocationFeatureSpecification","name":"Gesicherte Fahrradunterbringung","value":true},
+      {"@type":"LocationFeatureSpecification","name":"E-Bike-Lademöglichkeit","value":true},
+      {"@type":"LocationFeatureSpecification","name":"Frühstück auf Vorbestellung","value":true},
+      {"@type":"LocationFeatureSpecification","name":"Kostenloser Parkplatz","value":true}
+    ],
     "potentialAction":{"@type":"ReserveAction","target":origin + "/?lang=" + lang + "#booking","name":tr.booking_cta}
   }|tojson }}
   </script>
@@ -73,7 +89,8 @@
       <article><strong>✓ {{ tr.direct_price }}</strong></article>
     </div>
   </section>
-\n  <section class="feature-strip feature-strip-i18n">
+
+  <section class="feature-strip feature-strip-i18n">
     <article><span>🚲</span><strong>{{ tr.cyclists_title }}</strong><small>{{ tr.cyclists }}</small></article>
     <article><span>🥾</span><strong>{{ tr.hikers_title }}</strong><small>{{ tr.hikers }}</small></article>
     <article><span>🏡</span><strong>{{ tr.guests_title }}</strong><small>{{ tr.guests }}</small></article>
