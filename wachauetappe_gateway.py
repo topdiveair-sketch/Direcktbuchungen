@@ -569,7 +569,7 @@ def _seo_landing(**kwargs):
 
 
 @app.get("/unterkunft-wachau")
-def seo_unterkunft_wachau():
+def gateway_seo_unterkunft_wachau():
     return _seo_landing(
         title="Unterkunft Wachau direkt buchen | Zuhause am Bach Aggsbach",
         description="Unterkunft in der Wachau direkt beim Gastgeber buchen: ruhiges Privatzimmer in Aggsbach Markt für Donauradweg, Welterbesteig und E-Bike. Verfügbarkeit und Preis direkt prüfen.",
@@ -758,7 +758,7 @@ def public_home_fr():
 
 
 @app.get("/unterkunft-jauerling-wachau")
-def seo_jauerling():
+def gateway_seo_jauerling():
     return _seo_landing(
         title="Unterkunft Jauerling Wachau | Zuhause am Bach",
         description="Unterkunft für Jauerling-Gäste in der Wachau: ruhig in Aggsbach Markt übernachten, Parkplatz, WLAN und Frühstück auf Wunsch. Direktpreis und Verfügbarkeit prüfen.",
