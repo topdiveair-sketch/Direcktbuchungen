@@ -1,6 +1,20 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}"><title>Statistiken</title></head>
 <body class="admin-page"><header class="admin-header"><strong>Statistiken</strong><a href="{{ url_for('admin') }}">Zur Verwaltung</a></header><main class="admin-main">
+<section class="admin-panel"><h2>Revenue Management</h2>
+{% if revenue_status and revenue_status.available %}
+<div class="stats-grid">
+  <div><strong>{{ revenue_status.occupancy }} %</strong><br><small>30-Tage-Auslastung</small></div>
+  <div><strong>{{ revenue_status.occupied_nights }}/30</strong><br><small>belegte Nächte</small></div>
+  <div><strong>+{{ revenue_status.add_eur }} €</strong><br><small>aktueller Yield-Aufschlag</small></div>
+  <div><strong>{{ revenue_status.level }}</strong><br><small>Preisstufe</small></div>
+</div>
+<p>Zeitraum: {{ revenue_status.window_start }} bis {{ revenue_status.window_end }} · freie Nächte: {{ revenue_status.available_nights }}.</p>
+<p>Automatik: unter 50 % = Basispreis · ab 50 % = +10 € · ab 70 % = +20 € · ab 85 % = +30 €.</p>
+{% else %}
+<p>Revenue-Management-Status konnte derzeit nicht berechnet werden.</p>
+{% endif %}
+</section>
 <section class="admin-panel"><h2>Monate</h2><table class="booking-table"><tr><th>Monat</th><th>Buchungen</th><th>Umsatz</th></tr>{% for r in monthly %}<tr><td>{{ r.month }}</td><td>{{ r.bookings }}</td><td>{{ r.revenue }} €</td></tr>{% else %}<tr><td colspan="3">Noch keine Daten.</td></tr>{% endfor %}</table></section>
 <section class="admin-panel"><h2>Zimmer</h2><table class="booking-table"><tr><th>Zimmer</th><th>Buchungen</th><th>Umsatz</th><th>Ø Nächte</th></tr>{% for r in by_room %}<tr><td>{{ r.room }}</td><td>{{ r.bookings }}</td><td>{{ r.revenue }} €</td><td>{{ r.avg_nights }}</td></tr>{% endfor %}</table></section>
 <section class="admin-panel"><h2>Google-Business-Funnel</h2><table class="booking-table"><tr><th>Stufe</th><th>Anzahl</th></tr>{% for event,label in [('landing_view','Landing Visitors'),('availability_started','Availability Checks'),('availability_result_free','Available Results'),('room_selected','Room Selections'),('checkout_started','Checkout Starts'),('payment_started','Payments gestartet'),('booking_completed','Completed Bookings')] %}<tr><td>{{ label }}</td><td>{{ funnel.get(event,{}).get('count',0) }}</td></tr>{% endfor %}<tr><td>Revenue</td><td>{{ '%.2f'|format(funnel.get('booking_completed',{}).get('revenue',0)) }} €</td></tr></table><p>Availability Rate: {{ metrics.availability_rate }} % · Checkout Rate: {{ metrics.checkout_rate }} % · Booking Conversion: {{ metrics.booking_conversion }} % · Revenue pro Google-Besucher: {{ '%.2f'|format(metrics.revenue_per_visitor) }} €</p></section>
