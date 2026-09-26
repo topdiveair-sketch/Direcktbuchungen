@@ -1,3 +1,11 @@
+const checkoutLang = new URLSearchParams(window.location.search).get("lang") || "de";
+const I18N = {
+  de:{afterCheck:"Nach Verfügbarkeitsprüfung",missing:"Bitte Reisedaten und Zimmer auswählen.",checking:"Verfügbarkeit wird geprüft …",fail:"Die Prüfung konnte nicht durchgeführt werden.",free:"✅ Termin frei – direkt buchbar.",unknown:"Verfügbarkeit bitte persönlich anfragen.",paypal:"MIT PAYPAL BEZAHLEN",paypalNote:"Nach dem Klick wird der Termin nochmals geprüft und anschließend der sichere PayPal-Checkout geöffnet.",bank:"ANFRAGE SENDEN & BANKDATEN ERHALTEN",bankNote:"Die Bankverbindung wird direkt angezeigt. Der Termin wird erst nach persönlicher Bestätigung verbindlich reserviert.",onsite:"BUCHUNGSANFRAGE SENDEN",onsiteNote:"Der Termin wird erst nach persönlicher Bestätigung verbindlich reserviert. Zahlung erfolgt bei Anreise.",personal:"VERFÜGBARKEIT PERSÖNLICH ANFRAGEN",stickyBook:"Jetzt direkt buchen",stickyAsk:"Persönlich anfragen",book:"Buchen",ask:"Anfragen",sending:"Anfrage wird gesendet …",paypalPrep:"PAYPAL WIRD VORBEREITET …",finalCheck:"Verfügbarkeit und Preis werden nochmals sicher geprüft.",paypalOpen:"PAYPAL WIRD GEÖFFNET …",calendarLive:"Live-Kalender aktuell",calendarDown:"Live-Kalender derzeit nicht erreichbar – freie Tage werden nicht automatisch bestätigt.",months:["Jänner","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"],days:["Mo","Di","Mi","Do","Fr","Sa","So"]},
+  cs:{afterCheck:"Po ověření dostupnosti",missing:"Vyberte prosím termín a pokoj.",checking:"Ověřujeme dostupnost …",fail:"Dostupnost se nepodařilo ověřit.",free:"✅ Termín je volný – můžete rezervovat přímo.",unknown:"Dostupnost prosím ověřte osobně.",paypal:"ZAPLATIT PŘES PAYPAL",paypalNote:"Po kliknutí ještě jednou ověříme termín a poté se otevře zabezpečená platba přes PayPal.",bank:"ODESLAT POPTÁVKU A ZÍSKAT BANKOVNÍ ÚDAJE",bankNote:"Bankovní údaje se zobrazí přímo. Termín je závazně rezervován až po našem osobním potvrzení.",onsite:"ODESLAT POPTÁVKU",onsiteNote:"Termín je závazně rezervován až po našem osobním potvrzení. Platba proběhne při příjezdu.",personal:"OSOBNĚ OVĚŘIT DOSTUPNOST",stickyBook:"Rezervovat přímo",stickyAsk:"Osobní dotaz",book:"Rezervovat",ask:"Zeptat se",sending:"Odesíláme poptávku …",paypalPrep:"PŘIPRAVUJEME PAYPAL …",finalCheck:"Ještě jednou bezpečně ověřujeme dostupnost a cenu.",paypalOpen:"OTEVÍRÁME PAYPAL …",calendarLive:"Aktuální kalendář",calendarDown:"Aktuální kalendář není právě dostupný – volné dny proto automaticky nepotvrzujeme.",months:["leden","únor","březen","duben","květen","červen","červenec","srpen","září","říjen","listopad","prosinec"],days:["Po","Út","St","Čt","Pá","So","Ne"]},
+  sk:{afterCheck:"Po overení dostupnosti",missing:"Vyberte si prosím termín a izbu.",checking:"Overujeme dostupnosť …",fail:"Dostupnosť sa nepodarilo overiť.",free:"✅ Termín je voľný – môžete rezervovať priamo.",unknown:"Dostupnosť si prosím overte osobne.",paypal:"ZAPLATIŤ CEZ PAYPAL",paypalNote:"Po kliknutí ešte raz overíme termín a potom sa otvorí zabezpečená platba cez PayPal.",bank:"ODOSLAŤ POŽIADAVKU A ZÍSKAŤ BANKOVÉ ÚDAJE",bankNote:"Bankové údaje sa zobrazia priamo. Termín je záväzne rezervovaný až po našom osobnom potvrdení.",onsite:"ODOSLAŤ POŽIADAVKU",onsiteNote:"Termín je záväzne rezervovaný až po našom osobnom potvrdení. Platba prebehne pri príchode.",personal:"OSOBNE OVERIŤ DOSTUPNOSŤ",stickyBook:"Rezervovať priamo",stickyAsk:"Osobná požiadavka",book:"Rezervovať",ask:"Opýtať sa",sending:"Odosielame požiadavku …",paypalPrep:"PRIPRAVUJEME PAYPAL …",finalCheck:"Ešte raz bezpečne overujeme dostupnosť a cenu.",paypalOpen:"OTVÁRAME PAYPAL …",calendarLive:"Aktuálny kalendár",calendarDown:"Aktuálny kalendár momentálne nie je dostupný – voľné dni preto automaticky nepotvrdzujeme.",months:["január","február","marec","apríl","máj","jún","júl","august","september","október","november","december"],days:["Po","Ut","St","Št","Pi","So","Ne"]}
+};
+const tx=(key)=> (I18N[checkoutLang] || I18N.de)[key] || I18N.de[key];
+
 
 const arrival = document.getElementById("arrival");
 const departure = document.getElementById("departure");
@@ -51,7 +59,7 @@ function euro(v) {
 function updateTotals() {
   const n = nights();
   nightsEl.value = n;
-  totalPrice.textContent = n ? "Nach Verfügbarkeitsprüfung" : euro(0);
+  totalPrice.textContent = n ? tx("afterCheck") : euro(0);
   priceBreakdown.innerHTML = "";
 }
 
@@ -84,14 +92,14 @@ function updatePaymentUI() {
   }
 
   if (method === "PayPal") {
-    bookingSubmit.textContent = "MIT PAYPAL BEZAHLEN";
-    if (paymentNotice) paymentNotice.textContent = "Nach dem Klick wird der Termin nochmals geprüft und anschließend der sichere PayPal-Checkout geöffnet.";
+    bookingSubmit.textContent = tx("paypal");
+    if (paymentNotice) paymentNotice.textContent = tx("paypalNote");
   } else if (method === "Banküberweisung") {
-    bookingSubmit.textContent = "ANFRAGE SENDEN & BANKDATEN ERHALTEN";
-    if (paymentNotice) paymentNotice.textContent = "Die Bankverbindung wird direkt angezeigt. Der Termin wird erst nach persönlicher Bestätigung verbindlich reserviert.";
+    bookingSubmit.textContent = tx("bank");
+    if (paymentNotice) paymentNotice.textContent = tx("bankNote");
   } else {
-    bookingSubmit.textContent = "BUCHUNGSANFRAGE SENDEN";
-    if (paymentNotice) paymentNotice.textContent = "Der Termin wird erst nach persönlicher Bestätigung verbindlich reserviert. Zahlung erfolgt bei Anreise.";
+    bookingSubmit.textContent = tx("onsite");
+    if (paymentNotice) paymentNotice.textContent = tx("onsiteNote");
   }
 }
 function resetAvailability() {
@@ -121,7 +129,7 @@ arrival.addEventListener("change", () => {
 
 document.getElementById("checkAvailability").addEventListener("click", async () => {
   if (!arrival.value || !departure.value || !selectedRoom()) {
-    result.textContent = "Bitte Reisedaten und Zimmer auswählen.";
+    result.textContent = tx("missing");
     result.className = "availability-result bad";
     return;
   }
@@ -133,7 +141,7 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
   extraIds.forEach(id=>{const el=document.getElementById(id);fd.append(id,el&&el.checked?"true":"false")});
   fd.append("coupon_code", couponCode?.value.trim() || "");
 
-  result.textContent = "Verfügbarkeit wird geprüft …";
+  result.textContent = tx("checking");
   result.className = "availability-result";
   track("availability_started");
 
@@ -141,7 +149,9 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
     const response = await fetch("/api/availability", {method:"POST", body:fd});
     const data = await response.json();
     const status = data.status || (data.available === true ? "free" : data.available === false ? "blocked" : "unknown");
-    result.textContent = data.message;
+    result.textContent = checkoutLang === "cs" || checkoutLang === "sk"
+      ? (status === "free" ? tx("free") : status === "unknown" ? tx("unknown") : (checkoutLang === "cs" ? "⛔ Termín není dostupný." : "⛔ Termín nie je dostupný."))
+      : data.message;
     result.className = status === "free" ? "availability-result ok" : status === "unknown" ? "availability-result unknown" : "availability-result bad";
     track(`availability_result_${status}`);
     if (status === "free" || status === "unknown") {
@@ -149,15 +159,15 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
       checkoutOpen = true;
       track("checkout_started");
       if (status === "free") updatePaymentUI();
-      else bookingSubmit.textContent = "VERFÜGBARKEIT PERSÖNLICH ANFRAGEN";
-      stickyLabel.textContent = status === "free" ? "Jetzt direkt buchen" : "Persönlich anfragen";
-      stickyCta.textContent = status === "free" ? "Buchen" : "Anfragen";
+      else bookingSubmit.textContent = tx("personal");
+      stickyLabel.textContent = status === "free" ? tx("stickyBook") : tx("stickyAsk");
+      stickyCta.textContent = status === "free" ? tx("book") : tx("ask");
       totalPrice.textContent=euro(data.total); if(data.breakdown){let h=`<div><span>Zimmer</span><strong>${euro(data.breakdown.room_total)}</strong></div>`;data.breakdown.extras.forEach(x=>h+=`<div><span>${x.label}</span><strong>${euro(x.amount)}</strong></div>`);data.breakdown.discounts.forEach(x=>h+=`<div class="discount-line"><span>${x.label} (${x.percent}%)</span><strong>− ${euro(x.amount)}</strong></div>`);priceBreakdown.innerHTML=h;}
     } else {
       guestArea.classList.add("hidden");
     }
   } catch {
-    result.textContent = "Die Prüfung konnte nicht durchgeführt werden.";
+    result.textContent = tx("fail");
     result.className = "availability-result bad";
   }
 });
@@ -172,7 +182,7 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
   if (method !== "PayPal") {
     bookingSubmitted = true;
     bookingSubmit.disabled = true;
-    bookingSubmit.textContent = method === "Banküberweisung" ? "Anfrage wird gesendet …" : "Anfrage wird gesendet …";
+    bookingSubmit.textContent = tx("sending");
     return;
   }
 
@@ -201,8 +211,8 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
   };
 
   bookingSubmit.disabled = true;
-  bookingSubmit.textContent = "PAYPAL WIRD VORBEREITET …";
-  if (paymentNotice) paymentNotice.textContent = "Verfügbarkeit und Preis werden nochmals sicher geprüft.";
+  bookingSubmit.textContent = tx("paypalPrep");
+  if (paymentNotice) paymentNotice.textContent = tx("finalCheck");
 
   try {
     const quoteResponse = await fetch("/api/paypal/quote", {
@@ -228,11 +238,11 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
     }
 
     bookingSubmitted = true;
-    bookingSubmit.textContent = "PAYPAL WIRD GEÖFFNET …";
+    bookingSubmit.textContent = tx("paypalOpen");
     window.location.assign(order.approval_url);
   } catch (error) {
     bookingSubmit.disabled = false;
-    bookingSubmit.textContent = "MIT PAYPAL BEZAHLEN";
+    bookingSubmit.textContent = tx("paypal");
     if (paymentNotice) paymentNotice.textContent = "⚠️ " + (error?.message || "PayPal konnte nicht gestartet werden.");
   }
 });
@@ -259,7 +269,7 @@ current.setDate(1);
 async function renderCalendar() {
   const year = current.getFullYear();
   const month = current.getMonth()+1;
-  const monthNames = ["Jänner","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+  const monthNames = tx("months");
   calTitle.textContent = `${monthNames[month-1]} ${year}`;
 
   const response = await fetch(`/api/calendar?room=${encodeURIComponent(calRoom.value)}&year=${year}&month=${month}`);
@@ -274,10 +284,10 @@ async function renderCalendar() {
     cal.parentElement.insertBefore(statusNote, cal);
   }
   statusNote.textContent = data.live
-    ? `Live-Kalender aktuell${data.updatedAt ? " · Stand " + data.updatedAt : ""}`
-    : "Live-Kalender derzeit nicht erreichbar – freie Tage werden nicht automatisch bestätigt.";
+    ? `${tx("calendarLive")}${data.updatedAt ? " · " + data.updatedAt : ""}`
+    : tx("calendarDown");
 
-  ["Mo","Di","Mi","Do","Fr","Sa","So"].forEach(d => {
+  tx("days").forEach(d => {
     const e = document.createElement("div");
     e.className = "cal-head";
     e.textContent = d;
