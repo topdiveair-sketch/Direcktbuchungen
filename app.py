@@ -792,11 +792,11 @@ def seo_landing_context(slug: str) -> dict:
     ]
     pages = {
         "wachau": {
-            "title":"Unterkunft Wachau direkt buchen | Zuhause am Bach Aggsbach",
-            "description":"Unterkunft Wachau in Aggsbach Markt: auch 1 Nacht möglich, ideal für Donauradweg und Welterbesteig. Gartenzimmer, Frühstück und Direktbuchung." ,
+            "title":"Unterkunft Wachau zwischen Melk und Krems | Zuhause am Bach",
+            "description":"Persönliche Unterkunft in der Wachau zwischen Melk und Krems: Aggsbach Markt, Donauradweg, Welterbesteig, Frühstück und Direktbuchung bei Zuhause am Bach.",
             "canonical":"https://www.zuhauseambach-wachau.at/unterkunft-wachau",
-            "h1":"Unterkunft in der Wachau – ruhig in Aggsbach Markt übernachten",
-            "lead":"Zuhause am Bach ist eine kleine, persönliche Unterkunft für Wachau-Gäste. Auch nur 1 Nacht ist grundsätzlich möglich – besonders praktisch für Radfahrer am Donauradweg und Wanderer am Welterbesteig.",
+            "h1":"Unterkunft in der Wachau zwischen Melk und Krems",
+            "lead":"Zuhause am Bach ist eine kleine, persönliche Unterkunft in Aggsbach Markt – ruhig zwischen Melk und Krems gelegen und praktisch für Donauradweg, Welterbesteig und Wachau-Ausflüge.",
             "eyebrow":"Wachau direkt erleben",
             "subheading":"Kleine Unterkunft statt anonymer Bettenburg",
             "paragraphs":["Das Gartenzimmer ist für maximal zwei Gäste gedacht und liegt in Aggsbach Markt am nördlichen Wachauufer.","Donauradweg und Welterbesteig lassen sich mit persönlichen Tipps, Frühstück auf Wunsch und direktem Gastgeberkontakt verbinden.","Wer starke Wochenenden oder Veranstaltungen bereits kennt, kann seinen Termin früh direkt prüfen."],
@@ -847,6 +847,20 @@ def seo_landing_context(slug: str) -> dict:
             "secondary_image":"images/bach-hinterm-haus-v11.webp","secondary_image_alt":"Ruhiger Bachweg hinter Zuhause am Bach","secondary_image_caption":"Ruhiger Ausgangspunkt in Aggsbach Markt.",
             "faq":faq_direct,
         },
+        "winter": {
+            "title":"Winterurlaub Wachau | Unterkunft zwischen Melk und Krems",
+            "description":"Winterurlaub in der Wachau: ruhig zwischen Melk und Krems in Aggsbach Markt übernachten. Jauerling, Advent, Winterwandern, Frühstück und Direktbuchung.",
+            "canonical":"https://www.zuhauseambach-wachau.at/winterurlaub-wachau",
+            "h1":"Winterurlaub in der Wachau – ruhig zwischen Melk und Krems",
+            "lead":"Zuhause am Bach ist eine kleine Winter-Unterkunft in Aggsbach Markt für Gäste, die Wachau, Jauerling, Advent, Winterwandern und ruhige Tage an der Donau verbinden möchten.",
+            "eyebrow":"Winter · Wachau · Jauerling",
+            "subheading":"Wintertage in der Wachau mit persönlicher Unterkunft",
+            "paragraphs":["Aggsbach Markt liegt ruhig zwischen Melk und Krems und eignet sich als Basis für Winterausflüge in der Wachau und Richtung Jauerling.","Frühstück auf Wunsch und eine Trocknungsmöglichkeit für Outdoorbekleidung machen kurze Winteraufenthalte unkompliziert.","Adventtermine, Winterwanderungen und wetterabhängige Angebote lassen sich über die offiziellen Veranstalter prüfen; die Übernachtung kann direkt bei Zuhause am Bach angefragt werden."],
+            "features":[("❄️","Winterbasis","Ruhig zwischen Melk und Krems übernachten."),("🏔️","Jauerling","Winterausflug und Naturpark verbinden."),("🍳","Frühstück","Auf Wunsch vor dem Wintertag."),("📅","Direkt buchen","Preis und freie Termine live prüfen.")],
+            "hero_image":"images/bach-hinterm-haus-v11.webp","hero_image_alt":"Winterurlaub Wachau bei Zuhause am Bach in Aggsbach Markt","hero_image_caption":"Ruhige Wachau-Basis zwischen Melk und Krems.",
+            "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer für Winterurlaub in der Wachau","secondary_image_caption":"Persönlich übernachten und die Wachau im Winter erleben.",
+            "faq":faq_direct,
+        },
         "ski": {
             "title":"Skifahren Jauerling Unterkunft Wachau | Zuhause am Bach",
             "description":"Winter-Unterkunft für Ausflüge zum Jauerling: in Aggsbach Markt übernachten, aktuelle Liftzeiten offiziell prüfen und direkt bei Zuhause am Bach buchen.",
@@ -891,6 +905,10 @@ def seo_jauerling():
 @app.get("/skifahren-jauerling-unterkunft-wachau")
 def seo_ski_jauerling():
     return render_template("seo_landing.html", **seo_landing_context("ski"))
+
+@app.get("/winterurlaub-wachau")
+def seo_winterurlaub_wachau():
+    return render_template("seo_landing.html", **seo_landing_context("winter"))
 
 
 @app.get("/unterkunft-donauradweg-wachau")
@@ -1067,6 +1085,7 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-jauerling-wachau",
         "https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau",
+        "https://www.zuhauseambach-wachau.at/winterurlaub-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau",
         "https://www.zuhauseambach-wachau.at/wachau-aktivurlaub-2027-2028",
