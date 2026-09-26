@@ -74,8 +74,10 @@ def _init_table() -> None:
         cols={r[1] for r in conn.execute("PRAGMA table_info(wachauetappe_guest_bookings)").fetchall()}
         if "trip_key" not in cols: conn.execute("ALTER TABLE wachauetappe_guest_bookings ADD COLUMN trip_key TEXT DEFAULT ''")
         if "trip_reference" not in cols: conn.execute("ALTER TABLE wachauetappe_guest_bookings ADD COLUMN trip_reference TEXT DEFAULT ''")
+        if "client_request_id" not in cols: conn.execute("ALTER TABLE wachauetappe_guest_bookings ADD COLUMN client_request_id TEXT DEFAULT ''")
         conn.execute("CREATE INDEX IF NOT EXISTS ix_we_guest_trip_key ON wachauetappe_guest_bookings(trip_key)")
         conn.execute("CREATE INDEX IF NOT EXISTS ix_we_guest_trip_reference ON wachauetappe_guest_bookings(trip_reference)")
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_we_guest_client_request ON wachauetappe_guest_bookings(client_request_id) WHERE client_request_id<>''")
 
 
 _init_table()
@@ -124,6 +126,7 @@ def create_guest_booking():
     payment_method = str(payload.get("paymentMethod") or "host").strip()[:40] or "host"
     trip_key = str(payload.get("tripKey") or "").strip()[:120]
     if not trip_key: trip_key = secrets.token_urlsafe(24)
+    client_request_id = str(payload.get("clientRequestId") or "").strip()[:320]
     try: guests = max(1, min(12, int(payload.get("guests") or 1)))
     except (TypeError, ValueError): guests = 1
     try: price = float(payload.get("price")) if payload.get("price") is not None else None
@@ -133,9 +136,13 @@ def create_guest_booking():
     if not _valid_email(guest_email): return _with_cors(jsonify({"error":"invalid_email"})), 422
     now = _now()
     with db() as conn:
+        if client_request_id:
+            duplicate=conn.execute("SELECT reference,trip_key,trip_reference,status FROM wachauetappe_guest_bookings WHERE client_request_id=?",(client_request_id,)).fetchone()
+            if duplicate:
+                return _with_cors(jsonify({"ok":True,"reference":duplicate["reference"],"tripKey":duplicate["trip_key"],"tripReference":duplicate["trip_reference"],"status":duplicate["status"],"idempotentReplay":True})),200
         existing=conn.execute("SELECT trip_reference FROM wachauetappe_guest_bookings WHERE trip_key=? AND trip_reference<>'' ORDER BY id LIMIT 1",(trip_key,)).fetchone()
         trip_reference=str(existing["trip_reference"]) if existing else f"WE-R-{datetime.now():%Y%m%d}-{secrets.token_hex(3).upper()}"
-        cur = conn.execute("""INSERT INTO wachauetappe_guest_bookings(reference,host_id,stay_date,guests,guest_name,guest_email,guest_phone,note,price,payment_method,status,source,created_at,updated_at,trip_key,trip_reference) VALUES('',?,?,?,?,?,?,?,?,?,'requested','guest_web',?,?,?,?)""",(host_id,stay_date,guests,guest_name,guest_email,guest_phone,note,price,payment_method,now,now,trip_key,trip_reference))
+        cur = conn.execute("""INSERT INTO wachauetappe_guest_bookings(reference,host_id,stay_date,guests,guest_name,guest_email,guest_phone,note,price,payment_method,status,source,created_at,updated_at,trip_key,trip_reference,client_request_id) VALUES('',?,?,?,?,?,?,?,?,?,'requested','guest_web',?,?,?,?,?)""",(host_id,stay_date,guests,guest_name,guest_email,guest_phone,note,price,payment_method,now,now,trip_key,trip_reference,client_request_id))
         booking_id = int(cur.lastrowid)
         reference = f"WE-{datetime.now():%Y%m%d}-{booking_id:05d}"
         conn.execute("UPDATE wachauetappe_guest_bookings SET reference=? WHERE id=?",(reference,booking_id))
