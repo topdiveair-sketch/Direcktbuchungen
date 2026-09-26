@@ -319,7 +319,10 @@
     "svc_kitchen_title": "Vendégkonyha",
     "svc_bath_title": "Fürdőszoba és tisztaság",
     "svc_taste_title": "Regionális ízek",
-    "svc_cta": "Elérhetőség és ár ellenőrzése"
+    "svc_cta": "Elérhetőség és ár ellenőrzése",
+    "wachau_link": "Wachau szállás Melk és Krems között",
+    "winter_link": "Téli pihenés a Wachauban",
+    "reviews_link": "Vendégértékelések és visszajelzések"
   },
   "es": {
     "lang_name": "ES",
@@ -381,7 +384,10 @@
     "svc_kitchen_title": "Cocina para huéspedes",
     "svc_bath_title": "Baño y limpieza",
     "svc_taste_title": "Sabores regionales",
-    "svc_cta": "Consultar disponibilidad y precio"
+    "svc_cta": "Consultar disponibilidad y precio",
+    "wachau_link": "Alojamiento en Wachau entre Melk y Krems",
+    "winter_link": "Vacaciones de invierno en Wachau",
+    "reviews_link": "Opiniones de huéspedes y comentarios"
   },
   "fr": {
     "lang_name": "FR",
@@ -443,6 +449,9 @@
     "svc_kitchen_title": "Cuisine des hôtes",
     "svc_bath_title": "Salle de bain et propreté",
     "svc_taste_title": "Saveurs régionales",
-    "svc_cta": "Voir les disponibilités et le prix"
+    "svc_cta": "Voir les disponibilités et le prix",
+    "wachau_link": "Hébergement dans la Wachau entre Melk et Krems",
+    "winter_link": "Séjour d’hiver dans la Wachau",
+    "reviews_link": "Avis des hôtes et commentaires"
   }
 }
