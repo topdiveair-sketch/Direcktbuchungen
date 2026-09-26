@@ -129,6 +129,10 @@ def create_guest_booking():
         booking_id = int(cur.lastrowid)
         reference = f"WE-{datetime.now():%Y%m%d}-{booking_id:05d}"
         conn.execute("UPDATE wachauetappe_guest_bookings SET reference=? WHERE id=?",(reference,booking_id))
+    notifier=app.extensions.get("wachauetappe_notify_new_booking")
+    if callable(notifier):
+        try:notifier(reference)
+        except Exception:pass
     return _with_cors(jsonify({"ok":True,"reference":reference,"status":"requested","message":"Buchungsanfrage wurde an WachauEtappe übertragen."})), 201
 
 
