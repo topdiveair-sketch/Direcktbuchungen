@@ -12,7 +12,7 @@ namespace WachauEtappe.Zentrale;
 
 public partial class HostManagementWindow : Window
 {
-    private const string ApiBase = "https://web-production-907d68.up.railway.app";
+    private const string ApiBase = "https://web-production-2b242.up.railway.app";
     private const string PartnerPortalUrl = "https://topdiveair-sketch.github.io/Direcktbuchungen/partner/";
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(20) };
     private static readonly byte[] CredentialEntropy = Encoding.UTF8.GetBytes("WachauEtappe.Zentrale.AdminCredential.v1");
