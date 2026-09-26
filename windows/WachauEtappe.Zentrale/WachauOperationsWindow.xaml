@@ -1,0 +1,63 @@
+<Window x:Class="WachauEtappe.Zentrale.WachauOperationsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WachauEtappe · Live Operations" Height="860" Width="1320"
+        MinHeight="700" MinWidth="1080" WindowStartupLocation="CenterOwner" Background="#F4F1E8">
+  <Window.Resources>
+    <Style x:Key="Card" TargetType="Border"><Setter Property="Background" Value="White"/><Setter Property="CornerRadius" Value="12"/><Setter Property="Padding" Value="18"/><Setter Property="Margin" Value="0,0,12,12"/></Style>
+    <Style x:Key="Label" TargetType="TextBlock"><Setter Property="Foreground" Value="#718079"/><Setter Property="FontSize" Value="11"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
+    <Style x:Key="Value" TargetType="TextBlock"><Setter Property="Foreground" Value="#173D32"/><Setter Property="FontSize" Value="28"/><Setter Property="FontWeight" Value="Bold"/><Setter Property="Margin" Value="0,5,0,0"/></Style>
+  </Window.Resources>
+  <Grid Margin="24">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+
+    <DockPanel>
+      <StackPanel DockPanel.Dock="Left">
+        <TextBlock Text="Live Operations" FontSize="30" FontWeight="Bold" Foreground="#173D32"/>
+        <TextBlock Text="Reisen, Partner, Ersatzbedarf, Funnel und Vermittlungswert aus der Online-Zentrale." Foreground="#64736D" Margin="0,4,0,0"/>
+      </StackPanel>
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+        <ComboBox x:Name="DaysBox" Width="120" SelectedIndex="1" Margin="0,0,8,0">
+          <ComboBoxItem Content="7 Tage"/><ComboBoxItem Content="30 Tage"/><ComboBoxItem Content="90 Tage"/>
+        </ComboBox>
+        <Button Content="Aktualisieren" Click="Refresh_Click" Padding="16,8"/>
+      </StackPanel>
+    </DockPanel>
+
+    <UniformGrid Grid.Row="1" Columns="5" Margin="0,24,0,8">
+      <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="PARTNER-LEADS" Style="{StaticResource Label}"/><TextBlock x:Name="PartnerLeadsValue" Text="—" Style="{StaticResource Value}"/></StackPanel></Border>
+      <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="OFFENE ANFRAGEN" Style="{StaticResource Label}"/><TextBlock x:Name="OpenValue" Text="—" Style="{StaticResource Value}"/></StackPanel></Border>
+      <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="BESTÄTIGTE NÄCHTE" Style="{StaticResource Label}"/><TextBlock x:Name="ConfirmedValue" Text="—" Style="{StaticResource Value}"/></StackPanel></Border>
+      <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="BUCHUNGSWERT" Style="{StaticResource Label}"/><TextBlock x:Name="BookingValue" Text="—" Style="{StaticResource Value}"/></StackPanel></Border>
+      <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="ERW. PROVISION*" Style="{StaticResource Label}"/><TextBlock x:Name="CommissionValue" Text="—" Style="{StaticResource Value}"/></StackPanel></Border>
+    </UniformGrid>
+
+    <TabControl Grid.Row="2" Margin="0,8,0,0">
+      <TabItem Header="Reisen">
+        <Grid Margin="14"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+          <TextBlock x:Name="TripSummaryText" Foreground="#397356" FontWeight="SemiBold" Margin="0,0,0,10"/>
+          <DataGrid Grid.Row="1" x:Name="TripsGrid" AutoGenerateColumns="True" IsReadOnly="True"/>
+        </Grid>
+      </TabItem>
+      <TabItem Header="Ersatzbedarf">
+        <Grid Margin="14"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+          <TextBlock Text="Absagen, bei denen für Ort und Datum nach einer Ersatzunterkunft gesucht werden muss." Foreground="#64736D" Margin="0,0,0,10"/>
+          <DataGrid Grid.Row="1" x:Name="ReplacementGrid" AutoGenerateColumns="True" IsReadOnly="True"/>
+        </Grid>
+      </TabItem>
+      <TabItem Header="Conversion-Funnel">
+        <Grid Margin="14"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+          <TextBlock Text="Datensparsame Nutzungsereignisse ohne Namen, E-Mail oder Telefonnummer." Foreground="#64736D" Margin="0,0,0,10"/>
+          <DataGrid Grid.Row="1" x:Name="FunnelGrid" AutoGenerateColumns="True" IsReadOnly="True"/>
+        </Grid>
+      </TabItem>
+      <TabItem Header="Status">
+        <StackPanel Margin="18">
+          <TextBlock Text="Online-Verbindung" FontSize="20" FontWeight="SemiBold" Foreground="#173D32"/>
+          <TextBlock x:Name="StatusText" Text="Noch nicht geladen." TextWrapping="Wrap" Margin="0,12,0,0"/>
+          <TextBlock Text="* Die angezeigte Provision ist nur ein rechnerischer Wert auf Basis bestätigter, bekannter Unterkunftspreise. Es wird dadurch keine Rechnung erstellt oder Zahlung ausgelöst." TextWrapping="Wrap" Foreground="#718079" Margin="0,22,0,0"/>
+        </StackPanel>
+      </TabItem>
+    </TabControl>
+  </Grid>
+</Window>
