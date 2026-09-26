@@ -174,10 +174,10 @@
         <input type="hidden" name="idempotency_key" id="idempotencyKey">
         <div class="booking-grid">
           <label>Anreise
-            <input type="date" id="arrival" name="arrival" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
+            <input type="date" id="arrival" name="arrival" aria-label="Anreisedatum" title="Anreisedatum" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
           </label>
           <label>Abreise
-            <input type="date" id="departure" name="departure" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
+            <input type="date" id="departure" name="departure" aria-label="Abreisedatum" title="Abreisedatum" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
           </label>
           <label>Nächte
             <input type="text" id="nights" value="0" readonly>
