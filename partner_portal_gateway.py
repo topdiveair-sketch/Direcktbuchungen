@@ -22,7 +22,7 @@ def cors(resp):
     if origin in ALLOWED_ORIGINS:
         resp.headers["Access-Control-Allow-Origin"]=origin;resp.headers["Vary"]="Origin"
     resp.headers["Access-Control-Allow-Headers"]="Content-Type, Authorization, X-Admin-Password"
-    resp.headers["Access-Control-Allow-Methods"]="GET, POST, PUT, OPTIONS"
+    resp.headers["Access-Control-Allow-Methods"]="GET, POST, PUT, PATCH, OPTIONS"
     resp.headers["Cache-Control"]="no-store"
     return resp
 
@@ -60,6 +60,9 @@ def init_tables():
         """)
         cols={r[1] for r in c.execute("PRAGMA table_info(wachauetappe_partner_accounts)").fetchall()}
         if 'last_login_at' not in cols:c.execute("ALTER TABLE wachauetappe_partner_accounts ADD COLUMN last_login_at TEXT DEFAULT ''")
+        booking_cols={r[1] for r in c.execute("PRAGMA table_info(wachauetappe_guest_bookings)").fetchall()}
+        if booking_cols and 'responded_at' not in booking_cols:c.execute("ALTER TABLE wachauetappe_guest_bookings ADD COLUMN responded_at TEXT DEFAULT ''")
+        if booking_cols and 'host_response_note' not in booking_cols:c.execute("ALTER TABLE wachauetappe_guest_bookings ADD COLUMN host_response_note TEXT DEFAULT ''")
 init_tables()
 
 def partner_host_id():
@@ -146,6 +149,8 @@ def _sync_booking_calendar(host_id:str)->dict:
 @app.route('/api/partner/provision',methods=['OPTIONS'])
 @app.route('/api/partner/disable',methods=['OPTIONS'])
 @app.route('/api/partner/admin-status',methods=['OPTIONS'])
+@app.route('/api/partner/bookings',methods=['OPTIONS'])
+@app.route('/api/partner/bookings/<reference>',methods=['OPTIONS'])
 @app.route('/api/hosts/search',methods=['OPTIONS'])
 def partner_options(): return options()
 
@@ -195,6 +200,40 @@ def partner_save_range():
         while d<=t:
             c.execute("""INSERT INTO wachauetappe_partner_availability(host_id,stay_date,status,rooms_free,price,breakfast_mode,breakfast_price,luggage_available,updated_at) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(host_id,stay_date) DO UPDATE SET status=excluded.status,rooms_free=excluded.rooms_free,price=excluded.price,breakfast_mode=excluded.breakfast_mode,breakfast_price=excluded.breakfast_price,luggage_available=excluded.luggage_available,updated_at=excluded.updated_at""",(host_id,d.isoformat(),status,rooms,price,breakfast,breakfast_price,luggage,now()));n+=1;d+=timedelta(days=1)
     return cors(jsonify({'ok':True,'updated':n})),200
+
+@app.get('/api/partner/bookings')
+def partner_bookings():
+    host_id=partner_host_id()
+    if not host_id:return cors(jsonify({'error':'unauthorized'})),401
+    limit=max(1,min(100,int(request.args.get('limit') or 50)))
+    with db() as c:
+        rows=c.execute("""SELECT reference,stay_date,guests,guest_name,guest_email,guest_phone,note,price,payment_method,status,created_at,updated_at,COALESCE(responded_at,'') AS responded_at,COALESCE(host_response_note,'') AS host_response_note FROM wachauetappe_guest_bookings WHERE host_id=? ORDER BY stay_date,created_at DESC LIMIT ?""",(host_id,limit)).fetchall()
+    now_dt=datetime.now()
+    items=[]
+    for r in rows:
+        try:age_hours=max(0,int((now_dt-datetime.fromisoformat(r['created_at'])).total_seconds()//3600))
+        except Exception:age_hours=0
+        items.append({'reference':r['reference'],'stayDate':r['stay_date'],'guests':r['guests'],'guestName':r['guest_name'],'guestEmail':r['guest_email'],'guestPhone':r['guest_phone'],'note':r['note'],'price':r['price'],'paymentMethod':r['payment_method'],'status':r['status'],'createdAt':r['created_at'],'updatedAt':r['updated_at'],'respondedAt':r['responded_at'],'hostResponseNote':r['host_response_note'],'ageHours':age_hours,'reminderDue':r['status']=='requested' and age_hours>=12})
+    return cors(jsonify({'items':items,'openCount':sum(1 for x in items if x['status']=='requested'),'reminderDueCount':sum(1 for x in items if x['reminderDue'])})),200
+
+@app.patch('/api/partner/bookings/<reference>')
+def partner_booking_update(reference):
+    host_id=partner_host_id()
+    if not host_id:return cors(jsonify({'error':'unauthorized'})),401
+    p=request.get_json(silent=True) or {};status=str(p.get('status') or '').strip().lower()
+    if status not in {'confirmed','declined'}:return cors(jsonify({'error':'invalid_status'})),422
+    note=str(p.get('note') or '').strip()[:1200];stamp=now()
+    with db() as c:
+        row=c.execute("SELECT id,stay_date,status FROM wachauetappe_guest_bookings WHERE reference=? AND host_id=?",(reference,host_id)).fetchone()
+        if not row:return cors(jsonify({'error':'booking_not_found'})),404
+        if row['status']!='requested':return cors(jsonify({'error':'booking_already_answered','status':row['status']})),409
+        c.execute("UPDATE wachauetappe_guest_bookings SET status=?,host_response_note=?,responded_at=?,updated_at=? WHERE id=?",(status,note,stamp,stamp,row['id']))
+        if status=='confirmed':
+            avail=c.execute("SELECT rooms_free FROM wachauetappe_partner_availability WHERE host_id=? AND stay_date=?",(host_id,row['stay_date'])).fetchone()
+            if avail:
+                remaining=max(0,int(avail['rooms_free'] or 0)-1)
+                c.execute("UPDATE wachauetappe_partner_availability SET rooms_free=?,status=?,updated_at=? WHERE host_id=? AND stay_date=?",(remaining,'free' if remaining>0 else 'full',stamp,host_id,row['stay_date']))
+    return cors(jsonify({'ok':True,'reference':reference,'status':status,'respondedAt':stamp})),200
 
 @app.get('/api/partner/calendar')
 def partner_calendar_status():
