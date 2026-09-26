@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="{{ t.html_lang|e }}">
+<html lang="{{ t.html_lang|e }}" {% if lang == "ar" %}dir="rtl"{% endif %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -25,6 +25,7 @@
   <link rel="alternate" hreflang="es" href="https://www.zuhauseambach-wachau.at/es/">
   <link rel="alternate" hreflang="fr" href="https://www.zuhauseambach-wachau.at/fr/">
   <link rel="alternate" hreflang="de-CH" href="https://www.zuhauseambach-wachau.at/ch/">
+  <link rel="alternate" hreflang="ar" href="https://www.zuhauseambach-wachau.at/ar/">
   <link rel="alternate" hreflang="x-default" href="https://www.zuhauseambach-wachau.at/">
   <script type="application/ld+json">
   {{ {
@@ -61,6 +62,7 @@
     main{padding:42px 0 60px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px}
     .card h2,.card h3{margin-top:0}.wide{grid-column:1/-1}.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
     .small{color:var(--muted)}footer{padding:28px 0;background:#17211f;color:#fff}.footer-cta{margin-bottom:14px}
+    html[dir="rtl"] body{text-align:right}html[dir="rtl"] .top .wrap{direction:rtl}html[dir="rtl"] .langs{direction:ltr}html[dir="rtl"] .grid,html[dir="rtl"] .facts{direction:rtl}
     @media(max-width:760px){.grid,.facts{grid-template-columns:1fr}.hero{padding-top:48px}}
   </style>
 </head>
@@ -94,7 +96,8 @@
         "it":"🐾 Importante prima di prenotare: Fidel, Gloria e Pia sono tre levrieri e vivono in casa con noi come parte della famiglia. Frequentano anche gli spazi comuni, compresi soggiorno e cucina. Gli ospiti devono sentirsi a proprio agio con i cani in casa.",
         "es":"🐾 Importante antes de reservar: Fidel, Gloria y Pia son tres galgos y viven con nosotros en la casa como parte de la familia. También están en las zonas comunes, incluido el salón y la cocina. Los huéspedes deben sentirse cómodos con perros dentro de la casa.",
         "fr":"🐾 Important avant de réserver : Fidel, Gloria et Pia sont trois lévriers et vivent avec nous dans la maison comme membres de la famille. Ils circulent également dans les espaces communs, notamment le salon et la cuisine. Les hôtes doivent être à l’aise avec des chiens dans la maison.",
-        "ch":"🐾 Wichtig vor em Bueche: Fidel, Gloria & Pia sind drei Windhünd und läbed als Teil vo üsere Familie im Huus. Si sind au i de gemeinsame Räum, inklusive Wohnzimmer und Chuchi. Gäste sötted sich mit Hünd im Huus wohlfühle."
+        "ch":"🐾 Wichtig vor em Bueche: Fidel, Gloria & Pia sind drei Windhünd und läbed als Teil vo üsere Familie im Huus. Si sind au i de gemeinsame Räum, inklusive Wohnzimmer und Chuchi. Gäste sötted sich mit Hünd im Huus wohlfühle.",
+        "ar":"🐾 مهم قبل الحجز: Fidel وGloria وPia ثلاثة كلاب سلوقية تعيش معنا في المنزل كجزء من العائلة. تتحرك أيضاً في المساحات المشتركة، بما فيها غرفة المعيشة والمطبخ. ينبغي أن يكون الضيوف مرتاحين لوجود الكلاب داخل المنزل."
       } %}
       <div class="trustline">{{ dog_notice.get(lang, dog_notice["en"]) }}</div>
       {% if lang in ["cs","sk"] %}<div class="trustline">☎ <a href="tel:+4367762314736">+43 677 62314736</a></div>{% endif %}
