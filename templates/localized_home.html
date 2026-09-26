@@ -19,6 +19,9 @@
   <link rel="alternate" hreflang="cs" href="https://www.zuhauseambach-wachau.at/cs/">
   <link rel="alternate" hreflang="sk" href="https://www.zuhauseambach-wachau.at/sk/">
   <link rel="alternate" hreflang="hu" href="https://www.zuhauseambach-wachau.at/hu/">
+  <link rel="alternate" hreflang="nl" href="https://www.zuhauseambach-wachau.at/nl/">
+  <link rel="alternate" hreflang="pl" href="https://www.zuhauseambach-wachau.at/pl/">
+  <link rel="alternate" hreflang="it" href="https://www.zuhauseambach-wachau.at/it/">
   <link rel="alternate" hreflang="es" href="https://www.zuhauseambach-wachau.at/es/">
   <link rel="alternate" hreflang="fr" href="https://www.zuhauseambach-wachau.at/fr/">
   <link rel="alternate" hreflang="x-default" href="https://www.zuhauseambach-wachau.at/">
@@ -123,10 +126,15 @@
         <p>{{ t.direct_text }}</p>
         <a class="cta" href="/?lang={{ lang }}#booking">{{ t.direct_cta }}</a>
       </section>
-      {% if lang in ["cs","sk"] %}
+      {% if lang in ["cs","sk","en","hu","nl","pl","it","fr"] %}
+      {% set market_links = {
+        "cs":"/cs/ubytovani-wachau","sk":"/sk/ubytovanie-wachau","en":"/en/wachau-accommodation",
+        "hu":"/hu/wachau-szallas","nl":"/nl/accommodatie-wachau","pl":"/pl/nocleg-wachau",
+        "it":"/it/alloggio-wachau","fr":"/fr/hebergement-wachau"
+      } %}
       <section class="card wide">
-        <h2>{{ "Užitečné odkazy pro plánování pobytu" if lang == "cs" else "Užitočné odkazy na plánovanie pobytu" }}</h2>
-        <p><a href="{{ '/cs/ubytovani-wachau' if lang == 'cs' else '/sk/ubytovanie-wachau' }}">{{ t.wachau_link }}</a></p>
+        <h2>{{ t.wachau_link }}</h2>
+        <p><a href="{{ market_links[lang] }}">{{ t.wachau_link }}</a></p>
         <p><a href="/unterkunft-donauradweg-wachau">{{ t.danube }}</a> · <a href="/unterkunft-welterbesteig-wachau">{{ t.trail }}</a></p>
         <p><a href="/winterurlaub-wachau">{{ t.winter_link }}</a></p>
         <p><a href="/bewertung">{{ t.reviews_link }}</a></p>
