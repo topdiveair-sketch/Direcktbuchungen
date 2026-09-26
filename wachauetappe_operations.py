@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from flask import jsonify, request
+from flask import jsonify, request, redirect
 
 
 def init_wachauetappe_operations(app, db, require_admin):
@@ -121,7 +121,7 @@ def init_wachauetappe_operations(app, db, require_admin):
 
     @app.get("/os/wachauetappe")
     def we_ops_dashboard():
-        if not require_admin():return app.redirect("/admin/login")
+        if not require_admin():return redirect("/admin/login")
         d=summary(request.args.get("days",30,type=int));pct=lambda x:"–" if x is None else f"{x:.1f} %"
         cards=[("Partner-Leads",d["partnerLeads"]),("Anfragen",d["bookingRequests"]),("Bestätigte Nächte",d["confirmed"]),("Offen",d["requested"]),("Absagen",d["declined"]),("Bestätigter Buchungswert",f'{d["confirmedValue"]:.2f} EUR'),("Provisionssatz",f'{d["commissionPct"]:.1f} %'),("Erwartete Provision*",f'{d["estimatedCommission"]:.2f} EUR'),("Bestätigungsquote",pct(d["requestConfirmationPct"]))]
         card_html="".join(f"<article><span>{k}</span><strong>{v}</strong></article>" for k,v in cards)
