@@ -4,14 +4,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Unterkunft Wachau in Aggsbach Markt | Zuhause am Bach</title>
-  <meta name="description" content="Unterkunft in der Wachau in Aggsbach Markt: auch 1 Nacht möglich – ideal für Donauradweg und Welterbesteig. Fahrradgarage, E-Bike-Laden, Frühstück und Direktbuchung.">
+  <title>Unterkunft Wachau zwischen Melk und Krems | Zuhause am Bach</title>
+  <meta name="description" content="Persönliche Unterkunft in der Wachau zwischen Melk und Krems: Aggsbach Markt, Donauradweg, Welterbesteig, Frühstück, E-Bike-Laden und Direktbuchung.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <link rel="canonical" href="https://www.zuhauseambach-wachau.at/">
+  <link rel="alternate" hreflang="de-AT" href="https://www.zuhauseambach-wachau.at/">
+  <link rel="alternate" hreflang="en" href="https://www.zuhauseambach-wachau.at/en/">
+  <link rel="alternate" hreflang="cs" href="https://www.zuhauseambach-wachau.at/cs/">
+  <link rel="alternate" hreflang="sk" href="https://www.zuhauseambach-wachau.at/sk/">
+  <link rel="alternate" hreflang="hu" href="https://www.zuhauseambach-wachau.at/hu/">
+  <link rel="alternate" hreflang="es" href="https://www.zuhauseambach-wachau.at/es/">
+  <link rel="alternate" hreflang="fr" href="https://www.zuhauseambach-wachau.at/fr/">
+  <link rel="alternate" hreflang="x-default" href="https://www.zuhauseambach-wachau.at/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="de_AT">
-  <meta property="og:title" content="Unterkunft Wachau in Aggsbach Markt | Zuhause am Bach">
-  <meta property="og:description" content="Ruhig übernachten in Aggsbach Markt – für Welterbesteig, Donauradweg und entspannte Tage in der Wachau.">
+  <meta property="og:title" content="Unterkunft Wachau zwischen Melk und Krems | Zuhause am Bach">
+  <meta property="og:description" content="Ruhig in der Wachau zwischen Melk und Krems übernachten – für Donauradweg, Welterbesteig, Jauerling und entspannte Tage.">
   <meta property="og:url" content="https://www.zuhauseambach-wachau.at/">
   <meta property="og:image" content="https://www.zuhauseambach-wachau.at/static/images/rooms/bachblick.jpg">
   <meta name="twitter:card" content="summary_large_image">
@@ -22,7 +30,9 @@
     "@id":"https://www.zuhauseambach-wachau.at/#unterkunft",
     "name":"Zuhause am Bach – Wachau",
     "url":"https://www.zuhauseambach-wachau.at/",
-    "description":"Fahrradfreundliche und wanderfreundliche Unterkunft in Aggsbach Markt in der Wachau für Welterbesteig, Donauradweg und Wachau-Gäste.",
+    "description":"Persönliche Unterkunft in Aggsbach Markt in der Wachau zwischen Melk und Krems – für Donauradweg, Welterbesteig, Jauerling und Wachau-Gäste.",
+    "image":"https://www.zuhauseambach-wachau.at/static/images/gartenzimmer-04-web.jpg",
+    "geo":{"@type":"GeoCoordinates","latitude":48.2945,"longitude":15.4068},
     "address":{"@type":"PostalAddress","streetAddress":"Aggsbach Markt 82","postalCode":"3641","addressLocality":"Aggsbach Markt","addressRegion":"Niederösterreich","addressCountry":"AT"},
     "telephone":"{{ settings.phone }}",
     "email":"{{ settings.email }}",
@@ -36,7 +46,7 @@
       {"@type":"LocationFeatureSpecification","name":"Frühstück auf Wunsch","value":true},
       {"@type":"LocationFeatureSpecification","name":"Etappenübernachtung ab 1 Nacht grundsätzlich möglich","value":true}
     ],
-    "areaServed":[{"@type":"Place","name":"Wachau"},{"@type":"Place","name":"Aggsbach Markt"}],
+    "areaServed":[{"@type":"Place","name":"Wachau"},{"@type":"Place","name":"Aggsbach Markt"},{"@type":"City","name":"Melk"},{"@type":"City","name":"Krems an der Donau"}],
     "sameAs":[
       "https://www.booking.com/hotel/at/zu-hause-am-bach.de.html",
       "https://www.donau.com/wachau-nibelungengau-kremstal/unterkunft/zu-hause-am-bach-wachau",
@@ -65,8 +75,8 @@
   </nav>
 
   <div class="hero-content">
-    <h1>Unterkunft in der Wachau in Aggsbach Markt – Zuhause am Bach</h1>
-    <p>Auch für 1 Nacht · ruhiges Privatzimmer in Aggsbach Markt · ideal für Donauradweg &amp; Welterbesteig · direkt Verfügbarkeit und Preis prüfen</p>
+    <h1>Unterkunft in der Wachau zwischen Melk und Krems</h1>
+    <p>Zuhause am Bach in Aggsbach Markt · ruhiges Privatzimmer · auch 1 Nacht möglich · Donauradweg &amp; Welterbesteig · direkt Preis und Verfügbarkeit prüfen</p>
     {% if google_landing %}<div class="google-trust">🚴 Fahrradunterbringung · ⚡ E-Bike laden · 🥾 Welterbesteig · 🍳 Frühstück auf Wunsch</div>{% endif %}
     <span>Mit Fidel, Gloria und Pia – den Wilden Wachauer Windis.</span>
     <div class="hero-actions"><a class="btn" href="#booking">Verfügbarkeit &amp; Preis prüfen</a><a class="hero-secondary" href="#basislager">Warum Zuhause am Bach?</a></div>
@@ -137,6 +147,7 @@
       <article class="active-service-card"><div><h3>📍 Aggsbach Markt</h3><p>Direkt im Ort schlafen und die Wachau weiterziehen.</p><a href="{{ url_for('seo_aggsbach_markt') }}">Übernachten in Aggsbach Markt</a></div></article>
       <article class="active-service-card"><div><h3>🚲 Radfahrer</h3><p>Fahrrad sicher abstellen, E-Bike laden und weiterfahren.</p><a href="{{ url_for('seo_radfahrer_wachau') }}">Radfahrer-Unterkunft</a></div></article>
       <article class="active-service-card"><div><h3>⛰ Jauerling</h3><p>Naturpark, Wandern und Wachau als Reise kombinieren.</p><a href="{{ url_for('seo_jauerling') }}">Unterkunft Jauerling</a></div></article>
+      <article class="active-service-card"><div><h3>❄ Winter Wachau</h3><p>Wintertage, Advent und Jauerling mit einer ruhigen Übernachtung verbinden.</p><a href="{{ url_for('seo_winterurlaub_wachau') }}">Winterurlaub Wachau</a></div></article>
     </div>
     <div class="identity-cta">
       <strong>Eventtermin schon bekannt?</strong>
