@@ -1,0 +1,57 @@
+name: WachauEtappe 2.0 CI
+
+on:
+  pull_request:
+    paths:
+      - "gaeste/**"
+      - "partner/**"
+      - "guest_booking_gateway.py"
+      - "partner_portal_gateway.py"
+      - "wachauetappe_gateway.py"
+      - "wachauetappe_notifications.py"
+      - "wachauetappe_operations.py"
+      - ".github/workflows/wachauetappe-2-ci.yml"
+  push:
+    branches:
+      - wachauetappe-2-conversion
+    paths:
+      - "gaeste/**"
+      - "partner/**"
+      - "*.py"
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Python syntax
+        run: |
+          python -m py_compile guest_booking_gateway.py partner_portal_gateway.py wachauetappe_gateway.py wachauetappe_notifications.py wachauetappe_operations.py
+      - name: JavaScript syntax
+        run: |
+          node --check gaeste/app.js
+          node --check gaeste/account.js
+          node --check gaeste/config.js
+          node --check partner/app.js
+      - name: Sitemap XML
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          ET.parse("gaeste/sitemap.xml")
+          print("sitemap.xml valid")
+          PY
+      - name: Required launch files
+        run: |
+          test -f gaeste/index.html
+          test -f gaeste/en/index.html
+          test -f partner/index.html
+          test -f partner/werden/index.html
+          grep -q "/api/guest-trips/<trip_key>" guest_booking_gateway.py
+          grep -q "/api/partner/bookings" partner_portal_gateway.py
+          grep -q "wachauetappe_operations_initialized" wachauetappe_operations.py
