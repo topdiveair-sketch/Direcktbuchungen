@@ -695,7 +695,7 @@ def index():
     return response
 
 
-PUBLIC_HOME_LANGUAGES = ("en", "cs", "sk", "hu", "nl", "pl", "it", "es", "fr", "ch")
+PUBLIC_HOME_LANGUAGES = ("en", "cs", "sk", "hu", "nl", "pl", "it", "es", "fr", "ch", "ar")
 
 
 def _public_home_translations() -> dict:
@@ -1235,6 +1235,7 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/it/",
         "https://www.zuhauseambach-wachau.at/es/",
         "https://www.zuhauseambach-wachau.at/fr/",
+        "https://www.zuhauseambach-wachau.at/ar/",
         "https://www.zuhauseambach-wachau.at/en/wachau-accommodation",
         "https://www.zuhauseambach-wachau.at/hu/wachau-szallas",
         "https://www.zuhauseambach-wachau.at/nl/accommodatie-wachau",
