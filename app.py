@@ -695,7 +695,7 @@ def index():
     return response
 
 
-PUBLIC_HOME_LANGUAGES = ("en", "cs", "sk", "hu", "es", "fr")
+PUBLIC_HOME_LANGUAGES = ("en", "cs", "sk", "hu", "nl", "pl", "it", "es", "fr")
 
 
 def _public_home_translations() -> dict:
@@ -937,6 +937,88 @@ def seo_sk_wachau():
     )
 
 
+
+
+def _intl_wachau_page(lang: str):
+    pages = {
+        "en": dict(locale="en_GB", title="Wachau accommodation between Melk and Krems | Zuhause am Bach",
+            description="Small personal accommodation in the Wachau between Melk and Krems. Danube Cycle Path, Wachau World Heritage Trail, Jauerling, breakfast and direct booking.",
+            canonical="https://www.zuhauseambach-wachau.at/en/wachau-accommodation",
+            h1="Accommodation in the Wachau between Melk and Krems",
+            lead="A quiet, personal place to stay in Aggsbach Markt for cyclists, hikers and guests exploring the Wachau.",
+            booking="Check availability & price",
+            cards=[("Danube Cycle Path","Secure bicycle storage, e-bike charging and practical support for your Danube cycling stage."),("Wachau World Heritage Trail","A quiet base for hiking stages and walking days in the Wachau."),("Melk & Krems","Aggsbach Markt lies between Melk and Krems and works well as a base for exploring the region."),("Jauerling & winter","Combine your stay with Jauerling, winter walks and Advent visits in the Wachau.")],
+            direct_title="Book direct on the official website",direct_text="Check current availability and the direct price with Zuhause am Bach. Questions and special requests go straight to your hosts.",
+            location_title="A base for the Wachau",location_text="The Danube, Melk, Krems, Spitz, Dürnstein and other Wachau destinations can be combined easily from Aggsbach Markt.",
+            language_title="International guests welcome",language_text="Direct booking information is available in English, with personal contact before and during your stay."),
+        "hu": dict(locale="hu_HU", title="Wachau szállás Melk és Krems között | Zuhause am Bach",
+            description="Kis, személyes szállás a Wachauban, Melk és Krems között. Duna menti kerékpárút, Welterbesteig, Jauerling, reggeli és közvetlen foglalás.",
+            canonical="https://www.zuhauseambach-wachau.at/hu/wachau-szallas",
+            h1="Szállás a Wachauban Melk és Krems között",
+            lead="Nyugodt, személyes szállás Aggsbach Marktban kerékpárosoknak, túrázóknak és a Wachaut felfedező vendégeknek.",
+            booking="Elérhetőség és ár ellenőrzése",
+            cards=[("Duna menti kerékpárút","Biztonságos kerékpártároló, e-bike töltés és praktikus segítség a Duna menti túrához."),("Welterbesteig Wachau","Nyugodt kiindulópont gyalogtúrákhoz és wachaui túranapokhoz."),("Melk és Krems","Aggsbach Markt Melk és Krems között fekszik, jó kiindulópont a régió felfedezéséhez."),("Jauerling és tél","A szállás összeköthető Jauerling-kirándulással, téli sétákkal és adventi programokkal.")],
+            direct_title="Közvetlen foglalás a hivatalos oldalon",direct_text="Az aktuális szabad időpontokat és a közvetlen árat a Zuhause am Bach hivatalos oldalán ellenőrizheti.",
+            location_title="Kiindulópont a Wachauban",location_text="A Duna, Melk, Krems, Spitz, Dürnstein és más wachaui célpontok könnyen kombinálhatók.",
+            language_title="Személyes kapcsolat",language_text="A foglalás közvetlenül a szállásadóval történik, közvetítő nélkül."),
+        "nl": dict(locale="nl_NL", title="Accommodatie in de Wachau tussen Melk en Krems | Zuhause am Bach",
+            description="Kleinschalige accommodatie in de Wachau tussen Melk en Krems. Donauradweg, Welterbesteig, Jauerling, ontbijt en direct boeken.",
+            canonical="https://www.zuhauseambach-wachau.at/nl/accommodatie-wachau",
+            h1="Accommodatie in de Wachau tussen Melk en Krems",
+            lead="Een rustige, persoonlijk gerunde accommodatie in Aggsbach Markt voor fietsers, wandelaars en gasten die de Wachau willen ontdekken.",
+            booking="Beschikbaarheid & prijs bekijken",
+            cards=[("Donauradweg","Veilige fietsenstalling, e-bike laden en praktische ondersteuning voor uw fietsroute langs de Donau."),("Welterbesteig Wachau","Een rustige uitvalsbasis voor wandelroutes en etappes door de Wachau."),("Melk & Krems","Aggsbach Markt ligt tussen Melk en Krems en is een goede uitvalsbasis voor de regio."),("Jauerling & winter","Combineer uw verblijf met Jauerling, winterwandelingen en Advent in de Wachau.")],
+            direct_title="Direct boeken via de officiële website",direct_text="Controleer actuele beschikbaarheid en de directe prijs bij Zuhause am Bach. Vragen en wensen komen rechtstreeks bij de hosts terecht.",
+            location_title="Uitvalsbasis voor de Wachau",location_text="De Donau, Melk, Krems, Spitz, Dürnstein en andere Wachau-bestemmingen zijn goed te combineren.",
+            language_title="Nederlandstalige informatie",language_text="Belangrijke informatie over verblijf, beschikbaarheid en direct boeken is in het Nederlands beschikbaar."),
+        "pl": dict(locale="pl_PL", title="Nocleg w Wachau między Melk a Krems | Zuhause am Bach",
+            description="Kameralny nocleg w Wachau między Melk a Krems. Dunajska Trasa Rowerowa, Welterbesteig, Jauerling, śniadanie i rezerwacja bezpośrednia.",
+            canonical="https://www.zuhauseambach-wachau.at/pl/nocleg-wachau",
+            h1="Nocleg w Wachau między Melk a Krems",
+            lead="Spokojny, kameralny nocleg w Aggsbach Markt dla rowerzystów, turystów pieszych i gości zwiedzających Wachau.",
+            booking="Sprawdź dostępność i cenę",
+            cards=[("Dunajska Trasa Rowerowa","Bezpieczne miejsce na rowery, ładowanie e-bike'ów i praktyczne wsparcie na trasie wzdłuż Dunaju."),("Welterbesteig Wachau","Spokojna baza na piesze etapy i wycieczki po Wachau."),("Melk i Krems","Aggsbach Markt leży między Melk a Krems i jest dobrym punktem wypadowym do zwiedzania regionu."),("Jauerling i zima","Pobyt można połączyć z Jauerlingiem, zimowymi spacerami i adwentem w Wachau.")],
+            direct_title="Rezerwacja bezpośrednia na oficjalnej stronie",direct_text="Sprawdź aktualną dostępność i cenę bezpośrednią w Zuhause am Bach. Pytania i życzenia trafiają bezpośrednio do gospodarzy.",
+            location_title="Baza do zwiedzania Wachau",location_text="Dunaj, Melk, Krems, Spitz, Dürnstein i inne miejsca w Wachau można wygodnie połączyć podczas pobytu.",
+            language_title="Informacje po polsku",language_text="Najważniejsze informacje o pobycie, dostępności i rezerwacji bezpośredniej są dostępne po polsku."),
+        "it": dict(locale="it_IT", title="Alloggio nella Wachau tra Melk e Krems | Zuhause am Bach",
+            description="Piccolo alloggio nella Wachau tra Melk e Krems. Ciclabile del Danubio, Welterbesteig, Jauerling, colazione e prenotazione diretta.",
+            canonical="https://www.zuhauseambach-wachau.at/it/alloggio-wachau",
+            h1="Alloggio nella Wachau tra Melk e Krems",
+            lead="Un alloggio tranquillo e personale ad Aggsbach Markt per ciclisti, escursionisti e ospiti che desiderano scoprire la Wachau.",
+            booking="Verifica disponibilità e prezzo",
+            cards=[("Ciclabile del Danubio","Deposito sicuro per biciclette, ricarica e-bike e supporto pratico lungo il Danubio."),("Welterbesteig Wachau","Una base tranquilla per escursioni a piedi e tappe nella Wachau."),("Melk e Krems","Aggsbach Markt si trova tra Melk e Krems ed è un buon punto di partenza per esplorare la regione."),("Jauerling e inverno","Il soggiorno può essere abbinato a Jauerling, passeggiate invernali e visite d'Avvento nella Wachau.")],
+            direct_title="Prenota direttamente sul sito ufficiale",direct_text="Controlla disponibilità aggiornata e prezzo diretto presso Zuhause am Bach. Domande e richieste arrivano direttamente agli host.",
+            location_title="Una base per la Wachau",location_text="Danubio, Melk, Krems, Spitz, Dürnstein e altre mete della Wachau possono essere facilmente combinate.",
+            language_title="Informazioni in italiano",language_text="Le informazioni principali su soggiorno, disponibilità e prenotazione diretta sono disponibili in italiano."),
+        "fr": dict(locale="fr_FR", title="Hébergement dans la Wachau entre Melk et Krems | Zuhause am Bach",
+            description="Petit hébergement dans la Wachau entre Melk et Krems. Véloroute du Danube, Welterbesteig, Jauerling, petit-déjeuner et réservation directe.",
+            canonical="https://www.zuhauseambach-wachau.at/fr/hebergement-wachau",
+            h1="Hébergement dans la Wachau entre Melk et Krems",
+            lead="Un hébergement calme et personnalisé à Aggsbach Markt pour cyclistes, randonneurs et visiteurs souhaitant découvrir la Wachau.",
+            booking="Voir les disponibilités et le prix",
+            cards=[("Véloroute du Danube","Local à vélos sécurisé, recharge des vélos électriques et aide pratique le long du Danube."),("Welterbesteig Wachau","Un point de départ calme pour les randonnées et étapes dans la Wachau."),("Melk et Krems","Aggsbach Markt se situe entre Melk et Krems et constitue une bonne base pour découvrir la région."),("Jauerling et hiver","Combinez votre séjour avec le Jauerling, des promenades hivernales et l'Avent dans la Wachau.")],
+            direct_title="Réserver en direct sur le site officiel",direct_text="Consultez les disponibilités et le tarif direct de Zuhause am Bach. Questions et demandes arrivent directement aux hôtes.",
+            location_title="Une base pour découvrir la Wachau",location_text="Le Danube, Melk, Krems, Spitz, Dürnstein et d'autres destinations de la Wachau se combinent facilement.",
+            language_title="Informations en français",language_text="Les informations essentielles sur le séjour, les disponibilités et la réservation directe sont disponibles en français.")
+    }
+    return pages.get(lang)
+
+
+@app.get("/en/wachau-accommodation")
+@app.get("/hu/wachau-szallas")
+@app.get("/nl/accommodatie-wachau")
+@app.get("/pl/nocleg-wachau")
+@app.get("/it/alloggio-wachau")
+@app.get("/fr/hebergement-wachau")
+def seo_intl_wachau():
+    path_lang = request.path.strip("/").split("/")[0]
+    data = _intl_wachau_page(path_lang)
+    if not data:
+        abort(404)
+    return render_template("seo_landing_intl.html", lang=path_lang, **data)
+
+
 @app.get("/uebernachten-aggsbach-markt")
 def seo_aggsbach_markt():
     return render_template("seo_landing.html", **seo_landing_context("aggsbach"))
@@ -1133,6 +1215,21 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/cs/ubytovani-wachau",
         "https://www.zuhauseambach-wachau.at/sk/ubytovanie-wachau",
+        "https://www.zuhauseambach-wachau.at/en/",
+        "https://www.zuhauseambach-wachau.at/cs/",
+        "https://www.zuhauseambach-wachau.at/sk/",
+        "https://www.zuhauseambach-wachau.at/hu/",
+        "https://www.zuhauseambach-wachau.at/nl/",
+        "https://www.zuhauseambach-wachau.at/pl/",
+        "https://www.zuhauseambach-wachau.at/it/",
+        "https://www.zuhauseambach-wachau.at/es/",
+        "https://www.zuhauseambach-wachau.at/fr/",
+        "https://www.zuhauseambach-wachau.at/en/wachau-accommodation",
+        "https://www.zuhauseambach-wachau.at/hu/wachau-szallas",
+        "https://www.zuhauseambach-wachau.at/nl/accommodatie-wachau",
+        "https://www.zuhauseambach-wachau.at/pl/nocleg-wachau",
+        "https://www.zuhauseambach-wachau.at/it/alloggio-wachau",
+        "https://www.zuhauseambach-wachau.at/fr/hebergement-wachau",
         "https://www.zuhauseambach-wachau.at/uebernachten-aggsbach-markt",
         "https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-jauerling-wachau",
