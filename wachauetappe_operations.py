@@ -1,7 +1,7 @@
 """Operations and commercial dashboard for WachauEtappe."""
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from flask import jsonify, request, redirect
 
 
@@ -72,6 +72,84 @@ def init_wachauetappe_operations(app, db, require_admin):
             VALUES(?,?,?,?,?,?,?,?,?,'new',?)""",(business,contact,email,str(p.get("phone") or "")[:80],location,str(p.get("rooms") or "")[:40],str(p.get("website") or "")[:240],str(p.get("source") or "")[:100],str(p.get("message") or "")[:1200],datetime.now().isoformat(timespec="seconds")))
         return cors(jsonify({"ok":True,"message":"Partneranfrage wurde übermittelt."})),201
 
+    def _admin_booking_update(reference,status,note=""):
+        if status not in {"confirmed","declined"}:
+            return {"error":"invalid_status"},422
+        stamp=datetime.now().isoformat(timespec="seconds")
+        with db() as conn:
+            row=conn.execute("SELECT id,host_id,stay_date,status FROM wachauetappe_guest_bookings WHERE reference=?",(reference,)).fetchone()
+            if not row:return {"error":"booking_not_found"},404
+            if row["status"]!="requested":return {"error":"booking_already_answered","status":row["status"]},409
+            conn.execute("UPDATE wachauetappe_guest_bookings SET status=?,host_response_note=?,responded_at=?,updated_at=? WHERE id=?",(status,str(note or "")[:1200],stamp,stamp,row["id"]))
+            if status=="confirmed":
+                avail=conn.execute("SELECT rooms_free FROM wachauetappe_partner_availability WHERE host_id=? AND stay_date=?",(row["host_id"],row["stay_date"])).fetchone()
+                if avail:
+                    remaining=max(0,int(avail["rooms_free"] or 0)-1)
+                    conn.execute("UPDATE wachauetappe_partner_availability SET rooms_free=?,status=?,updated_at=? WHERE host_id=? AND stay_date=?",(remaining,"free" if remaining>0 else "full",stamp,row["host_id"],row["stay_date"]))
+        notifier=app.extensions.get("wachauetappe_notify_booking_status")
+        if callable(notifier):
+            try:notifier(reference,status)
+            except Exception:pass
+        return {"ok":True,"reference":reference,"status":status,"respondedAt":stamp},200
+
+    @app.get("/api/central/wachauetappe-bookings")
+    def we_central_bookings():
+        if not require_admin():return jsonify({"error":"unauthorized"}),401
+        status=str(request.args.get("status") or "").strip().lower()
+        with db() as conn:
+            sql="""SELECT b.reference,b.trip_reference,b.stay_date,b.guests,b.guest_name,b.guest_email,b.guest_phone,b.note,b.price,b.status,b.created_at,b.updated_at,
+            COALESCE(p.name,b.host_id) host_name,COALESCE(p.location,'') location
+            FROM wachauetappe_guest_bookings b LEFT JOIN wachauetappe_partner_accounts p ON p.host_id=b.host_id"""
+            args=[]
+            if status in {"requested","confirmed","declined"}:sql+=" WHERE b.status=?";args.append(status)
+            sql+=" ORDER BY CASE WHEN b.status='requested' THEN 0 ELSE 1 END,b.stay_date,b.created_at DESC LIMIT 200"
+            rows=conn.execute(sql,args).fetchall()
+        now_dt=datetime.now();items=[]
+        for r in rows:
+            try:age=max(0,int((now_dt-datetime.fromisoformat(r["created_at"])).total_seconds()//3600))
+            except Exception:age=0
+            items.append({**dict(r),"age_hours":age,"reminder_due":r["status"]=="requested" and age>=12})
+        return jsonify({"items":items}),200
+
+    @app.patch("/api/central/wachauetappe-bookings/<reference>")
+    def we_central_booking_update(reference):
+        if not require_admin():return jsonify({"error":"unauthorized"}),401
+        p=request.get_json(silent=True) or {}
+        payload,code=_admin_booking_update(reference,str(p.get("status") or "").strip().lower(),p.get("note") or "")
+        return jsonify(payload),code
+
+    @app.get("/api/central/wachauetappe-partners")
+    def we_central_partners():
+        if not require_admin():return jsonify({"error":"unauthorized"}),401
+        target=str(request.args.get("date") or date.today().isoformat())[:10]
+        with db() as conn:
+            rows=conn.execute("""SELECT p.host_id,p.name,p.location,p.active,p.rooms_total,
+            COALESCE(a.status,'unknown') status,COALESCE(a.rooms_free,0) rooms_free,a.price,a.breakfast_mode,a.luggage_available,
+            CASE WHEN b.stay_date IS NULL THEN 0 ELSE 1 END booking_blocked
+            FROM wachauetappe_partner_accounts p
+            LEFT JOIN wachauetappe_partner_availability a ON a.host_id=p.host_id AND a.stay_date=?
+            LEFT JOIN wachauetappe_partner_calendar_blocks b ON b.host_id=p.host_id AND b.stay_date=? AND b.provider='booking'
+            ORDER BY p.location,p.name""",(target,target)).fetchall()
+        return jsonify({"date":target,"items":[dict(r) for r in rows]}),200
+
+    @app.get("/api/central/wachauetappe-leads")
+    def we_central_leads():
+        if not require_admin():return jsonify({"error":"unauthorized"}),401
+        with db() as conn:
+            rows=conn.execute("""SELECT id,business_name,contact_name,email,phone,location,rooms,website,source,message,status,created_at
+            FROM wachauetappe_partner_leads ORDER BY CASE WHEN status='new' THEN 0 ELSE 1 END,created_at DESC LIMIT 200""").fetchall()
+        return jsonify({"items":[dict(r) for r in rows]}),200
+
+    @app.patch("/api/central/wachauetappe-leads/<int:lead_id>")
+    def we_central_lead_update(lead_id):
+        if not require_admin():return jsonify({"error":"unauthorized"}),401
+        p=request.get_json(silent=True) or {};status=str(p.get("status") or "").strip().lower()
+        if status not in {"new","contacted","qualified","won","lost"}:return jsonify({"error":"invalid_status"}),422
+        with db() as conn:
+            cur=conn.execute("UPDATE wachauetappe_partner_leads SET status=? WHERE id=?",(status,lead_id))
+            if not cur.rowcount:return jsonify({"error":"lead_not_found"}),404
+        return jsonify({"ok":True,"id":lead_id,"status":status}),200
+
     def commission_rate():
         try:
             with db() as conn:
@@ -100,6 +178,9 @@ def init_wachauetappe_operations(app, db, require_admin):
               GROUP BY trip_key,trip_reference ORDER BY updated_at DESC LIMIT 100""",(since,)).fetchall()
             funnel={r["event"]:int(r["n"]) for r in conn.execute("SELECT event,COUNT(*) n FROM wachauetappe_funnel_events WHERE created_at>=? GROUP BY event",(since,)).fetchall()}
             lead_row=conn.execute("SELECT COUNT(*) n FROM wachauetappe_partner_leads WHERE created_at>=?",(since,)).fetchone()
+            new_leads=conn.execute("SELECT COUNT(*) n FROM wachauetappe_partner_leads WHERE status='new'").fetchone()
+            due_requests=conn.execute("SELECT COUNT(*) n FROM wachauetappe_guest_bookings WHERE status='requested' AND created_at<=?",((datetime.now()-timedelta(hours=12)).isoformat(timespec="seconds"),)).fetchone()
+            today_stays=conn.execute("SELECT COUNT(*) n FROM wachauetappe_guest_bookings WHERE status='confirmed' AND stay_date=?",(date.today().isoformat(),)).fetchone()
             alternatives=[dict(r) for r in conn.execute("""SELECT b.reference,b.trip_reference,b.stay_date,COALESCE(p.location,'') location,COALESCE(p.name,b.host_id) declined_host,
               (SELECT COUNT(*) FROM wachauetappe_partner_availability a JOIN wachauetappe_partner_accounts p2 ON p2.host_id=a.host_id AND p2.active=1
                WHERE lower(p2.location)=lower(p.location) AND a.stay_date=b.stay_date AND a.status='free' AND a.rooms_free>0 AND a.host_id<>b.host_id
@@ -110,7 +191,7 @@ def init_wachauetappe_operations(app, db, require_admin):
         trip_items=[]
         for r in trips:
             d=dict(r);d["status"]="confirmed" if d["confirmed"]==d["nights"] else "needs_alternative" if d["declined"] else "pending";trip_items.append(d)
-        return {"days":days,"partnerLeads":int(lead_row["n"] or 0),"commissionPct":rate,"bookingRequests":total,"requested":int(bookings["requested"] or 0),"confirmed":confirmed,"declined":int(bookings["declined"] or 0),"confirmedValue":round(value,2),"estimatedCommission":round(value*rate/100,2),"requestConfirmationPct":round(confirmed*100/total,1) if total else None,"funnel":funnel,"trips":trip_items,"replacementNeeds":alternatives}
+        return {"days":days,"partnerLeads":int(lead_row["n"] or 0),"newPartnerLeads":int(new_leads["n"] or 0),"dueRequests":int(due_requests["n"] or 0),"todayConfirmedStays":int(today_stays["n"] or 0),"todayTasks":{"dueRequests":int(due_requests["n"] or 0),"replacementNeeds":len(alternatives),"newPartnerLeads":int(new_leads["n"] or 0),"confirmedStaysToday":int(today_stays["n"] or 0)},"commissionPct":rate,"bookingRequests":total,"requested":int(bookings["requested"] or 0),"confirmed":confirmed,"declined":int(bookings["declined"] or 0),"confirmedValue":round(value,2),"estimatedCommission":round(value*rate/100,2),"requestConfirmationPct":round(confirmed*100/total,1) if total else None,"funnel":funnel,"trips":trip_items,"replacementNeeds":alternatives}
 
     @app.get("/api/central/wachauetappe-operations")
     def we_ops_json():
