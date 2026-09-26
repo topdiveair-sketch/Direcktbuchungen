@@ -21,6 +21,21 @@ def init_wachauetappe_operations(app, db, require_admin):
           created_at TEXT NOT NULL
         );
         CREATE INDEX IF NOT EXISTS ix_we_funnel_created ON wachauetappe_funnel_events(created_at,event);
+        CREATE TABLE IF NOT EXISTS wachauetappe_partner_leads(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          business_name TEXT NOT NULL,
+          contact_name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          phone TEXT DEFAULT '',
+          location TEXT NOT NULL,
+          rooms TEXT DEFAULT '',
+          website TEXT DEFAULT '',
+          source TEXT DEFAULT '',
+          message TEXT DEFAULT '',
+          status TEXT NOT NULL DEFAULT 'new',
+          created_at TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS ix_we_partner_leads_created ON wachauetappe_partner_leads(created_at,status);
         """)
 
     allowed={"planner_view","trip_planned","host_selected","trip_request_started","trip_request_submitted","my_trip_opened"}
@@ -43,6 +58,19 @@ def init_wachauetappe_operations(app, db, require_admin):
         except Exception:nights=None
         with db() as conn:conn.execute("INSERT INTO wachauetappe_funnel_events(event,route,nights,luggage,created_at) VALUES(?,?,?,?,?)",(event,str(p.get("route") or "")[:120],nights,1 if p.get("luggage") else 0,datetime.now().isoformat(timespec="seconds")))
         return cors(jsonify({"ok":True})),201
+
+    @app.route("/api/wachauetappe/partner-leads",methods=["POST","OPTIONS"])
+    def we_partner_leads():
+        if request.method=="OPTIONS":return cors(app.make_response(("",204)))
+        origin=(request.headers.get("Origin") or "").rstrip("/")
+        if origin and origin!="https://topdiveair-sketch.github.io":return cors(jsonify({"error":"origin_not_allowed"})),403
+        p=request.get_json(silent=True) or {}
+        business=str(p.get("businessName") or "").strip()[:160];contact=str(p.get("contactName") or "").strip()[:120];email=str(p.get("email") or "").strip().lower()[:180];location=str(p.get("location") or "").strip()[:120]
+        if not business or not contact or "@" not in email or not location:return cors(jsonify({"error":"missing_fields"})),422
+        with db() as conn:
+            conn.execute("""INSERT INTO wachauetappe_partner_leads(business_name,contact_name,email,phone,location,rooms,website,source,message,status,created_at)
+            VALUES(?,?,?,?,?,?,?,?,?,'new',?)""",(business,contact,email,str(p.get("phone") or "")[:80],location,str(p.get("rooms") or "")[:40],str(p.get("website") or "")[:240],str(p.get("source") or "")[:100],str(p.get("message") or "")[:1200],datetime.now().isoformat(timespec="seconds")))
+        return cors(jsonify({"ok":True,"message":"Partneranfrage wurde übermittelt."})),201
 
     def commission_rate():
         try:
@@ -71,6 +99,7 @@ def init_wachauetappe_operations(app, db, require_admin):
               FROM wachauetappe_guest_bookings WHERE created_at>=?
               GROUP BY trip_key,trip_reference ORDER BY updated_at DESC LIMIT 100""",(since,)).fetchall()
             funnel={r["event"]:int(r["n"]) for r in conn.execute("SELECT event,COUNT(*) n FROM wachauetappe_funnel_events WHERE created_at>=? GROUP BY event",(since,)).fetchall()}
+            lead_row=conn.execute("SELECT COUNT(*) n FROM wachauetappe_partner_leads WHERE created_at>=?",(since,)).fetchone()
             alternatives=[dict(r) for r in conn.execute("""SELECT b.reference,b.trip_reference,b.stay_date,COALESCE(p.location,'') location,COALESCE(p.name,b.host_id) declined_host,
               (SELECT COUNT(*) FROM wachauetappe_partner_availability a JOIN wachauetappe_partner_accounts p2 ON p2.host_id=a.host_id AND p2.active=1
                WHERE lower(p2.location)=lower(p.location) AND a.stay_date=b.stay_date AND a.status='free' AND a.rooms_free>0 AND a.host_id<>b.host_id
@@ -81,7 +110,7 @@ def init_wachauetappe_operations(app, db, require_admin):
         trip_items=[]
         for r in trips:
             d=dict(r);d["status"]="confirmed" if d["confirmed"]==d["nights"] else "needs_alternative" if d["declined"] else "pending";trip_items.append(d)
-        return {"days":days,"commissionPct":rate,"bookingRequests":total,"requested":int(bookings["requested"] or 0),"confirmed":confirmed,"declined":int(bookings["declined"] or 0),"confirmedValue":round(value,2),"estimatedCommission":round(value*rate/100,2),"requestConfirmationPct":round(confirmed*100/total,1) if total else None,"funnel":funnel,"trips":trip_items,"replacementNeeds":alternatives}
+        return {"days":days,"partnerLeads":int(lead_row["n"] or 0),"commissionPct":rate,"bookingRequests":total,"requested":int(bookings["requested"] or 0),"confirmed":confirmed,"declined":int(bookings["declined"] or 0),"confirmedValue":round(value,2),"estimatedCommission":round(value*rate/100,2),"requestConfirmationPct":round(confirmed*100/total,1) if total else None,"funnel":funnel,"trips":trip_items,"replacementNeeds":alternatives}
 
     @app.get("/api/central/wachauetappe-operations")
     def we_ops_json():
@@ -94,7 +123,7 @@ def init_wachauetappe_operations(app, db, require_admin):
     def we_ops_dashboard():
         if not require_admin():return app.redirect("/admin/login")
         d=summary(request.args.get("days",30,type=int));pct=lambda x:"–" if x is None else f"{x:.1f} %"
-        cards=[("Anfragen",d["bookingRequests"]),("Bestätigte Nächte",d["confirmed"]),("Offen",d["requested"]),("Absagen",d["declined"]),("Bestätigter Buchungswert",f'{d["confirmedValue"]:.2f} EUR'),("Provisionssatz",f'{d["commissionPct"]:.1f} %'),("Erwartete Provision*",f'{d["estimatedCommission"]:.2f} EUR'),("Bestätigungsquote",pct(d["requestConfirmationPct"]))]
+        cards=[("Partner-Leads",d["partnerLeads"]),("Anfragen",d["bookingRequests"]),("Bestätigte Nächte",d["confirmed"]),("Offen",d["requested"]),("Absagen",d["declined"]),("Bestätigter Buchungswert",f'{d["confirmedValue"]:.2f} EUR'),("Provisionssatz",f'{d["commissionPct"]:.1f} %'),("Erwartete Provision*",f'{d["estimatedCommission"]:.2f} EUR'),("Bestätigungsquote",pct(d["requestConfirmationPct"]))]
         card_html="".join(f"<article><span>{k}</span><strong>{v}</strong></article>" for k,v in cards)
         trip_html="".join(f"<tr><td>{x['trip_reference'] or '–'}</td><td>{x['start_date']} – {x['end_date']}</td><td>{x['confirmed']}/{x['nights']}</td><td>{x['status']}</td><td>{float(x['value'] or 0):.2f} EUR</td></tr>" for x in d["trips"]) or "<tr><td colspan='5'>Noch keine Reisen.</td></tr>"
         alt_html="".join(f"<tr><td>{x['trip_reference']}</td><td>{x['stay_date']}</td><td>{x['location']}</td><td>{x['declined_host']}</td><td>{x['alternatives']}</td></tr>" for x in d["replacementNeeds"]) or "<tr><td colspan='5'>Kein Ersatzbedarf.</td></tr>"
