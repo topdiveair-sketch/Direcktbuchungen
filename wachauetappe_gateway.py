@@ -31,6 +31,7 @@ from projectos_winter_gateway import app  # noqa: F401,E402
 # Importing these modules registers their routes on that same app instance.
 import guest_booking_gateway  # noqa: F401,E402
 import partner_portal_gateway  # noqa: F401,E402
+from wachauetappe_notifications import init_wachauetappe_notifications  # noqa: E402
 import app as legacy_app  # noqa: E402
 from demand_analytics import init_demand_analytics  # noqa: E402
 from master_calendar_desktop_api import init_master_calendar_desktop_api  # noqa: E402
@@ -38,6 +39,7 @@ from booking_connectivity import init_booking_connectivity  # noqa: E402
 from booking_guest_sync import init_booking_guest_sync  # noqa: E402
 from zab_control_center_v3 import init_zab_control_center_v3  # noqa: E402
 
+init_wachauetappe_notifications(app, legacy_app.db)
 init_demand_analytics(app, legacy_app.db, legacy_app.require_admin)
 
 PUBLIC_SITE_ORIGIN = "https://topdiveair-sketch.github.io"
