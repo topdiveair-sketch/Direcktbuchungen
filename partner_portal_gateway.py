@@ -233,6 +233,10 @@ def partner_booking_update(reference):
             if avail:
                 remaining=max(0,int(avail['rooms_free'] or 0)-1)
                 c.execute("UPDATE wachauetappe_partner_availability SET rooms_free=?,status=?,updated_at=? WHERE host_id=? AND stay_date=?",(remaining,'free' if remaining>0 else 'full',stamp,host_id,row['stay_date']))
+    notifier=app.extensions.get('wachauetappe_notify_booking_status')
+    if callable(notifier):
+        try:notifier(reference,status)
+        except Exception:pass
     return cors(jsonify({'ok':True,'reference':reference,'status':status,'respondedAt':stamp})),200
 
 @app.get('/api/partner/calendar')
