@@ -123,6 +123,15 @@
         <p>{{ t.direct_text }}</p>
         <a class="cta" href="/?lang={{ lang }}#booking">{{ t.direct_cta }}</a>
       </section>
+      {% if lang in ["cs","sk"] %}
+      <section class="card wide">
+        <h2>{{ "Užitečné odkazy pro plánování pobytu" if lang == "cs" else "Užitočné odkazy na plánovanie pobytu" }}</h2>
+        <p><a href="{{ '/cs/ubytovani-wachau' if lang == 'cs' else '/sk/ubytovanie-wachau' }}">{{ t.wachau_link }}</a></p>
+        <p><a href="/unterkunft-donauradweg-wachau">{{ t.danube }}</a> · <a href="/unterkunft-welterbesteig-wachau">{{ t.trail }}</a></p>
+        <p><a href="/winterurlaub-wachau">{{ t.winter_link }}</a></p>
+        <p><a href="/bewertung">{{ t.reviews_link }}</a></p>
+      </section>
+      {% endif %}
     </div>
   </main>
 
