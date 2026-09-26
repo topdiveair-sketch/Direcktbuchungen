@@ -101,7 +101,10 @@
       <p>{{ tr.booking_text }}</p>
       <p><a href="{{ origin }}/unterkunft-donauradweg-wachau">{{ tr.danube }}</a></p>
       <p><a href="{{ origin }}/unterkunft-welterbesteig-wachau">{{ tr.trail }}</a></p>
-      <p><a href="{{ origin }}/unterkunft-jauerling-wachau">{{ tr.jauerling }}</a></p>\n      <p><a href="{{ origin }}/unterkunft-wachau">Unterkunft Wachau zwischen Melk und Krems</a></p>\n      <p><a href="{{ origin }}/winterurlaub-wachau">Winterurlaub Wachau</a></p>\n      <p><a href="{{ origin }}/bewertung">Gästebewertungen &amp; Feedback</a></p>
+      <p><a href="{{ origin }}/unterkunft-jauerling-wachau">{{ tr.jauerling }}</a></p>
+      <p><a href="{{ origin }}/unterkunft-wachau">{{ tr.wachau_link|default('Unterkunft Wachau zwischen Melk und Krems') }}</a></p>
+      <p><a href="{{ origin }}/winterurlaub-wachau">{{ tr.winter_link|default('Winterurlaub Wachau') }}</a></p>
+      <p><a href="{{ origin }}/bewertung">{{ tr.reviews_link|default('Gästebewertungen & Feedback') }}</a></p>
     </div>
     <div class="review-box">
       <strong>{{ tr.booking_cta }}</strong>
