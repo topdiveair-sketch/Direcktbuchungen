@@ -72,23 +72,25 @@ def init_booking_notifications(app, db):
         capture = booking["paypal_capture_id"] if "paypal_capture_id" in keys else ""
 
         body = (
-            f"Hallo {booking['first_name']} {booking['last_name']},\n\n"
-            "Ihre PayPal-Zahlung ist bestätigt. Ihre Buchung bei Zuhause am Bach ist damit verbindlich.\n\n"
-            "Ihre Buchungsdaten:\n"
-            f"Buchungsnummer: {booking['uid']}\n"
-            f"Zimmer: {booking['room']}\n"
-            f"Anreise: {booking['arrival']}\n"
-            f"Abreise: {booking['departure']}\n"
-            f"Nächte: {nights}\n"
-            f"Personen: {booking['adults']}\n"
-            f"Gesamtpreis bezahlt: {booking['total']:.2f} EUR\n"
+            f"Hallo / Hello {booking['first_name']} {booking['last_name']},\n\n"
+            "Ihre PayPal-Zahlung ist bestätigt. Ihre Buchung bei Zuhause am Bach ist damit verbindlich.\n"
+            "Your PayPal payment is confirmed. Your booking at Zuhause am Bach is now binding.\n\n"
+            "Buchungsdaten / Booking details:\n"
+            f"Buchungsnummer / Booking reference: {booking['uid']}\n"
+            f"Zimmer / Room: {booking['room']}\n"
+            f"Anreise / Arrival: {booking['arrival']}\n"
+            f"Abreise / Departure: {booking['departure']}\n"
+            f"Nächte / Nights: {nights}\n"
+            f"Personen / Guests: {booking['adults']}\n"
+            f"Bezahlt / Paid: {booking['total']:.2f} EUR\n"
         )
         if capture:
             body += f"PayPal-Transaktion: {capture}\n"
         body += (
-            "\nDer gebuchte Zeitraum ist verbindlich für Sie reserviert.\n\n"
-            "Wir freuen uns auf Ihren Aufenthalt.\n\n"
-            "Herzliche Grüße\nZuhause am Bach"
+            "\nDer gebuchte Zeitraum ist verbindlich für Sie reserviert.\n"
+            "The booked dates are now firmly reserved for you.\n\n"
+            "Wir freuen uns auf Ihren Aufenthalt. / We look forward to welcoming you.\n\n"
+            "Herzliche Grüße / Kind regards\nZuhause am Bach"
         )
 
         ok, status = smtp_send(booking["email"], PAID_GUEST_SUBJECT, body)
@@ -295,17 +297,17 @@ def init_booking_notifications(app, db):
         )
 
         guest_body = (
-            f"Hallo {first_name} {last_name},\n\n"
-            "vielen Dank für Ihre Anfrage bei Zuhause am Bach – Wachau.\n"
-            "Ihre Reisedaten sind bei uns angekommen.\n\n"
-            f"Zimmer: {room}\n"
-            f"Anreise: {arrival_text}\n"
-            f"Abreise: {departure_text}\n"
-            f"Personen: {adults}\n"
-            f"Zusatzleistungen: {extras_text}\n\n"
-            "Wichtig: Dies ist noch keine verbindliche Buchungsbestätigung. "
-            "Wir prüfen die Anfrage persönlich und melden uns anschließend bei Ihnen.\n\n"
-            "Herzliche Grüße\nZuhause am Bach – Wachau"
+            f"Hallo / Hello {first_name} {last_name},\n\n"
+            "vielen Dank für Ihre Anfrage bei Zuhause am Bach – Wachau. Ihre Reisedaten sind bei uns angekommen.\n"
+            "Thank you for your request to Zuhause am Bach – Wachau. We have received your travel dates.\n\n"
+            f"Zimmer / Room: {room}\n"
+            f"Anreise / Arrival: {arrival_text}\n"
+            f"Abreise / Departure: {departure_text}\n"
+            f"Personen / Guests: {adults}\n"
+            f"Zusatzleistungen / Extras: {extras_text}\n\n"
+            "Wichtig: Dies ist noch keine verbindliche Buchungsbestätigung. Wir prüfen die Anfrage persönlich und melden uns anschließend.\n"
+            "Important: This is not yet a binding booking confirmation. We will review your request personally and contact you afterwards.\n\n"
+            "Herzliche Grüße / Kind regards\nZuhause am Bach – Wachau"
         )
         ok_guest, _ = smtp_send(email, "Ihre Anfrage ist angekommen – Zuhause am Bach", guest_body)
 
