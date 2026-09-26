@@ -84,6 +84,19 @@
       <p class="lead">{{ t.lead }}</p>
       <a class="cta" href="/?lang={{ lang }}#booking">{{ t.booking_cta }}</a>
       <div class="trustline">{{ t.direct_live }} · {{ t.direct_contact }} · {{ t.direct_price }}</div>
+      {% set dog_notice = {
+        "en":"🐾 Important before booking: Fidel, Gloria and Pia are three greyhounds and live in the house as part of our family. They also move freely through shared areas, including the living room and kitchen. Guests should be comfortable with dogs in the house.",
+        "cs":"🐾 Důležité před rezervací: Fidel, Gloria a Pia jsou tři chrti a žijí s námi v domě jako součást rodiny. Pohybují se také ve společných prostorách včetně obývacího pokoje a kuchyně. Hosté by se měli cítit dobře se psy v domě.",
+        "sk":"🐾 Dôležité pred rezerváciou: Fidel, Gloria a Pia sú tri chrty a žijú s nami v dome ako súčasť rodiny. Pohybujú sa aj v spoločných priestoroch vrátane obývačky a kuchyne. Hostia by sa mali cítiť dobre so psami v dome.",
+        "hu":"🐾 Fontos foglalás előtt: Fidel, Gloria és Pia három agár, akik családtagként velünk élnek a házban. A közös helyiségekben, így a nappaliban és a konyhában is szabadon mozognak. Olyan vendégeket várunk, akik jól érzik magukat kutyák társaságában a házban.",
+        "nl":"🐾 Belangrijk vóór het boeken: Fidel, Gloria en Pia zijn drie windhonden en wonen als deel van ons gezin in huis. Ze komen ook in de gemeenschappelijke ruimtes, waaronder de woonkamer en keuken. Gasten moeten zich prettig voelen met honden in huis.",
+        "pl":"🐾 Ważne przed rezerwacją: Fidel, Gloria i Pia to trzy charty, które mieszkają z nami w domu jako część rodziny. Przebywają również we wspólnych pomieszczeniach, w tym w salonie i kuchni. Goście powinni dobrze czuć się w domu, w którym są psy.",
+        "it":"🐾 Importante prima di prenotare: Fidel, Gloria e Pia sono tre levrieri e vivono in casa con noi come parte della famiglia. Frequentano anche gli spazi comuni, compresi soggiorno e cucina. Gli ospiti devono sentirsi a proprio agio con i cani in casa.",
+        "es":"🐾 Importante antes de reservar: Fidel, Gloria y Pia son tres galgos y viven con nosotros en la casa como parte de la familia. También están en las zonas comunes, incluido el salón y la cocina. Los huéspedes deben sentirse cómodos con perros dentro de la casa.",
+        "fr":"🐾 Important avant de réserver : Fidel, Gloria et Pia sont trois lévriers et vivent avec nous dans la maison comme membres de la famille. Ils circulent également dans les espaces communs, notamment le salon et la cuisine. Les hôtes doivent être à l’aise avec des chiens dans la maison.",
+        "ch":"🐾 Wichtig vor em Bueche: Fidel, Gloria & Pia sind drei Windhünd und läbed als Teil vo üsere Familie im Huus. Si sind au i de gemeinsame Räum, inklusive Wohnzimmer und Chuchi. Gäste sötted sich mit Hünd im Huus wohlfühle."
+      } %}
+      <div class="trustline">{{ dog_notice.get(lang, dog_notice["en"]) }}</div>
       {% if lang in ["cs","sk"] %}<div class="trustline">☎ <a href="tel:+4367762314736">+43 677 62314736</a></div>{% endif %}
     </div>
   </section>
