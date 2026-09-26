@@ -59,7 +59,10 @@
     "svc_kitchen_title": "Gästeküche",
     "svc_bath_title": "Bad & Sauberkeit",
     "svc_taste_title": "Regionale Genussmomente",
-    "svc_cta": "Verfügbarkeit & Preis prüfen"
+    "svc_cta": "Verfügbarkeit & Preis prüfen",
+    "wachau_link": "Unterkunft Wachau zwischen Melk und Krems",
+    "winter_link": "Winterurlaub Wachau",
+    "reviews_link": "Gästebewertungen & Feedback"
   },
   "en": {
     "lang_name": "EN",
@@ -121,7 +124,10 @@
     "svc_kitchen_title": "Guest kitchen",
     "svc_bath_title": "Bathroom & cleanliness",
     "svc_taste_title": "Regional flavours",
-    "svc_cta": "Check availability & price"
+    "svc_cta": "Check availability & price",
+    "wachau_link": "Wachau accommodation between Melk and Krems",
+    "winter_link": "Winter holidays in the Wachau",
+    "reviews_link": "Guest reviews & feedback"
   },
   "cs": {
     "lang_name": "CZ",
@@ -183,7 +189,10 @@
     "svc_kitchen_title": "Kuchyňka pro hosty",
     "svc_bath_title": "Koupelna a čistota",
     "svc_taste_title": "Chutě regionu",
-    "svc_cta": "Ověřit dostupnost a cenu"
+    "svc_cta": "Ověřit dostupnost a cenu",
+    "wachau_link": "Ubytování ve Wachau mezi Melkem a Kremží",
+    "winter_link": "Zimní dovolená ve Wachau",
+    "reviews_link": "Hodnocení hostů a zpětná vazba"
   },
   "sk": {
     "lang_name": "SK",
@@ -245,7 +254,10 @@
     "svc_kitchen_title": "Kuchynka pre hostí",
     "svc_bath_title": "Kúpeľňa a čistota",
     "svc_taste_title": "Chute regiónu",
-    "svc_cta": "Overiť dostupnosť a cenu"
+    "svc_cta": "Overiť dostupnosť a cenu",
+    "wachau_link": "Ubytovanie vo Wachau medzi Melkom a Kremsom",
+    "winter_link": "Zimná dovolenka vo Wachau",
+    "reviews_link": "Hodnotenia hostí a spätná väzba"
   },
   "hu": {
     "lang_name": "HU",
