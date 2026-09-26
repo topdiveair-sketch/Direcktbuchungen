@@ -1,4 +1,4 @@
-const API=(window.WACHAUETAPPE_API_BASE||'https://web-production-907d68.up.railway.app').replace(/\/$/,'');
+const API=(window.WACHAUETAPPE_API_BASE||'https://web-production-2b242.up.railway.app').replace(/\/$/,'');
 const $=id=>document.getElementById(id);let token=localStorage.getItem('we_partner_token')||'';
 function iso(d){return d.toISOString().slice(0,10)}
 function auth(){return token?{'Authorization':`Bearer ${token}`}:{}}
