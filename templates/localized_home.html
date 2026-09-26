@@ -31,7 +31,7 @@
     "url":"https://www.zuhauseambach-wachau.at/",
     "description":t.description,
     "image":"https://www.zuhauseambach-wachau.at/static/images/gartenzimmer-04-web.jpg",
-    "telephone":"+436646437526",
+    "telephone":("+4367762314736" if lang in ["cs","sk"] else "+436646437526"),
     "checkinTime":"14:00",
     "checkoutTime":"10:00",
     "address":{"@type":"PostalAddress","streetAddress":"Aggsbach Markt 82","postalCode":"3641","addressLocality":"Aggsbach Markt","addressRegion":"Niederösterreich","addressCountry":"AT"},
@@ -80,6 +80,7 @@
       <p class="lead">{{ t.lead }}</p>
       <a class="cta" href="/?lang={{ lang }}#booking">{{ t.booking_cta }}</a>
       <div class="trustline">{{ t.direct_live }} · {{ t.direct_contact }} · {{ t.direct_price }}</div>
+      {% if lang in ["cs","sk"] %}<div class="trustline">☎ <a href="tel:+4367762314736">+43 677 62314736</a></div>{% endif %}
     </div>
   </section>
 
@@ -129,6 +130,7 @@
     <div class="wrap">
       <div class="footer-cta"><a class="cta" href="/?lang={{ lang }}#booking">{{ t.booking_cta }}</a></div>
       <div>{{ t.footer }}</div>
+      {% if lang == "cs" %}<div><strong>Telefon v češtině:</strong> <a href="tel:+4367762314736">+43 677 62314736</a></div>{% elif lang == "sk" %}<div><strong>Telefon po slovensky:</strong> <a href="tel:+4367762314736">+43 677 62314736</a></div>{% endif %}
     </div>
   </footer>
 </body>
