@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import date, datetime
 import secrets
 from flask import jsonify, request
 from railway_app import app, db
@@ -133,6 +133,9 @@ def create_guest_booking():
     except (TypeError, ValueError): price = None
     if not host_id or not guest_name or not stay_date: return _with_cors(jsonify({"error":"missing_required_fields"})), 422
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", stay_date): return _with_cors(jsonify({"error":"invalid_stay_date"})), 422
+    try:
+        if date.fromisoformat(stay_date) < date.today(): return _with_cors(jsonify({"error":"stay_date_in_past"})),422
+    except ValueError: return _with_cors(jsonify({"error":"invalid_stay_date"})),422
     if not _valid_email(guest_email): return _with_cors(jsonify({"error":"invalid_email"})), 422
     now = _now()
     with db() as conn:
