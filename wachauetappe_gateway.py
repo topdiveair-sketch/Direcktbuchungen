@@ -41,7 +41,6 @@ from booking_guest_sync import init_booking_guest_sync  # noqa: E402
 from zab_control_center_v3 import init_zab_control_center_v3  # noqa: E402
 
 init_wachauetappe_notifications(app, legacy_app.db)
-init_wachauetappe_operations(app, legacy_app.db, legacy_app.require_admin)
 init_demand_analytics(app, legacy_app.db, legacy_app.require_admin)
 
 PUBLIC_SITE_ORIGIN = "https://topdiveair-sketch.github.io"
@@ -92,6 +91,9 @@ def _desktop_admin_ok() -> bool:
     if not expected or not supplied:
         return False
     return hmac.compare_digest(str(expected), str(supplied))
+
+
+init_wachauetappe_operations(app, legacy_app.db, legacy_app.require_admin, _desktop_admin_ok)
 
 
 # RAINsoft CENTRAL uses the same DPAPI-protected Railway admin credential as
