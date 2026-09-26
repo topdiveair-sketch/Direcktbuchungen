@@ -128,6 +128,24 @@ def init_wachauetappe_notifications(app, db):
         except Exception:
             return 0
 
+    def trip_progress(b):
+        key=b["trip_key"] if "trip_key" in b.keys() else ""
+        if not key:return None
+        with db() as conn:
+            rows=conn.execute("SELECT status,guest_email,guest_name,trip_reference FROM wachauetappe_guest_bookings WHERE trip_key=? ORDER BY stay_date,id",(key,)).fetchall()
+        if not rows:return None
+        confirmed=sum(1 for x in rows if x["status"]=="confirmed");declined=sum(1 for x in rows if x["status"]=="declined");requested=sum(1 for x in rows if x["status"]=="requested")
+        return {"total":len(rows),"confirmed":confirmed,"declined":declined,"requested":requested,"email":rows[0]["guest_email"],"name":rows[0]["guest_name"],"tripReference":rows[0]["trip_reference"]}
+
+    def notify_trip_complete(b):
+        p=trip_progress(b)
+        if not p or p["confirmed"]!=p["total"] or p["total"]<2:return False
+        ref=p["tripReference"] or b["reference"]
+        body=(f"Hallo {p['name']},\n\nalle {p['total']} angefragten Übernachtungen deiner WachauEtappe-Reise sind bestätigt.\n"
+              f"Reisereferenz: {p['tripReference']}\n\nDie einzelnen Unterkunftsverträge und Zahlungen bleiben direkt bei den jeweiligen Gastgebern.\n\n"
+              "Herzliche Grüße\nWachauEtappe")
+        return deliver(ref,"trip_all_confirmed",p["email"],f"Deine WachauEtappe-Reise {p['tripReference']} ist vollständig bestätigt",body)
+
     def notify_status(reference,status):
         b=booking(reference)
         if not b:return False
@@ -143,7 +161,9 @@ def init_wachauetappe_notifications(app, db):
                 "Die weitere Vertrags- und Zahlungsabwicklung erfolgt direkt mit dem Gastgeber.\n\n"
                 "Herzliche Grüße\nWachauEtappe"
             )
-            return deliver(reference,"guest_confirmed",b["guest_email"],subject,body)
+            sent=deliver(reference,"guest_confirmed",b["guest_email"],subject,body)
+            notify_trip_complete(b)
+            return sent
         if status=="declined":
             n=alternative_count(b)
             alt=(f"Aktuell sind für Ort und Datum {n} weitere Partneroption(en) mit freiem Kontingent gemeldet. Öffne deinen Reiseplaner und wähle eine Alternative." if n else "Aktuell ist keine weitere Partnerunterkunft mit freiem Kontingent für genau diese Nacht gemeldet. Du kannst eine persönliche Alternativanfrage senden.")
