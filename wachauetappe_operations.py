@@ -5,7 +5,7 @@ from datetime import date, datetime, timedelta
 from flask import jsonify, request, redirect
 
 
-def init_wachauetappe_operations(app, db, require_admin):
+def init_wachauetappe_operations(app, db, require_admin, desktop_admin_ok=None):
     if app.extensions.get("wachauetappe_operations_initialized"):
         return
     app.extensions["wachauetappe_operations_initialized"]=True
@@ -39,6 +39,16 @@ def init_wachauetappe_operations(app, db, require_admin):
         """)
 
     allowed={"planner_view","trip_planned","host_selected","trip_request_started","trip_request_submitted","my_trip_opened"}
+
+    def central_admin_ok():
+        try:
+            if callable(desktop_admin_ok) and desktop_admin_ok():return True
+        except Exception:
+            pass
+        try:
+            return bool(require_admin())
+        except Exception:
+            return False
 
     def cors(resp):
         origin=(request.headers.get("Origin") or "").rstrip("/")
@@ -94,7 +104,7 @@ def init_wachauetappe_operations(app, db, require_admin):
 
     @app.get("/api/central/wachauetappe-bookings")
     def we_central_bookings():
-        if not require_admin():return jsonify({"error":"unauthorized"}),401
+        if not central_admin_ok():return jsonify({"error":"unauthorized"}),401
         status=str(request.args.get("status") or "").strip().lower()
         with db() as conn:
             sql="""SELECT b.reference,b.trip_reference,b.stay_date,b.guests,b.guest_name,b.guest_email,b.guest_phone,b.note,b.price,b.status,b.created_at,b.updated_at,
@@ -113,14 +123,14 @@ def init_wachauetappe_operations(app, db, require_admin):
 
     @app.patch("/api/central/wachauetappe-bookings/<reference>")
     def we_central_booking_update(reference):
-        if not require_admin():return jsonify({"error":"unauthorized"}),401
+        if not central_admin_ok():return jsonify({"error":"unauthorized"}),401
         p=request.get_json(silent=True) or {}
         payload,code=_admin_booking_update(reference,str(p.get("status") or "").strip().lower(),p.get("note") or "")
         return jsonify(payload),code
 
     @app.get("/api/central/wachauetappe-partners")
     def we_central_partners():
-        if not require_admin():return jsonify({"error":"unauthorized"}),401
+        if not central_admin_ok():return jsonify({"error":"unauthorized"}),401
         target=str(request.args.get("date") or date.today().isoformat())[:10]
         with db() as conn:
             rows=conn.execute("""SELECT p.host_id,p.name,p.location,p.active,p.rooms_total,
@@ -134,7 +144,7 @@ def init_wachauetappe_operations(app, db, require_admin):
 
     @app.get("/api/central/wachauetappe-leads")
     def we_central_leads():
-        if not require_admin():return jsonify({"error":"unauthorized"}),401
+        if not central_admin_ok():return jsonify({"error":"unauthorized"}),401
         with db() as conn:
             rows=conn.execute("""SELECT id,business_name,contact_name,email,phone,location,rooms,website,source,message,status,created_at
             FROM wachauetappe_partner_leads ORDER BY CASE WHEN status='new' THEN 0 ELSE 1 END,created_at DESC LIMIT 200""").fetchall()
@@ -142,7 +152,7 @@ def init_wachauetappe_operations(app, db, require_admin):
 
     @app.patch("/api/central/wachauetappe-leads/<int:lead_id>")
     def we_central_lead_update(lead_id):
-        if not require_admin():return jsonify({"error":"unauthorized"}),401
+        if not central_admin_ok():return jsonify({"error":"unauthorized"}),401
         p=request.get_json(silent=True) or {};status=str(p.get("status") or "").strip().lower()
         if status not in {"new","contacted","qualified","won","lost"}:return jsonify({"error":"invalid_status"}),422
         with db() as conn:
@@ -195,7 +205,7 @@ def init_wachauetappe_operations(app, db, require_admin):
 
     @app.get("/api/central/wachauetappe-operations")
     def we_ops_json():
-        if not require_admin():return jsonify({"error":"unauthorized"}),401
+        if not central_admin_ok():return jsonify({"error":"unauthorized"}),401
         try:days=int(request.args.get("days") or 30)
         except Exception:days=30
         return jsonify(summary(days)),200
