@@ -33,7 +33,7 @@ from zab_control_center_v3 import make_master_checkout_sync
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
-PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-14-zab-control-center-v3"
+PAYPAL_CHECKOUT_DEPLOY_REV = "2026-09-26-market-ready-ar-v1"
 EXPECTED_PAYPAL_MERCHANT_EMAIL = "topdiveair@gmail.com"
 
 # Checkout callbacks must use the currently active Railway public domain. Railway's
