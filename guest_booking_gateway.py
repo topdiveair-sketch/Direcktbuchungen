@@ -143,6 +143,19 @@ def create_guest_booking():
             duplicate=conn.execute("SELECT reference,trip_key,trip_reference,status FROM wachauetappe_guest_bookings WHERE client_request_id=?",(client_request_id,)).fetchone()
             if duplicate:
                 return _with_cors(jsonify({"ok":True,"reference":duplicate["reference"],"tripKey":duplicate["trip_key"],"tripReference":duplicate["trip_reference"],"status":duplicate["status"],"idempotentReplay":True})),200
+
+        availability=conn.execute("""SELECT a.price,a.rooms_free,a.status,
+            CASE WHEN b.stay_date IS NULL THEN 0 ELSE 1 END AS booking_blocked
+            FROM wachauetappe_partner_accounts p
+            JOIN wachauetappe_partner_availability a ON a.host_id=p.host_id
+            LEFT JOIN wachauetappe_partner_calendar_blocks b ON b.host_id=a.host_id AND b.stay_date=a.stay_date AND b.provider='booking'
+            WHERE p.host_id=? AND p.active=1 AND a.stay_date=? LIMIT 1""",(host_id,stay_date)).fetchone()
+        if not availability:
+            return _with_cors(jsonify({"error":"host_or_availability_not_found"})),409
+        if availability["status"]!="free" or int(availability["rooms_free"] or 0)<=0 or int(availability["booking_blocked"] or 0):
+            return _with_cors(jsonify({"error":"host_not_available"})),409
+        price=float(availability["price"]) if availability["price"] is not None else None
+
         existing=conn.execute("SELECT trip_reference FROM wachauetappe_guest_bookings WHERE trip_key=? AND trip_reference<>'' ORDER BY id LIMIT 1",(trip_key,)).fetchone()
         trip_reference=str(existing["trip_reference"]) if existing else f"WE-R-{datetime.now():%Y%m%d}-{secrets.token_hex(3).upper()}"
         cur = conn.execute("""INSERT INTO wachauetappe_guest_bookings(reference,host_id,stay_date,guests,guest_name,guest_email,guest_phone,note,price,payment_method,status,source,created_at,updated_at,trip_key,trip_reference,client_request_id) VALUES('',?,?,?,?,?,?,?,?,?,'requested','guest_web',?,?,?,?,?)""",(host_id,stay_date,guests,guest_name,guest_email,guest_phone,note,price,payment_method,now,now,trip_key,trip_reference,client_request_id))
