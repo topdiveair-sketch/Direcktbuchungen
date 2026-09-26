@@ -5,6 +5,7 @@ const $=id=>document.getElementById(id);
 let routeData=null,hosts=[],activeBooking=null,currentTrip=null;
 
 function iso(d){return d.toISOString().slice(0,10)}
+function money(v){return v==null?'Preis wird bestätigt':new Intl.NumberFormat('de-AT',{style:'currency',currency:'EUR'}).format(Number(v))}
 function addDays(s,n){const d=new Date(`${s}T12:00:00`);d.setDate(d.getDate()+n);return iso(d)}
 function esc(v=''){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function eq(a,b){return String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase()}
@@ -66,9 +67,11 @@ function renderTripHosts(dayIndex){
 function updateTripAction(){
   const box=$('tripBookingAction');if(!box||!currentTrip)return;
   const nights=currentTrip.days.slice(0,-1),selected=nights.filter(d=>d.selected).length;
+  const priced=nights.filter(d=>d.selected&&d.selected.price!=null);
+  const knownTotal=priced.reduce((sum,d)=>sum+Number(d.selected.price||0),0);
   box.hidden=false;
   if(selected<nights.length){box.innerHTML=`<strong>${selected} von ${nights.length} Übernachtungen ausgewählt.</strong><p style="margin-bottom:0">Wähle für jede Nacht einen Gastgeber. Erst danach kannst du die gesamte Reise anfragen.</p>`;return}
-  box.innerHTML=`<strong>Alle ${nights.length} Übernachtungen ausgewählt.</strong><p>Jetzt sendest du eine gemeinsame Reiseanfrage. Die ausgewählten Gastgeber bestätigen anschließend ihre Verfügbarkeit.</p><button id="requestWholeTrip" class="btn primary" type="button">Gesamte Reise anfragen</button>`;
+  box.innerHTML=`<div class="booking-ready"><div><span class="eyebrow">REISEBEREIT</span><strong>Alle ${nights.length} Übernachtungen ausgewählt.</strong><p>${priced.length?`Bekannte Unterkunftspreise: <b>${money(knownTotal)}</b>${priced.length<nights.length?' · weitere Preise werden bestätigt':''}.`:'Die Unterkunftspreise werden von den Gastgebern bestätigt.'}</p></div><button id="requestWholeTrip" class="btn primary" type="button">Gesamte Reise anfragen</button></div>`;
   $('requestWholeTrip').addEventListener('click',()=>openTripBooking());
 }
 
@@ -85,7 +88,7 @@ async function submitBooking(e){
   const submit=e.submitter||$('bookingForm').querySelector('button[type="submit"]'),oldText=submit.textContent,refs=[];submit.disabled=true;submit.textContent='Wird gesendet …';setBookingState(`Anfrage an ${activeBooking.items.length} Gastgeber wird übertragen …`);
   try{
     for(const item of activeBooking.items){const payload={hostId:item.hostId,stayDate:item.date,guests:Number($('bookingGuests').value||1),guestName:$('guestName').value.trim(),guestEmail:$('guestEmail').value.trim(),guestPhone:$('guestPhone').value.trim(),note:$('bookingNote').value.trim(),price:item.price??null,paymentMethod:'host'};const r=await fetch(`${API_BASE}/api/guest-bookings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const result=await r.json().catch(()=>({}));if(!r.ok)throw new Error(result.error||'Anfrage konnte nicht gesendet werden.');refs.push(result.reference)}
-    setBookingState(`✓ Reiseanfrage übertragen. Referenzen: ${refs.join(', ')}. Die Gastgeber bestätigen nun ihre Nächte.`);submit.textContent='Anfrage gesendet ✓';
+    setBookingState(`✓ Reiseanfrage übertragen. Referenzen: ${refs.join(', ')}. Die Gastgeber bestätigen nun ihre Nächte. Bitte prüfe auch dein E-Mail-Postfach auf weitere Informationen.`);submit.textContent='Anfrage gesendet ✓';
   }catch(err){setBookingState(`Anfrage konnte nicht gesendet werden: ${err.message}`,true);submit.disabled=false;submit.textContent=oldText}
 }
 
