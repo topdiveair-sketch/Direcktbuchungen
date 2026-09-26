@@ -2,7 +2,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-REQUIRED_LANGS = ["de","en","cs","sk","hu","es","fr"]
+REQUIRED_LANGS = ["de","en","cs","sk","hu","nl","pl","it","es","fr"]
 CATALOG = Path("translations/public_home.json")
 data = json.loads(CATALOG.read_text(encoding="utf-8"))
 
