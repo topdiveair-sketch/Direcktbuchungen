@@ -226,6 +226,30 @@ def init_v6(app, DB_PATH, db, require_admin, ROOMS):
                                  ROUND(AVG(julianday(departure)-julianday(arrival)),1) avg_nights
                                  FROM bookings WHERE status!='cancelled' GROUP BY room""").fetchall()
             sources=[{"source":"Direkt","bookings":conn.execute("SELECT COUNT(*) c FROM bookings WHERE status!='cancelled'").fetchone()["c"]}]
+            event_rows=conn.execute("""SELECT substr(created_at,1,7) month,event,COUNT(*) count
+                                      FROM site_events
+                                      GROUP BY substr(created_at,1,7),event
+                                      ORDER BY month,event""").fetchall()
+            funnel_rows=conn.execute("""SELECT event,COUNT(*) count FROM site_events GROUP BY event""").fetchall()
+        funnel={r["event"]:{"count":r["count"]} for r in funnel_rows}
+        monthly_events={}
+        for r in event_rows:
+            month=monthly_events.setdefault(r["month"],{"month":r["month"],"landing_view":0,"availability_started":0,"checkout_started":0,"booking_abandoned":0})
+            if r["event"] in month:
+                month[r["event"]]=r["count"]
+        event_monthly=[]
+        for month in sorted(monthly_events):
+            row=monthly_events[month]
+            visits=row["landing_view"]
+            row["availability_rate"]=round(row["availability_started"]/visits*100,1) if visits else 0
+            row["checkout_rate"]=round(row["checkout_started"]/visits*100,1) if visits else 0
+            event_monthly.append(row)
+        visitors=funnel.get("landing_view",{}).get("count",0)
+        availability=funnel.get("availability_started",{}).get("count",0)
+        checkouts=funnel.get("checkout_started",{}).get("count",0)
+        metrics={"availability_rate":round(availability/visitors*100,1) if visitors else 0,
+                 "checkout_rate":round(checkouts/visitors*100,1) if visitors else 0,
+                 "booking_conversion":0,"revenue_per_visitor":0}
         revenue_status = {"available": False}
         try:
             today_d = date.today()
@@ -253,7 +277,7 @@ def init_v6(app, DB_PATH, db, require_admin, ROOMS):
                               "window_start": today_d.isoformat(), "window_end": window_end.isoformat()}
         except Exception as exc:
             revenue_status = {"available": False, "error": str(exc)}
-        return render_template("statistics.html",monthly=monthly,by_room=by_room,sources=sources,revenue_status=revenue_status)
+        return render_template("statistics.html",monthly=monthly,by_room=by_room,sources=sources,revenue_status=revenue_status, funnel=funnel,metrics=metrics,event_monthly=event_monthly)
 
     @app.get("/admin/v6-data")
     def v6_admin_data():
