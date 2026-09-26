@@ -695,7 +695,7 @@ def index():
     return response
 
 
-PUBLIC_HOME_LANGUAGES = ("en", "cs", "sk", "hu", "nl", "pl", "it", "es", "fr")
+PUBLIC_HOME_LANGUAGES = ("en", "cs", "sk", "hu", "nl", "pl", "it", "es", "fr", "ch")
 
 
 def _public_home_translations() -> dict:
@@ -1001,7 +1001,17 @@ def _intl_wachau_page(lang: str):
             direct_title="Réserver en direct sur le site officiel",direct_text="Consultez les disponibilités et le tarif direct de Zuhause am Bach. Questions et demandes arrivent directement aux hôtes.",
             location_title="Une base pour découvrir la Wachau",location_text="Le Danube, Melk, Krems, Spitz, Dürnstein et d'autres destinations de la Wachau se combinent facilement.",
             language_title="Informations en français",language_text="Les informations essentielles sur le séjour, les disponibilités et la réservation directe sont disponibles en français.")
-    }
+,
+        "ch": dict(locale="de_CH", title="Unterkunft Wachau zwischen Melk und Krems | Zuhause am Bach",
+            description="Persönliche Unterkunft in der Wachau zwischen Melk und Krems für Gäste aus der Schweiz. Donauradweg, Welterbesteig, Jauerling, Frühstück und Direktbuchung.",
+            canonical="https://www.zuhauseambach-wachau.at/ch/wachau-unterkunft",
+            h1="Dini Unterkunft i de Wachau zwüsche Melk und Krems",
+            lead="Ruhig übernachte in Aggsbach Markt – persönlich, direkt buchbar und ideal für Velo, Wandere und entspannte Täg i de Wachau.",
+            booking="Verfügbarkeit & Priis prüefe",
+            cards=[("Donauradweg","Sicheri Velounterbringig, E-Bike-Lade und praktische Unterstützig für dini Etappe a de Donau."),("Welterbesteig Wachau","E ruhigi Basis für Wanderetappe und Usflüg i de Wachau."),("Melk & Krems","Aggsbach Markt liit zwüsche Melk und Krems und isch e guete Ausgangspunkt für d Region."),("Jauerling & Winter","De Ufenthalt laht sich guet mit Jauerling, Winterspaziergäng und Advent i de Wachau verbinde.")],
+            direct_title="Direkt uf de offizielle Website bueche",direct_text="Prüef freii Termin und de Direktpriis bi Zuhause am Bach. Frage und Wünsch chömed direkt zu üs.",
+            location_title="Dini Basis für d Wachau",location_text="Donau, Melk, Krems, Spitz, Dürnstein und wiiteri Ziel i de Wachau sind vo Aggsbach Markt guet erreichbar.",
+            language_title="Für Gäste us de Schwiiz",language_text="D wichtigste Infos sind im Schwiizer Stil formuliert; Buechig und Kontakt laufe direkt mit de Gastgeber.")    }
     return pages.get(lang)
 
 
@@ -1011,6 +1021,7 @@ def _intl_wachau_page(lang: str):
 @app.get("/pl/nocleg-wachau")
 @app.get("/it/alloggio-wachau")
 @app.get("/fr/hebergement-wachau")
+@app.get("/ch/wachau-unterkunft")
 def seo_intl_wachau():
     path_lang = request.path.strip("/").split("/")[0]
     data = _intl_wachau_page(path_lang)
@@ -1230,6 +1241,8 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/pl/nocleg-wachau",
         "https://www.zuhauseambach-wachau.at/it/alloggio-wachau",
         "https://www.zuhauseambach-wachau.at/fr/hebergement-wachau",
+        "https://www.zuhauseambach-wachau.at/ch/",
+        "https://www.zuhauseambach-wachau.at/ch/wachau-unterkunft",
         "https://www.zuhauseambach-wachau.at/uebernachten-aggsbach-markt",
         "https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-jauerling-wachau",
