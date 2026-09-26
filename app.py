@@ -887,6 +887,56 @@ def seo_unterkunft_wachau():
     return render_template("seo_landing.html", **seo_landing_context("wachau"))
 
 
+@app.get("/cs/ubytovani-wachau")
+def seo_cz_wachau():
+    return render_template("seo_landing_intl.html",
+        lang="cs", locale="cs_CZ",
+        title="Ubytování ve Wachau mezi Melkem a Kremží | Zuhause am Bach",
+        description="Rodinné ubytování ve Wachau mezi Melkem a Kremží. Dunajská cyklostezka, Welterbesteig, Jauerling, úschovna kol, snídaně na objednávku a přímá rezervace.",
+        canonical="https://www.zuhauseambach-wachau.at/cs/ubytovani-wachau",
+        h1="Ubytování ve Wachau mezi Melkem a Kremží",
+        lead="Klidné rodinné ubytování v Aggsbach Markt pro cyklisty, turisty i hosty, kteří chtějí poznat Wachau vlastním tempem.",
+        booking="Ověřit dostupnost a cenu",
+        cards=[
+            ("Dunajská cyklostezka","Bezpečné uložení kol, možnost nabíjení elektrokol a praktické zázemí pro cestu podél Dunaje."),
+            ("Welterbesteig Wachau","Klidná základna pro pěší výlety, jednotlivé etapy Welterbesteigu a poznávání krajiny Wachau."),
+            ("Melk a Kremže","Aggsbach Markt leží ve Wachau mezi Melkem a Kremží a je vhodným výchozím bodem pro výlety po regionu."),
+            ("Jauerling a zima","Ubytování lze spojit s výlety na Jauerling, zimními procházkami i adventními návštěvami Wachau.")
+        ],
+        direct_title="Přímá rezervace na oficiálních stránkách",
+        direct_text="Aktuální volné termíny a cenu si ověříte přímo u Zuhause am Bach. Dotazy a přání můžete řešit přímo s hostiteli.",
+        location_title="Wachau jako výchozí bod",
+        location_text="Dunaj, Melk, Kremže, Spitz, Dürnstein a další cíle ve Wachau lze pohodlně kombinovat podle vašeho programu.",
+        language_title="Mluvíme česky",
+        language_text="S českými hosty komunikujeme česky – před příjezdem, během pobytu i při přímé rezervaci."
+    )
+
+
+@app.get("/sk/ubytovanie-wachau")
+def seo_sk_wachau():
+    return render_template("seo_landing_intl.html",
+        lang="sk", locale="sk_SK",
+        title="Ubytovanie vo Wachau medzi Melkom a Kremsom | Zuhause am Bach",
+        description="Rodinné ubytovanie vo Wachau medzi Melkom a Kremsom. Dunajská cyklotrasa, Welterbesteig, Jauerling, úschovňa bicyklov, raňajky na objednávku a priama rezervácia.",
+        canonical="https://www.zuhauseambach-wachau.at/sk/ubytovanie-wachau",
+        h1="Ubytovanie vo Wachau medzi Melkom a Kremsom",
+        lead="Pokojné rodinné ubytovanie v Aggsbach Markt pre cyklistov, turistov aj hostí, ktorí chcú spoznávať Wachau vlastným tempom.",
+        booking="Overiť dostupnosť a cenu",
+        cards=[
+            ("Dunajská cyklotrasa","Bezpečné uloženie bicyklov, možnosť nabíjania elektrobicyklov a praktické zázemie na cestu popri Dunaji."),
+            ("Welterbesteig Wachau","Pokojná základňa na pešie výlety, jednotlivé etapy Welterbesteigu a spoznávanie krajiny Wachau."),
+            ("Melk a Krems","Aggsbach Markt leží vo Wachau medzi Melkom a Kremsom a je vhodným východiskovým bodom na výlety po regióne."),
+            ("Jauerling a zima","Pobyt môžete spojiť s výletmi na Jauerling, zimnými prechádzkami aj adventnými návštevami Wachau.")
+        ],
+        direct_title="Priama rezervácia na oficiálnej stránke",
+        direct_text="Aktuálne voľné termíny a cenu si overíte priamo u Zuhause am Bach. Otázky a želania môžete riešiť priamo s hostiteľmi.",
+        location_title="Wachau ako východiskový bod",
+        location_text="Dunaj, Melk, Krems, Spitz, Dürnstein a ďalšie ciele vo Wachau môžete pohodlne kombinovať podľa svojho programu.",
+        language_title="Hovoríme po slovensky",
+        language_text="So slovenskými hosťami komunikujeme po slovensky – pred príchodom, počas pobytu aj pri priamej rezervácii."
+    )
+
+
 @app.get("/uebernachten-aggsbach-markt")
 def seo_aggsbach_markt():
     return render_template("seo_landing.html", **seo_landing_context("aggsbach"))
@@ -1081,6 +1131,8 @@ def sitemap():
     urls = [
         "https://www.zuhauseambach-wachau.at/",
         "https://www.zuhauseambach-wachau.at/unterkunft-wachau",
+        "https://www.zuhauseambach-wachau.at/cs/ubytovani-wachau",
+        "https://www.zuhauseambach-wachau.at/sk/ubytovanie-wachau",
         "https://www.zuhauseambach-wachau.at/uebernachten-aggsbach-markt",
         "https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-jauerling-wachau",
