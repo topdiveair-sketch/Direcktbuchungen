@@ -1,5 +1,5 @@
 #define MyAppName "WachauEtappe Zentrale"
-#define MyAppVersion "1.0.1"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "WachauEtappe"
 #define MyAppExeName "WachauEtappe.Zentrale.exe"
 

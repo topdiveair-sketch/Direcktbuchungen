@@ -10,7 +10,7 @@ namespace WachauEtappe.Zentrale.Services;
 
 public static class LiveCentralSyncService
 {
-    private const string DefaultApiBase = "https://web-production-907d68.up.railway.app";
+    private const string DefaultApiBase = "https://web-production-2b242.up.railway.app";
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(20) };
     private static readonly byte[] CredentialEntropy = Encoding.UTF8.GetBytes("WachauEtappe.Zentrale.AdminCredential.v1");
     private static readonly string CredentialFile = Path.Combine(
@@ -180,9 +180,9 @@ public static class LiveCentralSyncService
         catch { return false; }
     }
 
-    private static string ApiBase => (Environment.GetEnvironmentVariable("WACHAUETAPPE_API_BASE") ?? DefaultApiBase).TrimEnd('/');
+    public static string ApiBase => (Environment.GetEnvironmentVariable("WACHAUETAPPE_API_BASE") ?? DefaultApiBase).TrimEnd('/');
 
-    private static string ReadAdminPassword()
+    public static string ReadAdminPassword()
     {
         var env = Environment.GetEnvironmentVariable("WACHAUETAPPE_ADMIN_PASSWORD");
         if (!string.IsNullOrWhiteSpace(env)) return env;

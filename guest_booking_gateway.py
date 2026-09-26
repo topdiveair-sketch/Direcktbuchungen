@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
+import secrets
 from flask import jsonify, request
 from railway_app import app, db
 
@@ -70,6 +71,11 @@ def _init_table() -> None:
             created_at TEXT NOT NULL
         );
         """)
+        cols={r[1] for r in conn.execute("PRAGMA table_info(wachauetappe_guest_bookings)").fetchall()}
+        if "trip_key" not in cols: conn.execute("ALTER TABLE wachauetappe_guest_bookings ADD COLUMN trip_key TEXT DEFAULT ''")
+        if "trip_reference" not in cols: conn.execute("ALTER TABLE wachauetappe_guest_bookings ADD COLUMN trip_reference TEXT DEFAULT ''")
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_we_guest_trip_key ON wachauetappe_guest_bookings(trip_key)")
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_we_guest_trip_reference ON wachauetappe_guest_bookings(trip_reference)")
 
 
 _init_table()
@@ -86,7 +92,7 @@ def _with_cors(response):
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Vary"] = "Origin"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type"
-    response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     response.headers["Cache-Control"] = "no-store"
     return response
 
@@ -116,6 +122,8 @@ def create_guest_booking():
     guest_phone = str(payload.get("guestPhone") or "").strip()[:80]
     note = str(payload.get("note") or "").strip()[:2000]
     payment_method = str(payload.get("paymentMethod") or "host").strip()[:40] or "host"
+    trip_key = str(payload.get("tripKey") or "").strip()[:120]
+    if not trip_key: trip_key = secrets.token_urlsafe(24)
     try: guests = max(1, min(12, int(payload.get("guests") or 1)))
     except (TypeError, ValueError): guests = 1
     try: price = float(payload.get("price")) if payload.get("price") is not None else None
@@ -125,11 +133,45 @@ def create_guest_booking():
     if not _valid_email(guest_email): return _with_cors(jsonify({"error":"invalid_email"})), 422
     now = _now()
     with db() as conn:
-        cur = conn.execute("""INSERT INTO wachauetappe_guest_bookings(reference,host_id,stay_date,guests,guest_name,guest_email,guest_phone,note,price,payment_method,status,source,created_at,updated_at) VALUES('',?,?,?,?,?,?,?,?,?,'requested','guest_web',?,?)""",(host_id,stay_date,guests,guest_name,guest_email,guest_phone,note,price,payment_method,now,now))
+        existing=conn.execute("SELECT trip_reference FROM wachauetappe_guest_bookings WHERE trip_key=? AND trip_reference<>'' ORDER BY id LIMIT 1",(trip_key,)).fetchone()
+        trip_reference=str(existing["trip_reference"]) if existing else f"WE-R-{datetime.now():%Y%m%d}-{secrets.token_hex(3).upper()}"
+        cur = conn.execute("""INSERT INTO wachauetappe_guest_bookings(reference,host_id,stay_date,guests,guest_name,guest_email,guest_phone,note,price,payment_method,status,source,created_at,updated_at,trip_key,trip_reference) VALUES('',?,?,?,?,?,?,?,?,?,'requested','guest_web',?,?,?,?)""",(host_id,stay_date,guests,guest_name,guest_email,guest_phone,note,price,payment_method,now,now,trip_key,trip_reference))
         booking_id = int(cur.lastrowid)
         reference = f"WE-{datetime.now():%Y%m%d}-{booking_id:05d}"
         conn.execute("UPDATE wachauetappe_guest_bookings SET reference=? WHERE id=?",(reference,booking_id))
-    return _with_cors(jsonify({"ok":True,"reference":reference,"status":"requested","message":"Buchungsanfrage wurde an WachauEtappe übertragen."})), 201
+    notifier=app.extensions.get("wachauetappe_notify_new_booking")
+    if callable(notifier):
+        try:notifier(reference)
+        except Exception:pass
+    return _with_cors(jsonify({"ok":True,"reference":reference,"tripKey":trip_key,"tripReference":trip_reference,"status":"requested","message":"Buchungsanfrage wurde an WachauEtappe übertragen."})), 201
+
+
+@app.route("/api/guest-trips/<trip_key>", methods=["OPTIONS"])
+def guest_trip_options(trip_key):
+    return _options()
+
+
+@app.get("/api/guest-trips/<trip_key>")
+def guest_trip_status(trip_key):
+    if not _origin_allowed():
+        return _with_cors(jsonify({"error":"origin_not_allowed"})),403
+    key=str(trip_key or "").strip()[:120]
+    if len(key)<20:
+        return _with_cors(jsonify({"error":"invalid_trip_key"})),404
+    with db() as conn:
+        rows=conn.execute("""SELECT b.reference,b.trip_reference,b.stay_date,b.guests,b.price,b.status,b.created_at,b.updated_at,
+        b.host_id,COALESCE(p.name,b.host_id) AS host_name,COALESCE(p.location,'') AS host_location
+        FROM wachauetappe_guest_bookings b
+        LEFT JOIN wachauetappe_partner_accounts p ON p.host_id=b.host_id
+        WHERE b.trip_key=? ORDER BY b.stay_date,b.id""",(key,)).fetchall()
+    if not rows:return _with_cors(jsonify({"error":"trip_not_found"})),404
+    items=[{"reference":r["reference"],"date":r["stay_date"],"hostId":r["host_id"],"name":r["host_name"],"location":r["host_location"],"price":r["price"],"status":r["status"],"updatedAt":r["updated_at"]} for r in rows]
+    confirmed=sum(1 for x in items if x["status"]=="confirmed")
+    declined=sum(1 for x in items if x["status"]=="declined")
+    requested=sum(1 for x in items if x["status"]=="requested")
+    overall="confirmed" if confirmed==len(items) else "needs_alternative" if declined else "pending"
+    known_total=sum(float(x["price"]) for x in items if x["price"] is not None)
+    return _with_cors(jsonify({"ok":True,"tripKey":key,"tripReference":rows[0]["trip_reference"],"overallStatus":overall,"confirmed":confirmed,"declined":declined,"requested":requested,"totalNights":len(items),"knownTotal":round(known_total,2),"items":items})),200
 
 
 @app.route("/api/guest-inquiries", methods=["OPTIONS"])

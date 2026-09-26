@@ -31,6 +31,8 @@ from projectos_winter_gateway import app  # noqa: F401,E402
 # Importing these modules registers their routes on that same app instance.
 import guest_booking_gateway  # noqa: F401,E402
 import partner_portal_gateway  # noqa: F401,E402
+from wachauetappe_notifications import init_wachauetappe_notifications  # noqa: E402
+from wachauetappe_operations import init_wachauetappe_operations  # noqa: E402
 import app as legacy_app  # noqa: E402
 from demand_analytics import init_demand_analytics  # noqa: E402
 from master_calendar_desktop_api import init_master_calendar_desktop_api  # noqa: E402
@@ -38,6 +40,7 @@ from booking_connectivity import init_booking_connectivity  # noqa: E402
 from booking_guest_sync import init_booking_guest_sync  # noqa: E402
 from zab_control_center_v3 import init_zab_control_center_v3  # noqa: E402
 
+init_wachauetappe_notifications(app, legacy_app.db)
 init_demand_analytics(app, legacy_app.db, legacy_app.require_admin)
 
 PUBLIC_SITE_ORIGIN = "https://topdiveair-sketch.github.io"
@@ -88,6 +91,9 @@ def _desktop_admin_ok() -> bool:
     if not expected or not supplied:
         return False
     return hmac.compare_digest(str(expected), str(supplied))
+
+
+init_wachauetappe_operations(app, legacy_app.db, legacy_app.require_admin, _desktop_admin_ok)
 
 
 # RAINsoft CENTRAL uses the same DPAPI-protected Railway admin credential as
@@ -468,10 +474,15 @@ def wachauetappe_production_health():
     control_center_v3_ok = bool(app.extensions.get("zab_control_center_v3"))
     booking_connectivity_ok = bool(app.extensions.get("zab_booking_connectivity_initialized"))
     booking_guest_sync_ok = bool(app.extensions.get("zab_booking_guest_sync_initialized"))
+    we_notifications_ok = bool(app.extensions.get("wachauetappe_notifications_initialized"))
+    we_operations_ok = bool(app.extensions.get("wachauetappe_operations_initialized"))
+    we_trip_api_ok = any(rule.rule == "/api/guest-trips/<trip_key>" for rule in app.url_map.iter_rules())
+    we_partner_bookings_ok = any(rule.rule == "/api/partner/bookings" for rule in app.url_map.iter_rules())
     ok = (
         live_ok and pricing_ok and price_api_ok and analytics_ok and os_analytics_ok
         and central_demand_ok and master_calendar_ok and desktop_calendar_api_ok
         and control_center_v3_ok and booking_connectivity_ok and booking_guest_sync_ok
+        and we_notifications_ok and we_operations_ok and we_trip_api_ok and we_partner_bookings_ok
     )
     return {
         "ok": ok,
@@ -490,6 +501,10 @@ def wachauetappe_production_health():
         "zab_control_center_v3": control_center_v3_ok,
         "booking_connectivity_adapter": booking_connectivity_ok,
         "booking_guest_sync": booking_guest_sync_ok,
+        "wachauetappe_notifications": we_notifications_ok,
+        "wachauetappe_operations": we_operations_ok,
+        "wachauetappe_trip_api": we_trip_api_ok,
+        "wachauetappe_partner_booking_inbox": we_partner_bookings_ok,
         "pricing_rates": pricing_rates,
     }, 200 if ok else 503
 

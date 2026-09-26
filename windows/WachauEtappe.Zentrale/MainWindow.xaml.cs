@@ -52,8 +52,9 @@ public partial class MainWindow : Window
     {
         if(sender is not Button button||button.Tag is not string page)return;
         PageTitle.Text=page;
-        if(page is "Wanderkarte" or "Verfügbarkeit" or "Unterkunft" or "Routenplaner" or "Buchungen" or "Gastgeber")
+        if(page is "Wanderkarte" or "Verfügbarkeit" or "Unterkunft" or "Routenplaner" or "Buchungen" or "Gastgeber" or "Live Operations")
             await SyncLiveStateAsync();
+        if(page=="Live Operations"){new WachauOperationsWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Wanderkarte"){new WanderMapWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Unterkunft"){new BookingWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}
         if(page=="Buchungen"){new BookingManagementWindow{Owner=this}.ShowDialog();RefreshDashboard();return;}

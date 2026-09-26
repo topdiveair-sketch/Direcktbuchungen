@@ -12,6 +12,7 @@ Eine zentrale Betreiberoberflaeche fuer:
 - Gepaecktransporte
 - Stornos
 - Kandidaten/Partnergewinnung
+- Live Operations: Reise-Fortschritt, Ersatzbedarf, Partner-Leads, Funnel, vermittelter Buchungswert und rechnerische Provision
 
 ## Architektur
 - Windows Desktop: .NET + WPF
