@@ -392,13 +392,32 @@ def notify_successful_paid_booking(response):
 
 @app.get("/health/deploy")
 def railway_deploy_health():
-    """Return the checkout revision currently running."""
+    """Return a secret-safe production readiness snapshot."""
     configured_merchant_email = os.environ.get("PAYPAL_EMAIL", "").strip().lower()
+    try:
+        with db() as conn:
+            settings = {row["key"]: row["value"] for row in conn.execute("SELECT key,value FROM site_settings")}
+            ical = conn.execute("SELECT import_url FROM ical_settings WHERE room='Bachblick'").fetchone()
+        smtp_configured = all(str(settings.get(k, "")).strip() for k in ("smtp_host","smtp_user","smtp_password"))
+        ical_configured = bool(ical and str(ical["import_url"] or "").strip())
+    except Exception:
+        settings = {}
+        smtp_configured = False
+        ical_configured = False
+    bank_transfer_configured = bool(
+        os.environ.get("BANK_ACCOUNT_HOLDER", "").strip()
+        and os.environ.get("BANK_IBAN", "").strip()
+    )
+    public_site = os.environ.get("PUBLIC_SITE_URL", "").strip().rstrip("/")
     return {
         "status": "ok",
         "paypal_checkout": bool(app.extensions.get("zab_paypal_checkout_enabled")),
         "paypal_merchant_email_match": configured_merchant_email == EXPECTED_PAYPAL_MERCHANT_EMAIL,
         "paid_guest_email": bool(app.extensions.get("zab_send_paid_guest_confirmation")),
+        "smtp_configured": smtp_configured,
+        "bank_transfer_configured": bank_transfer_configured,
+        "ical_configured": ical_configured,
+        "official_public_site": public_site in {"https://zuhauseambach-wachau.at","https://www.zuhauseambach-wachau.at"},
         "provider_monitor": bool(app.extensions.get("zab_provider_monitor_initialized")),
         "provider_radar": bool(app.extensions.get("zab_provider_radar_initialized")),
         "master_calendar": bool(app.extensions.get("zab_master_calendar_initialized")),
