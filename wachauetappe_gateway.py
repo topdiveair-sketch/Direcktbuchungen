@@ -472,10 +472,15 @@ def wachauetappe_production_health():
     control_center_v3_ok = bool(app.extensions.get("zab_control_center_v3"))
     booking_connectivity_ok = bool(app.extensions.get("zab_booking_connectivity_initialized"))
     booking_guest_sync_ok = bool(app.extensions.get("zab_booking_guest_sync_initialized"))
+    we_notifications_ok = bool(app.extensions.get("wachauetappe_notifications_initialized"))
+    we_operations_ok = bool(app.extensions.get("wachauetappe_operations_initialized"))
+    we_trip_api_ok = any(rule.rule == "/api/guest-trips/<trip_key>" for rule in app.url_map.iter_rules())
+    we_partner_bookings_ok = any(rule.rule == "/api/partner/bookings" for rule in app.url_map.iter_rules())
     ok = (
         live_ok and pricing_ok and price_api_ok and analytics_ok and os_analytics_ok
         and central_demand_ok and master_calendar_ok and desktop_calendar_api_ok
         and control_center_v3_ok and booking_connectivity_ok and booking_guest_sync_ok
+        and we_notifications_ok and we_operations_ok and we_trip_api_ok and we_partner_bookings_ok
     )
     return {
         "ok": ok,
@@ -494,6 +499,10 @@ def wachauetappe_production_health():
         "zab_control_center_v3": control_center_v3_ok,
         "booking_connectivity_adapter": booking_connectivity_ok,
         "booking_guest_sync": booking_guest_sync_ok,
+        "wachauetappe_notifications": we_notifications_ok,
+        "wachauetappe_operations": we_operations_ok,
+        "wachauetappe_trip_api": we_trip_api_ok,
+        "wachauetappe_partner_booking_inbox": we_partner_bookings_ok,
         "pricing_rates": pricing_rates,
     }, 200 if ok else 503
 
