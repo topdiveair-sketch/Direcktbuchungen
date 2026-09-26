@@ -539,6 +539,40 @@
 <div class="mobile-conversion-bar"><span id="stickyLabel">Verfügbarkeit &amp; Preis</span><a href="#booking" id="stickyCta">Prüfen</a></div>
 
 <script src="{{ url_for('static', filename='js/app.js') }}?v=20260921-11"></script>
+<script>
+(function(){
+  const lang=new URLSearchParams(location.search).get("lang");
+  if(!["cs","sk"].includes(lang)) return;
+  document.documentElement.lang=lang;
+  const T={
+    cs:{
+      labels:["Příjezd","Odjezd","Noci","Osoby"],check:"OVĚŘIT DOSTUPNOST",services:"Přidat k pobytu",servicesTitle:"Snídaně, svačina do Wachau a přeprava zavazadel",room:"Zahradní pokoj",roomText:"Klidný dvoulůžkový pokoj s příjemnou atmosférou.",features:"Dvoulůžko · vlastní koupelna · Wi-Fi · klidná poloha",total:"Celková cena",guest:"Údaje hosta",first:"Jméno",last:"Příjmení",phone:"Telefon",msg:"Přání nebo zpráva",coupon:"Slevový kód",payment:"Způsob platby",bank:"Bankovní převod",onsite:"Platba při příjezdu",submit:"REZERVOVAT PŘÍMO",note:"Poptávka se ihned zaznamená v kalendáři přímých rezervací. Následně obdržíte osobní potvrzení."
+    },
+    sk:{
+      labels:["Príchod","Odchod","Noci","Osoby"],check:"OVERIŤ DOSTUPNOSŤ",services:"Pridať k pobytu",servicesTitle:"Raňajky, desiata do Wachau a preprava batožiny",room:"Záhradná izba",roomText:"Pokojná dvojlôžková izba s príjemnou atmosférou.",features:"Dvojlôžko · vlastná kúpeľňa · Wi-Fi · pokojná poloha",total:"Celková cena",guest:"Údaje hosťa",first:"Meno",last:"Priezvisko",phone:"Telefón",msg:"Želania alebo správa",coupon:"Zľavový kód",payment:"Spôsob platby",bank:"Bankový prevod",onsite:"Platba pri príchode",submit:"REZERVOVAŤ PRIAMO",note:"Požiadavka sa ihneď zaznamená v kalendári priamych rezervácií. Následne dostanete osobné potvrdenie."
+    }
+  }[lang];
+  const labels=[...document.querySelectorAll(".booking-grid label")];
+  T.labels.forEach((v,i)=>{if(labels[i]) labels[i].childNodes[0].nodeValue=v+"\n";});
+  const check=document.getElementById("checkAvailability"); if(check) check.textContent=T.check;
+  const sh=document.querySelector(".service-heading span"); if(sh) sh.textContent=T.services;
+  const sht=document.querySelector(".service-heading strong"); if(sht) sht.textContent=T.servicesTitle;
+  const roomTitle=document.querySelector(".room-copy>strong"); if(roomTitle) roomTitle.textContent=T.room;
+  const roomSmall=document.querySelector(".room-copy>small"); if(roomSmall) roomSmall.textContent=T.roomText;
+  const roomFeatures=document.querySelector(".room-features"); if(roomFeatures) roomFeatures.textContent=T.features;
+  const total=document.querySelector(".total-row>span"); if(total) total.childNodes[0].nodeValue=T.total+" ";
+  const gh=document.querySelector("#guestArea h3"); if(gh) gh.textContent=T.guest;
+  const gl=[...document.querySelectorAll("#guestArea .guest-grid label")];
+  [T.first,T.last,"E-mail",T.phone].forEach((v,i)=>{if(gl[i]) gl[i].childNodes[0].nodeValue=v;});
+  const ta=document.querySelector('#guestArea label:has(textarea)'); if(ta) ta.childNodes[0].nodeValue=T.msg+"\n";
+  const cc=document.querySelector('#guestArea label:has(#couponCode)'); if(cc) cc.childNodes[0].nodeValue=T.coupon;
+  const payh=[...document.querySelectorAll("#guestArea h3")].find(x=>x!==gh); if(payh) payh.textContent=T.payment;
+  const payLabels=[...document.querySelectorAll(".payment-grid label strong")]; if(payLabels[1]) payLabels[1].textContent=T.bank; if(payLabels[2]) payLabels[2].textContent=T.onsite;
+  const sub=document.getElementById("bookingSubmit"); if(sub) sub.textContent=T.submit;
+  const note=document.querySelector("#guestArea .legal-note:last-of-type"); if(note) note.textContent=T.note;
+})();
+</script>
+
 <script id="image-fallback-hardened-20260923">
 (function(){
   const fallback="{{ url_for('static', filename='images/gartenzimmer-04-web.jpg') }}?v=20260923-hq3";
