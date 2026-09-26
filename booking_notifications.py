@@ -9,7 +9,7 @@ from email.message import EmailMessage
 from flask import jsonify, request
 
 
-PAID_GUEST_SUBJECT = "Buchung bestätigt – Zuhause am Bach"
+PAID_GUEST_SUBJECT = "Buchung bestätigt / Booking confirmed – Zuhause am Bach"
 PUBLIC_CONTACT_EMAIL = "Zuhause.am.Bach@outlook.com"
 
 
@@ -309,7 +309,7 @@ def init_booking_notifications(app, db):
             "Important: This is not yet a binding booking confirmation. We will review your request personally and contact you afterwards.\n\n"
             "Herzliche Grüße / Kind regards\nZuhause am Bach – Wachau"
         )
-        ok_guest, _ = smtp_send(email, "Ihre Anfrage ist angekommen – Zuhause am Bach", guest_body)
+        ok_guest, _ = smtp_send(email, "Anfrage erhalten / Request received – Zuhause am Bach", guest_body)
 
         if not ok_owner:
             return with_cors(
