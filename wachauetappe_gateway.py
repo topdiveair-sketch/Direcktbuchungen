@@ -461,6 +461,44 @@ def central_demand_summary():
     return payload, 200, {"Cache-Control": "no-store"}
 
 
+@app.get("/health/wachauetappe_market_ready")
+def wachauetappe_market_ready():
+    required_env = {
+        "ADMIN_PASSWORD": bool(os.environ.get("ADMIN_PASSWORD")),
+        "SECRET_KEY": bool(os.environ.get("SECRET_KEY")),
+        "SMTP_HOST": bool(os.environ.get("SMTP_HOST")),
+        "SMTP_PORT": bool(os.environ.get("SMTP_PORT")),
+        "SMTP_USER": bool(os.environ.get("SMTP_USER")),
+        "SMTP_PASSWORD": bool(os.environ.get("SMTP_PASSWORD")),
+        "SMTP_SENDER": bool(os.environ.get("SMTP_SENDER")),
+    }
+    required_routes = [
+        "/api/guest-bookings",
+        "/api/guest-trips/<trip_key>",
+        "/api/partner/bookings",
+        "/api/central/wachauetappe-operations",
+        "/api/central/wachauetappe-bookings",
+        "/api/central/wachauetappe-partners",
+        "/api/central/wachauetappe-leads",
+    ]
+    route_set = {rule.rule for rule in app.url_map.iter_rules()}
+    route_checks = {route: route in route_set for route in required_routes}
+    checks = {
+        "environment": required_env,
+        "routes": route_checks,
+        "notifications_initialized": bool(app.extensions.get("wachauetappe_notifications_initialized")),
+        "operations_initialized": bool(app.extensions.get("wachauetappe_operations_initialized")),
+    }
+    ok = all(required_env.values()) and all(route_checks.values()) and checks["notifications_initialized"] and checks["operations_initialized"]
+    missing = [name for name,value in required_env.items() if not value]
+    return {
+        "ok": ok,
+        "market_ready": ok,
+        "missing_configuration": missing,
+        "checks": checks,
+    }, 200 if ok else 503, {"Cache-Control": "no-store"}
+
+
 @app.get("/health/wachauetappe_production")
 def wachauetappe_production_health():
     live_ok = _has_live_state_route()
