@@ -1,7 +1,6 @@
+from __future__ import annotations
 
-from __future__ import time
-import annotations
-
+import time
 import hmac
 import csv
 import io
