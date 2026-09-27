@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+import threading
 import hmac
 import csv
 import io
@@ -75,6 +76,21 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             status TEXT,
             created_at TEXT
         );
+        CREATE TABLE IF NOT EXISTS email_outbox(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            dedupe_key TEXT NOT NULL UNIQUE,
+            booking_id INTEGER NOT NULL,
+            role TEXT NOT NULL,
+            recipient TEXT NOT NULL,
+            subject TEXT NOT NULL,
+            body TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending',
+            attempts INTEGER NOT NULL DEFAULT 0,
+            last_error TEXT DEFAULT '',
+            provider_message_id TEXT DEFAULT '',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
         CREATE TABLE IF NOT EXISTS faq(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             question TEXT NOT NULL,
@@ -135,95 +151,27 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         return configured_email, configured_name
 
     def smtp_send(to, subject, body):
-        """Send transactional booking mail over HTTPS.
-
-        Resend is the primary provider because Railway can reach HTTPS reliably
-        even when outbound SMTP ports are unavailable. Brevo remains a fallback
-        during DNS propagation or a temporary Resend incident.
-        """
-        sender_email = (
-            os.environ.get("MAIL_SENDER_EMAIL", "").strip()
-            or "buchung@zuhauseambach-wachau.at"
-        )
+        """Reliable HTTPS mail transport with explicit provider control."""
         sender_name = os.environ.get("MAIL_SENDER_NAME", "Zuhause am Bach – Wachau").strip()
         reply_to = (
             os.environ.get("MAIL_REPLY_TO", "").strip()
             or os.environ.get("BOOKING_OWNER_EMAIL", "").strip()
             or "zuhause.am.bach@outlook.com"
         )
+        last_reason = "no_provider"
 
-        resend_key = os.environ.get("RESEND_API_KEY", "").strip()
-        if resend_key:
-            payload = {
-                "from": f"{sender_name} <{sender_email}>",
-                "to": [to],
-                "subject": subject,
-                "text": body,
-                "reply_to": [reply_to],
-                "tags": [
-                    {"name": "app", "value": "zuhause-am-bach"},
-                    {"name": "type", "value": "booking"},
-                ],
-            }
-
-            last_reason = "resend_unknown"
-            for attempt in (1, 2):
-                try:
-                    response = requests.post(
-                        "https://api.resend.com/emails",
-                        headers={
-                            "Authorization": f"Bearer {resend_key}",
-                            "Content-Type": "application/json",
-                        },
-                        json=payload,
-                        timeout=(4, 10),
-                    )
-                    if 200 <= int(response.status_code) < 300:
-                        data = response.json() if response.content else {}
-                        message_id = str(data.get("id", "")).strip()
-                        app.logger.warning(
-                            "mail_send_ok transport=resend recipient=%s sender=%s subject=%s message_id=%s attempt=%s",
-                            to, sender_email, subject, message_id or "-", attempt,
-                        )
-                        return True, f"gesendet_resend:{message_id}" if message_id else "gesendet_resend"
-
-                    last_reason = f"resend_failed_{response.status_code}"
-                    app.logger.error(
-                        "mail_send_failed transport=resend recipient=%s sender=%s status=%s body=%s attempt=%s",
-                        to, sender_email, response.status_code, response.text[:500], attempt,
-                    )
-                    if response.status_code not in (408, 429, 500, 502, 503, 504):
-                        break
-                except requests.Timeout:
-                    last_reason = "resend_timeout"
-                    app.logger.error(
-                        "mail_send_failed transport=resend reason=timeout recipient=%s attempt=%s",
-                        to, attempt,
-                    )
-                except requests.RequestException as exc:
-                    last_reason = "resend_unreachable"
-                    app.logger.error(
-                        "mail_send_failed transport=resend reason=unreachable recipient=%s error=%s attempt=%s",
-                        to, str(exc)[:200], attempt,
-                    )
-                if attempt == 1:
-                    time.sleep(1)
-        else:
-            last_reason = "resend_key_missing"
-            app.logger.error("mail_send_failed transport=resend reason=key_missing recipient=%s", to)
-
-        # Temporary fallback while the new sending domain propagates.
         brevo_key = os.environ.get("BREVO_API_KEY", "").strip()
         if brevo_key:
-            fallback_sender, fallback_name = brevo_sender_email(
-                brevo_key,
+            configured_sender = (
                 os.environ.get("BREVO_SENDER_EMAIL", "").strip()
                 or os.environ.get("BOOKING_OWNER_EMAIL", "").strip()
-                or sender_email,
-                sender_name,
+                or "zuhause.am.bach@outlook.com"
+            )
+            brevo_sender, brevo_name = brevo_sender_email(
+                brevo_key, configured_sender, sender_name
             )
             payload = {
-                "sender": {"name": fallback_name, "email": fallback_sender},
+                "sender": {"name": brevo_name, "email": brevo_sender},
                 "to": [{"email": to}],
                 "replyTo": {"name": sender_name, "email": reply_to},
                 "subject": subject,
@@ -242,22 +190,139 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                     timeout=(4, 8),
                 )
                 if 200 <= int(response.status_code) < 300:
+                    data = response.json() if response.content else {}
+                    message_id = str(data.get("messageId", "")).strip()
                     app.logger.warning(
-                        "mail_send_ok transport=brevo_fallback recipient=%s sender=%s subject=%s",
-                        to, fallback_sender, subject,
+                        "mail_send_ok transport=brevo recipient=%s sender=%s subject=%s message_id=%s",
+                        to, brevo_sender, subject, message_id or "-",
                     )
-                    return True, "gesendet_brevo_fallback"
+                    return True, f"gesendet_brevo:{message_id}" if message_id else "gesendet_brevo"
+                last_reason = f"brevo_failed_{response.status_code}"
                 app.logger.error(
-                    "mail_send_failed transport=brevo_fallback recipient=%s status=%s body=%s prior_reason=%s",
-                    to, response.status_code, response.text[:500], last_reason,
+                    "mail_send_failed transport=brevo recipient=%s status=%s body=%s",
+                    to, response.status_code, response.text[:500],
                 )
+            except requests.Timeout:
+                last_reason = "brevo_timeout"
+                app.logger.error("mail_send_failed transport=brevo reason=timeout recipient=%s", to)
             except requests.RequestException as exc:
+                last_reason = "brevo_unreachable"
                 app.logger.error(
-                    "mail_send_failed transport=brevo_fallback recipient=%s error=%s prior_reason=%s",
-                    to, str(exc)[:200], last_reason,
+                    "mail_send_failed transport=brevo reason=unreachable recipient=%s error=%s",
+                    to, str(exc)[:200],
                 )
 
+        if os.environ.get("MAIL_PROVIDER_ALLOW_RESEND", "0").strip() == "1":
+            resend_key = os.environ.get("RESEND_API_KEY", "").strip()
+            sender_email = (
+                os.environ.get("MAIL_SENDER_EMAIL", "").strip()
+                or "buchung@zuhauseambach-wachau.at"
+            )
+            if resend_key:
+                payload = {
+                    "from": f"{sender_name} <{sender_email}>",
+                    "to": [to],
+                    "subject": subject,
+                    "text": body,
+                    "reply_to": [reply_to],
+                    "tags": [
+                        {"name": "app", "value": "zuhause-am-bach"},
+                        {"name": "type", "value": "booking"},
+                    ],
+                }
+                try:
+                    response = requests.post(
+                        "https://api.resend.com/emails",
+                        headers={
+                            "Authorization": f"Bearer {resend_key}",
+                            "Content-Type": "application/json",
+                        },
+                        json=payload,
+                        timeout=(4, 8),
+                    )
+                    if 200 <= int(response.status_code) < 300:
+                        data = response.json() if response.content else {}
+                        message_id = str(data.get("id", "")).strip()
+                        app.logger.warning(
+                            "mail_send_ok transport=resend recipient=%s sender=%s subject=%s message_id=%s",
+                            to, sender_email, subject, message_id or "-",
+                        )
+                        return True, f"gesendet_resend:{message_id}" if message_id else "gesendet_resend"
+                    last_reason = f"resend_failed_{response.status_code}"
+                    app.logger.error(
+                        "mail_send_failed transport=resend recipient=%s status=%s body=%s",
+                        to, response.status_code, response.text[:500],
+                    )
+                except requests.Timeout:
+                    last_reason = "resend_timeout"
+                except requests.RequestException:
+                    last_reason = "resend_unreachable"
+
         return False, last_reason
+
+    def _queue_mail(booking_id, role, recipient, subject, body):
+        dedupe_key = f"{booking_id}:{role}:{subject}"
+        now = datetime.now().isoformat(timespec="seconds")
+        with db() as conn:
+            conn.execute(
+                """INSERT INTO email_outbox
+                   (dedupe_key,booking_id,role,recipient,subject,body,status,attempts,last_error,
+                    provider_message_id,created_at,updated_at)
+                   VALUES(?,?,?,?,?,?,'pending',0,'','',?,?)
+                   ON CONFLICT(dedupe_key) DO UPDATE SET
+                     recipient=excluded.recipient,
+                     body=excluded.body,
+                     updated_at=excluded.updated_at,
+                     status=CASE WHEN email_outbox.status='sent' THEN 'sent' ELSE 'pending' END""",
+                (dedupe_key, booking_id, role, recipient, subject, body, now, now),
+            )
+        return dedupe_key
+
+    def _deliver_outbox_row(row):
+        ok, reason = smtp_send(row["recipient"], row["subject"], row["body"])
+        now = datetime.now().isoformat(timespec="seconds")
+        provider_message_id = ""
+        if ok and ":" in reason:
+            provider_message_id = reason.split(":", 1)[1]
+        with db() as conn:
+            conn.execute(
+                """UPDATE email_outbox
+                   SET status=?, attempts=attempts+1, last_error=?,
+                       provider_message_id=?, updated_at=?
+                   WHERE id=?""",
+                ("sent" if ok else "pending", "" if ok else reason,
+                 provider_message_id, now, row["id"]),
+            )
+            conn.execute(
+                "INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
+                (row["booking_id"], row["recipient"], row["subject"], reason, now),
+            )
+        return ok, reason
+
+    def process_mail_outbox(limit=20):
+        with db() as conn:
+            rows = conn.execute(
+                """SELECT * FROM email_outbox
+                   WHERE status='pending' AND attempts < 12
+                   ORDER BY id LIMIT ?""",
+                (int(limit),),
+            ).fetchall()
+        sent = 0
+        for row in rows:
+            ok, _ = _deliver_outbox_row(row)
+            if ok:
+                sent += 1
+            else:
+                time.sleep(1)
+        return sent, len(rows)
+
+    def _mail_retry_worker():
+        while True:
+            try:
+                process_mail_outbox(limit=10)
+            except Exception:
+                app.logger.exception("mail_retry_worker_failed")
+            time.sleep(60)
 
     def ensure_booking_tokens(booking_id):
         with db() as conn:
@@ -393,30 +458,37 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         owner_recipient = forced_recipient or owner
         guest_recipient = booking["email"]
 
-        app.logger.warning("booking_mail_owner_start booking_id=%s recipient=%s", booking_id, owner_recipient)
-        ok_owner, msg_owner = smtp_send(owner_recipient, owner_subject, owner_body)
-        app.logger.warning("booking_mail_guest_start booking_id=%s recipient=%s original_guest=%s", booking_id, guest_recipient, booking["email"])
-        ok_guest, msg_guest = smtp_send(guest_recipient, guest_subject, guest_body)
+        app.logger.warning("booking_mail_queue booking_id=%s owner=%s guest=%s", booking_id, owner_recipient, guest_recipient)
+        owner_key = _queue_mail(booking_id, "owner", owner_recipient, owner_subject, owner_body)
+        guest_key = _queue_mail(booking_id, "guest", guest_recipient, guest_subject, guest_body)
+
+        results = {}
+        with db() as conn:
+            rows = conn.execute(
+                "SELECT * FROM email_outbox WHERE dedupe_key IN (?,?) ORDER BY id",
+                (owner_key, guest_key),
+            ).fetchall()
+        for row in rows:
+            if row["status"] == "sent":
+                results[row["role"]] = (True, "already_sent")
+            else:
+                results[row["role"]] = _deliver_outbox_row(row)
+
+        ok_owner, msg_owner = results.get("owner", (False, "owner_missing"))
+        ok_guest, msg_guest = results.get("guest", (False, "guest_missing"))
         app.logger.warning(
             "booking_mail_results booking_id=%s guest_ok=%s guest_status=%s owner_ok=%s owner_status=%s",
             booking_id, ok_guest, msg_guest, ok_owner, msg_owner,
         )
-
-        created_at = datetime.now().isoformat(timespec="seconds")
-        with db() as conn:
-            conn.execute(
-                "INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
-                (booking_id, guest_recipient, guest_subject, msg_guest, created_at),
-            )
-            conn.execute(
-                "INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
-                (booking_id, owner_recipient, owner_subject, msg_owner, created_at),
-            )
         return ok_guest and ok_owner
 
     app.extensions["zab_send_confirmation"] = send_booking_confirmation
     app.extensions["zab_ensure_tokens"] = ensure_booking_tokens
     app.extensions["zab_smtp_send"] = smtp_send
+    app.extensions["zab_process_mail_outbox"] = process_mail_outbox
+    if not app.extensions.get("zab_mail_retry_worker_started"):
+        app.extensions["zab_mail_retry_worker_started"] = True
+        threading.Thread(target=_mail_retry_worker, name="zab-mail-retry", daemon=True).start()
 
     def _os_sync_authorized():
         expected = os.environ.get("OS_SYNC_TOKEN", "").strip()
