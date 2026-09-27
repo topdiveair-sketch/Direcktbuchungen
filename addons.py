@@ -135,25 +135,65 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         return configured_email, configured_name
 
     def smtp_send(to, subject, body):
-        """Send transactional mail through Brevo HTTPS with one retry."""
+        """Send transactional mail. Prefer configured SMTP; use Brevo as fallback."""
         cfg = settings()
-        brevo_key = os.environ.get("BREVO_API_KEY", "").strip()
         sender_email = (
             os.environ.get("MAIL_SENDER_EMAIL", "").strip()
+            or os.environ.get("SMTP_SENDER", "").strip()
             or cfg.get("email", "").strip()
             or PAYPAL_EMAIL
         )
         sender_name = os.environ.get("MAIL_SENDER_NAME", "Zuhause am Bach – Wachau").strip()
 
+        smtp_host = os.environ.get("SMTP_HOST", "").strip()
+        smtp_user = os.environ.get("SMTP_USER", "").strip()
+        smtp_password = os.environ.get("SMTP_PASSWORD", "")
+        smtp_sender = os.environ.get("SMTP_SENDER", "").strip() or sender_email
+        try:
+            smtp_port = int(os.environ.get("SMTP_PORT", "587") or "587")
+        except ValueError:
+            smtp_port = 587
+
+        if smtp_host and smtp_user and smtp_password and smtp_sender:
+            try:
+                msg = EmailMessage()
+                msg["From"] = smtp_sender
+                msg["To"] = to
+                msg["Subject"] = subject
+                msg.set_content(body)
+
+                if smtp_port == 465:
+                    with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=15) as smtp:
+                        smtp.login(smtp_user, smtp_password)
+                        smtp.send_message(msg)
+                else:
+                    with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as smtp:
+                        smtp.ehlo()
+                        smtp.starttls()
+                        smtp.ehlo()
+                        smtp.login(smtp_user, smtp_password)
+                        smtp.send_message(msg)
+
+                app.logger.warning(
+                    "mail_send_ok transport=smtp recipient=%s sender=%s host=%s port=%s subject=%s",
+                    to, smtp_sender, smtp_host, smtp_port, subject,
+                )
+                return True, "gesendet_smtp"
+            except Exception as exc:
+                app.logger.exception(
+                    "mail_send_failed transport=smtp recipient=%s sender=%s host=%s port=%s error=%s",
+                    to, smtp_sender, smtp_host, smtp_port, str(exc)[:300],
+                )
+
+        brevo_key = os.environ.get("BREVO_API_KEY", "").strip()
         if not brevo_key:
-            app.logger.error("mail_send_failed reason=brevo_api_key_missing recipient=%s", to)
-            return False, "brevo_api_key_missing"
+            app.logger.error("mail_send_failed recipient=%s reason=no_working_transport", to)
+            return False, "no_working_transport"
         if not sender_email:
             app.logger.error("mail_send_failed reason=sender_missing recipient=%s", to)
             return False, "sender_missing"
 
         sender_email, sender_name = brevo_sender_email(brevo_key, sender_email, sender_name)
-
         payload = {
             "sender": {"name": sender_name, "email": sender_email},
             "to": [{"email": to}],
@@ -178,10 +218,10 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                 )
                 if 200 <= int(response.status_code) < 300:
                     app.logger.warning(
-                        "mail_send_ok recipient=%s sender=%s subject=%s attempt=%s",
+                        "mail_send_ok transport=brevo recipient=%s sender=%s subject=%s attempt=%s",
                         to, sender_email, subject, attempt,
                     )
-                    return True, "gesendet"
+                    return True, "gesendet_brevo"
 
                 reason = (
                     "mail_api_auth_failed" if response.status_code in (401, 403)
@@ -190,7 +230,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                 )
                 last_reason = reason
                 app.logger.error(
-                    "mail_send_failed reason=%s recipient=%s sender=%s status=%s body=%s attempt=%s",
+                    "mail_send_failed transport=brevo reason=%s recipient=%s sender=%s status=%s body=%s attempt=%s",
                     reason, to, sender_email, response.status_code, response.text[:500], attempt,
                 )
                 if response.status_code not in (429, 500, 502, 503, 504):
@@ -198,60 +238,18 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             except requests.Timeout:
                 last_reason = "mail_api_timeout"
                 app.logger.error(
-                    "mail_send_failed reason=mail_api_timeout recipient=%s attempt=%s",
+                    "mail_send_failed transport=brevo reason=mail_api_timeout recipient=%s attempt=%s",
                     to, attempt,
                 )
             except requests.RequestException as exc:
                 last_reason = "mail_api_unreachable"
                 app.logger.error(
-                    "mail_send_failed reason=mail_api_unreachable recipient=%s error=%s attempt=%s",
+                    "mail_send_failed transport=brevo reason=mail_api_unreachable recipient=%s error=%s attempt=%s",
                     to, str(exc)[:200], attempt,
                 )
             if attempt == 1:
                 time.sleep(1)
 
-        # Fallback: use configured SMTP transport if the Brevo HTTPS API failed.
-        # This keeps booking notifications working when the API sender/payload is
-        # temporarily rejected but SMTP credentials are valid.
-        smtp_host = os.environ.get("SMTP_HOST", "").strip()
-        smtp_user = os.environ.get("SMTP_USER", "").strip()
-        smtp_password = os.environ.get("SMTP_PASSWORD", "")
-        smtp_sender = os.environ.get("SMTP_SENDER", "").strip() or sender_email
-        try:
-            smtp_port = int(os.environ.get("SMTP_PORT", "587") or "587")
-        except ValueError:
-            smtp_port = 587
-
-        if smtp_host and smtp_user and smtp_password and smtp_sender:
-            try:
-                msg = EmailMessage()
-                msg["From"] = smtp_sender
-                msg["To"] = to
-                msg["Subject"] = subject
-                msg.set_content(body)
-                with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as smtp:
-                    smtp.ehlo()
-                    if smtp_port != 465:
-                        smtp.starttls()
-                        smtp.ehlo()
-                    smtp.login(smtp_user, smtp_password)
-                    smtp.send_message(msg)
-                app.logger.warning(
-                    "mail_send_ok transport=smtp recipient=%s sender=%s subject=%s",
-                    to, smtp_sender, subject,
-                )
-                return True, "gesendet_smtp"
-            except Exception as exc:
-                app.logger.exception(
-                    "mail_send_failed transport=smtp recipient=%s sender=%s prior_reason=%s error=%s",
-                    to, smtp_sender, last_reason, str(exc)[:300],
-                )
-                return False, f"{last_reason};smtp_fallback_failed"
-
-        app.logger.error(
-            "mail_send_failed recipient=%s reason=%s smtp_fallback=not_configured",
-            to, last_reason,
-        )
         return False, last_reason
 
     def ensure_booking_tokens(booking_id):
