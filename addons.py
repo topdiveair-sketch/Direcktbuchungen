@@ -5,6 +5,7 @@ import csv
 import io
 import json
 import os
+import logging
 import shutil
 import smtplib
 import sqlite3
@@ -103,6 +104,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             return conn.execute("SELECT * FROM bookings WHERE public_token=? OR cancel_token=?", (token, token)).fetchone()
 
     def smtp_send(to, subject, body):
+        """Send transactional mail through Brevo HTTPS only in production."""
         cfg = settings()
         brevo_key = os.environ.get("BREVO_API_KEY", "").strip()
         sender_email = (
@@ -112,62 +114,51 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         )
         sender_name = os.environ.get("MAIL_SENDER_NAME", "Zuhause am Bach – Wachau").strip()
 
-        if brevo_key:
-            payload = {
-                "sender": {"name": sender_name, "email": sender_email},
-                "to": [{"email": to}],
-                "replyTo": {"name": sender_name, "email": sender_email},
-                "subject": subject,
-                "textContent": body,
-                "tags": ["zuhause-am-bach", "booking"],
-            }
-            try:
-                response = requests.post(
-                    "https://api.brevo.com/v3/smtp/email",
-                    headers={
-                        "accept": "application/json",
-                        "api-key": brevo_key,
-                        "content-type": "application/json",
-                    },
-                    json=payload,
-                    timeout=(5, 12),
-                )
-                if 200 <= int(response.status_code) < 300:
-                    return True, "gesendet"
-                if response.status_code in (401, 403):
-                    return False, "mail_api_auth_failed"
-                if response.status_code == 400:
-                    return False, "mail_sender_or_payload_rejected"
-                return False, f"mail_api_failed_{response.status_code}"
-            except requests.Timeout:
-                return False, "mail_api_timeout"
-            except requests.RequestException:
-                return False, "mail_api_unreachable"
+        if not brevo_key:
+            logging.error("mail_send_failed reason=brevo_api_key_missing recipient=%s", to)
+            return False, "brevo_api_key_missing"
+        if not sender_email:
+            logging.error("mail_send_failed reason=sender_missing recipient=%s", to)
+            return False, "sender_missing"
 
-        host = cfg.get("smtp_host", "")
-        user = cfg.get("smtp_user", "")
-        password = cfg.get("smtp_password", "")
-        port = int(cfg.get("smtp_port", "587") or 587)
-        sender = cfg.get("smtp_sender", user or cfg.get("email", PAYPAL_EMAIL))
-        if not host or not user or not password:
-            return False, "mail_provider_not_configured"
-        msg = EmailMessage()
-        msg["From"] = sender
-        msg["To"] = to
-        msg["Subject"] = subject
-        msg.set_content(body)
+        payload = {
+            "sender": {"name": sender_name, "email": sender_email},
+            "to": [{"email": to}],
+            "replyTo": {"name": sender_name, "email": sender_email},
+            "subject": subject,
+            "textContent": body,
+            "tags": ["zuhause-am-bach", "booking"],
+        }
         try:
-            with smtplib.SMTP(host, port, timeout=20) as server:
-                server.starttls()
-                server.login(user, password)
-                server.send_message(msg)
-            return True, "gesendet"
-        except smtplib.SMTPAuthenticationError:
-            return False, "smtp_auth_failed"
-        except (smtplib.SMTPException, OSError, TimeoutError):
-            return False, "smtp_delivery_failed"
-        except Exception:
-            return False, "smtp_delivery_failed"
+            response = requests.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={
+                    "accept": "application/json",
+                    "api-key": brevo_key,
+                    "content-type": "application/json",
+                },
+                json=payload,
+                timeout=(4, 8),
+            )
+            if 200 <= int(response.status_code) < 300:
+                logging.info("mail_send_ok recipient=%s subject=%s", to, subject)
+                return True, "gesendet"
+            reason = (
+                "mail_api_auth_failed" if response.status_code in (401, 403)
+                else "mail_sender_or_payload_rejected" if response.status_code == 400
+                else f"mail_api_failed_{response.status_code}"
+            )
+            logging.error(
+                "mail_send_failed reason=%s recipient=%s status=%s body=%s",
+                reason, to, response.status_code, response.text[:300],
+            )
+            return False, reason
+        except requests.Timeout:
+            logging.error("mail_send_failed reason=mail_api_timeout recipient=%s", to)
+            return False, "mail_api_timeout"
+        except requests.RequestException as exc:
+            logging.error("mail_send_failed reason=mail_api_unreachable recipient=%s error=%s", to, str(exc)[:200])
+            return False, "mail_api_unreachable"
 
     def ensure_booking_tokens(booking_id):
         with db() as conn:
@@ -280,8 +271,12 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         )
         ok_guest, msg_guest = smtp_send(booking["email"], guest_subject, guest_body)
 
-        owner = cfg.get("email", PAYPAL_EMAIL)
-        owner_subject = f"Neue Direktbuchung: {room_name}"
+        owner = os.environ.get("MAIL_SENDER_EMAIL", "").strip() or cfg.get("email", "").strip() or PAYPAL_EMAIL
+        owner_subject = (
+            f"Neue bestätigte Buchung: {room_name}"
+            if is_confirmed else
+            f"Neue Buchungsanfrage: {room_name}"
+        )
         owner_body = (
             f"{booking['first_name']} {booking['last_name']}\n"
             f"{room_name}\n"
