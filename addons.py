@@ -210,6 +210,48 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             if attempt == 1:
                 time.sleep(1)
 
+        # Fallback: use configured SMTP transport if the Brevo HTTPS API failed.
+        # This keeps booking notifications working when the API sender/payload is
+        # temporarily rejected but SMTP credentials are valid.
+        smtp_host = os.environ.get("SMTP_HOST", "").strip()
+        smtp_user = os.environ.get("SMTP_USER", "").strip()
+        smtp_password = os.environ.get("SMTP_PASSWORD", "")
+        smtp_sender = os.environ.get("SMTP_SENDER", "").strip() or sender_email
+        try:
+            smtp_port = int(os.environ.get("SMTP_PORT", "587") or "587")
+        except ValueError:
+            smtp_port = 587
+
+        if smtp_host and smtp_user and smtp_password and smtp_sender:
+            try:
+                msg = EmailMessage()
+                msg["From"] = smtp_sender
+                msg["To"] = to
+                msg["Subject"] = subject
+                msg.set_content(body)
+                with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as smtp:
+                    smtp.ehlo()
+                    if smtp_port != 465:
+                        smtp.starttls()
+                        smtp.ehlo()
+                    smtp.login(smtp_user, smtp_password)
+                    smtp.send_message(msg)
+                app.logger.warning(
+                    "mail_send_ok transport=smtp recipient=%s sender=%s subject=%s",
+                    to, smtp_sender, subject,
+                )
+                return True, "gesendet_smtp"
+            except Exception as exc:
+                app.logger.exception(
+                    "mail_send_failed transport=smtp recipient=%s sender=%s prior_reason=%s error=%s",
+                    to, smtp_sender, last_reason, str(exc)[:300],
+                )
+                return False, f"{last_reason};smtp_fallback_failed"
+
+        app.logger.error(
+            "mail_send_failed recipient=%s reason=%s smtp_fallback=not_configured",
+            to, last_reason,
+        )
         return False, last_reason
 
     def ensure_booking_tokens(booking_id):
