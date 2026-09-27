@@ -434,6 +434,27 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         if not _os_sync_authorized():
             return jsonify({"ok": False, "error": "unauthorized"}), 401
 
+        # Refresh configured Booking/iCal feeds before returning calendar blocks.
+        # A failed feed refresh must not break booking/mail synchronization; the
+        # last successfully imported blocks remain available as a safe fallback.
+        ical_results = []
+        sync_room_fn = app.extensions.get("zab_sync_room")
+        if sync_room_fn:
+            with db() as conn:
+                rooms_to_sync = [
+                    row["room"]
+                    for row in conn.execute(
+                        "SELECT room FROM ical_settings WHERE TRIM(import_url) <> '' ORDER BY room"
+                    )
+                ]
+            for room_name in rooms_to_sync:
+                try:
+                    count, message = sync_room_fn(room_name)
+                    ical_results.append({"room": room_name, "ok": True, "count": count, "message": message})
+                except Exception as exc:
+                    app.logger.exception("os_sync_ical_refresh_failed room=%s", room_name)
+                    ical_results.append({"room": room_name, "ok": False, "count": 0, "message": str(exc)})
+
         with db() as conn:
             bookings = [
                 dict(row)
@@ -453,13 +474,23 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                        ORDER BY id"""
                 )
             ]
+            external_blocks = [
+                dict(row)
+                for row in conn.execute(
+                    """SELECT id,room,start_date,end_date,source,uid,summary,imported_at
+                       FROM external_blocks
+                       ORDER BY room,start_date,id"""
+                )
+            ]
 
         return jsonify({
             "ok": True,
-            "schema": "zab-os-sync-v1",
+            "schema": "zab-os-sync-v2",
             "generated_at": datetime.now().isoformat(timespec="seconds"),
             "bookings": bookings,
             "mail": mail_rows,
+            "external_blocks": external_blocks,
+            "ical_refresh": ical_results,
         })
 
     @app.get("/internal/resend-booking/<token>/<int:booking_id>")
