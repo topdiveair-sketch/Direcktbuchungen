@@ -47,6 +47,13 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         ensure_column(conn, "bookings", "arrival_time", "TEXT DEFAULT ''")
         ensure_column(conn, "bookings", "guest_note", "TEXT DEFAULT ''")
         ensure_column(conn, "bookings", "onsite_verified_at", "TEXT DEFAULT ''")
+        conn.execute(
+            """UPDATE bookings
+               SET status='inquiry'
+               WHERE payment_method='Vor Ort'
+                 AND status='pending'
+                 AND onsite_verified_at=''"""
+        )
         ensure_column(conn, "bookings", "onsite_verify_expires_at", "TEXT DEFAULT ''")
         ensure_column(conn, "bookings", "onsite_verify_token", "TEXT DEFAULT ''")
         conn.executescript("""
