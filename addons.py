@@ -9,6 +9,7 @@ import shutil
 import smtplib
 import sqlite3
 import urllib.request
+import requests
 import urllib.error
 from datetime import date, datetime
 from email.message import EmailMessage
@@ -120,31 +121,28 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                 "textContent": body,
                 "tags": ["zuhause-am-bach", "booking"],
             }
-            req = urllib.request.Request(
-                "https://api.brevo.com/v3/smtp/email",
-                data=json.dumps(payload).encode("utf-8"),
-                headers={
-                    "accept": "application/json",
-                    "api-key": brevo_key,
-                    "content-type": "application/json",
-                },
-                method="POST",
-            )
             try:
-                with urllib.request.urlopen(req, timeout=20) as response:
-                    if 200 <= int(response.status) < 300:
-                        return True, "gesendet"
-                return False, "mail_api_failed"
-            except urllib.error.HTTPError as exc:
-                if exc.code in (401, 403):
+                response = requests.post(
+                    "https://api.brevo.com/v3/smtp/email",
+                    headers={
+                        "accept": "application/json",
+                        "api-key": brevo_key,
+                        "content-type": "application/json",
+                    },
+                    json=payload,
+                    timeout=(5, 12),
+                )
+                if 200 <= int(response.status_code) < 300:
+                    return True, "gesendet"
+                if response.status_code in (401, 403):
                     return False, "mail_api_auth_failed"
-                if exc.code == 400:
+                if response.status_code == 400:
                     return False, "mail_sender_or_payload_rejected"
-                return False, "mail_api_failed"
-            except (urllib.error.URLError, OSError, TimeoutError):
+                return False, f"mail_api_failed_{response.status_code}"
+            except requests.Timeout:
+                return False, "mail_api_timeout"
+            except requests.RequestException:
                 return False, "mail_api_unreachable"
-            except Exception:
-                return False, "mail_api_failed"
 
         host = cfg.get("smtp_host", "")
         user = cfg.get("smtp_user", "")
