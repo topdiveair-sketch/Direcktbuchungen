@@ -14,7 +14,7 @@ import sqlite3
 import urllib.request
 import requests
 import urllib.error
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from email.message import EmailMessage
 from pathlib import Path
 from secrets import token_urlsafe
@@ -398,7 +398,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             token = booking["onsite_verify_token"] or token_urlsafe(32)
             expires = booking["onsite_verify_expires_at"]
             if not expires or booking["status"] == "expired":
-                expires = (datetime.now() + __import__("datetime").timedelta(hours=2)).isoformat(timespec="seconds")
+                expires = (datetime.now() + timedelta(hours=2)).isoformat(timespec="seconds")
                 conn.execute(
                     """UPDATE bookings
                        SET onsite_verify_token=?, onsite_verify_expires_at=?,
