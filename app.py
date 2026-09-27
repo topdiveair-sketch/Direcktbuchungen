@@ -1451,6 +1451,20 @@ def api_calendar():
         source=live_source,
     )
 
+def resend_existing_booking_mail(booking_id: int) -> None:
+    sender = app.extensions.get("zab_send_confirmation")
+    if not sender:
+        return
+    try:
+        ok = bool(sender(booking_id))
+        if ok:
+            app.logger.info("booking_mail_existing_ok booking_id=%s", booking_id)
+        else:
+            app.logger.error("booking_mail_existing_failed booking_id=%s", booking_id)
+    except Exception:
+        app.logger.exception("booking_mail_existing_exception booking_id=%s", booking_id)
+
+
 def booking_success_response(booking):
     data = dict(booking)
     booking_id = int(data.get("id") or 0)
@@ -1503,6 +1517,7 @@ def book():
                 (idempotency_key,),
             ).fetchone()
         if existing:
+            resend_existing_booking_mail(int(existing["id"]))
             return booking_success_response(existing)
 
     ok, message = room_available(room, arrival, departure)
@@ -1559,6 +1574,7 @@ def book():
                     (idempotency_key,),
                 ).fetchone()
             if existing:
+                resend_existing_booking_mail(int(existing["id"]))
                 return booking_success_response(existing)
         flash("Die Buchung wurde bereits verarbeitet. Bitte Seite aktualisieren.", "error")
         return redirect(url_for("index") + "#booking")
