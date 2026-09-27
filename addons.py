@@ -145,10 +145,10 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         sender_name = os.environ.get("MAIL_SENDER_NAME", "Zuhause am Bach – Wachau").strip()
 
         if not brevo_key:
-            logging.error("mail_send_failed reason=brevo_api_key_missing recipient=%s", to)
+            app.logger.error("mail_send_failed reason=brevo_api_key_missing recipient=%s", to)
             return False, "brevo_api_key_missing"
         if not sender_email:
-            logging.error("mail_send_failed reason=sender_missing recipient=%s", to)
+            app.logger.error("mail_send_failed reason=sender_missing recipient=%s", to)
             return False, "sender_missing"
 
         sender_email, sender_name = brevo_sender_email(brevo_key, sender_email, sender_name)
@@ -173,7 +173,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                 timeout=(4, 8),
             )
             if 200 <= int(response.status_code) < 300:
-                logging.warning("mail_send_ok recipient=%s sender=%s subject=%s", to, sender_email, subject)
+                app.logger.warning("mail_send_ok recipient=%s sender=%s subject=%s", to, sender_email, subject)
                 return True, "gesendet"
             reason = (
                 "mail_api_auth_failed" if response.status_code in (401, 403)
@@ -186,10 +186,10 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             )
             return False, reason
         except requests.Timeout:
-            logging.error("mail_send_failed reason=mail_api_timeout recipient=%s", to)
+            app.logger.error("mail_send_failed reason=mail_api_timeout recipient=%s", to)
             return False, "mail_api_timeout"
         except requests.RequestException as exc:
-            logging.error("mail_send_failed reason=mail_api_unreachable recipient=%s error=%s", to, str(exc)[:200])
+            app.logger.error("mail_send_failed reason=mail_api_unreachable recipient=%s error=%s", to, str(exc)[:200])
             return False, "mail_api_unreachable"
 
     def ensure_booking_tokens(booking_id):
@@ -344,6 +344,21 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
 
     app.extensions["zab_send_confirmation"] = send_booking_confirmation
     app.extensions["zab_ensure_tokens"] = ensure_booking_tokens
+    app.extensions["zab_smtp_send"] = smtp_send
+
+    @app.get("/internal/mail-diagnostic/<token>")
+    def internal_mail_diagnostic(token):
+        expected = os.environ.get("MAIL_DIAGNOSTIC_TOKEN", "")
+        if not expected or not hmac.compare_digest(token, expected):
+            return {"ok": False}, 404
+        recipient = os.environ.get("BOOKING_OWNER_EMAIL", "").strip() or os.environ.get("SITE_EMAIL", "").strip()
+        ok, reason = smtp_send(
+            recipient,
+            "Zuhause am Bach – Mail-Diagnose",
+            "Technischer Test des automatischen Buchungs-Mailversands.",
+        )
+        app.logger.warning("mail_diagnostic_result ok=%s reason=%s recipient=%s", ok, reason, recipient)
+        return {"ok": bool(ok), "reason": reason, "recipient": recipient}, (200 if ok else 502)
 
     @app.get("/guest/<token>")
     def guest_portal(token):
