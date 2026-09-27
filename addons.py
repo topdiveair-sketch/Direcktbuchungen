@@ -9,6 +9,7 @@ import shutil
 import smtplib
 import sqlite3
 import urllib.request
+import urllib.error
 from datetime import date, datetime
 from email.message import EmailMessage
 from pathlib import Path
@@ -102,13 +103,56 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
 
     def smtp_send(to, subject, body):
         cfg = settings()
+        brevo_key = os.environ.get("BREVO_API_KEY", "").strip()
+        sender_email = (
+            os.environ.get("MAIL_SENDER_EMAIL", "").strip()
+            or cfg.get("email", "").strip()
+            or PAYPAL_EMAIL
+        )
+        sender_name = os.environ.get("MAIL_SENDER_NAME", "Zuhause am Bach – Wachau").strip()
+
+        if brevo_key:
+            payload = {
+                "sender": {"name": sender_name, "email": sender_email},
+                "to": [{"email": to}],
+                "replyTo": {"name": sender_name, "email": sender_email},
+                "subject": subject,
+                "textContent": body,
+                "tags": ["zuhause-am-bach", "booking"],
+            }
+            req = urllib.request.Request(
+                "https://api.brevo.com/v3/smtp/email",
+                data=json.dumps(payload).encode("utf-8"),
+                headers={
+                    "accept": "application/json",
+                    "api-key": brevo_key,
+                    "content-type": "application/json",
+                },
+                method="POST",
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=20) as response:
+                    if 200 <= int(response.status) < 300:
+                        return True, "gesendet"
+                return False, "mail_api_failed"
+            except urllib.error.HTTPError as exc:
+                if exc.code in (401, 403):
+                    return False, "mail_api_auth_failed"
+                if exc.code == 400:
+                    return False, "mail_sender_or_payload_rejected"
+                return False, "mail_api_failed"
+            except (urllib.error.URLError, OSError, TimeoutError):
+                return False, "mail_api_unreachable"
+            except Exception:
+                return False, "mail_api_failed"
+
         host = cfg.get("smtp_host", "")
         user = cfg.get("smtp_user", "")
         password = cfg.get("smtp_password", "")
         port = int(cfg.get("smtp_port", "587") or 587)
         sender = cfg.get("smtp_sender", user or cfg.get("email", PAYPAL_EMAIL))
         if not host or not user or not password:
-            return False, "SMTP ist noch nicht vollständig eingerichtet."
+            return False, "mail_provider_not_configured"
         msg = EmailMessage()
         msg["From"] = sender
         msg["To"] = to
@@ -120,8 +164,12 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                 server.login(user, password)
                 server.send_message(msg)
             return True, "gesendet"
-        except Exception as exc:
-            return False, str(exc)
+        except smtplib.SMTPAuthenticationError:
+            return False, "smtp_auth_failed"
+        except (smtplib.SMTPException, OSError, TimeoutError):
+            return False, "smtp_delivery_failed"
+        except Exception:
+            return False, "smtp_delivery_failed"
 
     def ensure_booking_tokens(booking_id):
         with db() as conn:
