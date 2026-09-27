@@ -271,7 +271,12 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         )
         ok_guest, msg_guest = smtp_send(booking["email"], guest_subject, guest_body)
 
-        owner = os.environ.get("MAIL_SENDER_EMAIL", "").strip() or cfg.get("email", "").strip() or PAYPAL_EMAIL
+        owner = (
+            os.environ.get("BOOKING_OWNER_EMAIL", "").strip()
+            or os.environ.get("SITE_EMAIL", "").strip()
+            or cfg.get("email", "").strip()
+            or PAYPAL_EMAIL
+        )
         owner_subject = (
             f"Neue bestätigte Buchung: {room_name}"
             if is_confirmed else
