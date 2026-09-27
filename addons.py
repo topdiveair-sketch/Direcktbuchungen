@@ -368,6 +368,15 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
     app.extensions["zab_ensure_tokens"] = ensure_booking_tokens
     app.extensions["zab_smtp_send"] = smtp_send
 
+    @app.get("/internal/resend-booking/<token>/<int:booking_id>")
+    def internal_resend_booking(token, booking_id):
+        expected = os.environ.get("MAIL_DIAGNOSTIC_TOKEN", "")
+        if not expected or not hmac.compare_digest(token, expected):
+            return {"ok": False}, 404
+        ok = bool(send_booking_confirmation(booking_id))
+        app.logger.warning("booking_resend_result booking_id=%s ok=%s", booking_id, ok)
+        return {"ok": ok, "booking_id": booking_id}, (200 if ok else 502)
+
     @app.get("/internal/mail-status/<token>/<int:booking_id>")
     def internal_mail_status(token, booking_id):
         expected = os.environ.get("MAIL_DIAGNOSTIC_TOKEN", "")
