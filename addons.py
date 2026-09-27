@@ -103,6 +103,36 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         with db() as conn:
             return conn.execute("SELECT * FROM bookings WHERE public_token=? OR cancel_token=?", (token, token)).fetchone()
 
+    _brevo_sender_cache = {"email": None, "name": None}
+
+    def brevo_sender_email(brevo_key, configured_email, configured_name):
+        if _brevo_sender_cache["email"]:
+            return _brevo_sender_cache["email"], _brevo_sender_cache["name"] or configured_name
+        try:
+            response = requests.get(
+                "https://api.brevo.com/v3/senders",
+                headers={"accept": "application/json", "api-key": brevo_key},
+                timeout=(4, 8),
+            )
+            if response.ok:
+                data = response.json() or {}
+                senders = data.get("senders") or []
+                active = [s for s in senders if s.get("active") is True and s.get("email")]
+                chosen = None
+                for s in active:
+                    if configured_email and s.get("email", "").lower() == configured_email.lower():
+                        chosen = s
+                        break
+                if chosen is None and active:
+                    chosen = active[0]
+                if chosen:
+                    _brevo_sender_cache["email"] = chosen["email"]
+                    _brevo_sender_cache["name"] = chosen.get("name") or configured_name
+                    return _brevo_sender_cache["email"], _brevo_sender_cache["name"]
+        except requests.RequestException:
+            pass
+        return configured_email, configured_name
+
     def smtp_send(to, subject, body):
         """Send transactional mail through Brevo HTTPS only in production."""
         cfg = settings()
@@ -120,6 +150,8 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         if not sender_email:
             logging.error("mail_send_failed reason=sender_missing recipient=%s", to)
             return False, "sender_missing"
+
+        sender_email, sender_name = brevo_sender_email(brevo_key, sender_email, sender_name)
 
         payload = {
             "sender": {"name": sender_name, "email": sender_email},
@@ -141,7 +173,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                 timeout=(4, 8),
             )
             if 200 <= int(response.status_code) < 300:
-                logging.info("mail_send_ok recipient=%s subject=%s", to, subject)
+                logging.warning("mail_send_ok recipient=%s sender=%s subject=%s", to, sender_email, subject)
                 return True, "gesendet"
             reason = (
                 "mail_api_auth_failed" if response.status_code in (401, 403)
@@ -149,8 +181,8 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                 else f"mail_api_failed_{response.status_code}"
             )
             logging.error(
-                "mail_send_failed reason=%s recipient=%s status=%s body=%s",
-                reason, to, response.status_code, response.text[:300],
+                "mail_send_failed reason=%s recipient=%s sender=%s status=%s body=%s",
+                reason, to, sender_email, response.status_code, response.text[:500],
             )
             return False, reason
         except requests.Timeout:
@@ -293,6 +325,10 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             f"E-Mail: {booking['email']}"
         )
         ok_owner, msg_owner = smtp_send(owner, owner_subject, owner_body)
+        app.logger.warning(
+            "booking_mail_results booking_id=%s guest_ok=%s guest_status=%s owner_ok=%s owner_status=%s",
+            booking_id, ok_guest, msg_guest, ok_owner, msg_owner,
+        )
 
         created_at = datetime.now().isoformat(timespec="seconds")
         with db() as conn:
