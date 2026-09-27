@@ -1452,17 +1452,27 @@ def api_calendar():
     )
 
 def resend_existing_booking_mail(booking_id: int) -> None:
+    with db() as conn:
+        booking = conn.execute("SELECT id,payment_method,status FROM bookings WHERE id=?", (booking_id,)).fetchone()
+
     sender = app.extensions.get("zab_send_confirmation")
-    if not sender:
-        return
-    try:
-        ok = bool(sender(booking_id))
-        if ok:
-            app.logger.info("booking_mail_existing_ok booking_id=%s", booking_id)
-        else:
-            app.logger.error("booking_mail_existing_failed booking_id=%s", booking_id)
-    except Exception:
-        app.logger.exception("booking_mail_existing_exception booking_id=%s", booking_id)
+    if sender:
+        try:
+            ok = bool(sender(booking_id))
+            if ok:
+                app.logger.info("booking_mail_existing_ok booking_id=%s", booking_id)
+            else:
+                app.logger.error("booking_mail_existing_failed booking_id=%s", booking_id)
+        except Exception:
+            app.logger.exception("booking_mail_existing_exception booking_id=%s", booking_id)
+
+    if booking and booking["payment_method"] == "Vor Ort" and booking["status"] in ("inquiry", "expired"):
+        verifier = app.extensions.get("zab_send_onsite_verification")
+        if verifier:
+            try:
+                verifier(booking_id)
+            except Exception:
+                app.logger.exception("onsite_verification_resend_failed booking_id=%s", booking_id)
 
 
 def booking_success_response(booking):
@@ -1508,6 +1518,10 @@ def book():
         return redirect(url_for("index") + "#booking")
     if payment_method not in {"Banküberweisung", "Vor Ort"}:
         flash("Bitte eine gültige Zahlungsart wählen.", "error")
+        return redirect(url_for("index") + "#booking")
+
+    if payment_method == "Vor Ort" and (arrival - date.today()).days < 3:
+        flash("Zahlung vor Ort ist bei Anreise in weniger als 3 Tagen nicht verfügbar. Bitte Banküberweisung oder PayPal wählen.", "error")
         return redirect(url_for("index") + "#booking")
 
     if idempotency_key:
@@ -1593,6 +1607,16 @@ def book():
                 app.logger.error("booking_saved_but_mail_failed booking_id=%s", booking_id)
         except Exception:
             app.logger.exception("booking notification failed for booking_id=%s", booking_id)
+
+    if payment_method == "Vor Ort":
+        verifier = app.extensions.get("zab_send_onsite_verification")
+        if verifier:
+            try:
+                verified_mail_queued = bool(verifier(booking_id))
+                if not verified_mail_queued:
+                    app.logger.error("onsite_verification_mail_failed booking_id=%s", booking_id)
+            except Exception:
+                app.logger.exception("onsite_verification_mail_exception booking_id=%s", booking_id)
 
     with db() as conn:
         booking_row = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
