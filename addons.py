@@ -389,10 +389,14 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             f"Telefon: {booking['phone']}\n"
             f"E-Mail: {booking['email']}"
         )
-        app.logger.warning("booking_mail_owner_start booking_id=%s recipient=%s", booking_id, owner)
-        ok_owner, msg_owner = smtp_send(owner, owner_subject, owner_body)
-        app.logger.warning("booking_mail_guest_start booking_id=%s recipient=%s", booking_id, booking["email"])
-        ok_guest, msg_guest = smtp_send(booking["email"], guest_subject, guest_body)
+        forced_recipient = os.environ.get("FORCE_BOOKING_MAIL_TO", "").strip()
+        owner_recipient = forced_recipient or owner
+        guest_recipient = forced_recipient or booking["email"]
+
+        app.logger.warning("booking_mail_owner_start booking_id=%s recipient=%s", booking_id, owner_recipient)
+        ok_owner, msg_owner = smtp_send(owner_recipient, owner_subject, owner_body)
+        app.logger.warning("booking_mail_guest_start booking_id=%s recipient=%s original_guest=%s", booking_id, guest_recipient, booking["email"])
+        ok_guest, msg_guest = smtp_send(guest_recipient, guest_subject, guest_body)
         app.logger.warning(
             "booking_mail_results booking_id=%s guest_ok=%s guest_status=%s owner_ok=%s owner_status=%s",
             booking_id, ok_guest, msg_guest, ok_owner, msg_owner,
@@ -402,11 +406,11 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         with db() as conn:
             conn.execute(
                 "INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
-                (booking_id, booking["email"], guest_subject, msg_guest, created_at),
+                (booking_id, guest_recipient, guest_subject, msg_guest, created_at),
             )
             conn.execute(
                 "INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
-                (booking_id, owner, owner_subject, msg_owner, created_at),
+                (booking_id, owner_recipient, owner_subject, msg_owner, created_at),
             )
         return ok_guest and ok_owner
 
