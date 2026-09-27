@@ -347,6 +347,20 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
     app.extensions["zab_ensure_tokens"] = ensure_booking_tokens
     app.extensions["zab_smtp_send"] = smtp_send
 
+    @app.get("/internal/mail-status/<token>/<int:booking_id>")
+    def internal_mail_status(token, booking_id):
+        expected = os.environ.get("MAIL_DIAGNOSTIC_TOKEN", "")
+        if not expected or not hmac.compare_digest(token, expected):
+            return {"ok": False}, 404
+        with db() as conn:
+            booking = conn.execute("SELECT id,email,first_name,last_name,status FROM bookings WHERE id=?", (booking_id,)).fetchone()
+            rows = conn.execute("SELECT recipient,subject,status,created_at FROM email_log WHERE booking_id=? ORDER BY id", (booking_id,)).fetchall()
+        return {
+            "ok": True,
+            "booking": dict(booking) if booking else None,
+            "email_log": [dict(r) for r in rows],
+        }
+
     @app.get("/internal/mail-diagnostic/<token>")
     def internal_mail_diagnostic(token):
         expected = os.environ.get("MAIL_DIAGNOSTIC_TOKEN", "")
