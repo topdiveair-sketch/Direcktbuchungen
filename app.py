@@ -1569,21 +1569,14 @@ def book():
         app.extensions["v6_ensure_checkin_token"](booking_id)
     sender = app.extensions.get("zab_send_confirmation")
     if sender:
-        def _send_booking_notifications_async():
-            with app.app_context():
-                try:
-                    ok = bool(sender(booking_id))
-                    if ok:
-                        app.logger.info("booking_mail_sent booking_id=%s", booking_id)
-                    else:
-                        app.logger.error("booking_saved_but_mail_failed booking_id=%s", booking_id)
-                except Exception:
-                    app.logger.exception("booking notification failed for booking_id=%s", booking_id)
-        threading.Thread(
-            target=_send_booking_notifications_async,
-            name=f"booking-mail-{booking_id}",
-            daemon=True,
-        ).start()
+        try:
+            ok = bool(sender(booking_id))
+            if ok:
+                app.logger.info("booking_mail_sent booking_id=%s", booking_id)
+            else:
+                app.logger.error("booking_saved_but_mail_failed booking_id=%s", booking_id)
+        except Exception:
+            app.logger.exception("booking notification failed for booking_id=%s", booking_id)
 
     with db() as conn:
         booking_row = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
@@ -1833,6 +1826,21 @@ def del_season(i):
 
 init_db()
 init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL)
+
+# Optional one-shot resend used for operational recovery. Keep this synchronous so
+# the process cannot exit before the mail attempt completes.
+_resend_booking_id = os.environ.get("RESEND_BOOKING_ID_ON_START", "").strip()
+if _resend_booking_id.isdigit():
+    try:
+        _resend_sender = app.extensions.get("zab_send_confirmation")
+        if _resend_sender:
+            _resend_ok = bool(_resend_sender(int(_resend_booking_id)))
+            app.logger.warning(
+                "startup_booking_resend booking_id=%s ok=%s",
+                _resend_booking_id, _resend_ok,
+            )
+    except Exception:
+        app.logger.exception("startup booking resend failed booking_id=%s", _resend_booking_id)
 init_v6(app, DB_PATH, db, require_admin, ROOMS)
 init_stability(app, DB_PATH, db, require_admin, ROOMS)
 init_zab_os(app, DB_PATH, db, require_admin, ROOMS)
