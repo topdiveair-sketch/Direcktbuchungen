@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Buchung absichern – Zuhause am Bach</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="plain-page">
+  <main class="success-shell">
+    <div class="success-card">
+      <span class="eyebrow">BUCHUNG ABSICHERN</span>
+      <h1>Zahlung bei Anreise sicher bestätigen</h1>
+      <p><strong>✅ E-Mail-Adresse bestätigt.</strong></p>
+      <p>Als nächstes bestätigen wir deine Telefonnummer per SMS. Danach kannst du zwischen <strong>50 % Anzahlung</strong> und <strong>100 % Vollzahlung</strong> wählen.</p>
+
+      <div class="booking-summary">
+        <p><strong>Buchungsnummer:</strong> ZAB-{{ '%06d'|format(booking.id) }}</p>
+        <p><strong>Anreise:</strong> {{ booking.arrival }}</p>
+        <p><strong>Abreise:</strong> {{ booking.departure }}</p>
+        <p><strong>Personen:</strong> {{ booking.adults }}</p>
+        <p><strong>Telefon:</strong> {{ booking.phone }}</p>
+        <p class="summary-total"><strong>Gesamt:</strong> {{ '%.2f'|format(booking.total)|replace('.', ',') }} €</p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="paypal-note" style="margin-top:14px"><strong>{{ message }}</strong></div>
+        {% endfor %}
+      {% endwith %}
+
+      {% if not sms_verified %}
+        {% if sms_ready %}
+          <form method="post" action="{{ url_for('onsite_sms_send', token=booking.onsite_verify_token) }}" style="margin-top:18px">
+            <button class="btn full" type="submit">SMS-CODE SENDEN</button>
+          </form>
+          <form method="post" action="{{ url_for('onsite_sms_check', token=booking.onsite_verify_token) }}" style="margin-top:14px">
+            <label>SMS-Code
+              <input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4,10}" required placeholder="z. B. 123456">
+            </label>
+            <button class="btn full" type="submit">TELEFONNUMMER BESTÄTIGEN</button>
+          </form>
+        {% else %}
+          <div class="paypal-note" style="margin-top:18px">
+            <strong>SMS-Verifizierung noch nicht freigeschaltet.</strong><br>
+            Die Reservierung bleibt unverbindlich, bis der SMS-Dienst technisch aktiviert ist.
+          </div>
+        {% endif %}
+      {% else %}
+        <p><strong>✅ Telefonnummer bestätigt.</strong></p>
+
+        <div class="booking-summary">
+          <p><strong>Preisaufstellung</strong></p>
+          <p>Zimmer/Aufenthalt: <strong>{{ '%.2f'|format(breakdown.room_total or booking.total)|replace('.', ',') }} €</strong></p>
+          {% for extra in breakdown.extras or [] %}
+            <p>{{ extra.label }}: <strong>{{ '%.2f'|format(extra.amount)|replace('.', ',') }} €</strong></p>
+          {% endfor %}
+          {% for discount in breakdown.discounts or [] %}
+            <p>{{ discount.label }}: <strong>− {{ '%.2f'|format(discount.amount)|replace('.', ',') }} €</strong></p>
+          {% endfor %}
+          <p class="summary-total"><strong>Gesamtpreis: {{ '%.2f'|format(booking.total)|replace('.', ',') }} €</strong></p>
+        </div>
+
+        <div class="payment-grid" style="margin-top:18px">
+          <form method="post" action="{{ url_for('onsite_payment_start', token=booking.onsite_verify_token) }}">
+            <input type="hidden" name="percent" value="50">
+            <button class="btn full" type="submit">
+              50 % ANZAHLUNG<br>
+              <small>{{ '%.2f'|format((booking.total * 0.5)|round(2))|replace('.', ',') }} € jetzt</small>
+            </button>
+          </form>
+          <form method="post" action="{{ url_for('onsite_payment_start', token=booking.onsite_verify_token) }}">
+            <input type="hidden" name="percent" value="100">
+            <button class="btn full" type="submit">
+              100 % VOLLZAHLUNG<br>
+              <small>{{ '%.2f'|format(booking.total)|replace('.', ',') }} € jetzt</small>
+            </button>
+          </form>
+        </div>
+
+        <p class="muted">Die Zahlung läuft über PayPal. Nach erfolgreicher Zahlung wird die Buchung verbindlich bestätigt. Bei 50 % Anzahlung ist der Restbetrag bei Anreise fällig.</p>
+      {% endif %}
+    </div>
+  </main>
+</body>
+</html>
