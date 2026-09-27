@@ -9,10 +9,12 @@ import json
 import sqlite3
 import urllib.request
 import urllib.error
+import urllib.parse
 import hmac
 from datetime import datetime, date, timedelta
 from pathlib import Path
 from uuid import uuid4
+from decimal import Decimal, ROUND_HALF_UP
 
 from flask import (
     Flask, Response, jsonify, redirect, render_template, request,
@@ -228,6 +230,20 @@ def init_db() -> None:
         cols = {row[1] for row in conn.execute("PRAGMA table_info(bookings)")}
         if "idempotency_key" not in cols:
             conn.execute("ALTER TABLE bookings ADD COLUMN idempotency_key TEXT DEFAULT ''")
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(bookings)")}
+        for column, definition in (
+            ("price_breakdown_json", "TEXT DEFAULT '{}'"),
+            ("sms_verified_at", "TEXT DEFAULT ''"),
+            ("sms_sent_at", "TEXT DEFAULT ''"),
+            ("payment_hold_expires_at", "TEXT DEFAULT ''"),
+            ("deposit_percent", "INTEGER DEFAULT 0"),
+            ("amount_paid", "REAL DEFAULT 0"),
+            ("payment_status", "TEXT DEFAULT ''"),
+            ("payment_reference", "TEXT DEFAULT ''"),
+            ("paypal_order_id", "TEXT DEFAULT ''")
+        ):
+            if column not in cols:
+                conn.execute(f"ALTER TABLE bookings ADD COLUMN {column} {definition}")
         conn.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_idempotency "
             "ON bookings(idempotency_key) WHERE idempotency_key <> ''"
@@ -1543,7 +1559,8 @@ def book():
         flash("Bitte Name, E-Mail und Telefonnummer ausfüllen.", "error")
         return redirect(url_for("index") + "#booking")
 
-    total = price_breakdown(room, arrival, departure, adults, chosen, coupon_code)["total"]
+    breakdown = price_breakdown(room, arrival, departure, adults, chosen, coupon_code)
+    total = breakdown["total"]
     uid = f"ZAB-{uuid4()}@zuhause-am-bach"
 
     try:
@@ -1569,14 +1586,15 @@ def book():
                 INSERT INTO bookings
                 (uid, room, arrival, departure, adults, breakfast, first_name,
                  last_name, email, phone, message, payment_method, total, status,
-                 created_at, idempotency_key)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inquiry', ?, ?)
+                 created_at, idempotency_key, price_breakdown_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inquiry', ?, ?, ?)
                 """,
                 (
                     uid, room, arrival.isoformat(), departure.isoformat(), adults,
                     1 if breakfast else 0, first_name, last_name, email, phone,
                     request.form.get("message", "").strip(), payment_method, total,
                     datetime.now().isoformat(timespec="seconds"), idempotency_key,
+                    json.dumps(breakdown, ensure_ascii=False),
                 ),
             )
             booking_id = cur.lastrowid
@@ -1621,6 +1639,297 @@ def book():
     with db() as conn:
         booking_row = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
     return booking_success_response(booking_row)
+
+
+
+def _twilio_verify_post(path: str, data: dict) -> dict:
+    account_sid = env_value("TWILIO_ACCOUNT_SID")
+    auth_token = env_value("TWILIO_AUTH_TOKEN")
+    service_sid = env_value("TWILIO_VERIFY_SERVICE_SID")
+    if not all((account_sid, auth_token, service_sid)):
+        raise RuntimeError("SMS-Verifizierung ist noch nicht konfiguriert.")
+    body = urllib.parse.urlencode(data).encode("utf-8")
+    credentials = base64.b64encode(f"{account_sid}:{auth_token}".encode("utf-8")).decode("ascii")
+    req = urllib.request.Request(
+        f"https://verify.twilio.com/v2/Services/{service_sid}/{path}",
+        data=body,
+        headers={
+            "Authorization": f"Basic {credentials}",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "Zuhause-am-Bach/1.0",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=15) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def _paypal_base_url() -> str:
+    return "https://api-m.paypal.com" if env_value("PAYPAL_ENV").lower() == "live" else "https://api-m.sandbox.paypal.com"
+
+
+def _paypal_access_token() -> str:
+    client_id = env_value("PAYPAL_CLIENT_ID")
+    client_secret = env_value("PAYPAL_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        raise RuntimeError("PayPal ist noch nicht vollständig konfiguriert.")
+    credentials = base64.b64encode(f"{client_id}:{client_secret}".encode("utf-8")).decode("ascii")
+    req = urllib.request.Request(
+        _paypal_base_url() + "/v1/oauth2/token",
+        data=b"grant_type=client_credentials",
+        headers={
+            "Authorization": f"Basic {credentials}",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=15) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    return payload["access_token"]
+
+
+def _paypal_json(path: str, method: str = "GET", payload: dict | None = None) -> dict:
+    token = _paypal_access_token()
+    data = json.dumps(payload).encode("utf-8") if payload is not None else None
+    req = urllib.request.Request(
+        _paypal_base_url() + path,
+        data=data,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+        method=method,
+    )
+    with urllib.request.urlopen(req, timeout=20) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def _onsite_amounts(total_value, percent: int):
+    total = Decimal(str(total_value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    now_amount = (total * Decimal(percent) / Decimal(100)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    remainder = (total - now_amount).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    return total, now_amount, remainder
+
+
+def _booking_breakdown(booking):
+    try:
+        data = json.loads(booking["price_breakdown_json"] or "{}")
+        if isinstance(data, dict):
+            return data
+    except Exception:
+        pass
+    return {"room_total": float(booking["total"]), "extras": [], "discounts": [], "total": float(booking["total"])}
+
+
+@app.get("/onsite-security/<token>")
+def onsite_security(token):
+    with db() as conn:
+        booking = conn.execute(
+            "SELECT * FROM bookings WHERE onsite_verify_token=? AND payment_method='Vor Ort'",
+            (token,),
+        ).fetchone()
+    if not booking or not booking["onsite_verified_at"]:
+        return Response("E-Mail-Verifizierung erforderlich.", status=403)
+    sms_ready = all((env_value("TWILIO_ACCOUNT_SID"), env_value("TWILIO_AUTH_TOKEN"), env_value("TWILIO_VERIFY_SERVICE_SID")))
+    return render_template(
+        "onsite_security.html",
+        booking=booking,
+        sms_ready=sms_ready,
+        sms_verified=bool(booking["sms_verified_at"]),
+        breakdown=_booking_breakdown(booking),
+    )
+
+
+@app.post("/onsite-sms/send/<token>")
+def onsite_sms_send(token):
+    with db() as conn:
+        booking = conn.execute(
+            "SELECT * FROM bookings WHERE onsite_verify_token=? AND payment_method='Vor Ort'",
+            (token,),
+        ).fetchone()
+    if not booking or not booking["onsite_verified_at"]:
+        return Response("Nicht freigegeben.", status=403)
+    try:
+        result = _twilio_verify_post("Verifications", {"To": booking["phone"], "Channel": "sms"})
+        if result.get("status") not in ("pending", "approved"):
+            raise RuntimeError("SMS konnte nicht gestartet werden.")
+        with db() as conn:
+            conn.execute(
+                "UPDATE bookings SET sms_sent_at=? WHERE id=?",
+                (datetime.now().isoformat(timespec="seconds"), booking["id"]),
+            )
+        flash("SMS-Code wurde gesendet.", "success")
+    except Exception as exc:
+        app.logger.exception("onsite_sms_send_failed booking_id=%s", booking["id"])
+        flash(f"SMS konnte nicht gesendet werden: {exc}", "error")
+    return redirect(url_for("onsite_security", token=token))
+
+
+@app.post("/onsite-sms/check/<token>")
+def onsite_sms_check(token):
+    code = request.form.get("code", "").strip()
+    if not (code.isdigit() and 4 <= len(code) <= 10):
+        flash("Bitte den SMS-Code eingeben.", "error")
+        return redirect(url_for("onsite_security", token=token))
+    with db() as conn:
+        booking = conn.execute(
+            "SELECT * FROM bookings WHERE onsite_verify_token=? AND payment_method='Vor Ort'",
+            (token,),
+        ).fetchone()
+    if not booking or not booking["onsite_verified_at"]:
+        return Response("Nicht freigegeben.", status=403)
+    try:
+        result = _twilio_verify_post("VerificationCheck", {"To": booking["phone"], "Code": code})
+        if result.get("status") != "approved":
+            flash("SMS-Code ist nicht gültig.", "error")
+            return redirect(url_for("onsite_security", token=token))
+        now = datetime.now()
+        hold_until = (now + timedelta(minutes=30)).isoformat(timespec="seconds")
+        with db() as conn:
+            conn.execute(
+                """UPDATE bookings
+                   SET sms_verified_at=?, status='pending', payment_hold_expires_at=?
+                   WHERE id=?""",
+                (now.isoformat(timespec="seconds"), hold_until, booking["id"]),
+            )
+        flash("Telefonnummer bestätigt. Bitte Zahlungsoption auswählen.", "success")
+    except Exception as exc:
+        app.logger.exception("onsite_sms_check_failed booking_id=%s", booking["id"])
+        flash(f"SMS-Verifizierung fehlgeschlagen: {exc}", "error")
+    return redirect(url_for("onsite_security", token=token))
+
+
+@app.post("/onsite-payment/<token>")
+def onsite_payment_start(token):
+    try:
+        percent = int(request.form.get("percent", "0"))
+    except ValueError:
+        percent = 0
+    if percent not in (50, 100):
+        return Response("Ungültige Zahlungsoption.", status=400)
+    with db() as conn:
+        booking = conn.execute(
+            "SELECT * FROM bookings WHERE onsite_verify_token=? AND payment_method='Vor Ort'",
+            (token,),
+        ).fetchone()
+    if not booking or not booking["onsite_verified_at"] or not booking["sms_verified_at"]:
+        return Response("E-Mail- und SMS-Verifizierung erforderlich.", status=403)
+
+    total, amount_now, remainder = _onsite_amounts(booking["total"], percent)
+    base_url = env_value("PUBLIC_SITE_URL") or "https://www.zuhauseambach-wachau.at"
+    payload = {
+        "intent": "CAPTURE",
+        "purchase_units": [{
+            "reference_id": f"ZAB-{booking['id']:06d}",
+            "description": f"Zuhause am Bach – {'50% Anzahlung' if percent == 50 else 'Vollzahlung'}",
+            "amount": {"currency_code": "EUR", "value": f"{amount_now:.2f}"},
+        }],
+        "application_context": {
+            "brand_name": "Zuhause am Bach – Wachau",
+            "user_action": "PAY_NOW",
+            "return_url": f"{base_url.rstrip('/')}/onsite-paypal-return/{token}?percent={percent}",
+            "cancel_url": f"{base_url.rstrip('/')}/onsite-paypal-cancel/{token}",
+        },
+    }
+    try:
+        order = _paypal_json("/v2/checkout/orders", "POST", payload)
+        order_id = order.get("id", "")
+        approval_url = next((x.get("href") for x in order.get("links", []) if x.get("rel") == "approve"), "")
+        if not order_id or not approval_url:
+            raise RuntimeError("PayPal hat keine Zahlungsfreigabe geliefert.")
+        with db() as conn:
+            conn.execute(
+                """UPDATE bookings
+                   SET deposit_percent=?, payment_status='initiated',
+                       paypal_order_id=?, payment_hold_expires_at=?
+                   WHERE id=?""",
+                (
+                    percent, order_id,
+                    (datetime.now() + timedelta(minutes=30)).isoformat(timespec="seconds"),
+                    booking["id"],
+                ),
+            )
+        return redirect(approval_url)
+    except Exception as exc:
+        app.logger.exception("onsite_paypal_create_failed booking_id=%s", booking["id"])
+        flash(f"PayPal konnte nicht gestartet werden: {exc}", "error")
+        return redirect(url_for("onsite_security", token=token))
+
+
+@app.get("/onsite-paypal-return/<token>")
+def onsite_paypal_return(token):
+    order_id = request.args.get("token", "").strip()
+    try:
+        percent = int(request.args.get("percent", "0"))
+    except ValueError:
+        percent = 0
+    with db() as conn:
+        booking = conn.execute(
+            "SELECT * FROM bookings WHERE onsite_verify_token=? AND payment_method='Vor Ort'",
+            (token,),
+        ).fetchone()
+    if not booking or percent not in (50, 100) or not order_id or booking["paypal_order_id"] != order_id:
+        return Response("Zahlung konnte nicht zugeordnet werden.", status=400)
+
+    total, expected_now, remainder = _onsite_amounts(booking["total"], percent)
+    if booking["payment_status"] in ("paid_partial", "paid_full") and float(booking["amount_paid"] or 0) > 0:
+        return render_template(
+            "onsite_paid.html", booking=booking, breakdown=_booking_breakdown(booking),
+            total=total, amount_paid=Decimal(str(booking["amount_paid"])), remainder=total-Decimal(str(booking["amount_paid"])),
+            percent=booking["deposit_percent"],
+        )
+
+    try:
+        capture = _paypal_json(f"/v2/checkout/orders/{order_id}/capture", "POST", {})
+        if capture.get("status") != "COMPLETED":
+            raise RuntimeError("PayPal-Zahlung ist noch nicht abgeschlossen.")
+        captured = Decimal("0.00")
+        for unit in capture.get("purchase_units", []):
+            for item in (unit.get("payments", {}) or {}).get("captures", []):
+                if item.get("status") == "COMPLETED":
+                    captured += Decimal(str((item.get("amount") or {}).get("value", "0")))
+        captured = captured.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        if captured != expected_now:
+            raise RuntimeError("Zahlungsbetrag stimmt nicht mit der Buchung überein.")
+
+        now = datetime.now().isoformat(timespec="seconds")
+        with db() as conn:
+            conn.execute(
+                """UPDATE bookings
+                   SET status='confirmed', amount_paid=?, deposit_percent=?,
+                       payment_status=?, payment_reference=?, paid=?
+                   WHERE id=?""",
+                (
+                    float(captured), percent,
+                    "paid_full" if percent == 100 else "paid_partial",
+                    order_id, 1 if percent == 100 else 0, booking["id"],
+                ),
+            )
+            booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking["id"],)).fetchone()
+
+        sender = app.extensions.get("zab_send_confirmation")
+        if sender:
+            try:
+                sender(booking["id"])
+            except Exception:
+                app.logger.exception("onsite_paid_owner_mail_failed booking_id=%s", booking["id"])
+
+        return render_template(
+            "onsite_paid.html", booking=booking, breakdown=_booking_breakdown(booking),
+            total=total, amount_paid=captured, remainder=remainder, percent=percent,
+        )
+    except Exception as exc:
+        app.logger.exception("onsite_paypal_capture_failed booking_id=%s", booking["id"])
+        flash(f"Zahlung konnte nicht bestätigt werden: {exc}", "error")
+        return redirect(url_for("onsite_security", token=token))
+
+
+@app.get("/onsite-paypal-cancel/<token>")
+def onsite_paypal_cancel(token):
+    flash("PayPal-Zahlung wurde abgebrochen. Die Auswahl kann erneut gestartet werden.", "error")
+    return redirect(url_for("onsite_security", token=token))
 
 
 @app.get("/calendar/<room>.ics")
