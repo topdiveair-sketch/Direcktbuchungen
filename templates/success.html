@@ -39,6 +39,16 @@
       </div>
       {% endif %}
 
+      {% if booking.payment_method == 'Vor Ort' %}
+      <div class="paypal-note" style="margin-top:18px">
+        <strong>Wichtig bei Zahlung vor Ort</strong><br>
+        Wir haben dir eine E-Mail mit einem Bestätigungslink gesendet.
+        Bitte bestätige deine E-Mail-Adresse innerhalb von <strong>2 Stunden</strong>.
+        Erst danach wird der Zeitraum vorläufig reserviert.
+        Ohne Bestätigung verfällt die Anfrage automatisch.
+      </div>
+      {% endif %}
+
       {% if booking.payment_method == 'Banküberweisung' %}
       {% set bank_subject = 'Buchungsanfrage ' ~ booking.booking_number ~ ' – Banküberweisung' %}
       {% set bank_body = 'Hallo Zuhause am Bach,\n\nich möchte meine Buchungsanfrage per Banküberweisung bestätigen.\n\nBuchungsnummer: ' ~ booking.booking_number ~ '\nName: ' ~ booking.first_name ~ ' ' ~ booking.last_name ~ '\nE-Mail: ' ~ booking.email ~ '\nTelefon: ' ~ booking.phone ~ '\nZimmer: ' ~ booking.room ~ '\nAnreise: ' ~ booking.arrival ~ '\nAbreise: ' ~ booking.departure ~ '\nPersonen: ' ~ booking.adults ~ '\nGesamtbetrag: ' ~ ('%.2f'|format(booking.total)|replace('.', ',')) ~ ' €\nZahlungsart: Banküberweisung\n\nBitte senden Sie mir die persönliche Buchungsbestätigung und Zahlungsfreigabe.\n\nVielen Dank.' %}
