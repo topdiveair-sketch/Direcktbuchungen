@@ -686,7 +686,10 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                 for row in conn.execute(
                     """SELECT id,room,arrival,departure,adults,breakfast,first_name,last_name,
                               email,phone,message,payment_method,total,status,created_at,
-                              paid,arrival_time,guest_note,invoice_number
+                              paid,arrival_time,guest_note,invoice_number,
+                              onsite_verified_at,onsite_verify_expires_at,
+                              deposit_percent,amount_paid,payment_status,payment_reference,
+                              price_breakdown_json
                        FROM bookings
                        ORDER BY id"""
                 )
@@ -710,7 +713,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
 
         return jsonify({
             "ok": True,
-            "schema": "zab-os-sync-v2",
+            "schema": "zab-os-sync-v3",
             "generated_at": datetime.now().isoformat(timespec="seconds"),
             "bookings": bookings,
             "mail": mail_rows,
