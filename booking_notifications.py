@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import os
+import json
+import urllib.error
+import urllib.request
 import re
 import smtplib
 from datetime import datetime, timedelta
