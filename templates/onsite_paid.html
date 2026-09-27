@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Zahlung bestätigt – Zuhause am Bach</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="plain-page">
+  <main class="success-shell">
+    <div class="success-card">
+      <span class="eyebrow">ZAHLUNG ERFOLGREICH</span>
+      <h1>Deine Buchung ist abgesichert</h1>
+      <p><strong>✅ E-Mail bestätigt · SMS bestätigt · Zahlung bestätigt.</strong></p>
+
+      <div class="booking-summary">
+        <p><strong>Buchungsnummer:</strong> ZAB-{{ '%06d'|format(booking.id) }}</p>
+        <p><strong>Gast:</strong> {{ booking.first_name }} {{ booking.last_name }}</p>
+        <p><strong>Anreise:</strong> {{ booking.arrival }}</p>
+        <p><strong>Abreise:</strong> {{ booking.departure }}</p>
+        <p><strong>Personen:</strong> {{ booking.adults }}</p>
+      </div>
+
+      <div class="booking-summary" style="margin-top:18px">
+        <p><strong>Rechnungsähnliche Aufstellung</strong></p>
+        <p>Zimmer/Aufenthalt: <strong>{{ '%.2f'|format(breakdown.room_total or booking.total)|replace('.', ',') }} €</strong></p>
+        {% for extra in breakdown.extras or [] %}
+          <p>{{ extra.label }}: <strong>{{ '%.2f'|format(extra.amount)|replace('.', ',') }} €</strong></p>
+        {% endfor %}
+        {% for discount in breakdown.discounts or [] %}
+          <p>{{ discount.label }}: <strong>− {{ '%.2f'|format(discount.amount)|replace('.', ',') }} €</strong></p>
+        {% endfor %}
+        <hr>
+        <p><strong>Gesamtpreis:</strong> {{ '%.2f'|format(total)|replace('.', ',') }} €</p>
+        <p><strong>Jetzt bezahlt ({{ percent }} %):</strong> {{ '%.2f'|format(amount_paid)|replace('.', ',') }} €</p>
+        <p><strong>Restbetrag bei Anreise:</strong> {{ '%.2f'|format(remainder)|replace('.', ',') }} €</p>
+        <p><strong>Zahlungsstatus:</strong> {{ 'Vollständig bezahlt' if percent == 100 else '50 % Anzahlung bezahlt' }}</p>
+        <p><strong>Zahlungsreferenz:</strong> {{ booking.payment_reference }}</p>
+      </div>
+
+      <div class="paypal-note" style="margin-top:18px">
+        {% if percent == 100 %}
+          Der Aufenthalt ist vollständig bezahlt.
+        {% else %}
+          Die Anzahlung ist eingegangen. Der Restbetrag von <strong>{{ '%.2f'|format(remainder)|replace('.', ',') }} €</strong> ist bei Anreise fällig.
+        {% endif %}
+      </div>
+
+      <p style="margin-top:22px"><a class="btn" href="/">ZUR WEBSITE</a></p>
+    </div>
+  </main>
+</body>
+</html>
