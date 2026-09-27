@@ -244,7 +244,7 @@ def init_db() -> None:
             """UPDATE bookings
                SET status='inquiry'
                WHERE status='pending'
-                 AND payment_method IN ('Banküberweisung','Vor Ort')"""
+                 AND payment_method='Banküberweisung'"""
         )
 
         for room, data in ROOMS.items():
