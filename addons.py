@@ -391,7 +391,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         )
         forced_recipient = os.environ.get("FORCE_BOOKING_MAIL_TO", "").strip()
         owner_recipient = forced_recipient or owner
-        guest_recipient = forced_recipient or booking["email"]
+        guest_recipient = booking["email"]
 
         app.logger.warning("booking_mail_owner_start booking_id=%s recipient=%s", booking_id, owner_recipient)
         ok_owner, msg_owner = smtp_send(owner_recipient, owner_subject, owner_body)
