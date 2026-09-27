@@ -416,6 +416,7 @@ def railway_deploy_health():
         "paypal_merchant_email_match": configured_merchant_email == EXPECTED_PAYPAL_MERCHANT_EMAIL,
         "paid_guest_email": bool(app.extensions.get("zab_send_paid_guest_confirmation")),
         "smtp_configured": smtp_configured,
+        "https_mail_configured": bool(os.environ.get("BREVO_API_KEY", "").strip() and os.environ.get("MAIL_SENDER_EMAIL", "").strip()),
         "bank_transfer_configured": bank_transfer_configured,
         "ical_configured": ical_configured,
         "official_public_site": public_site in {"https://zuhauseambach-wachau.at","https://www.zuhauseambach-wachau.at"},
@@ -427,6 +428,43 @@ def railway_deploy_health():
         "checkout_rev": PAYPAL_CHECKOUT_DEPLOY_REV,
         "checkout_base": os.environ.get("PUBLIC_CHECKOUT_BASE_URL", ""),
     }, 200
+
+
+@app.get("/health/mail")
+def mail_health():
+    """Verify HTTPS mail provider configuration without sending email."""
+    brevo_key = os.environ.get("BREVO_API_KEY", "").strip()
+    sender_email = os.environ.get("MAIL_SENDER_EMAIL", "").strip()
+    if not brevo_key:
+        return {
+            "ok": False,
+            "provider": "brevo",
+            "reason": "brevo_api_key_missing",
+            "sender_configured": bool(sender_email),
+        }, 503
+    req = urllib.request.Request(
+        "https://api.brevo.com/v3/account",
+        headers={"accept": "application/json", "api-key": brevo_key},
+        method="GET",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as response:
+            if int(response.status) != 200:
+                return {"ok": False, "provider": "brevo", "reason": "brevo_http_error"}, 503
+        return {
+            "ok": True,
+            "provider": "brevo",
+            "authentication": "accepted",
+            "sender_configured": bool(sender_email),
+        }, 200
+    except urllib.error.HTTPError as exc:
+        return {
+            "ok": False,
+            "provider": "brevo",
+            "reason": "brevo_auth_rejected" if exc.code in (401,403) else "brevo_http_error",
+        }, 503
+    except Exception:
+        return {"ok": False, "provider": "brevo", "reason": "brevo_unreachable"}, 503
 
 
 @app.get("/health/smtp")
