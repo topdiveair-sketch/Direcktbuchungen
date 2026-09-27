@@ -445,42 +445,44 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             f"Neue Buchungsanfrage: {room_name}"
         )
         owner_body = (
-            f"{booking['first_name']} {booking['last_name']}\n"
-            f"{room_name}\n"
-            f"{booking['arrival']} bis {booking['departure']}\n"
-            f"{booking['total']:.2f} EUR\n"
+            f"Buchung #{booking_id}\n"
+            f"Gast: {booking['first_name']} {booking['last_name']}\n"
+            f"E-Mail: {booking['email']}\n"
+            f"Telefon: {booking['phone']}\n"
+            f"Zimmer: {room_name}\n"
+            f"Anreise: {booking['arrival']}\n"
+            f"Abreise: {booking['departure']}\n"
+            f"Personen: {booking['adults']}\n"
+            f"Gesamtpreis: {booking['total']:.2f} EUR\n"
             f"Zahlungsart: {payment_method}\n"
             f"Status: {booking['status']}\n"
-            f"Telefon: {booking['phone']}\n"
-            f"E-Mail: {booking['email']}"
+            f"Nachricht: {booking['message'] or '-'}"
         )
         forced_recipient = os.environ.get("FORCE_BOOKING_MAIL_TO", "").strip()
         owner_recipient = forced_recipient or owner
         guest_recipient = booking["email"]
 
-        app.logger.warning("booking_mail_queue booking_id=%s owner=%s guest=%s", booking_id, owner_recipient, guest_recipient)
+        app.logger.warning("booking_mail_queue booking_id=%s owner=%s", booking_id, owner_recipient)
         owner_key = _queue_mail(booking_id, "owner", owner_recipient, owner_subject, owner_body)
-        guest_key = _queue_mail(booking_id, "guest", guest_recipient, guest_subject, guest_body)
 
-        results = {}
         with db() as conn:
-            rows = conn.execute(
-                "SELECT * FROM email_outbox WHERE dedupe_key IN (?,?) ORDER BY id",
-                (owner_key, guest_key),
-            ).fetchall()
-        for row in rows:
-            if row["status"] == "sent":
-                results[row["role"]] = (True, "already_sent")
-            else:
-                results[row["role"]] = _deliver_outbox_row(row)
+            row = conn.execute(
+                "SELECT * FROM email_outbox WHERE dedupe_key=?",
+                (owner_key,),
+            ).fetchone()
 
-        ok_owner, msg_owner = results.get("owner", (False, "owner_missing"))
-        ok_guest, msg_guest = results.get("guest", (False, "guest_missing"))
+        if row and row["status"] == "sent":
+            ok_owner, msg_owner = True, "already_sent"
+        elif row:
+            ok_owner, msg_owner = _deliver_outbox_row(row)
+        else:
+            ok_owner, msg_owner = False, "owner_missing"
+
         app.logger.warning(
-            "booking_mail_results booking_id=%s guest_ok=%s guest_status=%s owner_ok=%s owner_status=%s",
-            booking_id, ok_guest, msg_guest, ok_owner, msg_owner,
+            "booking_mail_results booking_id=%s owner_ok=%s owner_status=%s",
+            booking_id, ok_owner, msg_owner,
         )
-        return ok_guest and ok_owner
+        return ok_owner
 
     app.extensions["zab_send_confirmation"] = send_booking_confirmation
     app.extensions["zab_ensure_tokens"] = ensure_booking_tokens
