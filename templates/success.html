@@ -10,9 +10,15 @@
 <body class="plain-page">
   <main class="success-shell">
     <div class="success-card">
-      <span class="eyebrow">{{ 'Buchungsanfrage gespeichert' if booking.status == 'inquiry' else 'Direktbuchung vorgemerkt' }}</span>
-      <h1>Willkommen bei Zuhause am Bach 🐾</h1>
-      <p>Danke, {{ booking.first_name }}. {{ 'Die Verfügbarkeit wird persönlich bestätigt.' if booking.status == 'inquiry' else 'Der Zeitraum wurde sicher vorgemerkt. Die persönliche Bestätigung folgt.' }}</p>
+      <span class="eyebrow">{{ 'ANFRAGE ERFOLGREICH ÜBERMITTELT' if booking.status == 'inquiry' else 'BUCHUNG ERFOLGREICH VORGEMERKT' }}</span>
+      <h1>{{ 'Deine Buchungsanfrage ist bei uns eingegangen' if booking.status == 'inquiry' else 'Deine Buchung wurde vorgemerkt' }}</h1>
+      {% if booking.status == 'inquiry' %}
+      <p><strong>✅ Anfrage gesendet und gespeichert.</strong></p>
+      <p>Danke, {{ booking.first_name }}. Dies ist <strong>noch keine verbindliche Buchung</strong>. Wir prüfen die Verfügbarkeit persönlich und senden dir anschließend die Bestätigung.</p>
+      {% else %}
+      <p><strong>✅ Buchung vorgemerkt.</strong></p>
+      <p>Danke, {{ booking.first_name }}. Der Zeitraum wurde sicher vorgemerkt. Die persönliche Bestätigung folgt.</p>
+      {% endif %}
 
       <div class="booking-summary">
         <p><strong>Buchungsnummer:</strong> {{ booking.booking_number }}</p>
@@ -38,7 +44,7 @@
       <p>Aggsbach Markt 82, 3641 Aggsbach Markt</p>
       {% set contact_subject = 'Buchungsanfrage ' ~ booking.booking_number ~ ' – Zuhause am Bach' %}
       {% set contact_body = 'Hallo Zuhause am Bach,\n\nich habe eine Frage zu meiner Buchungsanfrage.\n\nBuchungsnummer: ' ~ booking.booking_number ~ '\nZimmer: ' ~ booking.room ~ '\nAnreise: ' ~ booking.arrival ~ '\nAbreise: ' ~ booking.departure ~ '\nPersonen: ' ~ booking.adults ~ '\nFrühstück: ' ~ ('Ja' if booking.breakfast else 'Nein') ~ '\nZahlung: ' ~ booking.payment_method ~ '\nGesamt: ' ~ ('%.2f'|format(booking.total)|replace('.', ',')) ~ ' €\n\nName: ' ~ booking.first_name ~ ' ' ~ booking.last_name ~ '\nE-Mail: ' ~ booking.email ~ '\nTelefon: ' ~ booking.phone ~ '\n\nMeine Nachricht:\n' %}
-      <p><a class="btn secondary" href="https://www.google.com/maps/dir/?api=1&destination=Aggsbach+Markt+82%2C+3641+Aggsbach+Markt">Route öffnen</a> <a class="btn secondary" href="{{ guest_app_url }}">Gäste-App öffnen</a> <a class="btn secondary" href="mailto:{{ settings.email }}?subject={{ contact_subject|urlencode }}&body={{ contact_body|urlencode }}">Kontakt</a></p>
+      <p><a class="btn secondary" href="https://www.google.com/maps/dir/?api=1&destination=Aggsbach+Markt+82%2C+3641+Aggsbach+Markt">Route öffnen</a> <a class="btn secondary" href="{{ guest_app_url }}">Gäste-App öffnen</a> <a class="btn secondary" href="mailto:{{ settings.email }}?subject={{ contact_subject|urlencode }}&body={{ contact_body|urlencode }}">{{ 'Frage zu dieser Anfrage' if booking.status == 'inquiry' else 'Frage zu dieser Buchung' }}</a></p>
     </div>
   </main>
 </body>
