@@ -1732,12 +1732,9 @@ def onsite_security(token):
         ).fetchone()
     if not booking or not booking["onsite_verified_at"]:
         return Response("E-Mail-Verifizierung erforderlich.", status=403)
-    sms_ready = all((env_value("TWILIO_ACCOUNT_SID"), env_value("TWILIO_AUTH_TOKEN"), env_value("TWILIO_VERIFY_SERVICE_SID")))
     return render_template(
         "onsite_security.html",
         booking=booking,
-        sms_ready=sms_ready,
-        sms_verified=bool(booking["sms_verified_at"]),
         breakdown=_booking_breakdown(booking),
     )
 
@@ -1814,8 +1811,8 @@ def onsite_payment_start(token):
             "SELECT * FROM bookings WHERE onsite_verify_token=? AND payment_method='Vor Ort'",
             (token,),
         ).fetchone()
-    if not booking or not booking["onsite_verified_at"] or not booking["sms_verified_at"]:
-        return Response("E-Mail- und SMS-Verifizierung erforderlich.", status=403)
+    if not booking or not booking["onsite_verified_at"]:
+        return Response("E-Mail-Verifizierung erforderlich.", status=403)
 
     total, amount_now, remainder = _onsite_amounts(booking["total"], percent)
     base_url = env_value("PUBLIC_SITE_URL") or "https://www.zuhauseambach-wachau.at"
