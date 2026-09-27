@@ -330,6 +330,18 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         while True:
             try:
                 expire_unverified_onsite()
+                now_iso = datetime.now().isoformat(timespec="seconds")
+                with db() as conn:
+                    conn.execute(
+                        """UPDATE bookings
+                           SET status='inquiry'
+                           WHERE payment_method='Vor Ort'
+                             AND status='pending'
+                             AND payment_status NOT IN ('paid_partial','paid_full')
+                             AND payment_hold_expires_at<>''
+                             AND payment_hold_expires_at < ?""",
+                        (now_iso,),
+                    )
                 process_mail_outbox(limit=10)
             except Exception:
                 app.logger.exception("mail_retry_worker_failed")
@@ -477,7 +489,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                 return Response("<h1>Termin nicht mehr verfügbar.</h1><p>Bitte wähle einen anderen Zeitraum.</p>", status=409, mimetype="text/html")
 
             conn.execute(
-                "UPDATE bookings SET status='pending', onsite_verified_at=? WHERE id=?",
+                "UPDATE bookings SET status='inquiry', onsite_verified_at=? WHERE id=?",
                 (now, booking["id"]),
             )
 
@@ -498,7 +510,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             f"Gesamtpreis: {booking['total']:.2f} EUR\n"
             "Zahlung: Vor Ort\n"
             "E-Mail-Verifizierung: erfolgreich\n"
-            "Status: vorläufig reserviert"
+            "Status: E-Mail bestätigt – SMS und Zahlung noch ausständig"
         )
         owner_key = _queue_mail(booking["id"], "onsite_verified_owner", owner, subject, body)
         with db() as conn:
@@ -506,13 +518,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         if owner_row and owner_row["status"] != "sent":
             _deliver_outbox_row(owner_row)
 
-        return render_template(
-            "onsite_verified.html",
-            booking=booking,
-            room_name=("Gartenzimmer" if booking["room"] == "Bachblick" else booking["room"]),
-            settings=settings(),
-            guest_app_url=settings().get("public_base_url", "https://topdiveair-sketch.github.io/Gaeste/"),
-        )
+        return redirect(url_for("onsite_security", token=token))
 
     def send_booking_confirmation(booking_id):
         public_token, cancel_token, invoice_number = ensure_booking_tokens(booking_id)
