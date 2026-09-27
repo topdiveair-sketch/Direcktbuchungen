@@ -506,10 +506,12 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         if owner_row and owner_row["status"] != "sent":
             _deliver_outbox_row(owner_row)
 
-        return Response(
-            "<h1>Danke – E-Mail bestätigt.</h1>"
-            "<p>Der Zeitraum ist jetzt vorläufig reserviert. Die endgültige Buchungsbestätigung folgt persönlich.</p>",
-            mimetype="text/html",
+        return render_template(
+            "onsite_verified.html",
+            booking=booking,
+            room_name=("Gartenzimmer" if booking["room"] == "Bachblick" else booking["room"]),
+            settings=settings(),
+            guest_app_url=settings().get("public_base_url", "https://topdiveair-sketch.github.io/Gaeste/"),
         )
 
     def send_booking_confirmation(booking_id):
