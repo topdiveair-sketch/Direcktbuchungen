@@ -90,7 +90,22 @@ BREAKFAST_PRICE = 12.0
 # rabattiert, sondern mit einem transparenten Eventfaktor bepreist.
 # factor 1.15 = +15 %, 1.25 = +25 %, 1.35 = +35 %.
 EVENT_PRICING = (
-    (date(2026, 11, 19), date(2026, 12, 24), "Kremser Adventzauber", 1.15, 159.0, 1),
+    # Advent 2026: bestätigte regionale Nachfragefenster. Bei Überschneidungen
+    # steht das stärkere Ereignis weiter oben, damit Zuschläge nie gestapelt werden.
+    (date(2026, 11, 20), date(2026, 11, 23), "Wachauer Advent Dürnstein", 1.20, 169.0, 1),
+    (date(2026, 11, 27), date(2026, 11, 30), "Wachauer Advent Dürnstein", 1.20, 169.0, 1),
+    (date(2026, 12, 4), date(2026, 12, 9), "Wachauer Advent Dürnstein", 1.20, 169.0, 1),
+    (date(2026, 12, 11), date(2026, 12, 14), "Wachauer Advent Dürnstein", 1.20, 169.0, 1),
+    (date(2026, 10, 30), date(2026, 11, 2), "Aggsteiner Burgadvent", 1.15, 159.0, 1),
+    (date(2026, 11, 6), date(2026, 11, 9), "Aggsteiner Burgadvent", 1.15, 159.0, 1),
+    (date(2026, 11, 13), date(2026, 11, 16), "Aggsteiner Burgadvent", 1.15, 159.0, 1),
+    (date(2026, 11, 20), date(2026, 11, 23), "Aggsteiner Burgadvent", 1.15, 159.0, 1),
+    (date(2026, 11, 27), date(2026, 11, 30), "Melker Advent", 1.15, 159.0, 1),
+    (date(2026, 12, 4), date(2026, 12, 7), "Melker Advent", 1.15, 159.0, 1),
+    (date(2026, 12, 11), date(2026, 12, 14), "Melker Advent", 1.15, 159.0, 1),
+    (date(2026, 12, 18), date(2026, 12, 21), "Melker Advent", 1.15, 159.0, 1),
+    # Spitzer Advent (28.-29.11.) sowie Maria Laach Adventkranzbinden (21.11.)
+    # liegen bereits innerhalb der stärkeren Dürnstein-/Aggstein-Fenster.
     (date(2027, 3, 26), date(2027, 3, 28), "Kremser Marillenblütenmarkt", 1.15, 169.0, 1),
     (date(2027, 4, 2), date(2027, 4, 4), "Kremser Marillenblütenmarkt", 1.15, 169.0, 1),
     (date(2027, 6, 19), date(2027, 6, 20), "Wachauer Sonnenwende", 1.35, 179.0, 2),
@@ -107,11 +122,11 @@ def event_pricing_for_day(day: date):
             # für Freitag/Samstag-Nächte, nicht pauschal für Werktage.
             if name == "ALLES MARILLE!" and day.weekday() in (4, 5):
                 min_nights = 2
-            if name == "Kremser Adventzauber":
-                # Adventpreis nur an den nachfragestarken Wochenendtagen.
-                if day.weekday() not in (4, 5, 6):
-                    return None
-                min_nights = 2
+            if name in {"Wachauer Advent Dürnstein", "Aggsteiner Burgadvent", "Melker Advent"}:
+                # Adventtermine sind explizit hinterlegt. Freitag/Samstag
+                # erhalten 2-Nächte-Mindestaufenthalt; Sonntag bleibt 1 Nacht möglich.
+                if day.weekday() in (4, 5):
+                    min_nights = 2
             return {
                 "name": name,
                 "factor": factor,
