@@ -41,8 +41,12 @@ def init_booking_notifications(app, db):
                 server.login(user, password)
                 server.send_message(msg)
             return True, "gesendet"
-        except Exception as exc:
-            return False, str(exc)
+        except smtplib.SMTPAuthenticationError:
+            return False, "smtp_auth_failed"
+        except (smtplib.SMTPException, OSError, TimeoutError):
+            return False, "smtp_delivery_failed"
+        except Exception:
+            return False, "smtp_delivery_failed"
 
     def already_sent(booking_id: int, recipient: str) -> bool:
         with db() as conn:
@@ -316,7 +320,7 @@ def init_booking_notifications(app, db):
                 jsonify(
                     ok=False,
                     message="Direktversand konnte nicht bestätigt werden. Bitte E-Mail oder WhatsApp verwenden.",
-                    detail=owner_status,
+                    detail="smtp_unavailable",
                 )
             ), 503
 
