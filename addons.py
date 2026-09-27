@@ -1,5 +1,6 @@
 
-from __future__ import annotations
+from __future__ import time
+import annotations
 
 import hmac
 import csv
@@ -135,7 +136,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         return configured_email, configured_name
 
     def smtp_send(to, subject, body):
-        """Send transactional mail through Brevo HTTPS only in production."""
+        """Send transactional mail through Brevo HTTPS with one retry."""
         cfg = settings()
         brevo_key = os.environ.get("BREVO_API_KEY", "").strip()
         sender_email = (
@@ -162,36 +163,55 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             "textContent": body,
             "tags": ["zuhause-am-bach", "booking"],
         }
-        try:
-            response = requests.post(
-                "https://api.brevo.com/v3/smtp/email",
-                headers={
-                    "accept": "application/json",
-                    "api-key": brevo_key,
-                    "content-type": "application/json",
-                },
-                json=payload,
-                timeout=(4, 8),
-            )
-            if 200 <= int(response.status_code) < 300:
-                app.logger.warning("mail_send_ok recipient=%s sender=%s subject=%s", to, sender_email, subject)
-                return True, "gesendet"
-            reason = (
-                "mail_api_auth_failed" if response.status_code in (401, 403)
-                else "mail_sender_or_payload_rejected" if response.status_code == 400
-                else f"mail_api_failed_{response.status_code}"
-            )
-            logging.error(
-                "mail_send_failed reason=%s recipient=%s sender=%s status=%s body=%s",
-                reason, to, sender_email, response.status_code, response.text[:500],
-            )
-            return False, reason
-        except requests.Timeout:
-            app.logger.error("mail_send_failed reason=mail_api_timeout recipient=%s", to)
-            return False, "mail_api_timeout"
-        except requests.RequestException as exc:
-            app.logger.error("mail_send_failed reason=mail_api_unreachable recipient=%s error=%s", to, str(exc)[:200])
-            return False, "mail_api_unreachable"
+
+        last_reason = "mail_api_unknown"
+        for attempt in (1, 2):
+            try:
+                response = requests.post(
+                    "https://api.brevo.com/v3/smtp/email",
+                    headers={
+                        "accept": "application/json",
+                        "api-key": brevo_key,
+                        "content-type": "application/json",
+                    },
+                    json=payload,
+                    timeout=(4, 8),
+                )
+                if 200 <= int(response.status_code) < 300:
+                    app.logger.warning(
+                        "mail_send_ok recipient=%s sender=%s subject=%s attempt=%s",
+                        to, sender_email, subject, attempt,
+                    )
+                    return True, "gesendet"
+
+                reason = (
+                    "mail_api_auth_failed" if response.status_code in (401, 403)
+                    else "mail_sender_or_payload_rejected" if response.status_code == 400
+                    else f"mail_api_failed_{response.status_code}"
+                )
+                last_reason = reason
+                app.logger.error(
+                    "mail_send_failed reason=%s recipient=%s sender=%s status=%s body=%s attempt=%s",
+                    reason, to, sender_email, response.status_code, response.text[:500], attempt,
+                )
+                if response.status_code not in (429, 500, 502, 503, 504):
+                    return False, reason
+            except requests.Timeout:
+                last_reason = "mail_api_timeout"
+                app.logger.error(
+                    "mail_send_failed reason=mail_api_timeout recipient=%s attempt=%s",
+                    to, attempt,
+                )
+            except requests.RequestException as exc:
+                last_reason = "mail_api_unreachable"
+                app.logger.error(
+                    "mail_send_failed reason=mail_api_unreachable recipient=%s error=%s attempt=%s",
+                    to, str(exc)[:200], attempt,
+                )
+            if attempt == 1:
+                time.sleep(1)
+
+        return False, last_reason
 
     def ensure_booking_tokens(booking_id):
         with db() as conn:
@@ -302,8 +322,6 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             "Wir freuen uns auf deinen Aufenthalt.\n"
             "Zuhause am Bach"
         )
-        ok_guest, msg_guest = smtp_send(booking["email"], guest_subject, guest_body)
-
         owner = (
             os.environ.get("BOOKING_OWNER_EMAIL", "").strip()
             or os.environ.get("SITE_EMAIL", "").strip()
@@ -325,7 +343,10 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             f"Telefon: {booking['phone']}\n"
             f"E-Mail: {booking['email']}"
         )
+        app.logger.warning("booking_mail_owner_start booking_id=%s recipient=%s", booking_id, owner)
         ok_owner, msg_owner = smtp_send(owner, owner_subject, owner_body)
+        app.logger.warning("booking_mail_guest_start booking_id=%s recipient=%s", booking_id, booking["email"])
+        ok_guest, msg_guest = smtp_send(booking["email"], guest_subject, guest_body)
         app.logger.warning(
             "booking_mail_results booking_id=%s guest_ok=%s guest_status=%s owner_ok=%s owner_status=%s",
             booking_id, ok_guest, msg_guest, ok_owner, msg_owner,
