@@ -135,76 +135,101 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         return configured_email, configured_name
 
     def smtp_send(to, subject, body):
-        """Send transactional mail. Prefer configured SMTP; use Brevo as fallback."""
-        cfg = settings()
+        """Send transactional booking mail over HTTPS.
+
+        Resend is the primary provider because Railway can reach HTTPS reliably
+        even when outbound SMTP ports are unavailable. Brevo remains a fallback
+        during DNS propagation or a temporary Resend incident.
+        """
         sender_email = (
             os.environ.get("MAIL_SENDER_EMAIL", "").strip()
-            or os.environ.get("SMTP_SENDER", "").strip()
-            or cfg.get("email", "").strip()
-            or PAYPAL_EMAIL
+            or "buchung@zuhauseambach-wachau.at"
         )
         sender_name = os.environ.get("MAIL_SENDER_NAME", "Zuhause am Bach – Wachau").strip()
+        reply_to = (
+            os.environ.get("MAIL_REPLY_TO", "").strip()
+            or os.environ.get("BOOKING_OWNER_EMAIL", "").strip()
+            or "zuhause.am.bach@outlook.com"
+        )
 
-        smtp_host = os.environ.get("SMTP_HOST", "").strip()
-        smtp_user = os.environ.get("SMTP_USER", "").strip()
-        smtp_password = os.environ.get("SMTP_PASSWORD", "")
-        smtp_sender = os.environ.get("SMTP_SENDER", "").strip() or sender_email
-        try:
-            smtp_port = int(os.environ.get("SMTP_PORT", "587") or "587")
-        except ValueError:
-            smtp_port = 587
+        resend_key = os.environ.get("RESEND_API_KEY", "").strip()
+        if resend_key:
+            payload = {
+                "from": f"{sender_name} <{sender_email}>",
+                "to": [to],
+                "subject": subject,
+                "text": body,
+                "reply_to": [reply_to],
+                "tags": [
+                    {"name": "app", "value": "zuhause-am-bach"},
+                    {"name": "type", "value": "booking"},
+                ],
+            }
 
-        if smtp_host and smtp_user and smtp_password and smtp_sender:
-            try:
-                msg = EmailMessage()
-                msg["From"] = smtp_sender
-                msg["To"] = to
-                msg["Subject"] = subject
-                msg.set_content(body)
+            last_reason = "resend_unknown"
+            for attempt in (1, 2):
+                try:
+                    response = requests.post(
+                        "https://api.resend.com/emails",
+                        headers={
+                            "Authorization": f"Bearer {resend_key}",
+                            "Content-Type": "application/json",
+                        },
+                        json=payload,
+                        timeout=(4, 10),
+                    )
+                    if 200 <= int(response.status_code) < 300:
+                        data = response.json() if response.content else {}
+                        message_id = str(data.get("id", "")).strip()
+                        app.logger.warning(
+                            "mail_send_ok transport=resend recipient=%s sender=%s subject=%s message_id=%s attempt=%s",
+                            to, sender_email, subject, message_id or "-", attempt,
+                        )
+                        return True, f"gesendet_resend:{message_id}" if message_id else "gesendet_resend"
 
-                if smtp_port == 465:
-                    with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=15) as smtp:
-                        smtp.login(smtp_user, smtp_password)
-                        smtp.send_message(msg)
-                else:
-                    with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as smtp:
-                        smtp.ehlo()
-                        smtp.starttls()
-                        smtp.ehlo()
-                        smtp.login(smtp_user, smtp_password)
-                        smtp.send_message(msg)
+                    last_reason = f"resend_failed_{response.status_code}"
+                    app.logger.error(
+                        "mail_send_failed transport=resend recipient=%s sender=%s status=%s body=%s attempt=%s",
+                        to, sender_email, response.status_code, response.text[:500], attempt,
+                    )
+                    if response.status_code not in (408, 429, 500, 502, 503, 504):
+                        break
+                except requests.Timeout:
+                    last_reason = "resend_timeout"
+                    app.logger.error(
+                        "mail_send_failed transport=resend reason=timeout recipient=%s attempt=%s",
+                        to, attempt,
+                    )
+                except requests.RequestException as exc:
+                    last_reason = "resend_unreachable"
+                    app.logger.error(
+                        "mail_send_failed transport=resend reason=unreachable recipient=%s error=%s attempt=%s",
+                        to, str(exc)[:200], attempt,
+                    )
+                if attempt == 1:
+                    time.sleep(1)
+        else:
+            last_reason = "resend_key_missing"
+            app.logger.error("mail_send_failed transport=resend reason=key_missing recipient=%s", to)
 
-                app.logger.warning(
-                    "mail_send_ok transport=smtp recipient=%s sender=%s host=%s port=%s subject=%s",
-                    to, smtp_sender, smtp_host, smtp_port, subject,
-                )
-                return True, "gesendet_smtp"
-            except Exception as exc:
-                app.logger.exception(
-                    "mail_send_failed transport=smtp recipient=%s sender=%s host=%s port=%s error=%s",
-                    to, smtp_sender, smtp_host, smtp_port, str(exc)[:300],
-                )
-
+        # Temporary fallback while the new sending domain propagates.
         brevo_key = os.environ.get("BREVO_API_KEY", "").strip()
-        if not brevo_key:
-            app.logger.error("mail_send_failed recipient=%s reason=no_working_transport", to)
-            return False, "no_working_transport"
-        if not sender_email:
-            app.logger.error("mail_send_failed reason=sender_missing recipient=%s", to)
-            return False, "sender_missing"
-
-        sender_email, sender_name = brevo_sender_email(brevo_key, sender_email, sender_name)
-        payload = {
-            "sender": {"name": sender_name, "email": sender_email},
-            "to": [{"email": to}],
-            "replyTo": {"name": sender_name, "email": sender_email},
-            "subject": subject,
-            "textContent": body,
-            "tags": ["zuhause-am-bach", "booking"],
-        }
-
-        last_reason = "mail_api_unknown"
-        for attempt in (1, 2):
+        if brevo_key:
+            fallback_sender, fallback_name = brevo_sender_email(
+                brevo_key,
+                os.environ.get("BREVO_SENDER_EMAIL", "").strip()
+                or os.environ.get("BOOKING_OWNER_EMAIL", "").strip()
+                or sender_email,
+                sender_name,
+            )
+            payload = {
+                "sender": {"name": fallback_name, "email": fallback_sender},
+                "to": [{"email": to}],
+                "replyTo": {"name": sender_name, "email": reply_to},
+                "subject": subject,
+                "textContent": body,
+                "tags": ["zuhause-am-bach", "booking"],
+            }
             try:
                 response = requests.post(
                     "https://api.brevo.com/v3/smtp/email",
@@ -218,37 +243,19 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                 )
                 if 200 <= int(response.status_code) < 300:
                     app.logger.warning(
-                        "mail_send_ok transport=brevo recipient=%s sender=%s subject=%s attempt=%s",
-                        to, sender_email, subject, attempt,
+                        "mail_send_ok transport=brevo_fallback recipient=%s sender=%s subject=%s",
+                        to, fallback_sender, subject,
                     )
-                    return True, "gesendet_brevo"
-
-                reason = (
-                    "mail_api_auth_failed" if response.status_code in (401, 403)
-                    else "mail_sender_or_payload_rejected" if response.status_code == 400
-                    else f"mail_api_failed_{response.status_code}"
-                )
-                last_reason = reason
+                    return True, "gesendet_brevo_fallback"
                 app.logger.error(
-                    "mail_send_failed transport=brevo reason=%s recipient=%s sender=%s status=%s body=%s attempt=%s",
-                    reason, to, sender_email, response.status_code, response.text[:500], attempt,
-                )
-                if response.status_code not in (429, 500, 502, 503, 504):
-                    return False, reason
-            except requests.Timeout:
-                last_reason = "mail_api_timeout"
-                app.logger.error(
-                    "mail_send_failed transport=brevo reason=mail_api_timeout recipient=%s attempt=%s",
-                    to, attempt,
+                    "mail_send_failed transport=brevo_fallback recipient=%s status=%s body=%s prior_reason=%s",
+                    to, response.status_code, response.text[:500], last_reason,
                 )
             except requests.RequestException as exc:
-                last_reason = "mail_api_unreachable"
                 app.logger.error(
-                    "mail_send_failed transport=brevo reason=mail_api_unreachable recipient=%s error=%s attempt=%s",
-                    to, str(exc)[:200], attempt,
+                    "mail_send_failed transport=brevo_fallback recipient=%s error=%s prior_reason=%s",
+                    to, str(exc)[:200], last_reason,
                 )
-            if attempt == 1:
-                time.sleep(1)
 
         return False, last_reason
 
