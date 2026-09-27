@@ -1,6 +1,7 @@
 
-from __future__ import threading
-import annotations
+from __future__ import annotations
+
+import threading
 
 import os
 import base64
