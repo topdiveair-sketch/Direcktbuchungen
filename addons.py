@@ -418,6 +418,50 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
     app.extensions["zab_ensure_tokens"] = ensure_booking_tokens
     app.extensions["zab_smtp_send"] = smtp_send
 
+    def _os_sync_authorized():
+        expected = os.environ.get("OS_SYNC_TOKEN", "").strip()
+        if not expected:
+            return False
+        provided = (
+            request.headers.get("X-OS-Sync-Token", "").strip()
+            or request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+        )
+        return bool(provided) and hmac.compare_digest(provided, expected)
+
+    @app.get("/api/os/sync")
+    def os_sync_feed():
+        """Read-only bridge for Zuhause am Bach OS / Rainsoft Central."""
+        if not _os_sync_authorized():
+            return jsonify({"ok": False, "error": "unauthorized"}), 401
+
+        with db() as conn:
+            bookings = [
+                dict(row)
+                for row in conn.execute(
+                    """SELECT id,room,arrival,departure,adults,breakfast,first_name,last_name,
+                              email,phone,message,payment_method,total,status,created_at,
+                              paid,arrival_time,guest_note,invoice_number
+                       FROM bookings
+                       ORDER BY id"""
+                )
+            ]
+            mail_rows = [
+                dict(row)
+                for row in conn.execute(
+                    """SELECT id,booking_id,recipient,subject,status,created_at
+                       FROM email_log
+                       ORDER BY id"""
+                )
+            ]
+
+        return jsonify({
+            "ok": True,
+            "schema": "zab-os-sync-v1",
+            "generated_at": datetime.now().isoformat(timespec="seconds"),
+            "bookings": bookings,
+            "mail": mail_rows,
+        })
+
     @app.get("/internal/resend-booking/<token>/<int:booking_id>")
     def internal_resend_booking(token, booking_id):
         expected = os.environ.get("MAIL_DIAGNOSTIC_TOKEN", "")
