@@ -46,6 +46,9 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         ensure_column(conn, "bookings", "invoice_number", "TEXT DEFAULT ''")
         ensure_column(conn, "bookings", "arrival_time", "TEXT DEFAULT ''")
         ensure_column(conn, "bookings", "guest_note", "TEXT DEFAULT ''")
+        ensure_column(conn, "bookings", "onsite_verified_at", "TEXT DEFAULT ''")
+        ensure_column(conn, "bookings", "onsite_verify_expires_at", "TEXT DEFAULT ''")
+        ensure_column(conn, "bookings", "onsite_verify_token", "TEXT DEFAULT ''")
         conn.executescript("""
         CREATE TABLE IF NOT EXISTS housekeeping(
             room TEXT PRIMARY KEY,
@@ -319,6 +322,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
     def _mail_retry_worker():
         while True:
             try:
+                expire_unverified_onsite()
                 process_mail_outbox(limit=10)
             except Exception:
                 app.logger.exception("mail_retry_worker_failed")
@@ -370,6 +374,136 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         c.drawString(50, y, "Jeder Gast bringt seine Geschichte mit. Bei Zuhause am Bach nimmt jeder eine neue mit nach Hause.")
         c.save()
         return path
+
+    def expire_unverified_onsite():
+        now = datetime.now().isoformat(timespec="seconds")
+        with db() as conn:
+            conn.execute(
+                """UPDATE bookings
+                   SET status='expired'
+                   WHERE payment_method='Vor Ort'
+                     AND status='inquiry'
+                     AND onsite_verified_at=''
+                     AND onsite_verify_expires_at<>''
+                     AND onsite_verify_expires_at < ?""",
+                (now,),
+            )
+
+    def send_onsite_verification(booking_id):
+        with db() as conn:
+            booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
+            if not booking or booking["payment_method"] != "Vor Ort":
+                return False
+
+            token = booking["onsite_verify_token"] or token_urlsafe(32)
+            expires = booking["onsite_verify_expires_at"]
+            if not expires or booking["status"] == "expired":
+                expires = (datetime.now() + __import__("datetime").timedelta(hours=2)).isoformat(timespec="seconds")
+                conn.execute(
+                    """UPDATE bookings
+                       SET onsite_verify_token=?, onsite_verify_expires_at=?,
+                           onsite_verified_at='', status='inquiry'
+                       WHERE id=?""",
+                    (token, expires, booking_id),
+                )
+
+        site_url = os.environ.get("PUBLIC_SITE_URL", "https://www.zuhauseambach-wachau.at").rstrip("/")
+        room_name = "Gartenzimmer" if booking["room"] == "Bachblick" else booking["room"]
+        subject = "Bitte Buchungsanfrage bestätigen – Zuhause am Bach"
+        body = (
+            f"Hallo {booking['first_name']},\n\n"
+            "du hast Zahlung bei Anreise gewählt. Damit der Termin nicht durch unbeabsichtigte "
+            "oder nicht ernst gemeinte Anfragen blockiert wird, bestätige bitte deine E-Mail-Adresse.\n\n"
+            f"Zimmer: {room_name}\n"
+            f"Anreise: {booking['arrival']}\n"
+            f"Abreise: {booking['departure']}\n"
+            f"Personen: {booking['adults']}\n"
+            f"Gesamtbetrag: {booking['total']:.2f} EUR\n\n"
+            f"Bestätigen: {site_url}/verify-onsite/{token}\n\n"
+            "Der Link ist 2 Stunden gültig. Erst nach der Bestätigung wird der Zeitraum vorläufig reserviert.\n\n"
+            "Zuhause am Bach"
+        )
+        key = _queue_mail(booking_id, "onsite_verify", booking["email"], subject, body)
+        with db() as conn:
+            row = conn.execute("SELECT * FROM email_outbox WHERE dedupe_key=?", (key,)).fetchone()
+        if not row:
+            return False
+        if row["status"] == "sent":
+            return True
+        ok, _ = _deliver_outbox_row(row)
+        return ok
+
+    @app.get("/verify-onsite/<token>")
+    def verify_onsite(token):
+        expire_unverified_onsite()
+        now = datetime.now().isoformat(timespec="seconds")
+        with db() as conn:
+            booking = conn.execute(
+                "SELECT * FROM bookings WHERE onsite_verify_token=? AND payment_method='Vor Ort'",
+                (token,),
+            ).fetchone()
+            if not booking:
+                return Response("<h1>Bestätigungslink ungültig.</h1>", status=404, mimetype="text/html")
+
+            if booking["onsite_verified_at"]:
+                return Response("<h1>Bereits bestätigt.</h1><p>Der Zeitraum ist bereits vorläufig reserviert.</p>", mimetype="text/html")
+
+            if booking["onsite_verify_expires_at"] and booking["onsite_verify_expires_at"] < now:
+                conn.execute("UPDATE bookings SET status='expired' WHERE id=?", (booking["id"],))
+                return Response("<h1>Bestätigungslink abgelaufen.</h1><p>Bitte stelle eine neue Anfrage.</p>", status=410, mimetype="text/html")
+
+            local_conflict = conn.execute(
+                """SELECT id FROM bookings
+                   WHERE id<>? AND room=? AND status IN ('pending','confirmed')
+                     AND arrival < ? AND departure > ?
+                   LIMIT 1""",
+                (booking["id"], booking["room"], booking["departure"], booking["arrival"]),
+            ).fetchone()
+            external_conflict = conn.execute(
+                """SELECT id FROM external_blocks
+                   WHERE room=? AND start_date < ? AND end_date > ?
+                   LIMIT 1""",
+                (booking["room"], booking["departure"], booking["arrival"]),
+            ).fetchone()
+            if local_conflict or external_conflict:
+                conn.execute("UPDATE bookings SET status='expired' WHERE id=?", (booking["id"],))
+                return Response("<h1>Termin nicht mehr verfügbar.</h1><p>Bitte wähle einen anderen Zeitraum.</p>", status=409, mimetype="text/html")
+
+            conn.execute(
+                "UPDATE bookings SET status='pending', onsite_verified_at=? WHERE id=?",
+                (now, booking["id"]),
+            )
+
+        owner = (
+            os.environ.get("BOOKING_OWNER_EMAIL", "").strip()
+            or os.environ.get("SITE_EMAIL", "").strip()
+            or "zuhause.am.bach@outlook.com"
+        )
+        subject = f"Vor-Ort-Anfrage bestätigt: {booking['first_name']} {booking['last_name']}"
+        body = (
+            f"Buchung #{booking['id']}\n"
+            f"Gast: {booking['first_name']} {booking['last_name']}\n"
+            f"E-Mail: {booking['email']}\n"
+            f"Telefon: {booking['phone']}\n"
+            f"Anreise: {booking['arrival']}\n"
+            f"Abreise: {booking['departure']}\n"
+            f"Personen: {booking['adults']}\n"
+            f"Gesamtpreis: {booking['total']:.2f} EUR\n"
+            "Zahlung: Vor Ort\n"
+            "E-Mail-Verifizierung: erfolgreich\n"
+            "Status: vorläufig reserviert"
+        )
+        owner_key = _queue_mail(booking["id"], "onsite_verified_owner", owner, subject, body)
+        with db() as conn:
+            owner_row = conn.execute("SELECT * FROM email_outbox WHERE dedupe_key=?", (owner_key,)).fetchone()
+        if owner_row and owner_row["status"] != "sent":
+            _deliver_outbox_row(owner_row)
+
+        return Response(
+            "<h1>Danke – E-Mail bestätigt.</h1>"
+            "<p>Der Zeitraum ist jetzt vorläufig reserviert. Die endgültige Buchungsbestätigung folgt persönlich.</p>",
+            mimetype="text/html",
+        )
 
     def send_booking_confirmation(booking_id):
         public_token, cancel_token, invoice_number = ensure_booking_tokens(booking_id)
@@ -487,6 +621,8 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
     app.extensions["zab_send_confirmation"] = send_booking_confirmation
     app.extensions["zab_ensure_tokens"] = ensure_booking_tokens
     app.extensions["zab_smtp_send"] = smtp_send
+    app.extensions["zab_send_onsite_verification"] = send_onsite_verification
+    app.extensions["zab_expire_unverified_onsite"] = expire_unverified_onsite
     app.extensions["zab_process_mail_outbox"] = process_mail_outbox
     if not app.extensions.get("zab_mail_retry_worker_started"):
         app.extensions["zab_mail_retry_worker_started"] = True
