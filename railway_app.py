@@ -3,6 +3,7 @@
 import base64
 import json
 import os
+import smtplib
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta
@@ -426,6 +427,50 @@ def railway_deploy_health():
         "checkout_rev": PAYPAL_CHECKOUT_DEPLOY_REV,
         "checkout_base": os.environ.get("PUBLIC_CHECKOUT_BASE_URL", ""),
     }, 200
+
+
+@app.get("/health/smtp")
+def smtp_health():
+    """Verify SMTP configuration and authentication without sending mail."""
+    try:
+        with db() as conn:
+            settings = {
+                row["key"]: row["value"]
+                for row in conn.execute("SELECT key,value FROM site_settings")
+            }
+        host = str(settings.get("smtp_host", "")).strip()
+        user = str(settings.get("smtp_user", "")).strip()
+        password = str(settings.get("smtp_password", "")).strip()
+        port = int(str(settings.get("smtp_port", "587") or "587").strip())
+    except Exception:
+        return {"ok": False, "reason": "settings_unavailable"}, 503
+
+    if not host or not user or not password:
+        return {
+            "ok": False,
+            "reason": "smtp_credentials_missing",
+            "host_configured": bool(host),
+            "user_configured": bool(user),
+            "password_configured": bool(password),
+        }, 503
+
+    try:
+        with smtplib.SMTP(host, port, timeout=15) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(user, password)
+        return {
+            "ok": True,
+            "tls": True,
+            "authentication": "accepted",
+        }, 200
+    except smtplib.SMTPAuthenticationError:
+        return {"ok": False, "reason": "smtp_auth_rejected"}, 503
+    except (smtplib.SMTPException, OSError, TimeoutError):
+        return {"ok": False, "reason": "smtp_unreachable"}, 503
+    except Exception:
+        return {"ok": False, "reason": "smtp_check_failed"}, 503
 
 
 @app.get("/health/paypal")
