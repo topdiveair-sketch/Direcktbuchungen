@@ -1565,15 +1565,20 @@ def book():
         app.extensions["zab_ensure_tokens"](booking_id)
     if app.extensions.get("v6_ensure_checkin_token"):
         app.extensions["v6_ensure_checkin_token"](booking_id)
+    mail_ok = None
     if app.extensions.get("zab_send_confirmation"):
         try:
-            app.extensions["zab_send_confirmation"](booking_id)
+            mail_ok = bool(app.extensions["zab_send_confirmation"](booking_id))
         except Exception:
-            pass
+            app.logger.exception("booking notification failed for booking_id=%s", booking_id)
+            mail_ok = False
 
     with db() as conn:
         booking_row = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
-    return booking_success_response(booking_row)
+    response = booking_success_response(booking_row)
+    if mail_ok is False:
+        app.logger.error("booking_saved_but_mail_failed booking_id=%s uid=%s", booking_id, booking_row["uid"])
+    return response
 
 
 @app.get("/calendar/<room>.ics")
