@@ -39,6 +39,26 @@
       </div>
       {% endif %}
 
+      {% if booking.payment_method == 'Banküberweisung' %}
+      {% set bank_subject = 'Buchungsanfrage ' ~ booking.booking_number ~ ' – Banküberweisung' %}
+      {% set bank_body = 'Hallo Zuhause am Bach,\n\nich möchte meine Buchungsanfrage per Banküberweisung bestätigen.\n\nBuchungsnummer: ' ~ booking.booking_number ~ '\nName: ' ~ booking.first_name ~ ' ' ~ booking.last_name ~ '\nE-Mail: ' ~ booking.email ~ '\nTelefon: ' ~ booking.phone ~ '\nZimmer: ' ~ booking.room ~ '\nAnreise: ' ~ booking.arrival ~ '\nAbreise: ' ~ booking.departure ~ '\nPersonen: ' ~ booking.adults ~ '\nGesamtbetrag: ' ~ ('%.2f'|format(booking.total)|replace('.', ',')) ~ ' €\nZahlungsart: Banküberweisung\n\nBitte senden Sie mir die persönliche Buchungsbestätigung und Zahlungsfreigabe.\n\nVielen Dank.' %}
+      {% set bank_mailto = 'mailto:' ~ settings.email ~ '?subject=' ~ (bank_subject|urlencode) ~ '&body=' ~ (bank_body|urlencode) %}
+      <div class="paypal-note" style="margin-top:18px">
+        <strong>Banküberweisung – bitte Anfrage per E-Mail bestätigen</strong><br>
+        Öffne jetzt dein E-Mail-Programm. Die Buchungsdaten sind bereits vollständig eingetragen.
+        <p style="margin:12px 0 0"><a class="btn" id="bankMailButton" href="{{ bank_mailto }}">E-MAIL MIT BUCHUNGSDATEN ÖFFNEN</a></p>
+      </div>
+      <script>
+      window.addEventListener("load", function () {
+        const link = document.getElementById("bankMailButton");
+        if (!link) return;
+        setTimeout(function () {
+          window.location.href = link.href;
+        }, 700);
+      });
+      </script>
+      {% endif %}
+
       <p class="muted">Der persönliche Online-Check-in-Link wird mit der Bestätigung versendet.</p>
       <p><strong>Check-in:</strong> ab 14:00 · <strong>Check-out:</strong> bis 10:00</p>
       <p>Aggsbach Markt 82, 3641 Aggsbach Markt</p>
