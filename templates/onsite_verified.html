@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>E-Mail bestätigt – Zuhause am Bach</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="plain-page">
+  <main class="success-shell">
+    <div class="success-card">
+      <span class="eyebrow">E-MAIL ERFOLGREICH BESTÄTIGT</span>
+      <h1>Danke – deine Anfrage ist verifiziert</h1>
+      <p><strong>✅ Der Zeitraum ist jetzt vorläufig reserviert.</strong></p>
+      <p>Als Nächstes prüfen wir die Anfrage persönlich. Danach erhältst du die endgültige Buchungsbestätigung.</p>
+
+      <div class="booking-summary">
+        <p><strong>Buchungsnummer:</strong> ZAB-{{ '%06d'|format(booking.id) }}</p>
+        <p><strong>Zimmer:</strong> {{ room_name }}</p>
+        <p><strong>Anreise:</strong> {{ booking.arrival }}</p>
+        <p><strong>Abreise:</strong> {{ booking.departure }}</p>
+        <p><strong>Personen:</strong> {{ booking.adults }}</p>
+        <p><strong>Zahlung:</strong> Vor Ort bei Anreise</p>
+        <p><strong>Status:</strong> E-Mail bestätigt · vorläufig reserviert</p>
+        <p class="summary-total"><strong>Gesamt:</strong> {{ '%.2f'|format(booking.total)|replace('.', ',') }} €</p>
+      </div>
+
+      <div class="paypal-note" style="margin-top:18px">
+        <strong>So geht es weiter</strong><br>
+        1. Deine E-Mail-Adresse ist bestätigt.<br>
+        2. Der Zeitraum ist vorläufig für dich reserviert.<br>
+        3. Zuhause am Bach prüft die Anfrage und bestätigt sie persönlich.
+      </div>
+
+      {% set contact_subject = 'Buchungsanfrage ZAB-' ~ ('%06d'|format(booking.id)) ~ ' – Zuhause am Bach' %}
+      {% set contact_body = 'Hallo Zuhause am Bach,\n\nich habe meine E-Mail-Adresse bestätigt und habe eine Frage zu meiner Buchungsanfrage.\n\nBuchungsnummer: ZAB-' ~ ('%06d'|format(booking.id)) ~ '\nZimmer: ' ~ room_name ~ '\nAnreise: ' ~ booking.arrival ~ '\nAbreise: ' ~ booking.departure ~ '\n\nVielen Dank.' %}
+      <p style="margin-top:22px">
+        <a class="btn" href="/">ZUR WEBSITE</a>
+        <a class="btn secondary" href="{{ guest_app_url }}">GÄSTE-APP</a>
+        <a class="btn secondary" href="mailto:{{ settings.email }}?subject={{ contact_subject|urlencode }}&body={{ contact_body|urlencode }}">FRAGE SENDEN</a>
+      </p>
+
+      <p class="muted">Du musst auf dieser Seite nichts weiter tun.</p>
+    </div>
+  </main>
+</body>
+</html>
