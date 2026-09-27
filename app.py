@@ -847,6 +847,37 @@ def seo_landing_context(slug: str) -> dict:
             "secondary_image":"images/bach-hinterm-haus-v11.webp","secondary_image_alt":"Ruhiger Bachweg hinter Zuhause am Bach","secondary_image_caption":"Ruhiger Ausgangspunkt in Aggsbach Markt.",
             "faq":faq_direct,
         },
+        "business": {
+            "title":"Business Unterkunft zwischen Melk und Krems | Zuhause am Bach",
+            "description":"Ruhige Business- und Projektunterkunft in der Wachau zwischen Melk und Krems für 1–2 Personen: WLAN, Parkplatz, Frühstück auf Wunsch und Direktkontakt.",
+            "canonical":"https://www.zuhauseambach-wachau.at/business-unterkunft-melk-krems",
+            "h1":"Business-Unterkunft zwischen Melk und Krems",
+            "lead":"Zuhause am Bach in Aggsbach Markt ist eine ruhige Unterkunft für Geschäftsreisende, Servicetechniker und Projektmitarbeiter, die zwischen Melk und Krems arbeiten und persönlich statt anonym übernachten möchten.",
+            "eyebrow":"Business · Projekt · Wachau",
+            "subheading":"Ruhig schlafen, zuverlässig arbeiten, unkompliziert direkt anfragen",
+            "paragraphs":[
+                "Das Gartenzimmer eignet sich für eine oder zwei Personen und ist besonders für kurze Geschäfts-, Service- und Projekteinsätze interessant.",
+                "WLAN, kostenloser Parkplatz, eigenes Bad und Frühstück auf Wunsch decken die wichtigsten Anforderungen für kurze berufliche Aufenthalte ab.",
+                "Mehrere Nächte und wiederkehrende Firmenaufenthalte können direkt angefragt werden. Verfügbarkeit und aktueller Preis werden über die offizielle Website geprüft."
+            ],
+            "features":[
+                ("📶","WLAN","Für E-Mail, Planung und Arbeit unterwegs."),
+                ("🚗","Parkplatz","Kostenlos direkt bei der Unterkunft."),
+                ("🛏️","1–2 Personen","Ruhiges Gartenzimmer mit eigenem Bad."),
+                ("🍳","Frühstück","Auf Wunsch vor dem Arbeitstag.")
+            ],
+            "hero_image":"images/gartenzimmer-04-web.jpg",
+            "hero_image_alt":"Gartenzimmer bei Zuhause am Bach für Geschäftsreisende zwischen Melk und Krems",
+            "hero_image_caption":"Ruhiges Gartenzimmer für kurze Business- und Projekteinsätze.",
+            "secondary_image":"images/gaestekueche-zuhause-am-bach-v2.webp",
+            "secondary_image_alt":"Gästeküche bei Zuhause am Bach in der Wachau",
+            "secondary_image_caption":"Praktische Infrastruktur für einen unkomplizierten Aufenthalt.",
+            "faq":[
+                {"@type":"Question","name":"Ist Zuhause am Bach für Geschäftsreisende geeignet?","acceptedAnswer":{"@type":"Answer","text":"Ja. Das Gartenzimmer ist für ein bis zwei Personen ausgelegt und bietet WLAN, Parkplatz, eigenes Bad und Frühstück auf Wunsch."}},
+                {"@type":"Question","name":"Können Servicetechniker oder Monteure mehrere Nächte bleiben?","acceptedAnswer":{"@type":"Answer","text":"Ja, sofern der gewünschte Zeitraum verfügbar ist. Mehrtägige und wiederkehrende Firmenaufenthalte können direkt angefragt werden."}},
+                {"@type":"Question","name":"Wie kann ein Firmenaufenthalt angefragt werden?","acceptedAnswer":{"@type":"Answer","text":"Freie Termine und Preise können auf der offiziellen Website geprüft werden. Zusätzliche Anforderungen können direkt mit den Gastgebern abgestimmt werden."}}
+            ],
+        },
         "winter": {
             "title":"Winterurlaub Wachau | Unterkunft zwischen Melk und Krems",
             "description":"Winterurlaub in der Wachau: ruhig zwischen Melk und Krems in Aggsbach Markt übernachten. Jauerling, Advent, Winterwandern, Frühstück und Direktbuchung.",
@@ -1053,6 +1084,10 @@ def seo_ski_jauerling():
 def seo_winterurlaub_wachau():
     return render_template("seo_landing.html", **seo_landing_context("winter"))
 
+@app.get("/business-unterkunft-melk-krems")
+def seo_business_unterkunft():
+    return render_template("seo_landing.html", **seo_landing_context("business"))
+
 
 @app.get("/unterkunft-donauradweg-wachau")
 def activity_donauradweg():
@@ -1249,6 +1284,7 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/unterkunft-jauerling-wachau",
         "https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/winterurlaub-wachau",
+        "https://www.zuhauseambach-wachau.at/business-unterkunft-melk-krems",
         "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau",
         "https://www.zuhauseambach-wachau.at/wachau-aktivurlaub-2027-2028",
