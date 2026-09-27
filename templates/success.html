@@ -36,7 +36,9 @@
       <p class="muted">Der persönliche Online-Check-in-Link wird mit der Bestätigung versendet.</p>
       <p><strong>Check-in:</strong> ab 14:00 · <strong>Check-out:</strong> bis 10:00</p>
       <p>Aggsbach Markt 82, 3641 Aggsbach Markt</p>
-      <p><a class="btn secondary" href="https://www.google.com/maps/dir/?api=1&destination=Aggsbach+Markt+82%2C+3641+Aggsbach+Markt">Route öffnen</a> <a class="btn secondary" href="{{ guest_app_url }}">Gäste-App öffnen</a> <a class="btn secondary" href="mailto:{{ settings.email }}">Kontakt</a></p>
+      {% set contact_subject = 'Buchungsanfrage ' ~ booking.booking_number ~ ' – Zuhause am Bach' %}
+      {% set contact_body = 'Hallo Zuhause am Bach,\n\nich habe eine Frage zu meiner Buchungsanfrage.\n\nBuchungsnummer: ' ~ booking.booking_number ~ '\nZimmer: ' ~ booking.room ~ '\nAnreise: ' ~ booking.arrival ~ '\nAbreise: ' ~ booking.departure ~ '\nPersonen: ' ~ booking.adults ~ '\nFrühstück: ' ~ ('Ja' if booking.breakfast else 'Nein') ~ '\nZahlung: ' ~ booking.payment_method ~ '\nGesamt: ' ~ ('%.2f'|format(booking.total)|replace('.', ',')) ~ ' €\n\nName: ' ~ booking.first_name ~ ' ' ~ booking.last_name ~ '\nE-Mail: ' ~ booking.email ~ '\nTelefon: ' ~ booking.phone ~ '\n\nMeine Nachricht:\n' %}
+      <p><a class="btn secondary" href="https://www.google.com/maps/dir/?api=1&destination=Aggsbach+Markt+82%2C+3641+Aggsbach+Markt">Route öffnen</a> <a class="btn secondary" href="{{ guest_app_url }}">Gäste-App öffnen</a> <a class="btn secondary" href="mailto:{{ settings.email }}?subject={{ contact_subject|urlencode }}&body={{ contact_body|urlencode }}">Kontakt</a></p>
     </div>
   </main>
 </body>
