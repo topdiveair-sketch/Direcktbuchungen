@@ -1,5 +1,6 @@
 
-from __future__ import annotations
+from __future__ import threading
+import annotations
 
 import os
 import base64
@@ -1565,20 +1566,27 @@ def book():
         app.extensions["zab_ensure_tokens"](booking_id)
     if app.extensions.get("v6_ensure_checkin_token"):
         app.extensions["v6_ensure_checkin_token"](booking_id)
-    mail_ok = None
-    if app.extensions.get("zab_send_confirmation"):
-        try:
-            mail_ok = bool(app.extensions["zab_send_confirmation"](booking_id))
-        except Exception:
-            app.logger.exception("booking notification failed for booking_id=%s", booking_id)
-            mail_ok = False
+    sender = app.extensions.get("zab_send_confirmation")
+    if sender:
+        def _send_booking_notifications_async():
+            with app.app_context():
+                try:
+                    ok = bool(sender(booking_id))
+                    if ok:
+                        app.logger.info("booking_mail_sent booking_id=%s", booking_id)
+                    else:
+                        app.logger.error("booking_saved_but_mail_failed booking_id=%s", booking_id)
+                except Exception:
+                    app.logger.exception("booking notification failed for booking_id=%s", booking_id)
+        threading.Thread(
+            target=_send_booking_notifications_async,
+            name=f"booking-mail-{booking_id}",
+            daemon=True,
+        ).start()
 
     with db() as conn:
         booking_row = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
-    response = booking_success_response(booking_row)
-    if mail_ok is False:
-        app.logger.error("booking_saved_but_mail_failed booking_id=%s uid=%s", booking_id, booking_row["uid"])
-    return response
+    return booking_success_response(booking_row)
 
 
 @app.get("/calendar/<room>.ics")
