@@ -1722,6 +1722,18 @@ Type: Small personal accommodation / guest room with direct booking
 ## Direct-booking features
 One-night stays are generally possible when available. Bicycle storage, e-bike charging, breakfast on request, drying options and luggage transfer on request are available depending on the stay.
 
+## Official profiles and references
+- Facebook: https://www.facebook.com/ZuHauseamBach
+- Instagram: https://www.instagram.com/altstadthans/
+- Booking.com: https://www.booking.com/hotel/at/zu-hause-am-bach.de.html
+- Donau Niederösterreich tourism listing: https://www.donau.com/wachau-nibelungengau-kremstal/unterkunft/zu-hause-am-bach-wachau
+- Municipality of Aggsbach listing: https://www.aggsbach.gv.at/Zuhause_am_Bach_-_Privatzimmervermietung_3
+
+## Seasonal discovery
+- Wachauer Advent Dürnstein 2026: https://www.zuhauseambach-wachau.at/wachauer-advent-duernstein-2026-unterkunft
+- Burgadvent Aggstein 2026: https://www.zuhauseambach-wachau.at/burgadvent-aggstein-2026-unterkunft
+- Melker Advent 2026: https://www.zuhauseambach-wachau.at/melker-advent-2026-unterkunft
+
 For current availability, prices and booking, use the official website.
 """
     return Response(body, mimetype="text/plain")
