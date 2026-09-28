@@ -1757,6 +1757,13 @@ def api_calendar():
             """,
             (room,),
         ).fetchall()
+        central_closed = conn.execute(
+            """
+            SELECT day FROM central_overrides
+            WHERE room=? AND availability=0 AND day>=? AND day<?
+            """,
+            (room, first.isoformat(), next_month.isoformat()),
+        ).fetchall()
 
     for row in external:
         start_d, end_d = parse_date(row["start_date"]), parse_date(row["end_date"])
@@ -1764,6 +1771,9 @@ def api_calendar():
         while current < min(next_month, end_d):
             states[current.isoformat()] = "booking"
             current += timedelta(days=1)
+
+    for row in central_closed:
+        states[str(row["day"])] = "booking"
 
     for row in local:
         start_d, end_d = parse_date(row["arrival"]), parse_date(row["departure"])
