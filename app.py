@@ -1179,6 +1179,51 @@ def wachau_events():
 def event_landing_context(slug: str) -> dict:
     horizon = date.today().year + 2
     events = {
+        "wachauer-advent-duernstein-2026": {
+            "page_title": "Wachauer Advent Dürnstein 2026 Unterkunft | Zuhause am Bach",
+            "meta_description": "Unterkunft zum Wachauer Advent Dürnstein 2026: 20.–22.11., 27.–29.11., 4.–8.12. und 11.–13.12. Ruhig in Aggsbach Markt übernachten und direkt buchen.",
+            "canonical": "https://www.zuhauseambach-wachau.at/wachauer-advent-duernstein-2026-unterkunft",
+            "event_name": "Wachauer Advent Dürnstein 2026",
+            "start_date": "2026-11-20", "end_date": "2026-12-13",
+            "display_date": "20.–22.11. · 27.–29.11. · 4.–8.12. · 11.–13.12.2026",
+            "event_location": "Dürnstein", "event_city": "Dürnstein",
+            "official_url": "https://www.donau.com/veranstaltungen/wachauer-advent-duernstein",
+            "event_description": "Wachauer Advent in Dürnstein mit Adventmarkt, Stiftshof, Schloss und Weihnachtsweg an vier Terminblöcken im November und Dezember 2026.",
+            "eyebrow": "Wachauer Advent 2026",
+            "headline": "Unterkunft zum Wachauer Advent Dürnstein 2026",
+            "intro": "Dürnstein verbindet Adventstimmung, historische Altstadt und Donau. Zuhause am Bach in Aggsbach Markt ist eine ruhige Wachau-Basis für ein Adventwochenende mit direkter Buchungsmöglichkeit.",
+            "scarcity_text": "Die vier bestätigten Dürnstein-Terminblöcke sind starke Nachfragezeiten. Für Freitag und Samstag schützt ein Mindestaufenthalt von zwei Nächten die knappen Wochenenden.",
+        },
+        "burgadvent-aggstein-2026": {
+            "page_title": "Burgadvent Aggstein 2026 Unterkunft Wachau | Zuhause am Bach",
+            "meta_description": "Unterkunft zum Burgadvent Aggstein 2026: 30.10.–1.11., 6.–8.11., 13.–15.11. und 20.–22.11. Ruhig in Aggsbach Markt übernachten.",
+            "canonical": "https://www.zuhauseambach-wachau.at/burgadvent-aggstein-2026-unterkunft",
+            "event_name": "Burgadvent auf Aggstein 2026",
+            "start_date": "2026-10-30", "end_date": "2026-11-22",
+            "display_date": "30.10.–1.11. · 6.–8.11. · 13.–15.11. · 20.–22.11.2026",
+            "event_location": "Burgruine Aggstein", "event_city": "Aggstein",
+            "official_url": "https://ruineaggstein.at/veranstaltungen/burgadvent",
+            "event_description": "Burgadvent auf der Burgruine Aggstein an vier Wochenenden mit Kunsthandwerk, Kulinarik und mittelalterlicher Atmosphäre.",
+            "eyebrow": "Burgadvent 2026",
+            "headline": "Unterkunft zum Burgadvent auf Aggstein 2026",
+            "intro": "Der Burgadvent auf Aggstein ist ein besonders früher Advent-Anlass in der Wachau. Zuhause am Bach in Aggsbach Markt eignet sich als ruhige Unterkunft für ein Wochenende zwischen Burg, Donau und Wachau.",
+            "scarcity_text": "Die bestätigten Burgadvent-Wochenenden werden als starke Nachfragefenster behandelt. Freitag und Samstag sind deshalb auf zwei Nächte ausgelegt.",
+        },
+        "melker-advent-2026": {
+            "page_title": "Melker Advent 2026 Unterkunft Wachau | Zuhause am Bach",
+            "meta_description": "Unterkunft zum Melker Advent 2026: 27.11.–20.12. in der Melker Altstadt. Ruhig in Aggsbach Markt übernachten und direkt buchen.",
+            "canonical": "https://www.zuhauseambach-wachau.at/melker-advent-2026-unterkunft",
+            "event_name": "Melker Advent 2026",
+            "start_date": "2026-11-27", "end_date": "2026-12-20",
+            "display_date": "27. Nov.–20. Dez. 2026",
+            "event_location": "Melker Altstadt", "event_city": "Melk",
+            "official_url": "https://www.melk.gv.at/melkeradvent",
+            "event_description": "Melker Advent in der Altstadt mit Musik, Kulinarik, Kunsthandwerk und Programm an den Adventwochenenden.",
+            "eyebrow": "Melker Advent 2026",
+            "headline": "Unterkunft zum Melker Advent 2026",
+            "intro": "Der Melker Advent verbindet Altstadt, Stiftkulisse und vorweihnachtliches Programm. Zuhause am Bach bietet eine ruhige Wachau-Unterkunft für Gäste, die Melk und die Donau miteinander verbinden möchten.",
+            "scarcity_text": "Die Adventwochenenden in Melk sind als stärkere Nachfragezeiten hinterlegt. Wer einen bestimmten Freitag oder Samstag möchte, sollte den Termin früh direkt prüfen.",
+        },
         "kremser-adventzauber-2026": {
             "page_title": "Kremser Adventzauber 2026 Unterkunft Wachau | Zuhause am Bach",
             "meta_description": "Unterkunft für den Kremser Adventzauber 2026: ruhig in Aggsbach Markt übernachten, direkt buchen und Adventwochenenden früh sichern.",
@@ -1261,6 +1306,21 @@ def event_landing_context(slug: str) -> dict:
     return {**data, "booking_horizon_year": horizon, "settings": get_settings()}
 
 
+@app.get("/wachauer-advent-duernstein-2026-unterkunft")
+def event_duernstein_advent_2026():
+    return render_template("event_landing.html", **event_landing_context("wachauer-advent-duernstein-2026"))
+
+
+@app.get("/burgadvent-aggstein-2026-unterkunft")
+def event_aggstein_advent_2026():
+    return render_template("event_landing.html", **event_landing_context("burgadvent-aggstein-2026"))
+
+
+@app.get("/melker-advent-2026-unterkunft")
+def event_melk_advent_2026():
+    return render_template("event_landing.html", **event_landing_context("melker-advent-2026"))
+
+
 @app.get("/kremser-adventzauber-2026-unterkunft")
 def event_advent_2026():
     return render_template("event_landing.html", **event_landing_context("kremser-adventzauber-2026"))
@@ -1322,6 +1382,9 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau",
         "https://www.zuhauseambach-wachau.at/wachau-aktivurlaub-2027-2028",
         "https://www.zuhauseambach-wachau.at/wachau-events-2027-2028",
+        "https://www.zuhauseambach-wachau.at/wachauer-advent-duernstein-2026-unterkunft",
+        "https://www.zuhauseambach-wachau.at/burgadvent-aggstein-2026-unterkunft",
+        "https://www.zuhauseambach-wachau.at/melker-advent-2026-unterkunft",
         "https://www.zuhauseambach-wachau.at/kremser-adventzauber-2026-unterkunft",
         "https://www.zuhauseambach-wachau.at/marillenbluetenmarkt-krems-2027-unterkunft",
         "https://www.zuhauseambach-wachau.at/wachauer-sonnenwende-2027-unterkunft",
