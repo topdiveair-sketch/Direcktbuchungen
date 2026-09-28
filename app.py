@@ -429,6 +429,21 @@ def central_override_for_day(room: str, day: date) -> dict:
         return {}
 
 
+def direct_nightly_price_for_day(room: str, day: date) -> float:
+    """Authoritative public nightly room price before optional extras/discounts."""
+    prices, _discounts, _extras, _seasons = pricing_data()
+    override = central_override_for_day(room, day)
+    if override.get("price") is not None:
+        return round(float(override["price"]), 2)
+    price = prices[room]["high"] if is_high(day) else (
+        prices[room]["weekend"] if day.weekday() in (4, 5) else prices[room]["standard"]
+    )
+    event = event_pricing_for_day(day)
+    if event:
+        price = min(float(price) * float(event["factor"]), float(event["cap"]))
+    return round(float(price), 2)
+
+
 def price_breakdown(room,arrival,departure,adults,chosen,coupon_code=""):
     prices,discounts,extras,seasons=pricing_data(); n=(departure-arrival).days; cur=arrival; room_total=0
     while cur<departure:
@@ -578,6 +593,65 @@ def os_central_control():
             current += timedelta(days=1)
     return jsonify(ok=True, room=room, changed=changed, from_date=start.isoformat(), to_date=end.isoformat(),
                    availability=availability, price=price)
+
+
+@app.get("/api/os/direct-prices")
+def os_direct_prices():
+    """Return the website's authoritative nightly direct-booking prices for the OS calendar."""
+    expected = env_value("OS_SYNC_TOKEN")
+    supplied = (request.headers.get("X-OS-Sync-Token") or "").strip()
+    auth = (request.headers.get("Authorization") or "").strip()
+    if not supplied and auth.lower().startswith("bearer "):
+        supplied = auth[7:].strip()
+    if not expected or not supplied or not hmac.compare_digest(expected, supplied):
+        return jsonify(ok=False, error="unauthorized"), 401
+
+    room = str(request.args.get("room") or "Bachblick").strip()
+    if room != "Bachblick":
+        return jsonify(ok=False, error="unknown_room"), 400
+    try:
+        start = parse_date(str(request.args.get("from") or date.today().isoformat())[:10])
+        end = parse_date(str(request.args.get("to") or (start + timedelta(days=62)).isoformat())[:10])
+    except Exception:
+        return jsonify(ok=False, error="invalid_date"), 400
+    if end < start:
+        start, end = end, start
+    if (end - start).days > 370:
+        return jsonify(ok=False, error="range_too_large"), 400
+
+    _prices, discounts, _extras, _seasons = pricing_data()
+    direct_discount = 0.0
+    direct = discounts.get("direct_booking") or {}
+    if direct.get("enabled"):
+        try:
+            direct_discount = float(direct.get("percent") or 0.0)
+        except Exception:
+            direct_discount = 0.0
+
+    days = []
+    current = start
+    while current <= end:
+        display_price = direct_nightly_price_for_day(room, current)
+        checkout_price = round(display_price * (1.0 - direct_discount / 100.0), 2)
+        event = event_pricing_for_day(current)
+        override = central_override_for_day(room, current)
+        days.append({
+            "date": current.isoformat(),
+            "display_price": display_price,
+            "checkout_price": checkout_price,
+            "direct_discount_percent": direct_discount,
+            "source": "os_override" if override.get("price") is not None else ("event" if event else ("high" if is_high(current) else ("weekend" if current.weekday() in (4, 5) else "standard"))),
+        })
+        current += timedelta(days=1)
+    return jsonify(
+        ok=True,
+        room=room,
+        roomDisplayName=public_room_name(room),
+        from_date=start.isoformat(),
+        to_date=end.isoformat(),
+        generated_at=datetime.now().isoformat(timespec="seconds"),
+        days=days,
+    )
 
 
 MASTER_CALENDAR_URL = "https://web-production-907d68.up.railway.app/api/direct-booking-calendar"
