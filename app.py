@@ -556,6 +556,7 @@ def os_central_control():
             return jsonify(ok=False, error="invalid_availability"), 400
 
     price = payload.get("price", None)
+    clear_price = bool(payload.get("clear_price", False))
     if price not in (None, ""):
         try:
             price = round(float(price), 2)
@@ -576,7 +577,7 @@ def os_central_control():
                 (room, current.isoformat()),
             ).fetchone()
             new_availability = availability if availability is not None else (existing["availability"] if existing else None)
-            new_price = price if price is not None else (existing["price"] if existing else None)
+            new_price = None if clear_price else (price if price is not None else (existing["price"] if existing else None))
             conn.execute(
                 """
                 INSERT INTO central_overrides(room,day,availability,price,updated_at,source)
@@ -592,7 +593,7 @@ def os_central_control():
             changed += 1
             current += timedelta(days=1)
     return jsonify(ok=True, room=room, changed=changed, from_date=start.isoformat(), to_date=end.isoformat(),
-                   availability=availability, price=price)
+                   availability=availability, price=price, clear_price=clear_price)
 
 
 @app.get("/api/os/direct-prices")
