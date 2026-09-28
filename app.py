@@ -1192,6 +1192,33 @@ def seo_landing_context(slug: str) -> dict:
             "secondary_image_caption":"Ruhige Übernachtung während der Wachauer Marillenzeit.",
             "faq":faq_direct,
         },
+        "seasonalhub": {
+            "title":"Wachau Jahreszeiten Urlaub | Marillenblüte, Rad, Wandern & Winter",
+            "description":"Wachau nach Jahreszeit planen: Marillenblüte, Marillenernte, Donauradweg, Welterbesteig, Jauerling, Advent und Winter mit Unterkunft in Aggsbach Markt.",
+            "canonical":"https://www.zuhauseambach-wachau.at/wachau-jahreszeiten-urlaub",
+            "h1":"Wachau zu jeder Jahreszeit erleben",
+            "lead":"Von der Marillenblüte im Frühling über Rad- und Wanderetappen im Sommer bis zu Marillenzeit, Advent und Jauerling im Winter: Zuhause am Bach bündelt die wichtigsten Wachau-Reiseanlässe an einer Stelle.",
+            "eyebrow":"Frühling · Sommer · Herbst · Winter",
+            "subheading":"Die passende Wachau-Zeit für deine Reise",
+            "paragraphs":[
+                "Im Frühling stehen Marillenblüte und erste Wander- und Radetappen im Mittelpunkt. Der exakte Blühzeitpunkt bleibt wetterabhängig.",
+                "Im Sommer verbinden viele Gäste Donauradweg, Welterbesteig und Marillenzeit. Aggsbach Markt eignet sich dabei als ruhige Basis zwischen Melk und Krems.",
+                "Im Herbst und Winter folgen ruhige Wachau-Tage, Adventmärkte und wetterabhängige Ausflüge Richtung Jauerling. Für aktuelle Bedingungen gelten immer die offiziellen Veranstalter- und Betreiberinformationen."
+            ],
+            "features":[
+                ("🌸","Frühling","Marillenblüte und erste Wachau-Ausflüge."),
+                ("🚲","Sommer","Donauradweg, Welterbesteig und Marillenzeit."),
+                ("🍂","Herbst","Ruhige Wachau-Tage und Genuss."),
+                ("❄️","Winter","Advent, Jauerling und Winterausflüge.")
+            ],
+            "hero_image":"images/bach-hinterm-haus-v11.webp",
+            "hero_image_alt":"Wachau zu verschiedenen Jahreszeiten bei Zuhause am Bach",
+            "hero_image_caption":"Zuhause am Bach als ganzjährige Basis in Aggsbach Markt.",
+            "secondary_image":"images/gartenzimmer-04-web.jpg",
+            "secondary_image_alt":"Gartenzimmer bei Zuhause am Bach in der Wachau",
+            "secondary_image_caption":"Ruhig übernachten und saisonale Wachau-Reiseanlässe verbinden.",
+            "faq":faq_direct,
+        },
         "winter": {
             "title":"Winterurlaub Wachau | Unterkunft zwischen Melk und Krems",
             "description":"Winterurlaub in der Wachau: ruhig zwischen Melk und Krems in Aggsbach Markt übernachten. Jauerling, Advent, Winterwandern, Frühstück und Direktbuchung.",
@@ -1402,6 +1429,11 @@ def seo_marillenbluete_wachau():
 @app.get("/marillenernte-wachau-unterkunft")
 def seo_marillenernte_wachau():
     return render_template("seo_landing.html", **seo_landing_context("marillenernte"))
+
+
+@app.get("/wachau-jahreszeiten-urlaub")
+def seo_wachau_jahreszeiten():
+    return render_template("seo_landing.html", **seo_landing_context("seasonalhub"))
 
 
 @app.get("/winterurlaub-wachau")
@@ -1711,6 +1743,7 @@ Type: Small personal accommodation / guest room with direct booking
 
 ## Primary travel topics
 - Wachau accommodation: https://www.zuhauseambach-wachau.at/unterkunft-wachau
+- Seasonal Wachau travel: https://www.zuhauseambach-wachau.at/wachau-jahreszeiten-urlaub
 - Donauradweg accommodation: https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau
 - Welterbesteig accommodation: https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau
 - Marillenblüte Wachau: https://www.zuhauseambach-wachau.at/marillenbluete-wachau-unterkunft
