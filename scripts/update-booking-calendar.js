@@ -127,6 +127,13 @@ function updateHtmlFallback(events, updatedAt, updatedAtIso) {
   if (!fs.existsSync(indexPath)) return false;
 
   const original = fs.readFileSync(indexPath, "utf8");
+  // The root page now redirects to the new site and has no calendar fallback.
+  // Keep the marker check below for pages that still render bookings.
+  if (!original.includes("BACHBLICK_BOOKING_BLOCKS") &&
+      /<meta\s+http-equiv=["']refresh["']/i.test(original)) {
+    return false;
+  }
+
   let html = original;
   html = html.replace(
     /let bookingCalendarUpdated = ".*?";/,
