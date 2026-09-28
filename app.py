@@ -787,6 +787,13 @@ def activity_landing_context(kind: str) -> dict:
             "planning_text": "Beliebte Wochenenden und starke Wachau-Termine werden früh nachgefragt. Deshalb können Radreisende ihre Übernachtung bei uns weit im Voraus anfragen, statt erst wenige Wochen vor der Tour zu suchen.",
             "cta": "Donauradweg-Termin direkt prüfen",
             "audience": "Radfahrer und E-Bike-Reisende",
+            "route_facts": [
+                "Der Donauradweg ist Teil des EuroVelo 6; in Niederösterreich verlaufen rund 260 km.",
+                "Die offizielle Nordufer-Etappe Emmersdorf–Krems führt direkt über Aggsbach Markt.",
+                "Fähren ermöglichen in der Wachau je nach Tour einen Wechsel der Uferseite."
+            ],
+            "official_url": "https://www.donau.com/donauradweg",
+            "official_label": "Offizielle Donauradweg-Infos"
         }
     return {
         "kind": "hike",
@@ -808,6 +815,13 @@ def activity_landing_context(kind: str) -> dict:
         "planning_text": "Gerade an beliebten Wanderwochenenden ist ein kleiner Betrieb schnell ausgebucht. Deshalb nehmen wir Anfragen für den Welterbesteig bewusst weit im Voraus an.",
         "cta": "Welterbesteig-Termin direkt prüfen",
         "audience": "Wanderer und Etappengäste",
+        "route_facts": [
+            "Der Welterbesteig Wachau umfasst rund 180 km in 14 Etappen.",
+            "Etappe 6 führt von Maria Laach nach Aggsbach Markt; Etappe 7 startet in Aggsbach Markt Richtung Emmersdorf.",
+            "Gepäcktransport und Etappenplanung lassen sich gut mit einer einzelnen Übernachtung kombinieren."
+        ],
+        "official_url": "https://www.donau.com/welterbesteig-wachau",
+        "official_label": "Offizielle Welterbesteig-Infos"
     }
 
 
@@ -911,6 +925,42 @@ def seo_landing_context(slug: str) -> dict:
                 {"@type":"Question","name":"Wie kann ein Firmenaufenthalt angefragt werden?","acceptedAnswer":{"@type":"Answer","text":"Freie Termine und Preise können auf der offiziellen Website geprüft werden. Zusätzliche Anforderungen können direkt mit den Gastgebern abgestimmt werden."}}
             ],
         },
+        "marillenbluete": {
+            "title":"Marillenblüte Wachau Unterkunft | Zuhause am Bach Aggsbach",
+            "description":"Unterkunft zur Marillenblüte in der Wachau: ruhig in Aggsbach Markt übernachten, Blüte flexibel erleben und direkt bei Zuhause am Bach buchen.",
+            "canonical":"https://www.zuhauseambach-wachau.at/marillenbluete-wachau-unterkunft",
+            "h1":"Unterkunft zur Marillenblüte in der Wachau",
+            "lead":"Wenn die Wachauer Marillenbäume blühen, ist Aggsbach Markt eine ruhige Basis für Ausflüge zwischen Melk, Spitz, Dürnstein und Krems. Den exakten Blühzeitpunkt bestimmt jedes Jahr das Wetter – deshalb lohnt sich flexible Reiseplanung.",
+            "eyebrow":"Frühling · Wachau · Marillenblüte",
+            "subheading":"Marillenblüte erleben und ruhig in der Wachau übernachten",
+            "paragraphs":["Die Marillenblüte gehört zu den bekanntesten Frühlingsmomenten der Wachau. Der tatsächliche Beginn und die Dauer lassen sich nicht seriös Monate im Voraus auf einen festen Tag festlegen.","Zuhause am Bach liegt in Aggsbach Markt und eignet sich als Ausgangspunkt für Fahrten und Spaziergänge durch die Wachau, ohne an einen einzelnen Veranstaltungsort gebunden zu sein.","Wer die Blüte gezielt erleben möchte, sollte kurz vor der Reise die aktuellen Blütenmeldungen der offiziellen Wachau-Information prüfen und den Aufenthalt direkt nach Verfügbarkeit buchen."],
+            "features":[("🌸","Marillenblüte","Frühlingszeit in der Wachau flexibel erleben."),("📍","Aggsbach Markt","Ruhige Basis zwischen Melk und Krems."),("🍳","Frühstück","Auf Wunsch vor dem Ausflug."),("📅","Direkt planen","Freie Termine live prüfen.")],
+            "hero_image":"images/regionale-genussmomente-final.jpg",
+            "hero_image_alt":"Wachauer Genuss und Marillenzeit bei Zuhause am Bach",
+            "hero_image_caption":"Wachauer Marille als Teil der regionalen Reisezeit.",
+            "secondary_image":"images/bach-hinterm-haus-v11.webp",
+            "secondary_image_alt":"Ruhige Wachau-Landschaft bei Zuhause am Bach in Aggsbach Markt",
+            "secondary_image_caption":"Ruhige Basis für Frühlingsausflüge durch die Wachau.",
+            "faq":faq_direct,
+        },
+        "marillenernte": {
+            "title":"Marillenernte Wachau Unterkunft | Marillenzeit bei Zuhause am Bach",
+            "description":"Unterkunft zur Marillenernte in der Wachau: Marillenzeit meist im Juli erleben, ruhig in Aggsbach Markt übernachten und direkt buchen.",
+            "canonical":"https://www.zuhauseambach-wachau.at/marillenernte-wachau-unterkunft",
+            "h1":"Unterkunft zur Marillenernte und Marillenzeit in der Wachau",
+            "lead":"Die Wachauer Marillenernte liegt typischerweise rund um die Sommermitte. Zuhause am Bach in Aggsbach Markt ist eine ruhige Basis für Genuss, Ausflüge und die Marillenzeit zwischen Melk und Krems.",
+            "eyebrow":"Sommer · Wachau · Marillenzeit",
+            "subheading":"Marillenernte, Genuss und Wachau-Aufenthalt verbinden",
+            "paragraphs":["Die offizielle Wachau-Information beschreibt die Marillenernte als saisonales Ereignis rund um Mitte Juli; Witterung und Reifeentwicklung können den genauen Verlauf jedes Jahr verschieben.","Zur Marillenzeit verbinden viele Gäste regionale Produkte, Donauradweg, Wanderungen und Orte wie Spitz, Dürnstein, Melk oder Krems in einem Aufenthalt.","Zuhause am Bach bietet dafür ein ruhiges Gartenzimmer, Frühstück auf Wunsch und direkte Terminprüfung ohne Umweg über große Buchungsplattformen."],
+            "features":[("🍑","Marillenzeit","Sommerliche Wachau und regionale Produkte."),("🚲","Donauradweg","Marillenzeit mit einer Radtour verbinden."),("🥾","Wandern","Welterbesteig und Genuss kombinieren."),("📅","Direkt buchen","Verfügbarkeit und Preis live prüfen.")],
+            "hero_image":"images/regionale-genussmomente-final.jpg",
+            "hero_image_alt":"Regionale Wachauer Genussmomente mit Marillenprodukten",
+            "hero_image_caption":"Regionale Genussmomente gehören zur Wachauer Marillenzeit.",
+            "secondary_image":"images/gartenzimmer-04-web.jpg",
+            "secondary_image_alt":"Gartenzimmer bei Zuhause am Bach für die Wachauer Marillenzeit",
+            "secondary_image_caption":"Ruhige Übernachtung während der Wachauer Marillenzeit.",
+            "faq":faq_direct,
+        },
         "winter": {
             "title":"Winterurlaub Wachau | Unterkunft zwischen Melk und Krems",
             "description":"Winterurlaub in der Wachau: ruhig zwischen Melk und Krems in Aggsbach Markt übernachten. Jauerling, Advent, Winterwandern, Frühstück und Direktbuchung.",
@@ -926,14 +976,14 @@ def seo_landing_context(slug: str) -> dict:
             "faq":faq_direct,
         },
         "ski": {
-            "title":"Skifahren Jauerling Unterkunft Wachau | Zuhause am Bach",
-            "description":"Winter-Unterkunft für Ausflüge zum Jauerling: in Aggsbach Markt übernachten, aktuelle Liftzeiten offiziell prüfen und direkt bei Zuhause am Bach buchen.",
+            "title":"Skisaison Jauerling Unterkunft Wachau | Skifahren & Übernachten",
+            "description":"Unterkunft für die Skisaison am Jauerling: Flutlicht, Kinderskipark, Skischule und Skiverleih aktuell beim Betreiber prüfen und ruhig in Aggsbach Markt übernachten.",
             "canonical":"https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau",
-            "h1":"Unterkunft für Wintertage am Jauerling",
+            "h1":"Unterkunft für die Skisaison am Jauerling",
             "lead":"Zuhause am Bach ist eine ruhige Wachau-Unterkunft für Gäste, die einen Winterausflug Richtung Jauerling mit einer Übernachtung in Aggsbach Markt verbinden möchten.",
             "eyebrow":"Winter in der Wachau",
             "subheading":"Jauerling-Ausflug und ruhige Nacht kombinieren",
-            "paragraphs":["Das Gartenzimmer bietet eine kleine, persönliche Basis in Aggsbach Markt.","Winterbetrieb, Liftzeiten, Schnee- und Pistenstatus hängen von Saison und Wetter ab und werden deshalb nicht pauschal versprochen. Bitte vor der Fahrt die offiziellen Jauerling-Informationen prüfen.","Für nasse Outdoorbekleidung gibt es eine Trocknungsmöglichkeit; Frühstück ist auf Wunsch verfügbar."],
+            "paragraphs":["Das Gartenzimmer bietet eine kleine, persönliche Basis in Aggsbach Markt für Wintertage in der Wachau.","Die Skiarena Jauerling bewirbt unter anderem Flutlichtskifahren, einen Kinderskipark sowie Skischule und Skiverleih direkt an der Piste. Winterbetrieb, Liftzeiten, Schnee- und Pistenstatus bleiben wetterabhängig und sollten vor der Fahrt immer auf jauerling.at geprüft werden.","Für nasse Outdoorbekleidung gibt es eine Trocknungsmöglichkeit; Frühstück ist auf Wunsch verfügbar."],
             "features":[("❄️","Winterbasis","Ruhig in Aggsbach Markt übernachten."),("👕","Trocknung","Für nasse Outdoorbekleidung."),("🍳","Frühstück","Auf Wunsch vor dem Ausflug."),("📅","Direkt planen","Termin früh prüfen.")],
             "hero_image":"images/welterbesteig-original.jpg","hero_image_alt":"Winter- und Wanderregion Wachau Jauerling","hero_image_caption":"Wachau und Jauerling als Winterausflug verbinden.",
             "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer als Winterunterkunft in der Wachau","secondary_image_caption":"Ruhige Übernachtung in Aggsbach Markt.",
@@ -1112,6 +1162,16 @@ def seo_jauerling():
 @app.get("/skifahren-jauerling-unterkunft-wachau")
 def seo_ski_jauerling():
     return render_template("seo_landing.html", **seo_landing_context("ski"))
+
+@app.get("/marillenbluete-wachau-unterkunft")
+def seo_marillenbluete_wachau():
+    return render_template("seo_landing.html", **seo_landing_context("marillenbluete"))
+
+
+@app.get("/marillenernte-wachau-unterkunft")
+def seo_marillenernte_wachau():
+    return render_template("seo_landing.html", **seo_landing_context("marillenernte"))
+
 
 @app.get("/winterurlaub-wachau")
 def seo_winterurlaub_wachau():
@@ -1376,6 +1436,8 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-jauerling-wachau",
         "https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau",
+        "https://www.zuhauseambach-wachau.at/marillenbluete-wachau-unterkunft",
+        "https://www.zuhauseambach-wachau.at/marillenernte-wachau-unterkunft",
         "https://www.zuhauseambach-wachau.at/winterurlaub-wachau",
         "https://www.zuhauseambach-wachau.at/business-unterkunft-melk-krems",
         "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
@@ -1406,6 +1468,32 @@ def robots():
         "User-agent: *\nAllow: /\nSitemap: https://www.zuhauseambach-wachau.at/sitemap.xml\n",
         mimetype="text/plain",
     )
+
+
+@app.get("/llms.txt")
+def llms_txt():
+    body = """# Zuhause am Bach – Wachau
+
+Official website: https://www.zuhauseambach-wachau.at/
+Location: Aggsbach Markt, Wachau, Lower Austria
+Type: Small personal accommodation / guest room with direct booking
+
+## Primary travel topics
+- Wachau accommodation: https://www.zuhauseambach-wachau.at/unterkunft-wachau
+- Donauradweg accommodation: https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau
+- Welterbesteig accommodation: https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau
+- Marillenblüte Wachau: https://www.zuhauseambach-wachau.at/marillenbluete-wachau-unterkunft
+- Marillenernte / Marillenzeit: https://www.zuhauseambach-wachau.at/marillenernte-wachau-unterkunft
+- Jauerling ski season: https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau
+- Winter in the Wachau: https://www.zuhauseambach-wachau.at/winterurlaub-wachau
+- Wachau events: https://www.zuhauseambach-wachau.at/wachau-events-2027-2028
+
+## Direct-booking features
+One-night stays are generally possible when available. Bicycle storage, e-bike charging, breakfast on request, drying options and luggage transfer on request are available depending on the stay.
+
+For current availability, prices and booking, use the official website.
+"""
+    return Response(body, mimetype="text/plain")
 
 
 @app.post("/api/events")
