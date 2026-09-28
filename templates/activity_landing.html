@@ -135,6 +135,17 @@
     </article>
   </section>
 
+  {% if route_facts %}
+  <section class="activity-card" style="margin-top:24px">
+    <span class="eyebrow">Route & Lage</span>
+    <h2>Warum Aggsbach Markt für diese Etappe passt</h2>
+    <ul class="activity-list">
+      {% for fact in route_facts %}<li>{{ fact }}</li>{% endfor %}
+    </ul>
+    {% if official_url %}<div class="activity-actions" style="margin-top:18px"><a class="activity-secondary" href="{{ official_url }}" target="_blank" rel="noopener">{{ official_label }}</a></div>{% endif %}
+  </section>
+  {% endif %}
+
   <section class="planning-box">
     <h2>{{ planning_title }}</h2>
     <p>{{ planning_text }}</p>
