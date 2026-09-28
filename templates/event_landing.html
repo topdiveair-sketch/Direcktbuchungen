@@ -9,6 +9,8 @@
   <meta property="og:type" content="website"><meta property="og:locale" content="de_AT">
   <meta property="og:title" content="{{ page_title }}"><meta property="og:description" content="{{ meta_description }}">
   <meta property="og:url" content="{{ canonical }}">
+  <meta property="og:image" content="https://www.zuhauseambach-wachau.at/static/images/rooms/bachblick.jpg">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260924-eventlanding">
   <script type="application/ld+json">
   {
@@ -33,6 +35,15 @@
         "name":"{{ page_title }}",
         "description":"{{ meta_description }}",
         "about":{"@id":"{{ canonical }}#event"}
+      },
+      {
+        "@type":"BedAndBreakfast",
+        "@id":"https://www.zuhauseambach-wachau.at/#unterkunft",
+        "name":"Zuhause am Bach – Wachau",
+        "url":"https://www.zuhauseambach-wachau.at/",
+        "address":{"@type":"PostalAddress","streetAddress":"Aggsbach Markt 82","postalCode":"3641","addressLocality":"Aggsbach Markt","addressRegion":"Niederösterreich","addressCountry":"AT"},
+        "sameAs":["https://www.booking.com/hotel/at/zu-hause-am-bach.de.html","https://www.donau.com/wachau-nibelungengau-kremstal/unterkunft/zu-hause-am-bach-wachau","https://www.facebook.com/ZuHauseamBach","https://www.instagram.com/altstadthans/"],
+        "potentialAction":{"@type":"ReserveAction","target":"https://www.zuhauseambach-wachau.at/#booking","name":"Direkt Verfügbarkeit prüfen und buchen"}
       },
       {
         "@type":"BreadcrumbList",
