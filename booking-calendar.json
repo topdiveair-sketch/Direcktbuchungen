@@ -5,38 +5,20 @@
   "masterUrl": "https://web-production-907d68.up.railway.app/calendar/public/Bachblick.ics",
   "events": [
     {
-      "start": "2026-09-21",
-      "end": "2026-09-22",
+      "start": "2026-10-10",
+      "end": "2026-10-11",
       "summary": "CLOSED - Not available",
       "source": "Booking iCal Sicherheitsabgleich"
     },
     {
-      "start": "2026-09-24",
-      "end": "2026-09-28",
-      "summary": "CLOSED - Not available",
-      "source": "Booking iCal Sicherheitsabgleich"
-    },
-    {
-      "start": "2026-10-04",
-      "end": "2026-10-05",
-      "summary": "CLOSED - Not available",
-      "source": "Booking iCal Sicherheitsabgleich"
-    },
-    {
-      "start": "2026-10-11",
-      "end": "2026-10-12",
+      "start": "2026-10-12",
+      "end": "2026-10-13",
       "summary": "CLOSED - Not available",
       "source": "Booking iCal Sicherheitsabgleich"
     },
     {
       "start": "2026-10-17",
       "end": "2026-10-19",
-      "summary": "CLOSED - Not available",
-      "source": "Booking iCal Sicherheitsabgleich"
-    },
-    {
-      "start": "2026-10-25",
-      "end": "2026-10-26",
       "summary": "CLOSED - Not available",
       "source": "Booking iCal Sicherheitsabgleich"
     },
@@ -59,12 +41,12 @@
       "source": "Booking iCal Sicherheitsabgleich"
     },
     {
-      "start": "2027-12-20",
-      "end": "2028-01-10",
+      "start": "2027-09-27",
+      "end": "2028-03-28",
       "summary": "CLOSED - Not available",
       "source": "Booking iCal Sicherheitsabgleich"
     }
   ],
-  "updatedAt": "21.9.2026, 15:07:52",
-  "updatedAtIso": "2026-09-21T13:07:52.627Z"
+  "updatedAt": "28.9.2026, 09:27:41",
+  "updatedAtIso": "2026-09-28T07:27:41.455Z"
 }
