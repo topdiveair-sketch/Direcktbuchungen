@@ -791,7 +791,14 @@ def sync_room(room: str) -> tuple[int, str]:
         )
 
     if any_success:
-        # Keep the sync_room return contract stable for checkout callers:\n        # detailed per-provider results stay in ical_settings.last_result, while\n        # callers receive the canonical success marker whenever at least one\n        # live provider refreshed successfully. Failed providers keep their\n        # last successful external_blocks snapshot as a safety net.\n        return total, "Synchronisierung erfolgreich."\n    return 0, message or "Kalender-Synchronisierung fehlgeschlagen."\n
+        # Keep the sync_room return contract stable for checkout callers:
+        # detailed per-provider results stay in ical_settings.last_result, while
+        # callers receive the canonical success marker whenever at least one
+        # live provider refreshed successfully. Failed providers keep their
+        # last successful external_blocks snapshot as a safety net.
+        return total, "Synchronisierung erfolgreich."
+    return 0, message or "Kalender-Synchronisierung fehlgeschlagen."
+
 
 app.extensions["zab_sync_room"] = sync_room
 
