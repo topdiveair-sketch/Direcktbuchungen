@@ -469,7 +469,7 @@ def room_available_in_conn(conn: sqlite3.Connection, room: str, arrival: date, d
 
     for row in external:
         if overlaps(arrival, departure, parse_date(row["start_date"]), parse_date(row["end_date"])):
-            return False, "Das Zimmer ist über Booking.com/iCal belegt."
+            return False, "Das Zimmer ist über einen externen Buchungskanal belegt."
 
     return True, "Das Zimmer ist verfügbar."
 
@@ -584,64 +584,109 @@ def parse_ical(text: str) -> list[dict]:
     return events
 
 
-def sync_room(room: str) -> tuple[int, str]:
+def _calendar_sources_for_room(room: str) -> list[tuple[str, str, str]]:
+    """Authoritative occupancy feeds. Any successful feed can block availability."""
     with db() as conn:
         row = conn.execute(
             "SELECT import_url FROM ical_settings WHERE room = ?", (room,)
         ).fetchone()
 
-    url = (row["import_url"] if row else "").strip()
+    sources: list[tuple[str, str, str]] = []
+    booking_url = (row["import_url"] if row else "").strip()
+    if booking_url:
+        sources.append(("booking_ical", "Booking.com", booking_url))
+
+    env_suffix = room.upper().replace(" ", "_")
+    beds24_url = env_value(f"BEDS24_ICAL_{env_suffix}_URL", "BEDS24_ICAL_URL")
+    if beds24_url:
+        sources.append(("beds24_ical", "Beds24", beds24_url))
+
+    airbnb_url = env_value(f"AIRBNB_ICAL_{env_suffix}_URL", "AIRBNB_ICAL_URL")
+    if airbnb_url:
+        sources.append(("airbnb_ical", "Airbnb", airbnb_url))
+
+    # Remove accidental duplicate URLs while preserving the strongest source label.
+    seen = set()
+    unique = []
+    for source, label, url in sources:
+        if url in seen:
+            continue
+        seen.add(url)
+        unique.append((source, label, url))
+    return unique
+
+
+def sync_room(room: str) -> tuple[int, str]:
     now = datetime.now().isoformat(timespec="seconds")
+    sources = _calendar_sources_for_room(room)
 
-    if not url:
+    if not sources:
         with db() as conn:
             conn.execute(
                 "UPDATE ical_settings SET last_sync=?, last_result=? WHERE room=?",
-                (now, "Kein Link hinterlegt", room),
+                (now, "Kein externer Kalender hinterlegt", room),
             )
-        return 0, "Kein Link hinterlegt."
+        return 0, "Kein externer Kalender hinterlegt."
 
-    try:
-        req = urllib.request.Request(
-            url, headers={"User-Agent": "Zuhause-am-Bach-iCal/3.0"}
-        )
-        with urllib.request.urlopen(req, timeout=20) as response:
-            text = response.read().decode("utf-8", errors="replace")
-        events = parse_ical(text)
+    total = 0
+    results = []
+    any_success = False
 
-        with db() as conn:
-            conn.execute(
-                "DELETE FROM external_blocks WHERE room=? AND source='booking_ical'",
-                (room,),
+    for source, label, url in sources:
+        try:
+            req = urllib.request.Request(
+                url,
+                headers={
+                    "User-Agent": "Zuhause-am-Bach-iCal/4.0",
+                    "Cache-Control": "no-cache",
+                },
             )
-            for event in events:
+            with urllib.request.urlopen(req, timeout=20) as response:
+                text = response.read().decode("utf-8", errors="replace")
+            events = parse_ical(text)
+
+            # Replace only this provider's previous snapshot. If another provider
+            # fails, its last successful snapshot remains as a safety net.
+            with db() as conn:
                 conn.execute(
-                    """
-                    INSERT INTO external_blocks
-                    (room, start_date, end_date, source, uid, summary, imported_at)
-                    VALUES (?, ?, ?, 'booking_ical', ?, ?, ?)
-                    """,
-                    (
-                        room,
-                        event["start"].isoformat(),
-                        event["end"].isoformat(),
-                        event.get("uid", ""),
-                        event.get("summary", "Booking.com"),
-                        now,
-                    ),
+                    "DELETE FROM external_blocks WHERE room=? AND source=?",
+                    (room, source),
                 )
-            conn.execute(
-                "UPDATE ical_settings SET last_sync=?, last_result=? WHERE room=?",
-                (now, f"{len(events)} Termine importiert", room),
-            )
-        return len(events), "Synchronisierung erfolgreich."
-    except Exception as exc:
-        with db() as conn:
-            conn.execute(
-                "UPDATE ical_settings SET last_sync=?, last_result=? WHERE room=?",
-                (now, f"Fehler: {exc}", room),
-            )
-        return 0, f"Fehler: {exc}"
+                for event in events:
+                    conn.execute(
+                        """
+                        INSERT INTO external_blocks
+                        (room, start_date, end_date, source, uid, summary, imported_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            room,
+                            event["start"].isoformat(),
+                            event["end"].isoformat(),
+                            source,
+                            event.get("uid", ""),
+                            event.get("summary", label),
+                            now,
+                        ),
+                    )
+
+            total += len(events)
+            any_success = True
+            results.append(f"{label}: {len(events)}")
+        except Exception as exc:
+            app.logger.exception("external_calendar_sync_failed room=%s source=%s", room, source)
+            results.append(f"{label}: Fehler")
+
+    message = " · ".join(results)
+    with db() as conn:
+        conn.execute(
+            "UPDATE ical_settings SET last_sync=?, last_result=? WHERE room=?",
+            (now, message, room),
+        )
+
+    if any_success:
+        return total, message
+    return 0, message or "Kalender-Synchronisierung fehlgeschlagen."
 
 
 app.extensions["zab_sync_room"] = sync_room
@@ -1602,7 +1647,7 @@ def api_calendar():
         external = conn.execute(
             """
             SELECT start_date, end_date FROM external_blocks
-            WHERE room=? AND source='booking_ical'
+            WHERE room=?
             """,
             (room,),
         ).fetchall()
