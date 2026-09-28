@@ -219,6 +219,16 @@ def init_db() -> None:
                 imported_at TEXT NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS central_overrides (
+                room TEXT NOT NULL,
+                day TEXT NOT NULL,
+                availability INTEGER,
+                price REAL,
+                updated_at TEXT NOT NULL,
+                source TEXT NOT NULL DEFAULT 'os_central',
+                PRIMARY KEY (room, day)
+            );
+
             CREATE TABLE IF NOT EXISTS ical_settings (
                 room TEXT PRIMARY KEY,
                 import_url TEXT DEFAULT '',
@@ -407,13 +417,29 @@ def is_high(day):
             if parse_date(r["start_date"])<=day<=parse_date(r["end_date"]): return True
     return False
 
+def central_override_for_day(room: str, day: date) -> dict:
+    try:
+        with db() as conn:
+            row = conn.execute(
+                "SELECT availability, price, updated_at FROM central_overrides WHERE room=? AND day=?",
+                (room, day.isoformat()),
+            ).fetchone()
+        return dict(row) if row else {}
+    except Exception:
+        return {}
+
+
 def price_breakdown(room,arrival,departure,adults,chosen,coupon_code=""):
     prices,discounts,extras,seasons=pricing_data(); n=(departure-arrival).days; cur=arrival; room_total=0
     while cur<departure:
-        p=prices[room]["high"] if is_high(cur) else (prices[room]["weekend"] if cur.weekday() in (4,5) else prices[room]["standard"])
-        event = event_pricing_for_day(cur)
-        if event:
-            p = min(float(p) * float(event["factor"]), float(event["cap"]))
+        override = central_override_for_day(room, cur)
+        if override.get("price") is not None:
+            p = float(override["price"])
+        else:
+            p=prices[room]["high"] if is_high(cur) else (prices[room]["weekend"] if cur.weekday() in (4,5) else prices[room]["standard"])
+            event = event_pricing_for_day(cur)
+            if event:
+                p = min(float(p) * float(event["factor"]), float(event["cap"]))
         room_total+=float(p); cur+=timedelta(days=1)
     extra_total=0; lines=[]
     for k,v in chosen.items():
@@ -462,6 +488,10 @@ def room_available_in_conn(conn: sqlite3.Connection, room: str, arrival: date, d
         "SELECT start_date, end_date FROM external_blocks WHERE room = ?",
         (room,),
     ).fetchall()
+    central_closed = conn.execute(
+        "SELECT day FROM central_overrides WHERE room=? AND availability=0 AND day>=? AND day<?",
+        (room, arrival.isoformat(), departure.isoformat()),
+    ).fetchall()
 
     for row in local:
         if overlaps(arrival, departure, parse_date(row["arrival"]), parse_date(row["departure"])):
@@ -471,7 +501,83 @@ def room_available_in_conn(conn: sqlite3.Connection, room: str, arrival: date, d
         if overlaps(arrival, departure, parse_date(row["start_date"]), parse_date(row["end_date"])):
             return False, "Das Zimmer ist über einen externen Buchungskanal belegt."
 
+    if central_closed:
+        return False, "Das Zimmer wurde im Zuhause-am-Bach Zentralkalender gesperrt."
+
     return True, "Das Zimmer ist verfügbar."
+
+
+@app.post("/api/os/control")
+def os_central_control():
+    expected = env_value("OS_SYNC_TOKEN")
+    supplied = (request.headers.get("X-OS-Sync-Token") or "").strip()
+    auth = (request.headers.get("Authorization") or "").strip()
+    if not supplied and auth.lower().startswith("bearer "):
+        supplied = auth[7:].strip()
+    if not expected or not supplied or not hmac.compare_digest(expected, supplied):
+        return jsonify(ok=False, error="unauthorized"), 401
+
+    payload = request.get_json(silent=True) or {}
+    room = str(payload.get("room") or "").strip()
+    if room != "Bachblick":
+        return jsonify(ok=False, error="unknown_room"), 400
+    try:
+        start = parse_date(str(payload.get("from") or payload.get("date") or "")[:10])
+        end = parse_date(str(payload.get("to") or payload.get("from") or payload.get("date") or "")[:10])
+    except Exception:
+        return jsonify(ok=False, error="invalid_date"), 400
+    if end < start:
+        start, end = end, start
+    if (end - start).days > 370:
+        return jsonify(ok=False, error="range_too_large"), 400
+
+    availability = payload.get("availability", None)
+    if availability is not None:
+        try:
+            availability = int(availability)
+        except Exception:
+            return jsonify(ok=False, error="invalid_availability"), 400
+        if availability not in (0, 1):
+            return jsonify(ok=False, error="invalid_availability"), 400
+
+    price = payload.get("price", None)
+    if price not in (None, ""):
+        try:
+            price = round(float(price), 2)
+        except Exception:
+            return jsonify(ok=False, error="invalid_price"), 400
+        if price < 0 or price > 5000:
+            return jsonify(ok=False, error="invalid_price"), 400
+    else:
+        price = None
+
+    now = datetime.now().isoformat(timespec="seconds")
+    changed = 0
+    current = start
+    with db() as conn:
+        while current <= end:
+            existing = conn.execute(
+                "SELECT availability, price FROM central_overrides WHERE room=? AND day=?",
+                (room, current.isoformat()),
+            ).fetchone()
+            new_availability = availability if availability is not None else (existing["availability"] if existing else None)
+            new_price = price if price is not None else (existing["price"] if existing else None)
+            conn.execute(
+                """
+                INSERT INTO central_overrides(room,day,availability,price,updated_at,source)
+                VALUES(?,?,?,?,?,'os_central')
+                ON CONFLICT(room,day) DO UPDATE SET
+                    availability=excluded.availability,
+                    price=excluded.price,
+                    updated_at=excluded.updated_at,
+                    source=excluded.source
+                """,
+                (room, current.isoformat(), new_availability, new_price, now),
+            )
+            changed += 1
+            current += timedelta(days=1)
+    return jsonify(ok=True, room=room, changed=changed, from_date=start.isoformat(), to_date=end.isoformat(),
+                   availability=availability, price=price)
 
 
 MASTER_CALENDAR_URL = "https://web-production-907d68.up.railway.app/api/direct-booking-calendar"
