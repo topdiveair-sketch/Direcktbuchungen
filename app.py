@@ -67,7 +67,7 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 if PRODUCTION_MODE:
     if len(SECRET_KEY) < 32:
         raise RuntimeError("SECRET_KEY muss im Livebetrieb gesetzt sein und mindestens 32 Zeichen haben.")
-    if len(ADMIN_PASSWORD) < 12 or ADMIN_PASSWORD == "windis2026":
+    if len(ADMIN_PASSWORD) < 10 or ADMIN_PASSWORD == "windis2026":
         raise RuntimeError("ADMIN_PASSWORD muss im Livebetrieb gesetzt und sicher sein.")
 
 app = Flask(__name__, template_folder=str(BASE / "templates"), static_folder=str(BASE / "static"))
