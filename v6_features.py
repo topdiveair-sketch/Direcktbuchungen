@@ -204,6 +204,44 @@ def init_v6(app, DB_PATH, db, require_admin, ROOMS):
         flash("Channel-Einstellungen gespeichert.","success")
         return redirect(url_for("admin"))
 
+    @app.get("/host-manifest.webmanifest")
+    def host_manifest():
+        payload = {
+            "name": "Zuhause am Bach – Übersicht",
+            "short_name": "ZAB Übersicht",
+            "description": "Mobile Gastgeber-Übersicht für Zuhause am Bach – Wachau",
+            "start_url": "/host",
+            "scope": "/",
+            "display": "standalone",
+            "background_color": "#f4f7f5",
+            "theme_color": "#153f35",
+            "icons": [
+                {
+                    "src": "/static/images/host-app-icon.svg",
+                    "sizes": "any",
+                    "type": "image/svg+xml",
+                    "purpose": "any maskable",
+                }
+            ],
+        }
+        response = Response(
+            json.dumps(payload, ensure_ascii=False),
+            mimetype="application/manifest+json",
+        )
+        response.headers["Cache-Control"] = "public, max-age=3600"
+        return response
+
+    @app.get("/host-sw.js")
+    def host_service_worker():
+        script = """self.addEventListener('install',e=>self.skipWaiting());
+self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
+self.addEventListener('fetch',()=>{});
+"""
+        response = Response(script, mimetype="application/javascript")
+        response.headers["Cache-Control"] = "no-cache"
+        response.headers["Service-Worker-Allowed"] = "/"
+        return response
+
     @app.get("/host")
     def host_mobile():
         if not require_admin():
