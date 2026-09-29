@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import smtplib
 from datetime import datetime, timedelta
-from email.message import EmailMessage
+
+from transactional_email import send_transactional_email
 
 
 HOLD_MINUTES = 10
@@ -53,35 +53,15 @@ def init_payment_hold(app, db):
             )
             return cur.rowcount
 
-    def smtp_send(to: str, subject: str, body: str, *, important: bool = False):
-        cfg = settings()
-        host = cfg.get("smtp_host", "")
-        user = cfg.get("smtp_user", "")
-        password = cfg.get("smtp_password", "")
-        port = int(cfg.get("smtp_port", "587") or 587)
-        sender = cfg.get("smtp_sender", user or cfg.get("email", ""))
-        if not host or not user or not password:
-            return False, "SMTP ist noch nicht vollständig eingerichtet."
-        msg = EmailMessage()
-        msg["From"] = sender
-        msg["To"] = to
-        msg["Subject"] = subject
-        if important:
-            # Outlook/Hotmail and many mobile mail apps recognize these headers
-            # as a high-priority / important message.
-            msg["Importance"] = "high"
-            msg["Priority"] = "urgent"
-            msg["X-Priority"] = "1"
-            msg["X-MSMail-Priority"] = "High"
-        msg.set_content(body)
-        try:
-            with smtplib.SMTP(host, port, timeout=20) as server:
-                server.starttls()
-                server.login(user, password)
-                server.send_message(msg)
-            return True, "gesendet"
-        except Exception as exc:
-            return False, str(exc)
+    def smtp_send(to: str, subject: str, body: str, *, important: bool = False, reply_to: str | None = None):
+        return send_transactional_email(
+            to,
+            subject,
+            body,
+            settings=settings(),
+            reply_to=reply_to,
+            important=important,
+        )
 
     def log_email(booking_id: int, recipient: str, subject: str, status: str):
         with db() as conn:
@@ -151,7 +131,7 @@ def init_payment_hold(app, db):
                 details += f"Reserviert bis: {reserved_until}\n"
 
         details += "\nBitte zeitnah am Handy prüfen."
-        ok, send_status = smtp_send(ALERT_EMAIL, subject, details, important=True)
+        ok, send_status = smtp_send(ALERT_EMAIL, subject, details, important=True, reply_to=b['email'])
         try:
             log_email(booking_id, ALERT_EMAIL, subject, send_status)
         except Exception:
