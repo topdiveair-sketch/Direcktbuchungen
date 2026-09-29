@@ -64,8 +64,26 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260925-hero-structural3">
 <style>
     .windis-book-layout { display:grid; grid-template-columns:minmax(150px,220px) 1fr; gap:1.4rem; align-items:start; }
-    .windis-book-cover { width:100%; max-width:220px; height:auto; border-radius:14px; box-shadow:0 12px 30px rgba(0,0,0,.22); display:block; }
+    .windis-book-cover { width:100%; max-width:220px; aspect-ratio:2/3; object-fit:cover; height:auto; border-radius:14px; box-shadow:0 12px 30px rgba(0,0,0,.22); display:block; background:#fff; }
     @media (max-width:720px) { .windis-book-layout { grid-template-columns:1fr; } .windis-book-cover { margin:0 auto; max-width:240px; } }
+
+    /* Homepage secondary buttons: always green */
+    .active-service .hero-secondary,
+    .identity-cta .hero-secondary,
+    .active-service .btn.secondary,
+    .identity-cta .btn.secondary {
+      background:var(--green)!important;
+      border-color:var(--green)!important;
+      color:#fff!important;
+    }
+    .active-service .hero-secondary:hover,
+    .identity-cta .hero-secondary:hover,
+    .active-service .btn.secondary:hover,
+    .identity-cta .btn.secondary:hover {
+      background:var(--green-dark)!important;
+      border-color:var(--green-dark)!important;
+      color:#fff!important;
+    }
 </style></head>
 <body>
 <header class="hero hero-room hero-mobile-clean" id="start">
@@ -246,7 +264,7 @@
       </article>
       <article class="active-service-card windis-book-card">
         <div class="windis-book-layout">
-          <img class="windis-book-cover" src="{{ url_for('static', filename='images/windis-band15-duernstein.jpg') }}?v=20260929-band15" alt="Buchcover Band 15: Die wilden Wachauer Windis auf dem Dürnsteiner Weihnachtsmarkt" loading="lazy" decoding="async">
+          <img class="windis-book-cover" src="/media/windis-band15.jpg?v=20260929-cover2" alt="Buchcover Band 15: Die wilden Wachauer Windis auf dem Dürnsteiner Weihnachtsmarkt" loading="eager" decoding="async">
           <div>
             <span class="eyebrow">Buchtipp zum Wachauer Advent</span>
             <h3>📚 Die wilden Windis auf dem Dürnsteiner Weihnachtsmarkt</h3>
