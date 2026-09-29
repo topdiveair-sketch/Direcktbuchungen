@@ -1,3 +1,4 @@
+# force-deploy-seo-identity-2026-09-29
 """ProjectOS bridge for central winter, direct-booking and market-leader analytics."""
 
 from __future__ import annotations
