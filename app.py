@@ -927,6 +927,19 @@ def globals_for_templates():
     }
 
 
+@app.get("/media/windis-band15.jpg")
+def windis_band15_image():
+    """Serve the Band 15 cover from repository-safe base64 chunks."""
+    parts = []
+    for i in range(1, 7):
+        path = BASE / "static" / "images" / f"windis-band15-cover.part{i}.b64"
+        parts.append(path.read_text(encoding="utf-8").strip())
+    data = base64.b64decode("".join(parts), validate=True)
+    response = Response(data, mimetype="image/jpeg")
+    response.headers["Cache-Control"] = "public, max-age=86400"
+    return response
+
+
 @app.get("/media/gartenblick.jpg")
 def gartenblick_image():
     # Compatibility endpoint for older links. The room image is now stored
