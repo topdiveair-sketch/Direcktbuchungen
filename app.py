@@ -737,6 +737,7 @@ def os_direct_prices():
     while current <= end:
         display_price = direct_nightly_price_for_day(room, current)
         checkout_price = round(display_price * (1.0 - direct_discount / 100.0), 2)
+        demand_percent, unique_checks = _demand_percent_for_day(room, current)
         event = event_pricing_for_day(current)
         override = central_override_for_day(room, current)
         days.append({
@@ -744,6 +745,8 @@ def os_direct_prices():
             "display_price": display_price,
             "checkout_price": checkout_price,
             "direct_discount_percent": direct_discount,
+            "demand_percent": demand_percent,
+            "unique_checks_48h": unique_checks,
             "source": "os_override" if override.get("price") is not None else ("event" if event else ("high" if is_high(current) else ("weekend" if current.weekday() in (4, 5) else "standard"))),
         })
         current += timedelta(days=1)
