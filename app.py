@@ -11,6 +11,7 @@ import urllib.request
 import urllib.error
 import urllib.parse
 import hmac
+import hashlib
 from datetime import datetime, date, timedelta
 from pathlib import Path
 from uuid import uuid4
@@ -30,6 +31,7 @@ from smart_host import init_smart_host
 from knowledge import init_knowledge
 from quality_v12 import init_quality_v12
 from alltag import init_alltag
+from pricing_2027 import nightly_direct_rate, pricing_config
 
 BASE = Path(__file__).resolve().parent
 DATA_DIR = Path(os.environ.get("DATA_DIR", str(BASE / "data"))).expanduser().resolve()
@@ -283,6 +285,22 @@ def init_db() -> None:
         )
 
         conn.execute(
+            """CREATE TABLE IF NOT EXISTS demand_signals(
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   room TEXT NOT NULL,
+                   target_day TEXT NOT NULL,
+                   visitor_hash TEXT NOT NULL,
+                   observed_on TEXT NOT NULL,
+                   created_at TEXT NOT NULL,
+                   UNIQUE(room, target_day, visitor_hash, observed_on)
+               )"""
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_demand_signals_target_created "
+            "ON demand_signals(room, target_day, created_at)"
+        )
+
+        conn.execute(
             """UPDATE bookings
                SET status='inquiry'
                WHERE status='pending'
@@ -430,12 +448,18 @@ def central_override_for_day(room: str, day: date) -> dict:
         return {}
 
 
-def direct_nightly_price_for_day(room: str, day: date) -> float:
-    """Authoritative public nightly room price before optional extras/discounts."""
+def _base_direct_nightly_price_for_day(room: str, day: date) -> float:
+    """Return the OS/base rate before demand adjustment."""
     prices, _discounts, _extras, _seasons = pricing_data()
     override = central_override_for_day(room, day)
     if override.get("price") is not None:
         return round(float(override["price"]), 2)
+
+    if room == "Bachblick":
+        configured = nightly_direct_rate(day)
+        if configured is not None:
+            return round(float(configured), 2)
+
     price = prices[room]["high"] if is_high(day) else (
         prices[room]["weekend"] if day.weekday() in (4, 5) else prices[room]["standard"]
     )
@@ -445,17 +469,95 @@ def direct_nightly_price_for_day(room: str, day: date) -> float:
     return round(float(price), 2)
 
 
+def _demand_rule_config() -> dict:
+    try:
+        cfg = pricing_config().get("demand_rules", {})
+    except Exception:
+        cfg = {}
+    return {
+        "lookback_hours": int(cfg.get("lookback_hours", 48)),
+        "floor_eur": float(cfg.get("floor_eur", 99)),
+        "cap_eur": float(cfg.get("cap_eur", 159)),
+        "thresholds": cfg.get("unique_checks_thresholds", [
+            {"checks": 3, "percent": 5},
+            {"checks": 6, "percent": 8},
+            {"checks": 10, "percent": 12},
+            {"checks": 15, "percent": 15},
+        ]),
+    }
+
+
+def _demand_unique_checks(room: str, day: date, now=None) -> int:
+    """Unique, privacy-preserving date checks in the configured rolling window."""
+    now = now or datetime.now()
+    cfg = _demand_rule_config()
+    cutoff = (now - timedelta(hours=max(1, cfg["lookback_hours"]))).isoformat(timespec="seconds")
+    try:
+        with db() as conn:
+            row = conn.execute(
+                """SELECT COUNT(DISTINCT visitor_hash) AS n
+                   FROM demand_signals
+                   WHERE room=? AND target_day=? AND created_at>=?""",
+                (room, day.isoformat(), cutoff),
+            ).fetchone()
+        return int(row["n"] or 0) if row else 0
+    except Exception:
+        return 0
+
+
+def _demand_percent_for_day(room: str, day: date) -> tuple[float, int]:
+    checks = _demand_unique_checks(room, day)
+    percent = 0.0
+    for rule in sorted(_demand_rule_config()["thresholds"], key=lambda row: int(row.get("checks", 0))):
+        if checks >= int(rule.get("checks", 0)):
+            percent = max(percent, float(rule.get("percent", 0)))
+    return percent, checks
+
+
+def direct_nightly_price_for_day(room: str, day: date) -> float:
+    """OS base price plus aggregate date demand, with hard floor/cap protection."""
+    base = _base_direct_nightly_price_for_day(room, day)
+    if room != "Bachblick":
+        return base
+    percent, _checks = _demand_percent_for_day(room, day)
+    cfg = _demand_rule_config()
+    adjusted = base * (1.0 + percent / 100.0)
+    return round(min(cfg["cap_eur"], max(cfg["floor_eur"], adjusted)), 2)
+
+
+def _record_demand_check(room: str, arrival: date, departure: date) -> None:
+    """Record one anonymous check per visitor/date/day; never stores an IP or user-agent."""
+    if room != "Bachblick" or departure <= arrival:
+        return
+    remote = (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
+    agent = request.headers.get("User-Agent", "")[:200]
+    salt = app.secret_key or "zab-demand"
+    visitor_hash = hashlib.sha256(f"{salt}|{remote}|{agent}".encode("utf-8")).hexdigest()
+    now = datetime.now()
+    observed_on = now.date().isoformat()
+    created_at = now.isoformat(timespec="seconds")
+    try:
+        with db() as conn:
+            current = arrival
+            while current < departure and (current - arrival).days < 14:
+                conn.execute(
+                    """INSERT OR IGNORE INTO demand_signals
+                       (room,target_day,visitor_hash,observed_on,created_at)
+                       VALUES (?,?,?,?,?)""",
+                    (room, current.isoformat(), visitor_hash, observed_on, created_at),
+                )
+                current += timedelta(days=1)
+    except Exception:
+        pass
+
+
 def price_breakdown(room,arrival,departure,adults,chosen,coupon_code=""):
     prices,discounts,extras,seasons=pricing_data(); n=(departure-arrival).days; cur=arrival; room_total=0
+    nightly_rates=[]
     while cur<departure:
-        override = central_override_for_day(room, cur)
-        if override.get("price") is not None:
-            p = float(override["price"])
-        else:
-            p=prices[room]["high"] if is_high(cur) else (prices[room]["weekend"] if cur.weekday() in (4,5) else prices[room]["standard"])
-            event = event_pricing_for_day(cur)
-            if event:
-                p = min(float(p) * float(event["factor"]), float(event["cap"]))
+        p=direct_nightly_price_for_day(room, cur)
+        percent, checks = _demand_percent_for_day(room, cur) if room == "Bachblick" else (0.0, 0)
+        nightly_rates.append({"date":cur.isoformat(),"rate":round(float(p),2),"demand_percent":percent,"unique_checks_48h":checks})
         room_total+=float(p); cur+=timedelta(days=1)
     extra_total=0; lines=[]
     for k,v in chosen.items():
@@ -482,7 +584,7 @@ def price_breakdown(room,arrival,departure,adults,chosen,coupon_code=""):
             amt=subtotal*float(coupon["percent"])/100
             subtotal-=amt
             applied.append({"label":f"Gutschein {coupon_code}","percent":coupon["percent"],"amount":round(amt,2)})
-    return {"nights":n,"room_total":round(room_total,2),"extras":lines,"discounts":applied,"total":round(subtotal,2)}
+    return {"nights":n,"room_total":round(room_total,2),"nightly_rates":nightly_rates,"extras":lines,"discounts":applied,"total":round(subtotal,2)}
 
 def parse_date(value: str) -> date:
     return datetime.strptime(value, "%Y-%m-%d").date()
@@ -1819,6 +1921,8 @@ def api_availability():
         return jsonify(available=False, message="Bitte gültige Reisedaten eingeben."), 400
 
     ok, message = room_available(room, arrival, departure)
+    if ok:
+        _record_demand_check(room, arrival, departure)
     return jsonify(
         available=ok,
         message=message,
