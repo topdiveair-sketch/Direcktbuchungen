@@ -454,10 +454,25 @@ def init_master_calendar(app, db, require_admin, rooms):
                    WHERE start_date<? AND end_date>?""",
                 (grid_end.isoformat(), grid_start.isoformat()),
             ).fetchall()
+            try:
+                demand_rows = conn.execute(
+                    """SELECT room,target_day,COUNT(DISTINCT visitor_hash) AS checks
+                       FROM demand_signals
+                       WHERE target_day>=? AND target_day<?
+                         AND created_at>=datetime('now','-48 hours')
+                       GROUP BY room,target_day""",
+                    (grid_start.isoformat(), grid_end.isoformat()),
+                ).fetchall()
+            except Exception:
+                demand_rows = []
 
         meta = {
             (r["room"], r["source"], r["uid"] or "", r["start_date"], r["end_date"]): dict(r)
             for r in meta_rows
+        }
+        demand_by_day = {
+            (r["room"], r["target_day"]): int(r["checks"] or 0)
+            for r in demand_rows
         }
         by_room = {}
         for room in rooms:
@@ -541,6 +556,7 @@ def init_master_calendar(app, db, require_admin, rooms):
                     "booking_price": booking_price,
                     "direct_price_override": direct_setting is not None and direct_setting["price"] is not None,
                     "booking_price_override": booking_setting is not None and booking_setting["price"] is not None,
+                    "demand_checks_48h": demand_by_day.get((room, current.isoformat()), 0),
                 })
                 current += timedelta(days=1)
             by_room[room] = days
