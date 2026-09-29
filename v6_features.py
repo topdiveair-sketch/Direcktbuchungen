@@ -206,14 +206,75 @@ def init_v6(app, DB_PATH, db, require_admin, ROOMS):
 
     @app.get("/host")
     def host_mobile():
-        if not require_admin(): return redirect(url_for("admin_login"))
-        today=date.today().isoformat()
+        if not require_admin():
+            return redirect(url_for("admin_login"))
+        today_d = date.today()
+        today = today_d.isoformat()
+        week_end = (today_d + timedelta(days=7)).isoformat()
+        month_prefix = today_d.strftime("%Y-%m")
         with db() as conn:
-            arrivals=conn.execute("SELECT * FROM bookings WHERE arrival=? AND status!='cancelled'",(today,)).fetchall()
-            departures=conn.execute("SELECT * FROM bookings WHERE departure=? AND status!='cancelled'",(today,)).fetchall()
-            notes=conn.execute("SELECT * FROM host_notifications ORDER BY created_at DESC LIMIT 20").fetchall()
-            rooms=conn.execute("SELECT * FROM housekeeping ORDER BY room").fetchall()
-        return render_template("host_mobile.html",arrivals=arrivals,departures=departures,notes=notes,rooms=rooms)
+            arrivals = conn.execute(
+                "SELECT * FROM bookings WHERE arrival=? AND status!='cancelled' ORDER BY first_name,last_name",
+                (today,),
+            ).fetchall()
+            departures = conn.execute(
+                "SELECT * FROM bookings WHERE departure=? AND status!='cancelled' ORDER BY first_name,last_name",
+                (today,),
+            ).fetchall()
+            upcoming = conn.execute(
+                """SELECT * FROM bookings
+                   WHERE arrival>=? AND arrival<? AND status!='cancelled'
+                   ORDER BY arrival LIMIT 12""",
+                (today, week_end),
+            ).fetchall()
+            next_booking = conn.execute(
+                """SELECT * FROM bookings
+                   WHERE arrival>=? AND status!='cancelled'
+                   ORDER BY arrival LIMIT 1""",
+                (today,),
+            ).fetchone()
+            open_payments = conn.execute(
+                "SELECT COUNT(*) c FROM bookings WHERE status='confirmed' AND paid=0"
+            ).fetchone()["c"]
+            month_revenue = conn.execute(
+                """SELECT COALESCE(SUM(total),0) total FROM bookings
+                   WHERE arrival LIKE ? AND status='confirmed'""",
+                (month_prefix + "%",),
+            ).fetchone()["total"]
+            breakfast_people = conn.execute(
+                """SELECT COALESCE(SUM(adults),0) c FROM bookings
+                   WHERE arrival<=? AND departure>? AND breakfast=1
+                   AND status!='cancelled'""",
+                (today, today),
+            ).fetchone()["c"]
+            notes = conn.execute(
+                "SELECT * FROM host_notifications ORDER BY created_at DESC LIMIT 8"
+            ).fetchall()
+            rooms = conn.execute(
+                "SELECT * FROM housekeeping ORDER BY room"
+            ).fetchall()
+            try:
+                open_tasks = conn.execute(
+                    """SELECT COUNT(*) c FROM daily_items
+                       WHERE item_date=? AND status!='erledigt'""",
+                    (today,),
+                ).fetchone()["c"]
+            except sqlite3.OperationalError:
+                open_tasks = 0
+        return render_template(
+            "host_mobile.html",
+            arrivals=arrivals,
+            departures=departures,
+            upcoming=upcoming,
+            next_booking=next_booking,
+            notes=notes,
+            rooms=rooms,
+            today=today,
+            open_payments=open_payments,
+            month_revenue=month_revenue,
+            breakfast_people=breakfast_people,
+            open_tasks=open_tasks,
+        )
 
     @app.get("/admin/statistics")
     def statistics():
