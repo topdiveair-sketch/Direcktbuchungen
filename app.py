@@ -265,7 +265,8 @@ def init_db() -> None:
             ("amount_paid", "REAL DEFAULT 0"),
             ("payment_status", "TEXT DEFAULT ''"),
             ("payment_reference", "TEXT DEFAULT ''"),
-            ("paypal_order_id", "TEXT DEFAULT ''")
+            ("paypal_order_id", "TEXT DEFAULT ''"),
+            ("cancelled_at", "TEXT DEFAULT ''")
         ):
             if column not in cols:
                 conn.execute(f"ALTER TABLE bookings ADD COLUMN {column} {definition}")
@@ -2537,9 +2538,10 @@ def admin_booking_action(booking_id: int, action: str):
         return "Ungültige Aktion", 400
 
     with db() as conn:
+        cancelled_at = datetime.now().isoformat(timespec="seconds") if action == "cancel" else ""
         conn.execute(
-            "UPDATE bookings SET status=? WHERE id=?",
-            (mapping[action], booking_id),
+            "UPDATE bookings SET status=?, cancelled_at=? WHERE id=?",
+            (mapping[action], cancelled_at, booking_id),
         )
     flash("Buchungsstatus aktualisiert.", "success")
     return redirect(url_for("admin"))
@@ -2635,7 +2637,50 @@ def del_season(i):
     return redirect(url_for("admin"))
 
 
+def cleanup_cancelled_bookings(retention_days: int = 14) -> int:
+    """Delete cancelled booking requests after the retention period."""
+    cutoff = (datetime.now() - timedelta(days=retention_days)).isoformat(timespec="seconds")
+    with db() as conn:
+        # Legacy cancelled rows had no cancellation timestamp. Their creation
+        # time is the safest available fallback and removes old test clutter.
+        conn.execute(
+            """UPDATE bookings
+               SET cancelled_at=created_at
+               WHERE status='cancelled'
+                 AND COALESCE(cancelled_at, '')=''"""
+        )
+        cur = conn.execute(
+            """DELETE FROM bookings
+               WHERE status='cancelled'
+                 AND COALESCE(NULLIF(cancelled_at, ''), created_at) < ?""",
+            (cutoff,),
+        )
+        deleted = int(cur.rowcount or 0)
+    if deleted:
+        app.logger.info("cancelled_booking_cleanup deleted=%s retention_days=%s", deleted, retention_days)
+    return deleted
+
+
+_cancelled_cleanup_last_run = datetime.min
+
+
+@app.before_request
+def automatic_cancelled_booking_cleanup():
+    """Run the cancelled-booking cleanup at most once every 24 hours per worker."""
+    global _cancelled_cleanup_last_run
+    now = datetime.now()
+    if now - _cancelled_cleanup_last_run < timedelta(hours=24):
+        return None
+    _cancelled_cleanup_last_run = now
+    try:
+        cleanup_cancelled_bookings(14)
+    except Exception:
+        app.logger.exception("cancelled_booking_cleanup_failed")
+    return None
+
+
 init_db()
+cleanup_cancelled_bookings(14)
 init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL)
 
 # Optional one-shot resend used for operational recovery. Keep this synchronous so
