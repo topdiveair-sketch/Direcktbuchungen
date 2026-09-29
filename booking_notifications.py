@@ -4,13 +4,12 @@ import os
 import json
 import urllib.error
 import urllib.request
-import requests
 import re
-import smtplib
 from datetime import datetime, timedelta
-from email.message import EmailMessage
 
 from flask import jsonify, request
+
+from transactional_email import send_transactional_email
 
 
 PAID_GUEST_SUBJECT = "Buchung bestätigt / Booking confirmed – Zuhause am Bach"
@@ -24,74 +23,15 @@ def init_booking_notifications(app, db):
         with db() as conn:
             return {row["key"]: row["value"] for row in conn.execute("SELECT key,value FROM site_settings")}
 
-    def smtp_send(to: str, subject: str, body: str):
-        """Send transactional mail via HTTPS API first, SMTP only as fallback."""
-        cfg = settings()
-        brevo_key = os.environ.get("BREVO_API_KEY", "").strip()
-        sender_email = (
-            os.environ.get("MAIL_SENDER_EMAIL", "").strip()
-            or cfg.get("email", "").strip()
-            or PUBLIC_CONTACT_EMAIL
+    def smtp_send(to: str, subject: str, body: str, *, reply_to: str | None = None, important: bool = False):
+        return send_transactional_email(
+            to,
+            subject,
+            body,
+            settings=settings(),
+            reply_to=reply_to,
+            important=important,
         )
-        sender_name = os.environ.get("MAIL_SENDER_NAME", "Zuhause am Bach – Wachau").strip()
-
-        if brevo_key:
-            payload = {
-                "sender": {"name": sender_name, "email": sender_email},
-                "to": [{"email": to}],
-                "replyTo": {"name": sender_name, "email": sender_email},
-                "subject": subject,
-                "textContent": body,
-                "tags": ["zuhause-am-bach", "transactional"],
-            }
-            try:
-                response = requests.post(
-                    "https://api.brevo.com/v3/smtp/email",
-                    headers={
-                        "accept": "application/json",
-                        "api-key": brevo_key,
-                        "content-type": "application/json",
-                    },
-                    json=payload,
-                    timeout=(5, 12),
-                )
-                if 200 <= int(response.status_code) < 300:
-                    return True, "gesendet"
-                if response.status_code in (401, 403):
-                    return False, "mail_api_auth_failed"
-                if response.status_code == 400:
-                    return False, "mail_sender_or_payload_rejected"
-                return False, f"mail_api_failed_{response.status_code}"
-            except requests.Timeout:
-                return False, "mail_api_timeout"
-            except requests.RequestException:
-                return False, "mail_api_unreachable"
-
-        host = cfg.get("smtp_host", "")
-        user = cfg.get("smtp_user", "")
-        password = cfg.get("smtp_password", "")
-        port = int(cfg.get("smtp_port", "587") or 587)
-        sender = cfg.get("smtp_sender", user or cfg.get("email", ""))
-        if not host or not user or not password:
-            return False, "mail_provider_not_configured"
-
-        msg = EmailMessage()
-        msg["From"] = sender
-        msg["To"] = to
-        msg["Subject"] = subject
-        msg.set_content(body)
-        try:
-            with smtplib.SMTP(host, port, timeout=20) as server:
-                server.starttls()
-                server.login(user, password)
-                server.send_message(msg)
-            return True, "gesendet"
-        except smtplib.SMTPAuthenticationError:
-            return False, "smtp_auth_failed"
-        except (smtplib.SMTPException, OSError, TimeoutError):
-            return False, "smtp_delivery_failed"
-        except Exception:
-            return False, "smtp_delivery_failed"
 
     def already_sent(booking_id: int, recipient: str) -> bool:
         with db() as conn:
@@ -343,6 +283,8 @@ def init_booking_notifications(app, db):
             owner_email,
             f"[WICHTIG] Neue Direktanfrage: {arrival_text} – {departure_text}",
             owner_body,
+            reply_to=email,
+            important=True,
         )
 
         guest_body = (
