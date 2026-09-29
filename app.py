@@ -16,6 +16,7 @@ from datetime import datetime, date, timedelta
 from pathlib import Path
 from uuid import uuid4
 from decimal import Decimal, ROUND_HALF_UP
+from zoneinfo import ZoneInfo
 
 from flask import (
     Flask, Response, jsonify, redirect, render_template, request,
@@ -301,6 +302,30 @@ def init_db() -> None:
         )
 
         conn.execute(
+            """CREATE TABLE IF NOT EXISTS demand_searches(
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   room TEXT NOT NULL,
+                   arrival TEXT NOT NULL,
+                   departure TEXT NOT NULL,
+                   visitor_hash TEXT NOT NULL,
+                   country_code TEXT NOT NULL DEFAULT 'XX',
+                   local_date TEXT NOT NULL,
+                   local_weekday INTEGER NOT NULL,
+                   local_hour INTEGER NOT NULL,
+                   available INTEGER NOT NULL DEFAULT 0,
+                   created_at TEXT NOT NULL
+               )"""
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_demand_searches_created "
+            "ON demand_searches(created_at)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_demand_searches_country "
+            "ON demand_searches(country_code, local_date)"
+        )
+
+        conn.execute(
             """UPDATE bookings
                SET status='inquiry'
                WHERE status='pending'
@@ -525,14 +550,66 @@ def direct_nightly_price_for_day(room: str, day: date) -> float:
     return round(min(cfg["cap_eur"], max(cfg["floor_eur"], adjusted)), 2)
 
 
+def _request_country_code() -> str:
+    """Return a coarse ISO country code from trusted proxy headers when available."""
+    for header in (
+        "CF-IPCountry",
+        "CloudFront-Viewer-Country",
+        "X-Country-Code",
+        "X-Geo-Country",
+        "X-Vercel-IP-Country",
+    ):
+        value = (request.headers.get(header) or "").strip().upper()
+        if len(value) == 2 and value.isalpha():
+            return value
+    return "XX"
+
+
+def _visitor_hash() -> str:
+    """Privacy-preserving visitor key; raw IP and user-agent are never stored."""
+    remote = (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
+    agent = request.headers.get("User-Agent", "")[:200]
+    salt = app.secret_key or "zab-demand"
+    return hashlib.sha256(f"{salt}|{remote}|{agent}".encode("utf-8")).hexdigest()
+
+
+def _record_search_analytics(room: str, arrival: date, departure: date, available: bool) -> None:
+    """Store one coarse, privacy-safe availability search event for OS statistics."""
+    if room != "Bachblick" or departure <= arrival:
+        return
+    try:
+        local_now = datetime.now(ZoneInfo("Europe/Vienna"))
+    except Exception:
+        local_now = datetime.now()
+    try:
+        with db() as conn:
+            conn.execute(
+                """INSERT INTO demand_searches
+                   (room,arrival,departure,visitor_hash,country_code,local_date,
+                    local_weekday,local_hour,available,created_at)
+                   VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    room,
+                    arrival.isoformat(),
+                    departure.isoformat(),
+                    _visitor_hash(),
+                    _request_country_code(),
+                    local_now.date().isoformat(),
+                    int(local_now.weekday()),
+                    int(local_now.hour),
+                    1 if available else 0,
+                    local_now.isoformat(timespec="seconds"),
+                ),
+            )
+    except Exception:
+        pass
+
+
 def _record_demand_check(room: str, arrival: date, departure: date) -> None:
     """Record one anonymous check per visitor/date/day; never stores an IP or user-agent."""
     if room != "Bachblick" or departure <= arrival:
         return
-    remote = (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
-    agent = request.headers.get("User-Agent", "")[:200]
-    salt = app.secret_key or "zab-demand"
-    visitor_hash = hashlib.sha256(f"{salt}|{remote}|{agent}".encode("utf-8")).hexdigest()
+    visitor_hash = _visitor_hash()
     now = datetime.now()
     observed_on = now.date().isoformat()
     created_at = now.isoformat(timespec="seconds")
@@ -697,6 +774,94 @@ def os_central_control():
             current += timedelta(days=1)
     return jsonify(ok=True, room=room, changed=changed, from_date=start.isoformat(), to_date=end.isoformat(),
                    availability=availability, price=price, clear_price=clear_price)
+
+
+@app.get("/api/os/demand-stats")
+def os_demand_stats():
+    """Aggregated, privacy-safe search analytics for the authenticated desktop OS."""
+    expected = env_value("OS_SYNC_TOKEN")
+    supplied = (request.headers.get("X-OS-Sync-Token") or "").strip()
+    auth = (request.headers.get("Authorization") or "").strip()
+    if not supplied and auth.lower().startswith("bearer "):
+        supplied = auth[7:].strip()
+    if not expected or not supplied or not hmac.compare_digest(expected, supplied):
+        return jsonify(ok=False, error="unauthorized"), 401
+
+    try:
+        days = max(1, min(90, int(request.args.get("days", "30"))))
+    except Exception:
+        days = 30
+    try:
+        cutoff = (datetime.now(ZoneInfo("Europe/Vienna")) - timedelta(days=days)).isoformat(timespec="seconds")
+    except Exception:
+        cutoff = (datetime.now() - timedelta(days=days)).isoformat(timespec="seconds")
+
+    try:
+        with db() as conn:
+            rows = conn.execute(
+                """SELECT country_code,local_date,local_weekday,local_hour,available,visitor_hash
+                   FROM demand_searches
+                   WHERE room='Bachblick' AND created_at>=?
+                   ORDER BY created_at""",
+                (cutoff,),
+            ).fetchall()
+    except Exception:
+        rows = []
+
+    total = len(rows)
+    unique_visitors = len({str(r["visitor_hash"] or "") for r in rows if r["visitor_hash"]})
+    available_count = sum(1 for r in rows if int(r["available"] or 0) == 1)
+
+    def pct(n):
+        return round((100.0 * n / total), 1) if total else 0.0
+
+    country_counts = {}
+    weekday_counts = {i: 0 for i in range(7)}
+    hour_counts = {i: 0 for i in range(24)}
+    date_counts = {}
+    for row in rows:
+        cc = (row["country_code"] or "XX").upper()
+        country_counts[cc] = country_counts.get(cc, 0) + 1
+        wd = int(row["local_weekday"] or 0)
+        hour = int(row["local_hour"] or 0)
+        weekday_counts[wd] = weekday_counts.get(wd, 0) + 1
+        hour_counts[hour] = hour_counts.get(hour, 0) + 1
+        day = str(row["local_date"] or "")
+        if day:
+            date_counts[day] = date_counts.get(day, 0) + 1
+
+    weekday_names = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"]
+    by_country = [
+        {"country_code": cc, "searches": n, "percent": pct(n)}
+        for cc, n in sorted(country_counts.items(), key=lambda item: (-item[1], item[0]))
+    ]
+    by_weekday = [
+        {"weekday": weekday_names[i], "weekday_index": i, "searches": weekday_counts.get(i, 0), "percent": pct(weekday_counts.get(i, 0))}
+        for i in range(7)
+    ]
+    by_hour = [
+        {"hour": i, "label": f"{i:02d}:00", "searches": hour_counts.get(i, 0), "percent": pct(hour_counts.get(i, 0))}
+        for i in range(24)
+    ]
+    by_date = [
+        {"date": day, "searches": n, "percent": pct(n)}
+        for day, n in sorted(date_counts.items())
+    ]
+
+    return jsonify(
+        ok=True,
+        period_days=days,
+        generated_at=datetime.now().isoformat(timespec="seconds"),
+        total_searches=total,
+        unique_visitors=unique_visitors,
+        available_searches=available_count,
+        available_percent=pct(available_count),
+        by_country=by_country,
+        by_weekday=by_weekday,
+        by_hour=by_hour,
+        by_date=by_date,
+        privacy="Aggregated only; no raw IP address or user-agent is exposed.",
+    )
 
 
 @app.get("/api/os/direct-prices")
@@ -1924,6 +2089,7 @@ def api_availability():
         return jsonify(available=False, message="Bitte gültige Reisedaten eingeben."), 400
 
     ok, message = room_available(room, arrival, departure)
+    _record_search_analytics(room, arrival, departure, ok)
     if ok:
         _record_demand_check(room, arrival, departure)
     return jsonify(
