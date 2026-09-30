@@ -98,6 +98,72 @@
       border-color:var(--green-dark)!important;
       color:#fff!important;
     }
+
+    /* Winter section: featured story first, then a balanced 3-column event grid */
+    #winter .winter-grid {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+      align-items:stretch;
+    }
+    #winter .winter-grid .active-service-card {
+      height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+    #winter .winter-grid .active-service-card > div:not(.windis-book-layout) {
+      display:flex;
+      flex-direction:column;
+      height:100%;
+    }
+    #winter .winter-grid .active-service-card p {
+      margin-bottom:14px;
+    }
+    #winter .winter-grid .active-service-card .btn {
+      margin-top:auto;
+      align-self:flex-start;
+    }
+    #winter .windis-book-card {
+      grid-column:1 / -1;
+      padding:24px;
+      background:linear-gradient(135deg,#f7f3e8 0%,#fff 58%,#eef4e7 100%);
+      border:1px solid rgba(82,104,35,.18);
+      box-shadow:0 12px 30px rgba(39,54,24,.08);
+    }
+    #winter .windis-book-layout {
+      display:grid;
+      grid-template-columns:minmax(180px,240px) minmax(0,1fr);
+      gap:28px;
+      align-items:center;
+      max-width:920px;
+      margin:0 auto;
+    }
+    #winter .windis-book-cover {
+      width:100%;
+      max-width:240px;
+      aspect-ratio:2/3;
+      object-fit:cover;
+      border-radius:16px;
+      box-shadow:0 14px 32px rgba(0,0,0,.18);
+    }
+    #winter .windis-book-card h3 {
+      font-size:clamp(1.35rem,2vw,1.75rem);
+      line-height:1.2;
+      margin:.35rem 0 .75rem;
+    }
+    #winter .windis-book-card p {
+      max-width:680px;
+    }
+    @media (max-width:900px) {
+      #winter .winter-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      #winter .windis-book-card { grid-column:1 / -1; }
+    }
+    @media (max-width:680px) {
+      #winter .winter-grid { grid-template-columns:1fr; }
+      #winter .windis-book-card { padding:18px; }
+      #winter .windis-book-layout { grid-template-columns:1fr; gap:18px; }
+      #winter .windis-book-cover { max-width:220px; margin:0 auto; }
+    }
 </style>  <!-- seo-identity-deploy-marker: 2026-09-29 -->
   <!-- railway-force-deploy: 2026-09-29T14:20Z -->
 
@@ -347,24 +413,25 @@
       <h2 id="winter-title">Winter, Advent &amp; Jauerling in der Wachau</h2>
       <p>Die ruhige Jahreszeit eignet sich für kurze Auszeiten, Adventbesuche und Wintertage zwischen Melk und Krems. Zuhause am Bach ist die persönliche Basis in Aggsbach Markt – mit Frühstück auf Wunsch und direkter Terminprüfung.</p>
     </div>
-    <div class="active-service-grid">
-      <article class="active-service-card">
-        <div>
-          <h3>✨ Advent-Wochenende Dürnstein</h3>
-          <p>20.–22.11., 27.–29.11., 4.–8.12. und 11.–13.12.2026: Wachauer Advent mit Schiff, Stiftshof, Schloss Dürnstein und Weihnachtsweg – ideal für 2 Nächte bei Zuhause am Bach.</p>
-          <a class="btn" href="/wachauer-advent-duernstein-2026-unterkunft">Dürnstein-Advent ansehen</a>
-        </div>
-      </article>
+    <div class="active-service-grid winter-grid">
       <article class="active-service-card windis-book-card">
         <div class="windis-book-layout">
           <img class="windis-book-cover" src="/media/windis-band15.jpg?v=20260929-cover2" alt="Buchcover Band 15: Die wilden Wachauer Windis auf dem Dürnsteiner Weihnachtsmarkt" loading="eager" decoding="async">
           <div>
             <span class="eyebrow">Buchtipp zum Wachauer Advent</span>
             <h3>📚 Die wilden Windis auf dem Dürnsteiner Weihnachtsmarkt</h3>
-          <p><strong>Band 15 der „Wilden Wachauer Windis“</strong> macht den Dürnsteiner Weihnachtsmarkt selbst zum Schauplatz: Fidel, Gloria und Pia erleben zwischen Adventlichtern, Marillen-Puderzucker-Keksen, Schneegestöber und Wachauer Legenden ihr Weihnachtsabenteuer.</p>
-          <p>Unser Tipp für Familien: erst die Geschichte kennenlernen, dann den echten Dürnsteiner Advent besuchen – und den Wachau-Aufenthalt bei Zuhause am Bach mit den echten Windis verbinden.</p>
-          <a class="btn" href="#booking">Windis-Weihnachtsmarkt-Wochenende buchen</a>
+            <p><strong>Band 15 der „Wilden Wachauer Windis“</strong> macht den Dürnsteiner Weihnachtsmarkt selbst zum Schauplatz: Fidel, Gloria und Pia erleben zwischen Adventlichtern, Marillen-Puderzucker-Keksen, Schneegestöber und Wachauer Legenden ihr Weihnachtsabenteuer.</p>
+            <p>Unser Tipp für Familien: erst die Geschichte kennenlernen, dann den echten Dürnsteiner Advent besuchen – und den Wachau-Aufenthalt bei Zuhause am Bach mit den echten Windis verbinden.</p>
+            <a class="btn" href="#booking">Windis-Weihnachtsmarkt-Wochenende buchen</a>
           </div>
+        </div>
+      </article>
+
+      <article class="active-service-card">
+        <div>
+          <h3>✨ Advent-Wochenende Dürnstein</h3>
+          <p>20.–22.11., 27.–29.11., 4.–8.12. und 11.–13.12.2026: Wachauer Advent mit Schiff, Stiftshof, Schloss Dürnstein und Weihnachtsweg – ideal für 2 Nächte bei Zuhause am Bach.</p>
+          <a class="btn" href="/wachauer-advent-duernstein-2026-unterkunft">Dürnstein-Advent ansehen</a>
         </div>
       </article>
       <article class="active-service-card">
