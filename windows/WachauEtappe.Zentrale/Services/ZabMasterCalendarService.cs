@@ -245,12 +245,22 @@ public static class ZabMasterCalendarService
             bookingDetail = bookingConfigured ? "Booking.com Connectivity bereit" : "Booking.com Connectivity/Zimmer-Rate-Mapping fehlt";
         }
         var paypalIndependent = B(root, "paypal_master_independent");
-        var liveMetrics = new ZabLiveMetrics(0, 0, "", "");
+        var liveMetrics = new ZabLiveMetrics(0, 0, 0, 0, 0, new List<ZabCountryMetric>(), "", "");
         if (root.TryGetProperty("live_metrics", out var lm) && lm.ValueKind == JsonValueKind.Object)
         {
+            var countryMetrics = new List<ZabCountryMetric>();
+            if (lm.TryGetProperty("visitor_countries", out var countries) && countries.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var country in countries.EnumerateArray())
+                    countryMetrics.Add(new ZabCountryMetric(S(country, "country_code"), I(country, "visitors")));
+            }
             liveMetrics = new ZabLiveMetrics(
                 I(lm, "unique_visitors"),
                 I(lm, "availability_checks"),
+                I(lm, "booking_attempts"),
+                I(lm, "booking_abandoned"),
+                D(lm, "abandonment_rate") ?? 0,
+                countryMetrics,
                 S(lm, "updated_at"),
                 S(lm, "window"));
         }
@@ -303,7 +313,16 @@ public sealed record ZabChannelState(bool Open, double? Price, bool PriceOverrid
 public sealed record ZabBookingSync(string Status, string Message, string UpdatedAt);
 public sealed record ZabDayState(Dictionary<string, ZabChannelState> Channels, ZabBookingSync? BookingSync, int DemandChecksLive);
 public sealed record ZabImportSource(string Room, string Channel, string ImportUrl, string LastSync, string LastResult);
-public sealed record ZabLiveMetrics(int UniqueVisitors, int AvailabilityChecks, string UpdatedAt, string Window);
+public sealed record ZabCountryMetric(string CountryCode, int Visitors);
+public sealed record ZabLiveMetrics(
+    int UniqueVisitors,
+    int AvailabilityChecks,
+    int BookingAttempts,
+    int BookingAbandoned,
+    double AbandonmentRate,
+    List<ZabCountryMetric> VisitorCountries,
+    string UpdatedAt,
+    string Window);
 public sealed record ZabOccupancy(
     string Kind, int BookingId, int ExternalId, string Uid, string Room, string Arrival, string Departure,
     string GuestName, string Country, int Guests, bool? Breakfast, string TransportMode, string Notes,
