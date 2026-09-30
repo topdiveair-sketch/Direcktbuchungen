@@ -112,6 +112,10 @@ def revenue_management_status(today=None):
         else "ACTIVE" if occupancy >= 50
         else "BASE"
     )
+    rules_cfg = cfg.get("revenue_rules", {})
+    late_hour = int(rules_cfg.get("same_day_after_hour_local", 20))
+    late_add_eur = float(rules_cfg.get("same_day_after_hour_add_eur", 100))
+    now_local = datetime.now(ZoneInfo(str(rules_cfg.get("same_day_after_hour_timezone", "Europe/Vienna"))))
     return {
         "available": True,
         "occupancy": occupancy,
@@ -121,6 +125,9 @@ def revenue_management_status(today=None):
         "level": level,
         "window_start": today.isoformat(),
         "window_end": (today + timedelta(days=30)).isoformat(),
+        "same_day_after_hour_local": late_hour,
+        "same_day_after_hour_add_eur": round(late_add_eur, 2),
+        "same_day_late_surcharge_active_now": now_local.date() == today and now_local.hour >= late_hour,
     }
 
 
@@ -171,7 +178,13 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
     nights = max(0, (departure - arrival).days)
     dynamic_rates = []
     yield_details = []
-    today = datetime.now(ZoneInfo("Europe/Vienna")).date()
+    pricing_cfg = pricing_config()
+    revenue_rules_cfg = pricing_cfg.get("revenue_rules", {})
+    late_tz = ZoneInfo(str(revenue_rules_cfg.get("same_day_after_hour_timezone", "Europe/Vienna")))
+    now_local = datetime.now(late_tz)
+    today = now_local.date()
+    late_hour = int(revenue_rules_cfg.get("same_day_after_hour_local", 20))
+    late_add_eur = float(revenue_rules_cfg.get("same_day_after_hour_add_eur", 100))
     try:
         occupied = _booked_nights_next_30_days(today)
     except Exception:
@@ -190,6 +203,10 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
             current, occupied=occupied, today=today
         )
         nightly = base_rate + add_eur
+        same_day_late_add_eur = 0.0
+        if current == today and now_local.hour >= late_hour:
+            same_day_late_add_eur = late_add_eur
+            nightly += same_day_late_add_eur
 
         price_getter = app.extensions.get("zab_channel_price_for_day")
         if callable(price_getter):
@@ -205,6 +222,8 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
                 "base_rate": round(base_rate, 2),
                 "occupancy_30d_percent": occupancy,
                 "yield_add_eur": round(add_eur, 2),
+                "same_day_late_add_eur": round(same_day_late_add_eur, 2),
+                "same_day_late_after_hour": late_hour,
                 "final_rate": round(float(nightly), 2),
             }
         )
