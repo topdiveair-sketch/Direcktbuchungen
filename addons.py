@@ -612,13 +612,24 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         forced_recipient = os.environ.get("FORCE_BOOKING_MAIL_TO", "").strip()
         owner_recipient = forced_recipient or owner
         guest_recipient = booking["email"]
+        copy_recipient = (
+            forced_recipient
+            or os.environ.get("BOOKING_COPY_EMAIL", "").strip()
+            or "topdiveair@gmail.com"
+        )
+        if copy_recipient.lower() == owner_recipient.lower():
+            copy_recipient = ""
 
         app.logger.warning(
-            "booking_mail_queue booking_id=%s owner=%s guest=%s",
-            booking_id, owner_recipient, guest_recipient,
+            "booking_mail_queue booking_id=%s owner=%s guest=%s copy=%s",
+            booking_id, owner_recipient, guest_recipient, copy_recipient or "-",
         )
         owner_key = _queue_mail(booking_id, "owner", owner_recipient, owner_subject, owner_body)
         guest_key = _queue_mail(booking_id, "guest", guest_recipient, guest_subject, guest_body)
+        copy_key = (
+            _queue_mail(booking_id, "owner_copy", copy_recipient, owner_subject, owner_body)
+            if copy_recipient else None
+        )
 
         def deliver_key(dedupe_key, missing_reason):
             with db() as conn:
@@ -634,31 +645,38 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
 
         ok_owner, msg_owner = deliver_key(owner_key, "owner_missing")
         ok_guest, msg_guest = deliver_key(guest_key, "guest_missing")
+        if copy_key:
+            ok_copy, msg_copy = deliver_key(copy_key, "owner_copy_missing")
+        else:
+            ok_copy, msg_copy = True, "not_needed"
 
         app.logger.warning(
-            "booking_mail_results booking_id=%s owner_ok=%s owner_status=%s guest_ok=%s guest_status=%s",
-            booking_id, ok_owner, msg_owner, ok_guest, msg_guest,
+            "booking_mail_results booking_id=%s owner_ok=%s owner_status=%s guest_ok=%s guest_status=%s copy_ok=%s copy_status=%s",
+            booking_id, ok_owner, msg_owner, ok_guest, msg_guest, ok_copy, msg_copy,
         )
 
-        # A transient provider failure must not lose the mail: both rows remain in
-        # the durable outbox and the retry worker sends them again. Return success
-        # once both messages are either delivered or safely queued for retry.
+        # A transient provider failure must not lose the mail: every message remains
+        # in the durable outbox and the retry worker sends it again. A second owner
+        # copy provides an independent inbox trail for each booking.
+        all_keys = [owner_key, guest_key] + ([copy_key] if copy_key else [])
+        placeholders = ",".join("?" for _ in all_keys)
         with db() as conn:
             pending_rows = conn.execute(
-                """SELECT role,status,attempts,last_error
-                   FROM email_outbox
-                   WHERE dedupe_key IN (?,?)""",
-                (owner_key, guest_key),
+                f"""SELECT role,status,attempts,last_error
+                    FROM email_outbox
+                    WHERE dedupe_key IN ({placeholders})""",
+                tuple(all_keys),
             ).fetchall()
-        safely_queued = len(pending_rows) == 2 and all(
+        safely_queued = len(pending_rows) == len(all_keys) and all(
             row["status"] in ("sent", "pending") for row in pending_rows
         )
-        if safely_queued and not (ok_owner and ok_guest):
+        all_delivered = ok_owner and ok_guest and ok_copy
+        if safely_queued and not all_delivered:
             app.logger.warning(
-                "booking_mail_queued_for_retry booking_id=%s owner_status=%s guest_status=%s",
-                booking_id, msg_owner, msg_guest,
+                "booking_mail_queued_for_retry booking_id=%s owner_status=%s guest_status=%s copy_status=%s",
+                booking_id, msg_owner, msg_guest, msg_copy,
             )
-        return bool((ok_owner and ok_guest) or safely_queued)
+        return bool(all_delivered or safely_queued)
 
     app.extensions["zab_send_confirmation"] = send_booking_confirmation
     app.extensions["zab_ensure_tokens"] = ensure_booking_tokens
