@@ -419,6 +419,48 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
                 live_availability_checks = int(check_row["n"] or 0) if check_row else 0
             except Exception:
                 live_availability_checks = 0
+            try:
+                attempt_row = conn.execute(
+                    "SELECT COUNT(*) AS n FROM site_events WHERE event='checkout_started'"
+                ).fetchone()
+                booking_attempts = int(attempt_row["n"] or 0) if attempt_row else 0
+            except Exception:
+                booking_attempts = 0
+            try:
+                abandoned_row = conn.execute(
+                    "SELECT COUNT(*) AS n FROM site_events WHERE event='booking_abandoned'"
+                ).fetchone()
+                booking_abandoned = int(abandoned_row["n"] or 0) if abandoned_row else 0
+            except Exception:
+                booking_abandoned = 0
+            try:
+                country_rows = conn.execute(
+                    """SELECT country_code,COUNT(DISTINCT visitor_hash) AS visitors
+                       FROM site_events
+                       WHERE event='landing_view' AND visitor_hash<>'' AND country_code<>'' AND country_code<>'XX'
+                       GROUP BY country_code
+                       ORDER BY visitors DESC,country_code
+                       LIMIT 12"""
+                ).fetchall()
+                visitor_countries = [
+                    {"country_code": str(row["country_code"] or "XX"), "visitors": int(row["visitors"] or 0)}
+                    for row in country_rows
+                ]
+                if not visitor_countries:
+                    fallback_rows = conn.execute(
+                        """SELECT country_code,COUNT(DISTINCT visitor_hash) AS visitors
+                           FROM demand_searches
+                           WHERE country_code<>'' AND country_code<>'XX'
+                           GROUP BY country_code
+                           ORDER BY visitors DESC,country_code
+                           LIMIT 12"""
+                    ).fetchall()
+                    visitor_countries = [
+                        {"country_code": str(row["country_code"] or "XX"), "visitors": int(row["visitors"] or 0)}
+                        for row in fallback_rows
+                    ]
+            except Exception:
+                visitor_countries = []
 
             days = {room: {} for room in active_rooms}
             for room in active_rooms:
@@ -460,6 +502,10 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
             "live_metrics": {
                 "unique_visitors": live_visitors,
                 "availability_checks": live_availability_checks,
+                "booking_attempts": booking_attempts,
+                "booking_abandoned": booking_abandoned,
+                "abandonment_rate": round((booking_abandoned / booking_attempts * 100.0), 1) if booking_attempts else 0.0,
+                "visitor_countries": visitor_countries,
                 "updated_at": _now(),
                 "window": "all_time_since_tracking",
             },
