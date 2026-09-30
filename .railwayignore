@@ -20,3 +20,15 @@ instance/
 run_local_*.ps1
 local_server_*.log
 .local-server.env.txt
+
+# Railway build context: legacy/static duplicates not needed by the Flask app
+# Keep these files in GitHub for history/GitHub Pages, but do not upload them to Railway builders.
+images/
+bachblick.jpg
+marillenzimmer.png
+screenshot_start.png
+stift-melk.jpg
+emmersdorf-donau.jpg
+spitz-donau.jpg
+burgruine-aggstein.jpg
+wachaubahn.jpg
