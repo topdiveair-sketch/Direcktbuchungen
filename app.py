@@ -907,6 +907,8 @@ def os_demand_stats():
     month_searches = {}
     month_visitors = {}
     month_countries = {}
+    month_weekdays = {}
+    month_hours = {}
     visitor_search_history = {}
     for row in rows:
         visitor = str(row["visitor_hash"] or "")
@@ -927,6 +929,10 @@ def os_demand_stats():
         while current_month <= last_month:
             month = current_month.strftime("%Y-%m")
             month_searches[month] = month_searches.get(month, 0) + 1
+            wd = int(row["local_weekday"] or 0)
+            hr = int(row["local_hour"] or 0)
+            month_weekdays.setdefault(month, {})[wd] = month_weekdays.setdefault(month, {}).get(wd, 0) + 1
+            month_hours.setdefault(month, {})[hr] = month_hours.setdefault(month, {}).get(hr, 0) + 1
             if visitor:
                 month_visitors.setdefault(month, set()).add(visitor)
                 month_countries.setdefault(month, {}).setdefault(cc, set()).add(visitor)
@@ -976,14 +982,37 @@ def os_demand_stats():
                 key=lambda item: (-len(item[1]), item[0]),
             )
         ]
+        total_month_searches = int(month_searches.get(month, 0))
+        month_weekday_rows = [
+            {
+                "weekday": weekday_names[i],
+                "weekday_index": i,
+                "searches": int(month_weekdays.get(month, {}).get(i, 0)),
+                "percent": round((100.0 * int(month_weekdays.get(month, {}).get(i, 0)) / total_month_searches), 1)
+                           if total_month_searches else 0.0,
+            }
+            for i in range(7)
+        ]
+        month_hour_rows = [
+            {
+                "hour": i,
+                "label": f"{i:02d}:00",
+                "searches": int(month_hours.get(month, {}).get(i, 0)),
+                "percent": round((100.0 * int(month_hours.get(month, {}).get(i, 0)) / total_month_searches), 1)
+                           if total_month_searches else 0.0,
+            }
+            for i in range(24)
+        ]
         by_month.append({
             "month": month,
             "unique_visitors": visitors,
-            "total_searches": int(month_searches.get(month, 0)),
+            "total_searches": total_month_searches,
             "booking_attempts": attempts,
             "booking_abandoned": abandoned,
             "abandonment_rate": round((100.0 * abandoned / attempts), 1) if attempts else 0.0,
             "by_visitor_country": countries,
+            "by_weekday": month_weekday_rows,
+            "by_hour": month_hour_rows,
         })
 
     return jsonify(
