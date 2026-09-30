@@ -26,6 +26,8 @@
         <StackPanel DockPanel.Dock="Right" HorizontalAlignment="Right">
           <TextBlock x:Name="LiveVisitorsText" Text="👥 Besucher live: wird geladen …" FontWeight="Bold" HorizontalAlignment="Right" Foreground="#173D32"/>
           <TextBlock x:Name="LiveChecksText" Text="🔎 Verfügbarkeitsprüfungen live: wird geladen …" FontWeight="SemiBold" HorizontalAlignment="Right" Foreground="#397356"/>
+          <TextBlock x:Name="BookingAttemptsText" Text="🧾 Buchungsversuche: wird geladen …" FontWeight="SemiBold" HorizontalAlignment="Right" Foreground="#173D32"/>
+          <TextBlock x:Name="BookingAbandonedText" Text="↩ Abbrüche: wird geladen …" FontWeight="SemiBold" HorizontalAlignment="Right" Foreground="#8A4B20"/>
           <TextBlock x:Name="ConnectivityText" Text="Booking.com: wird geprüft …" FontWeight="SemiBold" HorizontalAlignment="Right"/>
           <TextBlock x:Name="PayPalModeText" Text="PayPal-Masterstatus: wird geprüft …" Foreground="#65756F" HorizontalAlignment="Right"/>
         </StackPanel>
@@ -127,6 +129,46 @@
             <Button Content="Gastdaten im OS speichern" Click="SaveGuest_Click" HorizontalAlignment="Left" Margin="4,10,0,0" Background="#173D32" Foreground="White"/>
             <TextBlock Margin="4,10,4,0" Foreground="#65756F" TextWrapping="Wrap"
                        Text="Diese Angaben sind intern. Booking.com kann bei Connectivity das vom Booker angegebene Wohnsitzland liefern; das ist keine amtlich geprüfte Staatsangehörigkeit. Öffentliche iCal-Feeds enthalten weder Namen noch Land/Herkunft, Personenanzahl, Frühstück noch Anreiseart."/>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <TabItem Header="Statistik">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel Margin="14">
+            <TextBlock Text="Live-Statistik Direktbuchung" FontWeight="Bold" FontSize="18" Foreground="#173D32"/>
+            <TextBlock Margin="0,4,0,12" Foreground="#65756F" TextWrapping="Wrap"
+                       Text="Datenschutzfreundliche, aggregierte Kennzahlen. Es werden keine Roh-IP-Adressen angezeigt oder gespeichert."/>
+            <UniformGrid Columns="4">
+              <Border Background="#FFFFFF" CornerRadius="8" Padding="12" Margin="4">
+                <StackPanel><TextBlock Text="Besucher" Foreground="#65756F"/><TextBlock x:Name="StatsVisitorsText" Text="0" FontSize="26" FontWeight="Bold"/></StackPanel>
+              </Border>
+              <Border Background="#FFFFFF" CornerRadius="8" Padding="12" Margin="4">
+                <StackPanel><TextBlock Text="Verfügbarkeitsprüfungen" Foreground="#65756F"/><TextBlock x:Name="StatsChecksText" Text="0" FontSize="26" FontWeight="Bold"/></StackPanel>
+              </Border>
+              <Border Background="#FFFFFF" CornerRadius="8" Padding="12" Margin="4">
+                <StackPanel><TextBlock Text="Buchungsversuche" Foreground="#65756F"/><TextBlock x:Name="StatsAttemptsText" Text="0" FontSize="26" FontWeight="Bold"/></StackPanel>
+              </Border>
+              <Border Background="#FFFFFF" CornerRadius="8" Padding="12" Margin="4">
+                <StackPanel><TextBlock Text="Abbrüche" Foreground="#65756F"/><TextBlock x:Name="StatsAbandonedText" Text="0" FontSize="26" FontWeight="Bold"/></StackPanel>
+              </Border>
+            </UniformGrid>
+            <Border Background="#FFFFFF" CornerRadius="8" Padding="12" Margin="4,12,4,4">
+              <StackPanel>
+                <TextBlock Text="Abbruchquote" FontWeight="SemiBold"/>
+                <TextBlock x:Name="StatsAbandonmentRateText" Text="0,0 %" FontSize="22" FontWeight="Bold" Foreground="#8A4B20"/>
+                <TextBlock Margin="0,4,0,0" Foreground="#65756F" TextWrapping="Wrap"
+                           Text="Abbruch = Checkout wurde gestartet, die Seite aber vor Abschluss verlassen. Mehrfachversuche können mehrfach gezählt werden."/>
+              </StackPanel>
+            </Border>
+            <Border Background="#FFFFFF" CornerRadius="8" Padding="12" Margin="4,8,4,4">
+              <StackPanel>
+                <TextBlock Text="Herkunftsländer der Besucher" FontWeight="SemiBold" FontSize="16"/>
+                <TextBlock x:Name="CountryStatsText" Margin="0,8,0,0" Text="Noch keine Länderdaten." TextWrapping="Wrap"/>
+                <TextBlock Margin="0,8,0,0" Foreground="#65756F" TextWrapping="Wrap"
+                           Text="Land wird nur aus verfügbaren Länder-Headern des Web-Providers abgeleitet. Fehlt diese Information, bleibt der Besucher als unbekannt und wird keinem Land zugeordnet."/>
+              </StackPanel>
+            </Border>
           </StackPanel>
         </ScrollViewer>
       </TabItem>
