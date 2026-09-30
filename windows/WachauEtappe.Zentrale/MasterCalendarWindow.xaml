@@ -24,6 +24,8 @@
           <TextBlock Text="Master-Kalender · Verfügbarkeit · Preise · Gäste · Kanäle" Foreground="#65756F"/>
         </StackPanel>
         <StackPanel DockPanel.Dock="Right" HorizontalAlignment="Right">
+          <TextBlock x:Name="LiveVisitorsText" Text="👥 Besucher live: wird geladen …" FontWeight="Bold" HorizontalAlignment="Right" Foreground="#173D32"/>
+          <TextBlock x:Name="LiveChecksText" Text="🔎 Verfügbarkeitsprüfungen live: wird geladen …" FontWeight="SemiBold" HorizontalAlignment="Right" Foreground="#397356"/>
           <TextBlock x:Name="ConnectivityText" Text="Booking.com: wird geprüft …" FontWeight="SemiBold" HorizontalAlignment="Right"/>
           <TextBlock x:Name="PayPalModeText" Text="PayPal-Masterstatus: wird geprüft …" Foreground="#65756F" HorizontalAlignment="Right"/>
         </StackPanel>
@@ -42,6 +44,7 @@
               CanUserAddRows="False" HeadersVisibility="Column" Background="White" RowHeaderWidth="0">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Datum" Binding="{Binding DateLabel}" Width="95"/>
+        <DataGridTextColumn Header="Prüfungen live" Binding="{Binding DemandChecksLabel}" Width="105"/>
         <DataGridTextColumn Header="Belegung" Binding="{Binding OccupancyLabel}" Width="135"/>
         <DataGridTextColumn Header="Gast" Binding="{Binding GuestName}" Width="170"/>
         <DataGridTextColumn Header="Land" Binding="{Binding Country}" Width="105"/>
