@@ -810,7 +810,7 @@ def os_demand_stats():
         return jsonify(ok=False, error="unauthorized"), 401
 
     try:
-        days = max(1, min(90, int(request.args.get("days", "30"))))
+        days = max(1, min(730, int(request.args.get("days", "30"))))
     except Exception:
         days = 30
     try:
@@ -900,6 +900,56 @@ def os_demand_stats():
     booking_abandoned = sum(1 for r in event_rows if str(r["event"] or "") == "booking_abandoned")
     abandonment_rate = round((100.0 * booking_abandoned / booking_attempts), 1) if booking_attempts else 0.0
 
+    # Monatswerte fuer den Enterprise-Kalender. Besucher werden pro Monat
+    # eindeutig gezaehlt, damit ein Monatswechsel im OS echte Monats-KPIs zeigt.
+    month_searches = {}
+    month_visitors = {}
+    month_attempts = {}
+    month_abandoned = {}
+    month_countries = {}
+    for row in rows:
+        month = str(row["local_date"] or "")[:7]
+        if not month:
+            continue
+        month_searches[month] = month_searches.get(month, 0) + 1
+    for row in event_rows:
+        created = str(row["created_at"] or "")
+        month = created[:7]
+        if not month:
+            continue
+        event = str(row["event"] or "")
+        visitor = str(row["visitor_hash"] or "")
+        cc = str(row["country_code"] or "XX").upper()
+        if event == "landing_view" and visitor:
+            month_visitors.setdefault(month, set()).add(visitor)
+            month_countries.setdefault(month, {}).setdefault(cc, set()).add(visitor)
+        elif event == "checkout_started":
+            month_attempts[month] = month_attempts.get(month, 0) + 1
+        elif event == "booking_abandoned":
+            month_abandoned[month] = month_abandoned.get(month, 0) + 1
+    all_months = sorted(set(month_searches) | set(month_visitors) | set(month_attempts) | set(month_abandoned))
+    by_month = []
+    for month in all_months:
+        visitors = len(month_visitors.get(month, set()))
+        attempts = int(month_attempts.get(month, 0))
+        abandoned = int(month_abandoned.get(month, 0))
+        countries = [
+            {"country_code": cc, "visitors": len(values)}
+            for cc, values in sorted(
+                month_countries.get(month, {}).items(),
+                key=lambda item: (-len(item[1]), item[0]),
+            )
+        ]
+        by_month.append({
+            "month": month,
+            "unique_visitors": visitors,
+            "total_searches": int(month_searches.get(month, 0)),
+            "booking_attempts": attempts,
+            "booking_abandoned": abandoned,
+            "abandonment_rate": round((100.0 * abandoned / attempts), 1) if attempts else 0.0,
+            "by_visitor_country": countries,
+        })
+
     return jsonify(
         ok=True,
         period_days=days,
@@ -913,6 +963,7 @@ def os_demand_stats():
         booking_abandoned=booking_abandoned,
         abandonment_rate=abandonment_rate,
         by_visitor_country=by_visitor_country,
+        by_month=by_month,
         by_country=by_country,
         by_weekday=by_weekday,
         by_hour=by_hour,
