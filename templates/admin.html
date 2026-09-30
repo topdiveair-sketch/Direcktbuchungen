@@ -29,7 +29,7 @@
 
   <section class="admin-panel quick-actions">
     <h2>System & Stabilität</h2>
-    <a class="btn" href="{{ url_for('system_test') }}">Systemtest</a>
+    <a class="btn" href="{{ url_for('system_test') }}">Systemtest</a> <a class="btn secondary" href="{{ url_for('automation_status') }}">Automatik-Zentrale</a>
     <a class="btn secondary" href="{{ url_for('legal_admin') }}">Rechtstexte</a>
     <a class="btn secondary" href="{{ url_for('audit_view') }}">Protokoll</a>
     <form action="{{ url_for('backup_now') }}" method="post"><button class="btn secondary">Backup jetzt</button></form>
