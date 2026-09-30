@@ -59,30 +59,84 @@ def init_booking_notifications(app, db):
         departure = datetime.fromisoformat(booking["departure"])
         nights = max(0, (departure - arrival).days)
         capture = booking["paypal_capture_id"] if "paypal_capture_id" in keys else ""
+        payment_method = str(booking["payment_method"] or "").strip()
+        booking_number = (
+            str(booking["booking_number"]).strip()
+            if "booking_number" in keys and booking["booking_number"]
+            else str(booking["uid"] or f"ZAB-{booking_id:06d}")
+        )
+
+        extras_text = "Keine"
+        if "price_breakdown_json" in keys and booking["price_breakdown_json"]:
+            try:
+                breakdown = json.loads(booking["price_breakdown_json"])
+                lines = breakdown.get("extras") if isinstance(breakdown, dict) else []
+                labels = [
+                    str(line.get("label") or "").strip()
+                    for line in (lines or [])
+                    if isinstance(line, dict) and str(line.get("label") or "").strip()
+                ]
+                if labels:
+                    extras_text = ", ".join(labels)
+            except Exception:
+                pass
+        elif "breakfast" in keys and int(booking["breakfast"] or 0):
+            extras_text = "Frühstück"
+
+        cfg = settings()
+        cancellation_text = (
+            cfg.get("cancellation_text", "").strip()
+            or "Kostenfreie Stornierung bis 7 Tage vor Anreise."
+        )
+
+        if payment_method == "PayPal":
+            payment_status = "PayPal-Zahlung bestätigt"
+        elif payment_method == "Banküberweisung":
+            payment_status = "Banküberweisung eingegangen"
+        else:
+            payment_status = "Zahlung bestätigt"
 
         body = (
-            f"Hallo / Hello {booking['first_name']} {booking['last_name']},\n\n"
-            "Ihre PayPal-Zahlung ist bestätigt. Ihre Buchung bei Zuhause am Bach ist damit verbindlich.\n"
-            "Your PayPal payment is confirmed. Your booking at Zuhause am Bach is now binding.\n\n"
-            "Buchungsdaten / Booking details:\n"
-            f"Buchungsnummer / Booking reference: {booking['uid']}\n"
-            f"Zimmer / Room: {booking['room']}\n"
-            f"Anreise / Arrival: {booking['arrival']}\n"
-            f"Abreise / Departure: {booking['departure']}\n"
-            f"Nächte / Nights: {nights}\n"
-            f"Personen / Guests: {booking['adults']}\n"
-            f"Bezahlt / Paid: {booking['total']:.2f} EUR\n"
+            f"Hallo {booking['first_name']} {booking['last_name']},\n\n"
+            "deine Buchung bei Zuhause am Bach – Wachau ist verbindlich bestätigt.\n\n"
+            "DEINE BUCHUNG AUF EINEN BLICK\n"
+            f"Buchungsnummer: {booking_number}\n"
+            f"Zimmer: Gartenzimmer\n"
+            f"Anreise: {booking['arrival']}\n"
+            f"Abreise: {booking['departure']}\n"
+            f"Nächte: {nights}\n"
+            f"Gäste: {booking['adults']}\n"
+            f"Extras: {extras_text}\n"
+            f"Gesamtpreis: {float(booking['total']):.2f} EUR\n\n"
+            "ZAHLUNG\n"
+            f"Zahlungsart: {payment_method or 'bezahlt'}\n"
+            f"Status: {payment_status}\n"
         )
-        if capture:
+        if capture and payment_method == "PayPal":
             body += f"PayPal-Transaktion: {capture}\n"
+
         body += (
-            "\nDer gebuchte Zeitraum ist verbindlich für Sie reserviert.\n"
-            "The booked dates are now firmly reserved for you.\n\n"
-            "Wir freuen uns auf Ihren Aufenthalt. / We look forward to welcoming you.\n\n"
-            "Herzliche Grüße / Kind regards\nZuhause am Bach"
+            "\nSTORNIERUNG\n"
+            f"{cancellation_text}\n\n"
+            "ANREISE\n"
+            "Check-in: ab 14:00 Uhr\n"
+            "Check-out: bis 10:00 Uhr\n"
+            "Adresse: Aggsbach Markt 82, 3641 Aggsbach Markt\n\n"
+            "Der gebuchte Zeitraum ist jetzt fest für dich reserviert. "
+            "Bei Fragen oder Änderungswünschen antworte einfach auf diese E-Mail.\n\n"
+            "Wir freuen uns auf deinen Aufenthalt in der Wachau.\n\n"
+            "Herzliche Grüße\n"
+            "Zuhause am Bach – Wachau\n"
+            "https://www.zuhauseambach-wachau.at/"
         )
 
-        ok, status = smtp_send(booking["email"], PAID_GUEST_SUBJECT, body)
+        ok, status = smtp_send(
+            booking["email"],
+            PAID_GUEST_SUBJECT,
+            body,
+            reply_to=PUBLIC_CONTACT_EMAIL,
+            important=True,
+        )
         try:
             with db() as conn:
                 conn.execute(
