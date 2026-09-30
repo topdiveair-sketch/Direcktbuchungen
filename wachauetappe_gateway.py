@@ -578,8 +578,8 @@ def public_sitemap():
     urls = [
         ("/", "daily", "1.0"),
         ("/unterkunft-wachau", "weekly", "1.0"),
-        ("/unterkunft-welterbesteig-wachau", "weekly", "0.9"),
-        ("/unterkunft-donauradweg-wachau", "weekly", "0.9"),
+        ("/unterkunft-welterbesteig-wachau", "weekly", "1.0"),
+        ("/unterkunft-donauradweg-wachau", "weekly", "1.0"),
         ("/uebernachten-aggsbach-markt", "weekly", "0.9"),
         ("/radfahrer-unterkunft-wachau", "weekly", "0.9"),
         ("/unterkunft-jauerling-wachau", "weekly", "0.95"),
@@ -654,27 +654,30 @@ def gateway_seo_unterkunft_wachau():
 @app.get("/unterkunft-welterbesteig-wachau")
 def seo_welterbesteig():
     return _seo_landing(
-        title="Unterkunft am Welterbesteig Wachau | Zuhause am Bach",
-        description="Unterkunft in Aggsbach Markt für Wanderer am Welterbesteig Wachau. Ruhiges Gartenzimmer, Frühstück auf Wunsch und Direktbuchung bei Zuhause am Bach.",
+        title="Welterbesteig Wachau Unterkunft Aggsbach | 1 Nacht möglich",
+        description="Welterbesteig Wachau Unterkunft in Aggsbach Markt: Gartenzimmer ab 99 €, auch 1 Nacht möglich, Frühstück und Gepäcktransport. Direkt Termin prüfen.",
         canonical=_CANONICAL_ORIGIN + "/unterkunft-welterbesteig-wachau",
-        h1="Unterkunft am Welterbesteig Wachau",
-        lead="Ruhig übernachten in Aggsbach Markt und die nächste Wachau-Etappe entspannt beginnen.",
-        eyebrow="Welterbesteig Wachau",
-        subheading="Ein persönlicher Ausgangspunkt für Wanderer",
+        h1="Welterbesteig Wachau: Unterkunft in Aggsbach Markt",
+        lead="Etappenunterkunft für Wanderer: ruhiges Gartenzimmer, grundsätzlich ab 1 Nacht, Frühstück und Gepäcktransport auf Wunsch.",
+        eyebrow="Welterbesteig Wachau · Etappenunterkunft",
+        subheading="Für Wanderer, die eine Nacht in der Wachau brauchen",
         paragraphs=[
-            "Zuhause am Bach liegt in Aggsbach Markt und richtet sich an Gäste, die die Wachau zu Fuß erleben möchten.",
-            "Das Gartenzimmer ist direkt über die offizielle Website anfragbar. Frühstück ist auf Wunsch möglich; aktuelle freie Termine zeigt der Live-Kalender.",
+            "Zuhause am Bach in Aggsbach Markt richtet sich gezielt an Wanderer am Welterbesteig Wachau. Wer für eine Etappe ein ruhiges Zimmer sucht, kann das Gartenzimmer grundsätzlich auch nur für eine Nacht buchen, sofern der Termin verfügbar ist.",
+            "Frühstück und Gepäcktransport können auf Wunsch ergänzt werden. Damit eignet sich die Unterkunft besonders für Gäste, die morgens direkt zur nächsten Wachau-Etappe weiterziehen möchten.",
+            "Preis und Live-Verfügbarkeit werden direkt auf der offiziellen Website geprüft. Der Einstiegspreis liegt bei 99 € pro Nacht; an einzelnen stark nachgefragten Terminen können Preis und Mindestaufenthalt abweichen.",
+            "Für die aktuelle Routenplanung verweisen wir zusätzlich auf die offiziellen Informationen zum Welterbesteig Wachau bei Niederösterreich Tourismus.",
         ],
         faq=[
-            {"@type":"Question","name":"Ist Zuhause am Bach für den Welterbesteig geeignet?","acceptedAnswer":{"@type":"Answer","text":"Die Unterkunft in Aggsbach Markt richtet sich ausdrücklich auch an Wanderer am Welterbesteig Wachau."}},
-            {"@type":"Question","name":"Kann ich Frühstück dazubuchen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Frühstück ist auf Wunsch als Zusatzleistung verfügbar."}},
-            {"@type":"Question","name":"Wo prüfe ich freie Termine?","acceptedAnswer":{"@type":"Answer","text":"Freie Termine und Preise werden im Live-Buchungsbereich der offiziellen Website angezeigt."}},
+            {"@type":"Question","name":"Gibt es am Welterbesteig Wachau eine Unterkunft für nur 1 Nacht in Aggsbach Markt?","acceptedAnswer":{"@type":"Answer","text":"Ja. Bei Zuhause am Bach ist eine einzelne Etappenübernachtung grundsätzlich möglich, sofern der gewünschte Termin verfügbar ist."}},
+            {"@type":"Question","name":"Kann ich Frühstück für meine Wanderetappe dazubuchen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Frühstück ist auf Wunsch als Zusatzleistung verfügbar."}},
+            {"@type":"Question","name":"Gibt es Gepäcktransport für Wanderer am Welterbesteig?","acceptedAnswer":{"@type":"Answer","text":"Gepäcktransport kann auf Wunsch als Zusatzleistung für die Etappenplanung gewählt werden."}},
+            {"@type":"Question","name":"Wo prüfe ich freie Termine und den Preis?","acceptedAnswer":{"@type":"Answer","text":"Freie Termine und der aktuelle Direktpreis werden im Live-Buchungsbereich der offiziellen Website angezeigt."}},
         ],
         features=[
-            ("🥾","Für Wanderer","Passend für die Planung von Etappen am Welterbesteig."),
-            ("🍳","Frühstück auf Wunsch","Für einen unkomplizierten Start in den Wandertag."),
-            ("📱","Gäste-App","Informationen und persönliche Tipps auf dem Smartphone."),
-            ("⌖","Aggsbach Markt","Standort in der Wachau mit direktem Bezug zur Wanderregion."),
+            ("🥾","1 Nacht grundsätzlich möglich","Geeignet für eine einzelne Etappe am Welterbesteig Wachau."),
+            ("🧳","Gepäcktransport","Auf Wunsch für die Weiterreise zur nächsten Etappe."),
+            ("🍳","Frühstück auf Wunsch","Stärkung vor dem nächsten Wandertag."),
+            ("📅","Live-Verfügbarkeit","Termin und Direktpreis online auf der offiziellen Website prüfen."),
         ],
     )
 
@@ -682,27 +685,31 @@ def seo_welterbesteig():
 @app.get("/unterkunft-donauradweg-wachau")
 def seo_donauradweg():
     return _seo_landing(
-        title="Unterkunft am Donauradweg Wachau | Zuhause am Bach",
-        description="Fahrradfreundliche Unterkunft in der Wachau für Radfahrer am Donauradweg: Fahrradunterbringung, E-Bike-Lademöglichkeit und Direktbuchung in Aggsbach Markt.",
+        title="Donauradweg Unterkunft Aggsbach Wachau | E-Bike & 1 Nacht",
+        description="Donauradweg Unterkunft in Aggsbach Markt: ab 99 €, auch 1 Nacht möglich, Fahrrad sicher abstellen, E-Bike laden, Frühstück und Gepäcktransport.",
         canonical=_CANONICAL_ORIGIN + "/unterkunft-donauradweg-wachau",
-        h1="Fahrradfreundliche Unterkunft am Donauradweg in der Wachau",
-        lead="Übernachten in Aggsbach Markt mit praktischen Leistungen für Radreisende.",
-        eyebrow="Donauradweg Wachau",
-        subheading="Für Radfahrer auf der Wachau-Etappe",
+        h1="Donauradweg Wachau: Unterkunft in Aggsbach Markt",
+        lead="Etappenunterkunft für Radfahrer: grundsätzlich ab 1 Nacht, sichere Fahrradunterbringung, E-Bike-Laden und Frühstück auf Wunsch.",
+        eyebrow="Donauradweg Wachau · Radfahrer-Unterkunft",
+        subheading="Für Radreisende, die unkompliziert eine Etappennacht brauchen",
         paragraphs=[
-            "Zuhause am Bach ist auf Gäste vorbereitet, die mit dem Fahrrad durch die Wachau reisen.",
-            "Fahrradunterbringung und E-Bike-Lademöglichkeit gehören zu den auf der offiziellen Website ausgewiesenen Leistungen. Freie Termine und Preise werden direkt geprüft.",
+            "Zuhause am Bach in Aggsbach Markt ist auf Radfahrer am Donauradweg Wachau ausgerichtet. Das Gartenzimmer kann grundsätzlich auch nur für eine Nacht gebucht werden, sofern der Termin verfügbar ist.",
+            "Fahrräder können sicher untergebracht werden, für E-Bikes gibt es eine Lademöglichkeit. Frühstück und Gepäcktransport können auf Wunsch ergänzt werden.",
+            "Preis und Live-Verfügbarkeit werden direkt auf der offiziellen Website geprüft. Der Einstiegspreis liegt bei 99 € pro Nacht; an einzelnen stark nachgefragten Terminen können Preis und Mindestaufenthalt abweichen.",
+            "Für die aktuelle Streckenplanung verweisen wir zusätzlich auf die offiziellen Informationen zum Donauradweg von Donau Niederösterreich.",
         ],
         faq=[
-            {"@type":"Question","name":"Kann ich mein Fahrrad sicher unterbringen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Die offizielle Website weist eine Fahrradunterbringung für Gäste aus."}},
-            {"@type":"Question","name":"Kann ich ein E-Bike laden?","acceptedAnswer":{"@type":"Answer","text":"Ja. Eine E-Bike-Lademöglichkeit wird als Leistung der Unterkunft ausgewiesen."}},
-            {"@type":"Question","name":"Kann ich direkt beim Gastgeber buchen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Verfügbarkeit und Preis können direkt auf der offiziellen Website geprüft werden."}},
+            {"@type":"Question","name":"Gibt es am Donauradweg in Aggsbach eine Unterkunft für nur 1 Nacht?","acceptedAnswer":{"@type":"Answer","text":"Ja. Bei Zuhause am Bach ist eine einzelne Etappenübernachtung grundsätzlich möglich, sofern der gewünschte Termin verfügbar ist."}},
+            {"@type":"Question","name":"Kann ich mein Fahrrad sicher unterbringen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Für Gäste ist eine sichere Fahrradunterbringung vorgesehen."}},
+            {"@type":"Question","name":"Kann ich mein E-Bike bei der Unterkunft laden?","acceptedAnswer":{"@type":"Answer","text":"Ja. Eine E-Bike-Lademöglichkeit wird als Leistung der Unterkunft angeboten."}},
+            {"@type":"Question","name":"Gibt es Frühstück oder Gepäcktransport für Radreisende?","acceptedAnswer":{"@type":"Answer","text":"Ja. Frühstück und Gepäcktransport können auf Wunsch als Zusatzleistungen gewählt werden."}},
+            {"@type":"Question","name":"Wo prüfe ich freie Termine und den Preis?","acceptedAnswer":{"@type":"Answer","text":"Freie Termine und der aktuelle Direktpreis werden im Live-Buchungsbereich der offiziellen Website angezeigt."}},
         ],
         features=[
-            ("🚲","Fahrradunterbringung","Praktisch für Radreisende und Touren durch die Wachau."),
-            ("⚡","E-Bike laden","Lademöglichkeit für E-Bikes vor Ort."),
-            ("🍳","Frühstück auf Wunsch","Stärkung vor der nächsten Etappe."),
-            ("📅","Live-Verfügbarkeit","Freie Termine direkt auf der offiziellen Website prüfen."),
+            ("🚲","Sichere Fahrradunterbringung","Fahrrad über Nacht geschützt abstellen."),
+            ("⚡","E-Bike laden","Lademöglichkeit während des Aufenthalts."),
+            ("🌙","1 Nacht grundsätzlich möglich","Für Donauradweg-Etappen und Durchreisende."),
+            ("🍳","Frühstück & Gepäcktransport","Auf Wunsch für die nächste Etappe ergänzen."),
         ],
     )
 
