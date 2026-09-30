@@ -54,6 +54,7 @@ def init_host_automation(app, db, require_admin, db_path):
                 booking_section_views INTEGER NOT NULL DEFAULT 0,
                 guest_details_started INTEGER NOT NULL DEFAULT 0,
                 booking_submits INTEGER NOT NULL DEFAULT 0,
+                booking_abandoned INTEGER NOT NULL DEFAULT 0,
                 paypal_orders INTEGER NOT NULL DEFAULT 0,
                 confirmed_bookings INTEGER NOT NULL DEFAULT 0,
                 revenue REAL NOT NULL DEFAULT 0,
@@ -61,6 +62,9 @@ def init_host_automation(app, db, require_admin, db_path):
             );
             """
         )
+        metric_cols = {row[1] for row in conn.execute("PRAGMA table_info(automation_metrics)")}
+        if "booking_abandoned" not in metric_cols:
+            conn.execute("ALTER TABLE automation_metrics ADD COLUMN booking_abandoned INTEGER NOT NULL DEFAULT 0")
 
     def _now():
         return datetime.now(VIENNA)
@@ -484,13 +488,14 @@ def init_host_automation(app, db, require_admin, db_path):
             conn.execute(
                 """INSERT INTO automation_metrics(
                        metric_day,availability_checks,booking_section_views,guest_details_started,
-                       booking_submits,paypal_orders,confirmed_bookings,revenue,updated_at
-                   ) VALUES(?,?,?,?,?,?,?,?,?)
+                       booking_submits,booking_abandoned,paypal_orders,confirmed_bookings,revenue,updated_at
+                   ) VALUES(?,?,?,?,?,?,?,?,?,?)
                    ON CONFLICT(metric_day) DO UPDATE SET
                      availability_checks=excluded.availability_checks,
                      booking_section_views=excluded.booking_section_views,
                      guest_details_started=excluded.guest_details_started,
                      booking_submits=excluded.booking_submits,
+                     booking_abandoned=excluded.booking_abandoned,
                      paypal_orders=excluded.paypal_orders,
                      confirmed_bookings=excluded.confirmed_bookings,
                      revenue=excluded.revenue,
@@ -501,6 +506,7 @@ def init_host_automation(app, db, require_admin, db_path):
                     int(event_counts.get("booking_section_view", 0)),
                     int(event_counts.get("guest_details_started", 0)),
                     int(event_counts.get("booking_submit_nonpaypal", 0)),
+                    int(event_counts.get("booking_abandoned", 0)),
                     int(event_counts.get("paypal_order_created", 0)),
                     int(booked["c"] or 0),
                     float(booked["revenue"] or 0),
@@ -641,6 +647,7 @@ def init_host_automation(app, db, require_admin, db_path):
                 f"  Buchungsbereich angesehen: {metrics['booking_section_views']}",
                 f"  Gästedaten begonnen: {metrics['guest_details_started']}",
                 f"  Formular-Absendungen: {metrics['booking_submits']}",
+                f"  abgebrochene Buchungssitzungen: {metrics['booking_abandoned']}",
                 f"  PayPal-Bestellungen: {metrics['paypal_orders']}",
                 f"  bestätigte Buchungen: {metrics['confirmed_bookings']}",
             ])
