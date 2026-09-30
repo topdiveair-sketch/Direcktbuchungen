@@ -193,17 +193,33 @@ def init_host_automation(app, db, require_admin, db_path):
                    FROM email_outbox
                    WHERE booking_id>0"""
             ).fetchall()
+            email_log = conn.execute(
+                """SELECT booking_id,recipient,status FROM email_log
+                   WHERE booking_id>0"""
+            ).fetchall()
 
         by_booking = {}
         for row in outbox:
             by_booking.setdefault(int(row["booking_id"]), []).append(row)
+        delivered_to = {}
+        for row in email_log:
+            if str(row["status"] or "").lower().startswith("gesendet"):
+                delivered_to.setdefault(int(row["booking_id"]), set()).add(str(row["recipient"] or "").lower())
 
+        owner_addresses = {x.lower() for x in _owner_recipients()}
         sender = app.extensions.get("zab_send_confirmation")
         for booking in bookings:
             bid = int(booking["id"])
             rows = by_booking.get(bid, [])
             roles = {str(row["role"]) for row in rows}
-            missing = {"guest", "owner"} - roles
+            delivered = delivered_to.get(bid, set())
+            guest_done = "guest" in roles or str(booking["email"] or "").lower() in delivered
+            owner_done = "owner" in roles or bool(owner_addresses & delivered)
+            missing = set()
+            if not guest_done:
+                missing.add("guest")
+            if not owner_done:
+                missing.add("owner")
             if missing and callable(sender):
                 try:
                     sender(bid)
@@ -326,7 +342,11 @@ def init_host_automation(app, db, require_admin, db_path):
                     )
                     _queue_mail(f"auto:{bid}:{role}", bid, role, email, subject, body)
 
-            if method in ("PayPal", "paypal_checkout") and age >= timedelta(hours=2) and booking["status"] in ("inquiry", "pending"):
+            if (
+                method in ("PayPal", "paypal_checkout")
+                and timedelta(hours=2) <= age <= timedelta(hours=24)
+                and booking["status"] in ("inquiry", "pending")
+            ):
                 body = (
                     f"Hallo {first},\n\n"
                     "deine Buchungsanfrage ist bei uns angekommen, die PayPal-Zahlung ist aber noch nicht abgeschlossen.\n"
