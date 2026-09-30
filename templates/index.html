@@ -922,24 +922,45 @@
   gallery.querySelector("[data-close-gallery]").addEventListener("click",closeGallery);
   gallery.addEventListener("click",e=>{if(e.target===gallery) closeGallery();});
 
-  async function loadPanorama(){
-    if(panoUrl) return panoUrl;
-    panoUrl="{{ url_for('static', filename='images/panorama/gartenzimmer-360.webp') }}?v=20260930-direct1";
-    return panoUrl;
+  function loadPanorama(){
+    if(panoUrl) return Promise.resolve(panoUrl);
+    const url="{{ url_for('static', filename='images/panorama/gartenzimmer-360.webp') }}?v=20260930-direct2";
+    return new Promise((resolve,reject)=>{
+      const probe=new Image();
+      probe.onload=()=>{panoUrl=url;resolve(url);};
+      probe.onerror=()=>reject(new Error("Panorama-Bild konnte nicht geladen werden"));
+      probe.src=url;
+    });
   }
   async function openPanorama(){
-    panorama.classList.add("is-open");document.body.style.overflow="hidden";track("panorama_open");
+    panorama.classList.add("is-open");
+    panorama.style.display="flex";
+    panorama.style.visibility="visible";
+    panorama.style.opacity="1";
+    panorama.style.zIndex="2147483647";
+    document.body.style.overflow="hidden";
+    track("panorama_open");
     panoStage.textContent="360° wird geladen …";
+    panoStage.style.backgroundImage="none";
     try{
       const url=await loadPanorama();
       panoStage.textContent="";
       panoStage.style.backgroundImage='url("'+url+'")';
+      panoStage.style.backgroundRepeat="repeat-x";
+      panoStage.style.backgroundSize="auto 100%";
       panoStage.style.backgroundPosition=panoPosition+"% 50%";
     }catch(e){
       panoStage.textContent="Die 360°-Ansicht konnte gerade nicht geladen werden.";
     }
   }
-  function closePanorama(){panorama.classList.remove("is-open");document.body.style.overflow="";}
+  function closePanorama(){
+    panorama.classList.remove("is-open");
+    panorama.style.display="none";
+    panorama.style.visibility="";
+    panorama.style.opacity="";
+    panorama.style.zIndex="";
+    document.body.style.overflow="";
+  }
   const panoBtn=document.getElementById("openPanorama"); if(panoBtn) panoBtn.addEventListener("click",openPanorama);
   panorama.querySelector("[data-close-panorama]").addEventListener("click",closePanorama);
   panorama.addEventListener("click",e=>{if(e.target===panorama) closePanorama();});
