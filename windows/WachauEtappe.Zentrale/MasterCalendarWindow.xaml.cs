@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using WachauEtappe.Zentrale.Services;
 
 namespace WachauEtappe.Zentrale;
@@ -13,13 +14,21 @@ public partial class MasterCalendarWindow : Window
     private ZabCalendarSnapshot? _snapshot;
     private ZabOccupancy? _selectedOccupancy;
     private bool _loading;
+    private readonly DispatcherTimer _liveTimer;
 
     public MasterCalendarWindow()
     {
         InitializeComponent();
         CalendarGrid.ItemsSource = _rows;
         TransportBox.SelectedIndex = 0;
-        Loaded += async (_, _) => await LoadMonthAsync();
+        _liveTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
+        _liveTimer.Tick += async (_, _) => await LoadMonthAsync();
+        Loaded += async (_, _) =>
+        {
+            await LoadMonthAsync();
+            _liveTimer.Start();
+        };
+        Closed += (_, _) => _liveTimer.Stop();
     }
 
     private string SelectedRoomKey => RoomBox.SelectedItem is ZabRoomOption room ? room.Key : "Bachblick";
@@ -54,6 +63,8 @@ public partial class MasterCalendarWindow : Window
             PayPalModeText.Text = _snapshot.PayPalMasterIndependent
                 ? "PayPal: ✓ OS-Master unabhängig"
                 : "PayPal: Hybrid-Sicherheitsmodus";
+            LiveVisitorsText.Text = $"👥 Besucher live: {_snapshot.LiveMetrics.UniqueVisitors}";
+            LiveChecksText.Text = $"🔎 Verfügbarkeitsprüfungen live: {_snapshot.LiveMetrics.AvailabilityChecks}";
             BuildRows();
             LoadImportUrlForSelection();
             StatusText.Text = result.Message;
@@ -86,6 +97,7 @@ public partial class MasterCalendarWindow : Window
             {
                 Date = day,
                 DateLabel = day.ToString("dd.MM.yyyy"),
+                DemandChecksLabel = state.DemandChecksLive.ToString(CultureInfo.InvariantCulture),
                 State = state,
                 Occupancy = occ,
                 OccupancyLabel = occupancies.Count == 0 ? "frei" : occupancies.Count == 1 ? OccupancyKindLabel(occ!.Kind) : $"{occupancies.Count} Belegungen",
@@ -363,6 +375,7 @@ public sealed class CalendarDayRow
 {
     public DateTime Date { get; init; }
     public string DateLabel { get; init; } = "";
+    public string DemandChecksLabel { get; init; } = "0";
     public string OccupancyLabel { get; init; } = "";
     public string GuestName { get; init; } = "";
     public string Country { get; init; } = "";
