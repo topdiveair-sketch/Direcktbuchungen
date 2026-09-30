@@ -211,7 +211,7 @@ public static class ZabMasterCalendarService
                     ZabBookingSync? bookingSync = null;
                     if (dayProperty.Value.TryGetProperty("booking_sync", out var sync) && sync.ValueKind == JsonValueKind.Object)
                         bookingSync = new ZabBookingSync(S(sync, "status"), S(sync, "message"), S(sync, "updated_at"));
-                    roomDays[dayProperty.Name] = new ZabDayState(channelStates, bookingSync);
+                    roomDays[dayProperty.Name] = new ZabDayState(channelStates, bookingSync, I(dayProperty.Value, "demand_checks_live"));
                 }
                 days[roomProperty.Name] = roomDays;
             }
@@ -245,7 +245,16 @@ public static class ZabMasterCalendarService
             bookingDetail = bookingConfigured ? "Booking.com Connectivity bereit" : "Booking.com Connectivity/Zimmer-Rate-Mapping fehlt";
         }
         var paypalIndependent = B(root, "paypal_master_independent");
-        return new ZabCalendarSnapshot(rooms, days, occupancy, imports, bookingConfigured, bookingDetail, paypalIndependent);
+        var liveMetrics = new ZabLiveMetrics(0, 0, "", "");
+        if (root.TryGetProperty("live_metrics", out var lm) && lm.ValueKind == JsonValueKind.Object)
+        {
+            liveMetrics = new ZabLiveMetrics(
+                I(lm, "unique_visitors"),
+                I(lm, "availability_checks"),
+                S(lm, "updated_at"),
+                S(lm, "window"));
+        }
+        return new ZabCalendarSnapshot(rooms, days, occupancy, imports, bookingConfigured, bookingDetail, paypalIndependent, liveMetrics);
     }
 
     private static string ApiError(string text, string fallback)
@@ -292,8 +301,9 @@ public sealed record ZabRoomOption(string Key, string Label)
 }
 public sealed record ZabChannelState(bool Open, double? Price, bool PriceOverride);
 public sealed record ZabBookingSync(string Status, string Message, string UpdatedAt);
-public sealed record ZabDayState(Dictionary<string, ZabChannelState> Channels, ZabBookingSync? BookingSync);
+public sealed record ZabDayState(Dictionary<string, ZabChannelState> Channels, ZabBookingSync? BookingSync, int DemandChecksLive);
 public sealed record ZabImportSource(string Room, string Channel, string ImportUrl, string LastSync, string LastResult);
+public sealed record ZabLiveMetrics(int UniqueVisitors, int AvailabilityChecks, string UpdatedAt, string Window);
 public sealed record ZabOccupancy(
     string Kind, int BookingId, int ExternalId, string Uid, string Room, string Arrival, string Departure,
     string GuestName, string Country, int Guests, bool? Breakfast, string TransportMode, string Notes,
@@ -305,6 +315,7 @@ public sealed record ZabCalendarSnapshot(
     List<ZabImportSource> Imports,
     bool BookingConnectivityConfigured,
     string BookingConnectivityDetail,
-    bool PayPalMasterIndependent);
+    bool PayPalMasterIndependent,
+    ZabLiveMetrics LiveMetrics);
 
 public sealed record ZabRevenueStatus(double Occupancy, int OccupiedNights, int AvailableNights, double AddEur, string Level, string WindowStart, string WindowEnd);
