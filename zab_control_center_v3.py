@@ -382,6 +382,37 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
         start, end = _month_bounds(year, month)
         with db() as conn:
             occupancy = _occupancy(conn, start, end)
+            try:
+                demand_rows = conn.execute(
+                    """SELECT room,target_day,COUNT(DISTINCT visitor_hash) AS checks
+                       FROM demand_signals
+                       WHERE target_day>=? AND target_day<?
+                       GROUP BY room,target_day""",
+                    (start.isoformat(), end.isoformat()),
+                ).fetchall()
+            except Exception:
+                demand_rows = []
+            demand_by_day = {
+                (str(row["room"]), str(row["target_day"])): int(row["checks"] or 0)
+                for row in demand_rows
+            }
+            try:
+                visitor_row = conn.execute(
+                    """SELECT COUNT(DISTINCT visitor_hash) AS n
+                       FROM site_events
+                       WHERE event='landing_view' AND visitor_hash<>''"""
+                ).fetchone()
+                live_visitors = int(visitor_row["n"] or 0) if visitor_row else 0
+            except Exception:
+                live_visitors = 0
+            try:
+                check_row = conn.execute(
+                    "SELECT COUNT(*) AS n FROM demand_searches WHERE room='Bachblick'"
+                ).fetchone()
+                live_availability_checks = int(check_row["n"] or 0) if check_row else 0
+            except Exception:
+                live_availability_checks = 0
+
             days = {room: {} for room in rooms}
             for room in rooms:
                 current = start
@@ -401,6 +432,7 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
                     days[room][current.isoformat()] = {
                         "channels": channels,
                         "booking_sync": dict(sync) if sync else None,
+                        "demand_checks_live": demand_by_day.get((room, current.isoformat()), 0),
                     }
                     current += timedelta(days=1)
             controls = {
@@ -418,6 +450,12 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
             "days": days,
             "occupancy": occupancy,
             "imports": imports,
+            "live_metrics": {
+                "unique_visitors": live_visitors,
+                "availability_checks": live_availability_checks,
+                "updated_at": _now(),
+                "window": "all_time_since_tracking",
+            },
         }
 
     def _closed_intervals(conn, room: str, channel: str, start: date, end: date):
