@@ -387,6 +387,6 @@ public sealed class CalendarDayRow
     public string BookingSyncLabel { get; init; } = "";
     public string AirbnbLabel { get; init; } = "";
     public string OtherLabel { get; init; } = "";
-    public ZabDayState State { get; init; } = new(new(), null);
+    public ZabDayState State { get; init; } = new(new(), null, 0);
     public ZabOccupancy? Occupancy { get; init; }
 }
