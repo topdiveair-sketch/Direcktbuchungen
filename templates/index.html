@@ -44,7 +44,7 @@
     "identifier":[
       {"@type":"PropertyValue","propertyID":"Booking.com hotel ID","value":"10657485"}
     ],
-    "numberOfRooms":1,
+    "numberOfRooms":1,\n    "priceRange":"ab 99 € pro Nacht",
     "petsAllowed":false,
     "smokingAllowed":false,
     "address":{"@type":"PostalAddress","streetAddress":"Aggsbach Markt 82","postalCode":"3641","addressLocality":"Aggsbach Markt","addressRegion":"Niederösterreich","addressCountry":"AT"},
@@ -53,6 +53,28 @@
     "checkinTime":"14:00",
     "checkoutTime":"10:00",
     "potentialAction":{"@type":"ReserveAction","target":"https://www.zuhauseambach-wachau.at/#booking","name":"Direkt Verfügbarkeit prüfen und buchen"},
+    "makesOffer":{
+      "@type":"AggregateOffer",
+      "@id":"https://www.zuhauseambach-wachau.at/#gartenzimmer-direktpreis",
+      "name":"Gartenzimmer – Direktpreis ab 99 € pro Nacht",
+      "url":"https://www.zuhauseambach-wachau.at/#booking",
+      "priceCurrency":"EUR",
+      "lowPrice":99.00,
+      "offerCount":1,
+      "itemOffered":{
+        "@type":"HotelRoom",
+        "@id":"https://www.zuhauseambach-wachau.at/#gartenzimmer",
+        "name":"Gartenzimmer",
+        "description":"Ruhiges Doppelzimmer mit eigenem Bad und WLAN bei Zuhause am Bach in Aggsbach Markt.",
+        "occupancy":{"@type":"QuantitativeValue","maxValue":2},
+        "bed":{"@type":"BedDetails","numberOfBeds":1,"typeOfBed":"Double"},
+        "amenityFeature":[
+          {"@type":"LocationFeatureSpecification","name":"Eigenes Badezimmer","value":true},
+          {"@type":"LocationFeatureSpecification","name":"WLAN","value":true},
+          {"@type":"LocationFeatureSpecification","name":"Nichtraucherzimmer","value":true}
+        ]
+      }
+    },
     "amenityFeature":[
       {"@type":"LocationFeatureSpecification","name":"WLAN","value":true},
       {"@type":"LocationFeatureSpecification","name":"Fahrradunterbringung","value":true},
