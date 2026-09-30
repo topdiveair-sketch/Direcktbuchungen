@@ -186,7 +186,7 @@
   .zab-modal-nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:54px;border:0;border-radius:10px;background:rgba(255,255,255,.88);font-size:30px;cursor:pointer}
   .zab-modal-prev{left:12px}.zab-modal-next{right:12px}
   .zab-modal-caption{padding:12px 18px 16px;color:#fff;text-align:center;font-size:.94rem}
-  .zab-panorama-stage{height:min(68vh,620px);min-height:360px;cursor:grab;touch-action:none;background-color:#111;background-repeat:repeat-x;background-size:auto 100%;background-position:50% 50%;user-select:none}
+  .zab-panorama-stage{height:min(58vh,560px);min-height:320px;cursor:grab;touch-action:none;background-color:#111;background-repeat:no-repeat;background-size:auto 140%;background-position:50% 50%;user-select:none}
   .zab-panorama-stage.is-dragging{cursor:grabbing}
   .zab-panorama-hint{padding:10px 16px 14px;color:#fff;text-align:center;font-size:.9rem}
   @media(max-width:720px){
@@ -946,8 +946,8 @@
       const url=await loadPanorama();
       panoStage.textContent="";
       panoStage.style.backgroundImage='url("'+url+'")';
-      panoStage.style.backgroundRepeat="repeat-x";
-      panoStage.style.backgroundSize="auto 100%";
+      panoStage.style.backgroundRepeat="no-repeat";
+      panoStage.style.backgroundSize="auto 140%";
       panoStage.style.backgroundPosition=panoPosition+"% 50%";
     }catch(e){
       panoStage.textContent="Die 360°-Ansicht konnte gerade nicht geladen werden.";
@@ -970,8 +970,8 @@
   });
   panoStage.addEventListener("pointermove",e=>{
     if(!panoStage.classList.contains("is-dragging")) return;
-    const delta=(e.clientX-dragStartX)/Math.max(240,panoStage.clientWidth)*100;
-    panoPosition=((dragStartPosition-delta)%100+100)%100;
+    const delta=(e.clientX-dragStartX)/Math.max(240,panoStage.clientWidth)*85;
+    panoPosition=Math.max(0,Math.min(100,dragStartPosition-delta));
     panoStage.style.backgroundPosition=panoPosition+"% 50%";
   });
   ["pointerup","pointercancel"].forEach(ev=>panoStage.addEventListener(ev,()=>panoStage.classList.remove("is-dragging")));
