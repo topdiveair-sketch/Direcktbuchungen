@@ -2256,6 +2256,7 @@ def api_events():
         "landing_view", "room_selected", "extras_selected",
         "availability_started", "availability_result_",
         "checkout_started", "booking_abandoned",
+        "gallery_open", "panorama_open",
     )
     if not event or not any(event == prefix or event.startswith(prefix) for prefix in allowed_prefixes):
         return Response(status=204)
