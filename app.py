@@ -296,6 +296,8 @@ def init_db() -> None:
         site_event_cols = {row[1] for row in conn.execute("PRAGMA table_info(site_events)")}
         if "visitor_hash" not in site_event_cols:
             conn.execute("ALTER TABLE site_events ADD COLUMN visitor_hash TEXT DEFAULT ''")
+        if "country_code" not in site_event_cols:
+            conn.execute("ALTER TABLE site_events ADD COLUMN country_code TEXT DEFAULT 'XX'")
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_site_events_event_created "
             "ON site_events(event, created_at)"
@@ -2096,8 +2098,8 @@ def api_events():
         return Response(status=204)
     with db() as conn:
         conn.execute(
-            "INSERT INTO site_events(event, created_at, visitor_hash) VALUES (?, ?, ?)",
-            (event, datetime.now().isoformat(timespec="seconds"), _visitor_hash()),
+            "INSERT INTO site_events(event, created_at, visitor_hash, country_code) VALUES (?, ?, ?, ?)",
+            (event, datetime.now().isoformat(timespec="seconds"), _visitor_hash(), _request_country_code()),
         )
     return Response(status=204)
 
