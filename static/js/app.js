@@ -69,7 +69,7 @@ function euro(v) {
 function updateTotals() {
   const n = nights();
   nightsEl.value = n;
-  totalPrice.textContent = n ? tx("afterCheck") : euro(0);
+  totalPrice.textContent = n ? tx("afterCheck") : "ab 99,00 € / Nacht";
   priceBreakdown.innerHTML = "";
 }
 
