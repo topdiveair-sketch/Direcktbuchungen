@@ -304,8 +304,9 @@ def init_paypal_checkout(
                         """INSERT INTO bookings
                            (uid,room,arrival,departure,adults,breakfast,first_name,last_name,
                             email,phone,message,payment_method,total,status,created_at,
-                            paid,hold_expires_at,checkout_payload)
-                           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',?,0,?,?)""",
+                            paid,hold_expires_at,checkout_payload,
+                            source,utm_medium,utm_campaign,landing_page,referrer)
+                           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',?,0,?,?,?,?,?,?,?)""",
                         (
                             uid,
                             room,
@@ -323,6 +324,11 @@ def init_paypal_checkout(
                             now.isoformat(timespec="seconds"),
                             hold_expires.isoformat(timespec="seconds"),
                             payload_store,
+                            str(data.get("source") or "direct-paypal")[:120],
+                            str(data.get("utm_medium") or "")[:120],
+                            str(data.get("utm_campaign") or "")[:160],
+                            str(data.get("landing_page") or "")[:300],
+                            str(data.get("referrer") or "")[:300],
                         ),
                     )
                     booking_id = cur.lastrowid
