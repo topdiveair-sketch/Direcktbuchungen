@@ -18,6 +18,7 @@ from datetime import date, datetime, timedelta
 from email.message import EmailMessage
 from pathlib import Path
 from secrets import token_urlsafe
+from zoneinfo import ZoneInfo
 
 from flask import (
     Response, flash, jsonify, redirect, render_template, request,
@@ -94,6 +95,20 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             recipient TEXT NOT NULL,
             subject TEXT NOT NULL,
             body TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending',
+            attempts INTEGER NOT NULL DEFAULT 0,
+            last_error TEXT DEFAULT '',
+            provider_message_id TEXT DEFAULT '',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS whatsapp_outbox(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            dedupe_key TEXT NOT NULL UNIQUE,
+            booking_id INTEGER NOT NULL,
+            role TEXT NOT NULL,
+            recipient TEXT NOT NULL,
+            template_name TEXT NOT NULL,
             status TEXT NOT NULL DEFAULT 'pending',
             attempts INTEGER NOT NULL DEFAULT 0,
             last_error TEXT DEFAULT '',
@@ -328,6 +343,199 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                 time.sleep(1)
         return sent, len(rows)
 
+    def _normalize_whatsapp_number(raw_phone):
+        digits = "".join(ch for ch in str(raw_phone or "") if ch.isdigit())
+        if digits.startswith("00"):
+            digits = digits[2:]
+        elif digits.startswith("0"):
+            digits = "43" + digits[1:]
+        return digits
+
+    def _queue_whatsapp(booking_id, role, recipient, template_name):
+        if not recipient or not template_name:
+            return None
+        dedupe_key = f"{booking_id}:{role}:{template_name}"
+        now = datetime.now().isoformat(timespec="seconds")
+        with db() as conn:
+            conn.execute(
+                """INSERT INTO whatsapp_outbox
+                   (dedupe_key,booking_id,role,recipient,template_name,status,attempts,last_error,
+                    provider_message_id,created_at,updated_at)
+                   VALUES(?,?,?,?,?,'pending',0,'','',?,?)
+                   ON CONFLICT(dedupe_key) DO NOTHING""",
+                (dedupe_key, booking_id, role, recipient, template_name, now, now),
+            )
+        return dedupe_key
+
+    def _deliver_whatsapp_row(row):
+        token = os.environ.get("WHATSAPP_ACCESS_TOKEN", "").strip()
+        phone_number_id = os.environ.get("WHATSAPP_PHONE_NUMBER_ID", "").strip()
+        graph_version = os.environ.get("WHATSAPP_GRAPH_VERSION", "").strip()
+        language_code = os.environ.get("WHATSAPP_TEMPLATE_LANGUAGE", "de").strip() or "de"
+        if not (token and phone_number_id and graph_version):
+            return False, "whatsapp_not_configured"
+
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": row["recipient"],
+            "type": "template",
+            "template": {
+                "name": row["template_name"],
+                "language": {"code": language_code},
+            },
+        }
+        try:
+            response = requests.post(
+                f"https://graph.facebook.com/{graph_version}/{phone_number_id}/messages",
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+                timeout=(4, 10),
+            )
+            if 200 <= int(response.status_code) < 300:
+                data = response.json() if response.content else {}
+                messages = data.get("messages") or []
+                message_id = str(messages[0].get("id", "")).strip() if messages else ""
+                now = datetime.now().isoformat(timespec="seconds")
+                with db() as conn:
+                    conn.execute(
+                        """UPDATE whatsapp_outbox
+                           SET status='sent',attempts=attempts+1,last_error='',
+                               provider_message_id=?,updated_at=? WHERE id=?""",
+                        (message_id, now, row["id"]),
+                    )
+                app.logger.warning(
+                    "whatsapp_send_ok booking_id=%s role=%s recipient=%s message_id=%s",
+                    row["booking_id"], row["role"], row["recipient"], message_id or "-",
+                )
+                return True, "sent"
+            reason = f"whatsapp_http_{response.status_code}"
+        except requests.Timeout:
+            reason = "whatsapp_timeout"
+        except requests.RequestException:
+            reason = "whatsapp_unreachable"
+
+        now = datetime.now().isoformat(timespec="seconds")
+        with db() as conn:
+            conn.execute(
+                """UPDATE whatsapp_outbox
+                   SET status='pending',attempts=attempts+1,last_error=?,updated_at=?
+                   WHERE id=?""",
+                (reason, now, row["id"]),
+            )
+        app.logger.warning(
+            "whatsapp_send_pending booking_id=%s role=%s recipient=%s reason=%s",
+            row["booking_id"], row["role"], row["recipient"], reason,
+        )
+        return False, reason
+
+    def process_whatsapp_outbox(limit=10):
+        if not (
+            os.environ.get("WHATSAPP_ACCESS_TOKEN", "").strip()
+            and os.environ.get("WHATSAPP_PHONE_NUMBER_ID", "").strip()
+            and os.environ.get("WHATSAPP_GRAPH_VERSION", "").strip()
+        ):
+            return 0, 0
+        with db() as conn:
+            rows = conn.execute(
+                """SELECT * FROM whatsapp_outbox
+                   WHERE status='pending' AND attempts < 12
+                   ORDER BY id LIMIT ?""",
+                (int(limit),),
+            ).fetchall()
+        sent = 0
+        for row in rows:
+            ok, _ = _deliver_whatsapp_row(row)
+            if ok:
+                sent += 1
+            else:
+                time.sleep(1)
+        return sent, len(rows)
+
+    def queue_scheduled_guest_communications():
+        now_local = datetime.now(ZoneInfo("Europe/Vienna"))
+        today = now_local.date()
+        cfg = settings()
+        site_url = os.environ.get("PUBLIC_SITE_URL", "https://www.zuhauseambach-wachau.at").rstrip("/")
+        maps_url = (
+            "https://www.google.com/maps/search/?api=1&query="
+            "Aggsbach+Markt+82%2C+3641+Aggsbach+Markt%2C+Austria"
+        )
+        review_url = (
+            os.environ.get("GOOGLE_REVIEW_DIRECT_URL", "").strip()
+            or cfg.get("google_review_url", "").strip()
+            or "https://search.google.com/local/writereview?placeid=ChIJUTxhf3pjckcRHaOVtEglJ9Y"
+        )
+        phone = cfg.get("phone", "").strip() or "+43 664 6437526"
+
+        with db() as conn:
+            bookings = conn.execute(
+                """SELECT * FROM bookings
+                   WHERE status='confirmed'
+                     AND email<>''
+                     AND departure>=?
+                   ORDER BY arrival""",
+                ((today - timedelta(days=2)).isoformat(),),
+            ).fetchall()
+
+        for booking in bookings:
+            try:
+                arrival = datetime.fromisoformat(booking["arrival"]).date()
+                departure = datetime.fromisoformat(booking["departure"]).date()
+            except Exception:
+                continue
+
+            if arrival == today + timedelta(days=1) and now_local.hour >= 9:
+                public_token, _, _ = ensure_booking_tokens(int(booking["id"]))
+                subject = "Morgen geht es los – deine Anreise zu Zuhause am Bach"
+                body = (
+                    f"Hallo {booking['first_name']},\n\n"
+                    "morgen ist es soweit – wir freuen uns auf deinen Aufenthalt bei Zuhause am Bach – Wachau.\n\n"
+                    f"Anreise: {booking['arrival']} ab 14:00 Uhr\n"
+                    f"Abreise: {booking['departure']} bis 10:00 Uhr\n"
+                    "Adresse: Aggsbach Markt 82, 3641 Aggsbach Markt, Österreich\n"
+                    f"Google Maps / Navigation: {maps_url}\n\n"
+                    "Fahrräder können sicher abgestellt werden; E-Bikes können geladen werden.\n"
+                    f"Gästeportal: {site_url}/guest/{public_token}\n"
+                    f"Bei Fragen erreichst du uns unter {phone}.\n\n"
+                    "Gute Anreise und bis morgen!\n"
+                    "Zuhause am Bach – Wachau"
+                )
+                _queue_mail(
+                    int(booking["id"]), "arrival_reminder",
+                    booking["email"], subject, body
+                )
+                wa_template = os.environ.get("WHATSAPP_ARRIVAL_TEMPLATE", "").strip()
+                if wa_template:
+                    _queue_whatsapp(
+                        int(booking["id"]), "arrival_reminder",
+                        _normalize_whatsapp_number(booking["phone"]), wa_template
+                    )
+
+            if departure == today - timedelta(days=1) and now_local.hour >= 10:
+                subject = "Danke für deinen Aufenthalt – Zuhause am Bach"
+                body = (
+                    f"Hallo {booking['first_name']},\n\n"
+                    "vielen Dank, dass du bei Zuhause am Bach – Wachau zu Gast warst. "
+                    "Wir hoffen, du bist gut weiter- oder nach Hause gereist.\n\n"
+                    "Wenn dir dein Aufenthalt gefallen hat, hilft uns eine ehrliche Google-Bewertung sehr:\n"
+                    f"{review_url}\n\n"
+                    "Vielen Dank und vielleicht bis zum nächsten Mal in der Wachau!\n"
+                    "Zuhause am Bach – Wachau"
+                )
+                _queue_mail(
+                    int(booking["id"]), "review_request",
+                    booking["email"], subject, body
+                )
+                wa_template = os.environ.get("WHATSAPP_REVIEW_TEMPLATE", "").strip()
+                if wa_template:
+                    _queue_whatsapp(
+                        int(booking["id"]), "review_request",
+                        _normalize_whatsapp_number(booking["phone"]), wa_template
+                    )
+
     def _mail_retry_worker():
         while True:
             try:
@@ -344,7 +552,9 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                              AND payment_hold_expires_at < ?""",
                         (now_iso,),
                     )
+                queue_scheduled_guest_communications()
                 process_mail_outbox(limit=10)
+                process_whatsapp_outbox(limit=10)
             except Exception:
                 app.logger.exception("mail_retry_worker_failed")
             time.sleep(60)
