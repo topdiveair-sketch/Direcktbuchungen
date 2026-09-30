@@ -121,6 +121,13 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
     center Bachblick is displayed as Gartenblick Zimmer.
     """
 
+    suspended_rooms = {
+        item.strip()
+        for item in os.environ.get("ZAB_SUSPENDED_ROOMS", "").split(",")
+        if item.strip()
+    }
+    active_rooms = [room for room in rooms if room not in suspended_rooms]
+
     def _authorized() -> bool:
         try:
             return bool(authorize())
@@ -172,7 +179,7 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
         _ensure_column(conn, "zab_external_guest_meta", "transport_mode", "TEXT NOT NULL DEFAULT ''")
         _ensure_column(conn, "zab_external_guest_meta", "notes", "TEXT NOT NULL DEFAULT ''")
         now = _now()
-        for room in rooms:
+        for room in active_rooms:
             for channel in CHANNELS:
                 conn.execute(
                     """INSERT OR IGNORE INTO zab_channel_controls(room,channel,enabled,updated_at)
@@ -413,8 +420,8 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
             except Exception:
                 live_availability_checks = 0
 
-            days = {room: {} for room in rooms}
-            for room in rooms:
+            days = {room: {} for room in active_rooms}
+            for room in active_rooms:
                 current = start
                 while current < end:
                     channels = {}
@@ -437,14 +444,14 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
                     current += timedelta(days=1)
             controls = {
                 room: {channel: _global_enabled(conn, room, channel) for channel in CHANNELS}
-                for room in rooms
+                for room in active_rooms
             }
             imports = [dict(r) for r in conn.execute("SELECT * FROM zab_channel_imports ORDER BY room,channel")]
         return {
             "ok": True,
             "year": year,
             "month": month,
-            "rooms": [{"key": room, "label": ROOM_LABELS.get(room, room)} for room in rooms],
+            "rooms": [{"key": room, "label": ROOM_LABELS.get(room, room)} for room in active_rooms],
             "channels": list(CHANNELS),
             "controls": controls,
             "days": days,
@@ -792,7 +799,7 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
             degraded=not booking_ready,
             version=3,
             channels=list(CHANNELS),
-            rooms=[{"key": room, "label": ROOM_LABELS.get(room, room)} for room in rooms],
+            rooms=[{"key": room, "label": ROOM_LABELS.get(room, room)} for room in active_rooms],
             booking_connectivity=booking_status,
             booking_connectivity_ready=booking_ready,
             booking_connectivity_message=(
