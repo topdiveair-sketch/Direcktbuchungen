@@ -100,6 +100,38 @@
     }
 </style>  <!-- seo-identity-deploy-marker: 2026-09-29 -->
   <!-- railway-force-deploy: 2026-09-29T14:20Z -->
+
+<style id="zab-gallery-style">
+  .zab-room-gallery{margin-top:12px;padding:14px;border:1px solid rgba(0,0,0,.10);border-radius:14px;background:#fff}
+  .zab-gallery-head{display:flex;justify-content:space-between;gap:12px;align-items:end;margin-bottom:10px}
+  .zab-gallery-head strong{font-size:1rem}.zab-gallery-head span{font-size:.82rem;color:#667085}
+  .zab-gallery-thumbs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+  .zab-gallery-thumb{border:2px solid transparent;padding:0;border-radius:10px;overflow:hidden;background:#f3f4f6;cursor:pointer;aspect-ratio:4/3}
+  .zab-gallery-thumb.is-active{border-color:var(--green,#2f6f4e)}
+  .zab-gallery-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .zab-gallery-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .zab-gallery-actions .btn{min-width:170px}
+  .zab-media-modal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center;padding:20px}
+  .zab-media-modal.is-open{display:flex}
+  .zab-modal-card{position:relative;width:min(1100px,96vw);max-height:92vh;background:#111;border-radius:16px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+  .zab-modal-close{position:absolute;right:12px;top:12px;z-index:5;width:42px;height:42px;border:0;border-radius:50%;font-size:24px;cursor:pointer;background:rgba(255,255,255,.92)}
+  .zab-lightbox-stage{position:relative;display:flex;align-items:center;justify-content:center;min-height:56vh;background:#0d0d0d}
+  .zab-lightbox-stage img{display:block;max-width:100%;max-height:76vh;object-fit:contain}
+  .zab-modal-nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:54px;border:0;border-radius:10px;background:rgba(255,255,255,.88);font-size:30px;cursor:pointer}
+  .zab-modal-prev{left:12px}.zab-modal-next{right:12px}
+  .zab-modal-caption{padding:12px 18px 16px;color:#fff;text-align:center;font-size:.94rem}
+  .zab-panorama-stage{height:min(68vh,620px);min-height:360px;cursor:grab;touch-action:none;background-color:#111;background-repeat:repeat-x;background-size:auto 100%;background-position:50% 50%;user-select:none}
+  .zab-panorama-stage.is-dragging{cursor:grabbing}
+  .zab-panorama-hint{padding:10px 16px 14px;color:#fff;text-align:center;font-size:.9rem}
+  @media(max-width:720px){
+    .zab-gallery-head{display:block}.zab-gallery-head span{display:block;margin-top:3px}
+    .zab-gallery-thumbs{grid-template-columns:repeat(5,72px);overflow-x:auto;padding-bottom:4px}
+    .zab-gallery-actions .btn{flex:1 1 100%}
+    .zab-media-modal{padding:8px}.zab-modal-card{width:100%}.zab-lightbox-stage{min-height:48vh}
+    .zab-panorama-stage{height:58vh;min-height:320px}
+  }
+</style>
+
 </head>
 <body>
 <header class="hero hero-room hero-mobile-clean" id="start">
@@ -226,6 +258,34 @@
             </span>
             <span class="room-check">✓</span>
           </label>
+
+          <div class="zab-room-gallery" aria-label="Bildergalerie Gartenzimmer">
+            <div class="zab-gallery-head">
+              <strong>Gartenzimmer ansehen</strong>
+              <span>5 Fotos · Bad · Küche · Umgebung</span>
+            </div>
+            <div class="zab-gallery-thumbs">
+              <button type="button" class="zab-gallery-thumb is-active" data-gallery-index="0" aria-label="Gartenzimmer groß ansehen">
+                <img src="{{ url_for('static', filename='images/gartenzimmer-04-web.jpg') }}" alt="Gartenzimmer bei Zuhause am Bach" loading="lazy">
+              </button>
+              <button type="button" class="zab-gallery-thumb" data-gallery-index="1" aria-label="Badezimmer groß ansehen">
+                <img src="{{ url_for('static', filename='images/bad-zuhause-am-bach-v2.webp') }}" alt="Eigenes Badezimmer des Gartenzimmers" loading="lazy">
+              </button>
+              <button type="button" class="zab-gallery-thumb" data-gallery-index="2" aria-label="Zweites Zimmerbild groß ansehen">
+                <img src="{{ url_for('static', filename='images/gartenzimmer-direktbuchung-v2.webp') }}" alt="Weiterer Blick in das Gartenzimmer" loading="lazy">
+              </button>
+              <button type="button" class="zab-gallery-thumb" data-gallery-index="3" aria-label="Gästeküche groß ansehen">
+                <img src="{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-v2.webp') }}" alt="Gästeküche bei Zuhause am Bach" loading="lazy">
+              </button>
+              <button type="button" class="zab-gallery-thumb" data-gallery-index="4" aria-label="Bach hinter dem Haus groß ansehen">
+                <img src="{{ url_for('static', filename='images/bach-hinterm-haus-v11.webp') }}" alt="Bach und Außenbereich hinter Zuhause am Bach" loading="lazy">
+              </button>
+            </div>
+            <div class="zab-gallery-actions">
+              <button type="button" class="btn secondary" id="openGallery">📷 Bilder ansehen</button>
+              <button type="button" class="btn secondary" id="openPanorama">↻ 360° Zimmer ansehen</button>
+            </div>
+          </div>
         </div>
 
         <div id="priceBreakdown" class="price-breakdown"></div>
@@ -729,5 +789,115 @@
   });
 })();
 </script>
+
+<div class="zab-media-modal" id="zabGalleryModal" role="dialog" aria-modal="true" aria-label="Bildergalerie Gartenzimmer">
+  <div class="zab-modal-card">
+    <button type="button" class="zab-modal-close" data-close-gallery aria-label="Galerie schließen">×</button>
+    <div class="zab-lightbox-stage">
+      <button type="button" class="zab-modal-nav zab-modal-prev" id="galleryPrev" aria-label="Vorheriges Bild">‹</button>
+      <img id="galleryLargeImage" alt="">
+      <button type="button" class="zab-modal-nav zab-modal-next" id="galleryNext" aria-label="Nächstes Bild">›</button>
+    </div>
+    <div class="zab-modal-caption" id="galleryCaption"></div>
+  </div>
+</div>
+
+<div class="zab-media-modal" id="zabPanoramaModal" role="dialog" aria-modal="true" aria-label="360 Grad Ansicht Gartenzimmer">
+  <div class="zab-modal-card">
+    <button type="button" class="zab-modal-close" data-close-panorama aria-label="360 Grad Ansicht schließen">×</button>
+    <div class="zab-panorama-stage" id="zabPanoramaStage" aria-label="360 Grad Panorama des Gartenzimmers"></div>
+    <div class="zab-panorama-hint">Mit Maus oder Finger nach links und rechts ziehen · 360°-Ansicht des Gartenzimmers</div>
+  </div>
+</div>
+
+<script id="zab-gallery-script">
+(function(){
+  const photos=[
+    {src:"{{ url_for('static', filename='images/gartenzimmer-04-web.jpg') }}",caption:"Gartenzimmer – Gesamtansicht"},
+    {src:"{{ url_for('static', filename='images/bad-zuhause-am-bach-v2.webp') }}",caption:"Eigenes Badezimmer"},
+    {src:"{{ url_for('static', filename='images/gartenzimmer-direktbuchung-v2.webp') }}",caption:"Gartenzimmer – weiterer Blick"},
+    {src:"{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-v2.webp') }}",caption:"Gästeküche / Gemeinschaftsbereich"},
+    {src:"{{ url_for('static', filename='images/bach-hinterm-haus-v11.webp') }}",caption:"Bach und Außenbereich hinter dem Haus"}
+  ];
+  let current=0;
+  const gallery=document.getElementById("zabGalleryModal");
+  const large=document.getElementById("galleryLargeImage");
+  const caption=document.getElementById("galleryCaption");
+  const panorama=document.getElementById("zabPanoramaModal");
+  const panoStage=document.getElementById("zabPanoramaStage");
+  let panoUrl=null;
+  let panoPosition=50;
+  let dragStartX=0;
+  let dragStartPosition=50;
+
+  function track(event){
+    try{fetch("/api/events",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({event:event}),keepalive:true});}catch(e){}
+  }
+  function renderPhoto(){
+    const p=photos[current];
+    large.src=p.src; large.alt=p.caption; caption.textContent=(current+1)+" / "+photos.length+" · "+p.caption;
+    document.querySelectorAll(".zab-gallery-thumb").forEach((el,i)=>el.classList.toggle("is-active",i===current));
+  }
+  function openGallery(index){
+    current=(typeof index==="number"?index:current);
+    renderPhoto(); gallery.classList.add("is-open"); document.body.style.overflow="hidden"; track("gallery_open");
+  }
+  function closeGallery(){gallery.classList.remove("is-open");document.body.style.overflow="";}
+  function step(delta){current=(current+delta+photos.length)%photos.length;renderPhoto();}
+
+  document.querySelectorAll(".zab-gallery-thumb").forEach(btn=>btn.addEventListener("click",()=>openGallery(Number(btn.dataset.galleryIndex)||0)));
+  const openBtn=document.getElementById("openGallery"); if(openBtn) openBtn.addEventListener("click",()=>openGallery(0));
+  document.getElementById("galleryPrev").addEventListener("click",()=>step(-1));
+  document.getElementById("galleryNext").addEventListener("click",()=>step(1));
+  gallery.querySelector("[data-close-gallery]").addEventListener("click",closeGallery);
+  gallery.addEventListener("click",e=>{if(e.target===gallery) closeGallery();});
+
+  async function loadPanorama(){
+    if(panoUrl) return panoUrl;
+    const base="{{ url_for('static', filename='images/panorama/gartenzimmer-360.b64.1.txt') }}";
+    const urls=[1,2,3,4].map(n=>base.replace(".1.txt","."+n+".txt"));
+    const parts=await Promise.all(urls.map(u=>fetch(u,{cache:"force-cache"}).then(r=>{if(!r.ok) throw new Error("Panorama konnte nicht geladen werden"); return r.text();})));
+    const b64=parts.join("").replace(/\s+/g,"");
+    const bin=atob(b64), bytes=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+    panoUrl=URL.createObjectURL(new Blob([bytes],{type:"image/webp"}));
+    return panoUrl;
+  }
+  async function openPanorama(){
+    panorama.classList.add("is-open");document.body.style.overflow="hidden";track("panorama_open");
+    panoStage.textContent="360° wird geladen …";
+    try{
+      const url=await loadPanorama();
+      panoStage.textContent="";
+      panoStage.style.backgroundImage='url("'+url+'")';
+      panoStage.style.backgroundPosition=panoPosition+"% 50%";
+    }catch(e){
+      panoStage.textContent="Die 360°-Ansicht konnte gerade nicht geladen werden.";
+    }
+  }
+  function closePanorama(){panorama.classList.remove("is-open");document.body.style.overflow="";}
+  const panoBtn=document.getElementById("openPanorama"); if(panoBtn) panoBtn.addEventListener("click",openPanorama);
+  panorama.querySelector("[data-close-panorama]").addEventListener("click",closePanorama);
+  panorama.addEventListener("click",e=>{if(e.target===panorama) closePanorama();});
+
+  panoStage.addEventListener("pointerdown",e=>{
+    panoStage.setPointerCapture(e.pointerId); dragStartX=e.clientX; dragStartPosition=panoPosition; panoStage.classList.add("is-dragging");
+  });
+  panoStage.addEventListener("pointermove",e=>{
+    if(!panoStage.classList.contains("is-dragging")) return;
+    const delta=(e.clientX-dragStartX)/Math.max(240,panoStage.clientWidth)*100;
+    panoPosition=((dragStartPosition-delta)%100+100)%100;
+    panoStage.style.backgroundPosition=panoPosition+"% 50%";
+  });
+  ["pointerup","pointercancel"].forEach(ev=>panoStage.addEventListener(ev,()=>panoStage.classList.remove("is-dragging")));
+
+  document.addEventListener("keydown",e=>{
+    if(e.key==="Escape"){closeGallery();closePanorama();}
+    if(gallery.classList.contains("is-open") && e.key==="ArrowLeft") step(-1);
+    if(gallery.classList.contains("is-open") && e.key==="ArrowRight") step(1);
+  });
+})();
+</script>
+
 </body>
 </html>
