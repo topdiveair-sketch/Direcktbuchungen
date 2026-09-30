@@ -8,6 +8,8 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import requests
+
 from flask import jsonify, redirect, render_template, url_for
 
 
@@ -320,7 +322,7 @@ def init_host_automation(app, db, require_admin, db_path):
                     )
                     _queue_mail(f"auto:{bid}:{role}", bid, role, email, subject, body)
 
-            if method == "PayPal" and age >= timedelta(hours=2) and booking["status"] in ("inquiry", "pending"):
+            if method in ("PayPal", "paypal_checkout") and age >= timedelta(hours=2) and booking["status"] in ("inquiry", "pending"):
                 body = (
                     f"Hallo {first},\n\n"
                     "deine Buchungsanfrage ist bei uns angekommen, die PayPal-Zahlung ist aber noch nicht abgeschlossen.\n"
@@ -506,6 +508,33 @@ def init_host_automation(app, db, require_admin, db_path):
                 ),
             )
 
+    def _seo_self_check():
+        base = os.environ.get("PUBLIC_SITE_URL", "https://www.zuhauseambach-wachau.at").rstrip("/")
+        active = set()
+        checks = [
+            ("home", base + "/", ("<link rel=\"canonical\"", "application/ld+json")),
+            ("robots", base + "/robots.txt", ("sitemap",)),
+            ("sitemap", base + "/sitemap.xml", ("<urlset",)),
+        ]
+        for name, url, needles in checks:
+            key = f"seo:{name}"
+            try:
+                response = requests.get(url, timeout=(4, 10), headers={"User-Agent": "ZAB-Automation/1.0"})
+                body = response.text.lower()
+                missing = [needle for needle in needles if needle.lower() not in body]
+                if response.status_code != 200 or missing:
+                    active.add(key)
+                    _upsert_alert(
+                        key,
+                        "warning",
+                        f"SEO-Selbsttest {name} auffällig: HTTP {response.status_code}; "
+                        f"fehlend: {', '.join(missing) if missing else 'nichts'}.",
+                    )
+            except requests.RequestException as exc:
+                active.add(key)
+                _upsert_alert(key, "warning", f"SEO-Selbsttest {name} nicht erreichbar: {str(exc)[:180]}")
+        _resolve_alerts("seo:", active)
+
     def _daily_backup():
         now = _now()
         if now.hour < 3:
@@ -572,6 +601,17 @@ def init_host_automation(app, db, require_admin, db_path):
                 "SELECT * FROM automation_metrics WHERE metric_day=?",
                 (day.isoformat(),),
             ).fetchone()
+            try:
+                source_rows = conn.execute(
+                    """SELECT COALESCE(NULLIF(source,''),'unbekannt') source,COUNT(*) c
+                       FROM bookings
+                       WHERE created_at>=? AND created_at<?
+                       GROUP BY COALESCE(NULLIF(source,''),'unbekannt')
+                       ORDER BY c DESC""",
+                    (day.isoformat(), (day + timedelta(days=1)).isoformat()),
+                ).fetchall()
+            except Exception:
+                source_rows = []
 
         gaps = _gap_nights()
         lines = [
@@ -604,6 +644,11 @@ def init_host_automation(app, db, require_admin, db_path):
                 f"  PayPal-Bestellungen: {metrics['paypal_orders']}",
                 f"  bestätigte Buchungen: {metrics['confirmed_bookings']}",
             ])
+        if source_rows:
+            lines.append("")
+            lines.append("Buchungsquellen heute:")
+            for row in source_rows:
+                lines.append(f"  • {row['source']}: {row['c']}")
         if alerts:
             lines.append("")
             lines.append("Aktive Warnungen:")
@@ -631,6 +676,7 @@ def init_host_automation(app, db, require_admin, db_path):
         _payment_reminders()
         _prearrival_upsell()
         _update_metrics()
+        _seo_self_check()
         _daily_backup()
         _daily_report()
         processor = app.extensions.get("zab_process_mail_outbox")
