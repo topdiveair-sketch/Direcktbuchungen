@@ -12,7 +12,7 @@
   <meta property="og:title" content="{{ title }}">
   <meta property="og:description" content="{{ description }}">
   <meta property="og:url" content="{{ canonical }}">
-  <meta property="og:image" content="{{ (_CANONICAL_ORIGIN if _CANONICAL_ORIGIN is defined else 'https://www.zuhauseambach-wachau.at') }}/static/{{ hero_image or 'images/rooms/bachblick.jpg' }}">
+  <meta property="og:image" content="{{ (_CANONICAL_ORIGIN if _CANONICAL_ORIGIN is defined else 'https://www.zuhauseambach-wachau.at') }}/static/{{ hero_image or 'images/rooms/bachblick.jpg' }}">\n  <meta property="og:image:alt" content="{{ hero_image_alt or h1 }}">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260924-seoimg">
   <style>
@@ -47,6 +47,12 @@
       ]
     }
   }
+  </script>
+  <script type="application/ld+json">
+  {{ {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
+    {"@type":"ListItem","position":1,"name":"Zuhause am Bach","item":"https://www.zuhauseambach-wachau.at/"},
+    {"@type":"ListItem","position":2,"name":h1,"item":canonical}
+  ]}|tojson }}
   </script>
   {% if faq %}<script type="application/ld+json">{{ {"@context":"https://schema.org","@type":"FAQPage","mainEntity": faq}|tojson }}</script>{% endif %}
 </head>
@@ -94,6 +100,7 @@
       <strong>Direkt bei uns anfragen</strong>
       <small>Freie Termine und Preis direkt auf der offiziellen Website prüfen.</small>
       <a href="{{ url_for('index') }}#booking">Verfügbarkeit &amp; Preis</a>
+      {% if official_url %}<small style="display:block;margin-top:12px">Aktuelle Streckeninfos:</small><a href="{{ official_url }}" target="_blank" rel="noopener">{{ official_label or "Offizielle Routeninformation" }}</a>{% endif %}
     </div>
   </section>
 
