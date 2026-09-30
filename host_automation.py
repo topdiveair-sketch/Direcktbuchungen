@@ -695,6 +695,49 @@ def init_host_automation(app, db, require_admin, db_path):
                 body,
             )
 
+    def _whatsapp_campaign_recipients_2026():
+        raw_parts = []
+        for key in ("WHATSAPP_2026_RECIPIENTS_A", "WHATSAPP_2026_RECIPIENTS_B"):
+            raw_parts.extend((os.environ.get(key, "") or "").split(","))
+        recipients = []
+        seen = set()
+        for raw in raw_parts:
+            digits = "".join(ch for ch in str(raw or "") if ch.isdigit())
+            if digits.startswith("00"):
+                digits = digits[2:]
+            elif digits.startswith("0"):
+                digits = "43" + digits[1:]
+            if len(digits) < 8 or digits in seen:
+                continue
+            seen.add(digits)
+            recipients.append(digits)
+        return recipients
+
+    def _queue_2026_review_campaign():
+        enabled = os.environ.get("WHATSAPP_REVIEW_CAMPAIGN_2026_ENABLED", "0").strip().lower() in {"1","true","yes","on"}
+        if not enabled:
+            return 0
+        required = ("WHATSAPP_ACCESS_TOKEN", "WHATSAPP_PHONE_NUMBER_ID", "WHATSAPP_GRAPH_VERSION", "WHATSAPP_REVIEW_TEMPLATE")
+        if not all(os.environ.get(name, "").strip() for name in required):
+            return 0
+        template_name = os.environ.get("WHATSAPP_REVIEW_TEMPLATE", "").strip()
+        now = _iso_now()
+        queued = 0
+        with db() as conn:
+            for recipient in _whatsapp_campaign_recipients_2026():
+                dedupe_key = f"campaign:2026-review:{recipient}:{template_name}"
+                cur = conn.execute(
+                    """INSERT OR IGNORE INTO whatsapp_outbox
+                       (dedupe_key,booking_id,role,recipient,template_name,status,attempts,last_error,
+                        provider_message_id,created_at,updated_at)
+                       VALUES(?,0,'review_campaign_2026',?,?,'pending',0,'','',?,?)""",
+                    (dedupe_key, recipient, template_name, now, now),
+                )
+                queued += int(cur.rowcount or 0)
+        if queued:
+            app.logger.warning("whatsapp_review_campaign_2026_queued count=%s", queued)
+        return queued
+
     def run_automations_once():
         _housekeeping_automation()
         _booking_watchdog()
@@ -706,6 +749,7 @@ def init_host_automation(app, db, require_admin, db_path):
         _seo_self_check()
         _daily_backup()
         _daily_report()
+        _queue_2026_review_campaign()
         processor = app.extensions.get("zab_process_mail_outbox")
         if callable(processor):
             try:
@@ -788,6 +832,8 @@ def init_host_automation(app, db, require_admin, db_path):
                 os.environ.get(name, "").strip()
                 for name in ("WHATSAPP_ACCESS_TOKEN", "WHATSAPP_PHONE_NUMBER_ID", "WHATSAPP_GRAPH_VERSION")
             ),
+            "whatsapp_2026_recipients": len(_whatsapp_campaign_recipients_2026()),
+            "whatsapp_2026_campaign_enabled": os.environ.get("WHATSAPP_REVIEW_CAMPAIGN_2026_ENABLED", "0").strip().lower() in {"1","true","yes","on"},
         }, (200 if int(critical or 0) == 0 else 503)
 
     app.extensions["zab_run_host_automations"] = run_automations_once
