@@ -34,8 +34,17 @@ const stickyCta = document.getElementById("stickyCta");
 const paymentRadios = [...document.querySelectorAll('input[name="payment_method"]')];
 const paymentNotice = document.getElementById("paymentNotice");
 const bankTransferDetails = document.getElementById("bankTransferDetails");
+const bookingSummary = document.getElementById("bookingSummary");
+const summaryDates = document.getElementById("summaryDates");
+const summaryNights = document.getElementById("summaryNights");
+const summaryGuests = document.getElementById("summaryGuests");
+const summaryExtras = document.getElementById("summaryExtras");
+const summaryPayment = document.getElementById("summaryPayment");
+const summaryTotal = document.getElementById("summaryTotal");
 let checkoutOpen = false;
 let bookingSubmitted = false;
+let lastQuotedTotal = null;
+let guestDetailsTracked = false;
 
 function track(event) {
   const body = JSON.stringify({event});
@@ -49,6 +58,18 @@ function track(event) {
 document.getElementById("idempotencyKey").value =
   (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
 track("landing_view");
+const bookingSection=document.getElementById("booking");
+if (bookingSection && "IntersectionObserver" in window) {
+  let bookingViewed=false;
+  const observer=new IntersectionObserver(entries=>{
+    if(!bookingViewed && entries.some(e=>e.isIntersecting)){
+      bookingViewed=true;
+      track("booking_section_view");
+      observer.disconnect();
+    }
+  },{threshold:.25});
+  observer.observe(bookingSection);
+}
 
 function selectedRoom() {
   return document.querySelector('input[name="room"]:checked');
@@ -64,6 +85,19 @@ function nights() {
 function euro(v) {
   const localeMap={de:"de-AT",en:"en-GB",cs:"cs-CZ",sk:"sk-SK",hu:"hu-HU",nl:"nl-NL",pl:"pl-PL",it:"it-IT",fr:"fr-FR",es:"es-ES",ar:"ar-SA",ch:"de-CH"};
   return new Intl.NumberFormat(localeMap[checkoutLang]||"de-AT", {style:"currency", currency:"EUR"}).format(v);
+}
+
+function updateBookingSummary() {
+  if (!bookingSummary) return;
+  if (summaryDates) summaryDates.textContent = arrival.value && departure.value ? `${arrival.value} – ${departure.value}` : "–";
+  if (summaryNights) summaryNights.textContent = nights() ? String(nights()) : "–";
+  if (summaryGuests) summaryGuests.textContent = adults.value || "–";
+  if (summaryPayment) summaryPayment.textContent = selectedPayment();
+  if (summaryTotal) summaryTotal.textContent = lastQuotedTotal != null ? euro(lastQuotedTotal) : "–";
+  if (summaryExtras) {
+    const labels = extraInputs.filter(el=>el.checked).map(el=>el.closest("label")?.querySelector("strong")?.textContent?.trim()).filter(Boolean);
+    summaryExtras.textContent = labels.length ? labels.join(", ") : "Keine";
+  }
 }
 
 function updateTotals() {
@@ -141,10 +175,13 @@ function updatePaymentUI() {
     bookingSubmit.textContent = tx("onsite");
     if (paymentNotice) paymentNotice.textContent = tx("onsiteNote");
   }
+  updateBookingSummary();
 }
 function resetAvailability() {
   result.classList.add("hidden");
   guestArea.classList.add("hidden");
+  lastQuotedTotal = null;
+  updateBookingSummary();
 }
 
 arrival.addEventListener("change", () => {
@@ -164,6 +201,7 @@ arrival.addEventListener("change", () => {
     if (el.matches('input[name="room"]')) track("room_selected");
     if (extraInputs.includes(el)) track("extras_selected");
     updateTotals();
+    updateBookingSummary();
     resetAvailability();
   });
 });
@@ -203,7 +241,10 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
       else bookingSubmit.textContent = tx("personal");
       stickyLabel.textContent = status === "free" ? tx("stickyBook") : tx("stickyAsk");
       stickyCta.textContent = status === "free" ? tx("book") : tx("ask");
-      totalPrice.textContent=euro(data.total); if(data.breakdown){let h=`<div><span>${tx("roomLabel")}</span><strong>${euro(data.breakdown.room_total)}</strong></div>`;data.breakdown.extras.forEach(x=>h+=`<div><span>${x.label}</span><strong>${euro(x.amount)}</strong></div>`);data.breakdown.discounts.forEach(x=>h+=`<div class="discount-line"><span>${x.label} (${x.percent}%)</span><strong>− ${euro(x.amount)}</strong></div>`);priceBreakdown.innerHTML=h;}
+      lastQuotedTotal = Number(data.total);
+      totalPrice.textContent=euro(data.total);
+      updateBookingSummary();
+      if(data.breakdown){let h=`<div><span>${tx("roomLabel")}</span><strong>${euro(data.breakdown.room_total)}</strong></div>`;data.breakdown.extras.forEach(x=>h+=`<div><span>${x.label}</span><strong>${euro(x.amount)}</strong></div>`);data.breakdown.discounts.forEach(x=>h+=`<div class="discount-line"><span>${x.label} (${x.percent}%)</span><strong>− ${euro(x.amount)}</strong></div>`);priceBreakdown.innerHTML=h;}
     } else {
       guestArea.classList.add("hidden");
     }
@@ -215,12 +256,21 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
 
 paymentRadios.forEach(radio => radio.addEventListener("change", () => {
   bookingSubmitted = false;
+  track("payment_method_selected");
   updatePaymentUI();
 }));
+
+guestArea?.addEventListener("input", () => {
+  if (!guestDetailsTracked) {
+    guestDetailsTracked = true;
+    track("guest_details_started");
+  }
+}, {passive:true});
 
 document.getElementById("bookingForm").addEventListener("submit", async (event) => {
   const method = selectedPayment();
   if (method !== "PayPal") {
+    track("booking_submit_nonpaypal");
     bookingSubmitted = true;
     bookingSubmit.disabled = true;
     bookingSubmit.textContent = tx("sending");
@@ -266,6 +316,7 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
     if (!quoteResponse.ok || !quote.ok || !quote.available) {
       throw new Error(quote.message || "Termin ist nicht mehr verfügbar.");
     }
+    track("paypal_quote_success");
 
     const orderResponse = await fetch("/api/paypal/create-order", {
       method: "POST",
@@ -277,11 +328,13 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
     if (!orderResponse.ok || !order.ok || !order.approval_url) {
       throw new Error(order.message || "PayPal konnte nicht gestartet werden.");
     }
+    track("paypal_order_created");
 
     bookingSubmitted = true;
     bookingSubmit.textContent = tx("paypalOpen");
     window.location.assign(order.approval_url);
   } catch (error) {
+    track("paypal_checkout_error");
     bookingSubmit.disabled = false;
     bookingSubmit.textContent = tx("paypal");
     if (paymentNotice) paymentNotice.textContent = "⚠️ " + (error?.message || "PayPal konnte nicht gestartet werden.");
@@ -360,4 +413,5 @@ calRoom.addEventListener("change",renderCalendar);
 updateRoomRelease();
 updateTotals();
 updatePaymentUI();
+updateBookingSummary();
 renderCalendar();
