@@ -294,6 +294,11 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
     phone: form.querySelector('[name="phone"]')?.value.trim() || "",
     message: form.querySelector('[name="message"]')?.value.trim() || "",
     coupon_code: couponCode?.value.trim() || "",
+    source: form.querySelector('[name="source"]')?.value || "",
+    utm_medium: form.querySelector('[name="utm_medium"]')?.value || "",
+    utm_campaign: form.querySelector('[name="utm_campaign"]')?.value || "",
+    landing_page: form.querySelector('[name="landing_page"]')?.value || "",
+    referrer: form.querySelector('[name="referrer"]')?.value || "",
     extras: {
       breakfast: Boolean(document.getElementById("breakfast")?.checked),
       jause: Boolean(document.getElementById("jause")?.checked),
