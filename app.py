@@ -1505,7 +1505,7 @@ def activity_landing_context(kind: str) -> dict:
     return {
         "kind": "hike",
         "page_title": "Welterbesteig Unterkunft Wachau | Zuhause am Bach Aggsbach",
-        "meta_description": "Welterbesteig Unterkunft Wachau in Aggsbach Markt: auch 1 Nacht möglich. Frühstück, Gepäcktransport, Etappentipps und ruhige Übernachtung.",
+        "meta_description": "Welterbesteig Unterkunft Wachau in Aggsbach Markt: Gartenzimmer ab 99 €, auch 1 Nacht möglich, Frühstück, Gepäcktransport und direkte Terminprüfung.",
         "canonical": "https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau",
         "eyebrow": "Welterbesteig Wachau · Aggsbach Markt",
         "headline": "Unterkunft am Welterbesteig Wachau",
