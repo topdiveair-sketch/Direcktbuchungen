@@ -178,6 +178,15 @@ ROOMS = {
         "description": "Ein freundliches Zimmer mit Bezug zur Donau und zur Wachauer Landschaft.",
     },
 }
+
+def suspended_rooms() -> set[str]:
+    raw = env_value("ZAB_SUSPENDED_ROOMS")
+    return {item.strip() for item in raw.split(",") if item.strip()}
+
+
+def room_is_suspended(room: str) -> bool:
+    return room in suspended_rooms()
+
 ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 
 
@@ -1081,6 +1090,13 @@ def _calendar_sources_for_room(room: str) -> list[tuple[str, str, str]]:
 
 def sync_room(room: str) -> tuple[int, str]:
     now = datetime.now().isoformat(timespec="seconds")
+    if room_is_suspended(room):
+        with db() as conn:
+            conn.execute(
+                "UPDATE ical_settings SET last_sync=?, last_result=? WHERE room=?",
+                (now, "Zimmer vorübergehend stillgelegt", room),
+            )
+        return 0, "Zimmer vorübergehend stillgelegt."
     sources = _calendar_sources_for_room(room)
 
     if not sources:
