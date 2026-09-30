@@ -47,7 +47,7 @@
       <h2 style="margin:0">Kalender {{ month_label }}</h2>
       <a href="{{ url_for('master_calendar_dashboard',year=next_year,month=next_month) }}">Nächster Monat →</a>
     </div>
-    <div class="legend"><span>🟢 offen</span><span>🔴 geschlossen</span><span>🟩 Direktbuchung</span><span>🟦 Booking.com</span><span>👁 Prüfungen = eindeutige Datumsabfragen der letzten 48 h</span><span>Preis mit * = OS-Tagespreis</span></div>
+    <div class="legend"><span>🟢 offen</span><span>🔴 geschlossen</span><span>🟩 Direktbuchung</span><span>🟦 Booking.com</span><span>👥 Besucher live: {{ live_visitors }}</span><span>🔎 Verfügbarkeitsprüfungen live: {{ live_availability_checks }}</span><span>👁 Tageswert = eindeutige Interessenten für dieses Datum, ohne 48-h-Ablauf</span><span>Preis mit * = OS-Tagespreis</span></div>
   </section>
 
   {% for room in rooms %}
@@ -60,7 +60,7 @@
         <div class="day-top"><strong>{{ cell.day }}</strong><a class="day-edit" href="{{ url_for('master_calendar_dashboard',year=year,month=month,room=room,edit=cell.date) }}#day-editor">Einstellen</a></div>
         <div class="channel-line {{ '' if cell.direct_open else 'closed' }}"><span>{{ '🟢' if cell.direct_open else '🔴' }} Direkt</span><span class="{{ 'price-override' if cell.direct_price_override else '' }}">{% if cell.direct_price is not none %}{{ '%.0f'|format(cell.direct_price) }} €{{ '*' if cell.direct_price_override else '' }}{% else %}—{% endif %}</span></div>
         <div class="channel-line {{ '' if cell.booking_open else 'closed' }}"><span>{{ '🟢' if cell.booking_open else '🔴' }} Booking</span><span class="{{ 'price-override' if cell.booking_price_override else '' }}">{% if cell.booking_price is not none %}{{ '%.0f'|format(cell.booking_price) }} €*{% else %}—{% endif %}</span></div>
-        <div class="demand-line">👁 {{ cell.demand_checks_48h }} Prüfung{{ '' if cell.demand_checks_48h == 1 else 'en' }} / 48 h</div>
+        <div class="demand-line">👁 {{ cell.demand_checks_live }} Interessent{{ '' if cell.demand_checks_live == 1 else 'en' }} · live gesamt</div>
         {% if cell.master_reason %}<div class="os-block">OS-Sperre: {{ cell.master_reason }}</div>{% endif %}
         {% for occ in cell.occupancy %}
           <div class="occ {{ occ.kind }}">
@@ -138,4 +138,7 @@
     <article class="calendar-card"><h2>Kanal-Sperren</h2>{% for b in channel_blocks %}<div class="block-row"><div><strong>{{ b.room }}</strong> · {{ b.channel }} · {{ b.start_date }} – {{ b.end_date }}<br><small>{{ b.reason }}</small></div><form method="post" action="{{ url_for('master_calendar_delete_block',kind='channel',block_id=b.id) }}"><button>Entfernen</button></form></div>{% else %}<p>Keine kanalbezogenen Sperren.</p>{% endfor %}</article>
   </section>
 </main>
+<script>
+setTimeout(() => window.location.reload(), 15000);
+</script>
 </body></html>
