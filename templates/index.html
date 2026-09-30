@@ -164,6 +164,43 @@
       #winter .windis-book-layout { grid-template-columns:1fr; gap:18px; }
       #winter .windis-book-cover { max-width:220px; margin:0 auto; }
     }
+
+    /* Conversion layer: keep trust signals directly beside the booking decision */
+    .booking-trust-strip{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+      margin:12px 0 4px;
+    }
+    .booking-trust-strip > div{
+      padding:10px 12px;
+      border:1px solid rgba(82,104,35,.18);
+      border-radius:12px;
+      background:#f7f9f2;
+      line-height:1.25;
+    }
+    .booking-trust-strip strong{display:block;font-size:.9rem;color:var(--green-dark)}
+    .booking-trust-strip small{display:block;margin-top:3px;color:#667085;font-size:.78rem}
+    .booking-review-link{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin:10px 0 0;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#fff;
+      border:1px solid rgba(0,0,0,.08);
+    }
+    .booking-review-link span{font-size:.86rem;color:#4b5563}
+    .booking-review-link a{font-weight:700;white-space:nowrap}
+    @media(max-width:820px){
+      .booking-trust-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media(max-width:520px){
+      .booking-trust-strip{grid-template-columns:1fr}
+      .booking-review-link{align-items:flex-start;flex-direction:column}
+    }
 </style>  <!-- seo-identity-deploy-marker: 2026-09-29 -->
   <!-- railway-force-deploy: 2026-09-29T14:20Z -->
 
@@ -220,7 +257,7 @@
 
   <div class="hero-content">
     <h1>Unterkunft in der Wachau zwischen Melk und Krems</h1>
-    <p>Zuhause am Bach in Aggsbach Markt · ruhiges Privatzimmer · Winter, Advent &amp; Jauerling · auch 1 Nacht möglich · direkt Preis und Verfügbarkeit prüfen</p>
+    <p>Ruhiges Gartenzimmer in Aggsbach Markt · ab 99 € pro Nacht · auch 1 Nacht grundsätzlich möglich · Preis und Verfügbarkeit direkt prüfen</p>
     {% if google_landing %}<div class="google-trust">🚴 Fahrradunterbringung · ⚡ E-Bike laden · 🥾 Welterbesteig · 🍳 Frühstück auf Wunsch</div>{% endif %}
     <span>Mit Fidel, Gloria und Pia – den Wilden Wachauer Windis.</span>
     <div class="hero-proof">🐾 Wichtig vor der Buchung: Fidel, Gloria und Pia sind drei Windhunde und leben als Teil unserer Familie im Haus. Sie bewegen sich auch in den gemeinschaftlichen Bereichen, einschließlich Wohnzimmer und Küche. Gäste sollten sich mit Hunden im Haus wohlfühlen.</div>
@@ -237,20 +274,6 @@
   {% endwith %}
 
   
-  <section class="active-service" id="oktober-direkt" aria-labelledby="oktober-direkt-title">
-    <div class="active-service-head">
-      <span class="eyebrow">Kurzfristig in die Wachau</span>
-      <h2 id="oktober-direkt-title">Oktober-Termine jetzt direkt prüfen</h2>
-      <p>Nur ein Gartenzimmer, persönliche Betreuung und auch 1 Nacht grundsätzlich möglich. Ideal für eine Etappe am Donauradweg, den Welterbesteig oder eine spontane Auszeit zwischen Melk und Krems.</p>
-    </div>
-    <div class="active-service-grid">
-      <article class="active-service-card"><div><h3>🚴 Donauradweg</h3><p>Sichere Fahrradunterbringung, E-Bike-Laden und kleine Fahrrad-Hilfe vor Ort.</p></div></article>
-      <article class="active-service-card"><div><h3>🥾 Welterbesteig</h3><p>Ruhige Etappenübernachtung in Aggsbach Markt, Frühstück und Gepäcktransport auf Wunsch.</p></div></article>
-      <article class="active-service-card"><div><h3>🌙 1 Nacht möglich</h3><p>Für Durchreisende und Kurzentschlossene: einzelne Nächte direkt im Live-Kalender prüfen.</p></div></article>
-    </div>
-    <div class="active-service-cta"><strong>Freie Termine werden live geprüft – nur 1 Gartenzimmer verfügbar.</strong><a class="btn" href="#booking">Oktober-Termin prüfen</a></div>
-  </section>
-
   <section id="booking" class="booking-shell">
     <div class="booking-card">
       <div class="section-heading">
@@ -364,6 +387,19 @@
           ✓ Kostenfrei stornierbar bis 7 Tage vor Anreise
         </div>
 
+        <div class="booking-trust-strip" aria-label="Vorteile der Direktbuchung">
+          <div><strong>✓ Direkt beim Gastgeber</strong><small>Ohne Buchungsportal dazwischen.</small></div>
+          <div><strong>✓ Klarer Preis</strong><small>Gesamtpreis nach Terminprüfung sichtbar.</small></div>
+          <div><strong>✓ Persönliche Bestätigung</strong><small>Direkter Kontakt statt anonymer Abwicklung.</small></div>
+          <div><strong>✓ Flexible Rate</strong><small>Kostenfrei stornierbar bis 7 Tage vor Anreise.</small></div>
+        </div>
+        {% if settings.google_review_url %}
+        <div class="booking-review-link">
+          <span>Vor der Buchung noch Gästestimmen ansehen?</span>
+          <a href="{{ settings.google_review_url }}" target="_blank" rel="noopener">Google-Bewertungen ansehen</a>
+        </div>
+        {% endif %}
+
         <div id="guestArea" class="guest-area hidden">
           <h3>Gästedaten</h3>
           <div class="guest-grid">
@@ -405,6 +441,21 @@
     </aside>
   </section>
 
+
+
+  <section class="active-service" id="oktober-direkt" aria-labelledby="oktober-direkt-title">
+    <div class="active-service-head">
+      <span class="eyebrow">Kurzfristig in die Wachau</span>
+      <h2 id="oktober-direkt-title">Oktober-Termine jetzt direkt prüfen</h2>
+      <p>Nur ein Gartenzimmer, persönliche Betreuung und auch 1 Nacht grundsätzlich möglich. Ideal für eine Etappe am Donauradweg, den Welterbesteig oder eine spontane Auszeit zwischen Melk und Krems.</p>
+    </div>
+    <div class="active-service-grid">
+      <article class="active-service-card"><div><h3>🚴 Donauradweg</h3><p>Sichere Fahrradunterbringung, E-Bike-Laden und kleine Fahrrad-Hilfe vor Ort.</p></div></article>
+      <article class="active-service-card"><div><h3>🥾 Welterbesteig</h3><p>Ruhige Etappenübernachtung in Aggsbach Markt, Frühstück und Gepäcktransport auf Wunsch.</p></div></article>
+      <article class="active-service-card"><div><h3>🌙 1 Nacht möglich</h3><p>Für Durchreisende und Kurzentschlossene: einzelne Nächte direkt im Live-Kalender prüfen.</p></div></article>
+    </div>
+    <div class="active-service-cta"><strong>Freie Termine werden live geprüft – nur 1 Gartenzimmer verfügbar.</strong><a class="btn" href="#booking">Oktober-Termin prüfen</a></div>
+  </section>
 
 
   <section class="active-service" id="winter" aria-labelledby="winter-title">
@@ -804,7 +855,7 @@
   <div aria-label="Social Media Zuhause am Bach"><a href="https://www.facebook.com/ZuHauseamBach" target="_blank" rel="me noopener">Facebook</a> · <a href="https://www.instagram.com/altstadthans/" target="_blank" rel="me noopener">Instagram</a></div>
 </footer>
 
-<div class="mobile-conversion-bar"><span id="stickyLabel">Oktober: 1 Nacht möglich</span><a href="#booking" id="stickyCta">Termin prüfen</a></div>
+<div class="mobile-conversion-bar"><span id="stickyLabel">Gartenzimmer ab 99 € / Nacht</span><a href="#booking" id="stickyCta">Verfügbarkeit prüfen</a></div>
 
 <script src="{{ url_for('static', filename='js/app.js') }}?v=20260921-11"></script>
 <script>
