@@ -432,39 +432,72 @@ def railway_deploy_health():
 
 @app.get("/health/mail")
 def mail_health():
-    """Verify Resend configuration without sending a message."""
-    resend_key = os.environ.get("RESEND_API_KEY", "").strip()
-    sender_email = os.environ.get("MAIL_SENDER_EMAIL", "").strip()
-    if not resend_key:
-        return {
-            "ok": False,
-            "provider": "resend",
-            "reason": "resend_api_key_missing",
-            "sender_configured": bool(sender_email),
-        }, 503
-    req = urllib.request.Request(
-        "https://api.resend.com/domains",
-        headers={"Authorization": f"Bearer {resend_key}", "User-Agent": "ZAB-Booking/1.0"},
-        method="GET",
+    """Verify the active HTTPS mail provider without sending a message."""
+    brevo_key = os.environ.get("BREVO_API_KEY", "").strip()
+    brevo_sender = (
+        os.environ.get("BREVO_SENDER_EMAIL", "").strip()
+        or os.environ.get("BOOKING_OWNER_EMAIL", "").strip()
     )
-    try:
-        with urllib.request.urlopen(req, timeout=15) as response:
-            if int(response.status) != 200:
-                return {"ok": False, "provider": "resend", "reason": "resend_http_error"}, 503
-        return {
-            "ok": True,
-            "provider": "resend",
-            "authentication": "accepted",
-            "sender_configured": bool(sender_email),
-        }, 200
-    except urllib.error.HTTPError as exc:
-        return {
-            "ok": False,
-            "provider": "resend",
-            "reason": "resend_auth_rejected" if exc.code in (401, 403) else "resend_http_error",
-        }, 503
-    except Exception:
-        return {"ok": False, "provider": "resend", "reason": "resend_unreachable"}, 503
+    if brevo_key:
+        req = urllib.request.Request(
+            "https://api.brevo.com/v3/account",
+            headers={
+                "accept": "application/json",
+                "api-key": brevo_key,
+                "User-Agent": "ZAB-Booking/1.0",
+            },
+            method="GET",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=12) as response:
+                if int(response.status) == 200:
+                    return {
+                        "ok": True,
+                        "provider": "brevo",
+                        "authentication": "accepted",
+                        "sender_configured": bool(brevo_sender),
+                    }, 200
+        except urllib.error.HTTPError as exc:
+            brevo_reason = "brevo_auth_rejected" if exc.code in (401, 403) else "brevo_http_error"
+        except Exception:
+            brevo_reason = "brevo_unreachable"
+    else:
+        brevo_reason = "brevo_api_key_missing"
+
+    if os.environ.get("MAIL_PROVIDER_ALLOW_RESEND", "0").strip() == "1":
+        resend_key = os.environ.get("RESEND_API_KEY", "").strip()
+        sender_email = os.environ.get("MAIL_SENDER_EMAIL", "").strip()
+        if resend_key:
+            req = urllib.request.Request(
+                "https://api.resend.com/domains",
+                headers={"Authorization": f"Bearer {resend_key}", "User-Agent": "ZAB-Booking/1.0"},
+                method="GET",
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=12) as response:
+                    if int(response.status) == 200:
+                        return {
+                            "ok": True,
+                            "provider": "resend",
+                            "authentication": "accepted",
+                            "sender_configured": bool(sender_email),
+                        }, 200
+            except urllib.error.HTTPError as exc:
+                resend_reason = "resend_auth_rejected" if exc.code in (401, 403) else "resend_http_error"
+            except Exception:
+                resend_reason = "resend_unreachable"
+        else:
+            resend_reason = "resend_api_key_missing"
+    else:
+        resend_reason = "resend_disabled"
+
+    return {
+        "ok": False,
+        "provider": "none",
+        "reason": "mail_provider_unhealthy",
+        "brevo": brevo_reason,
+        "resend": resend_reason,
+    }, 503
 
 
 @app.get("/health/smtp")
