@@ -201,6 +201,21 @@
       .booking-trust-strip{grid-template-columns:1fr}
       .booking-review-link{align-items:flex-start;flex-direction:column}
     }
+
+    .booking-summary{
+      margin:16px 0 18px;
+      padding:16px;
+      border:1px solid rgba(82,104,35,.22);
+      border-radius:14px;
+      background:#f8faf5;
+    }
+    .booking-summary h3{margin:0 0 10px;font-size:1rem}
+    .booking-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px}
+    .booking-summary-row{display:flex;justify-content:space-between;gap:12px;font-size:.9rem}
+    .booking-summary-row span{color:#667085}
+    .booking-summary-total{margin-top:12px;padding-top:12px;border-top:1px solid rgba(0,0,0,.08);display:flex;justify-content:space-between;gap:12px}
+    .booking-summary-note{margin-top:8px;font-size:.8rem;color:#526823}
+    @media(max-width:560px){.booking-summary-grid{grid-template-columns:1fr}}
 </style>  <!-- seo-identity-deploy-marker: 2026-09-29 -->
   <!-- railway-force-deploy: 2026-09-29T14:20Z -->
 
@@ -412,7 +427,24 @@
             <textarea name="message" rows="4" placeholder="z. B. vegetarisches Frühstück, Fahrräder oder spätere Anreise"></textarea>
           </label>
 
-          <label>Gutscheincode<input id="couponCode" name="coupon_code" placeholder="optional"></label><div id="couponResult"></div><h3>Zahlungsart</h3>
+          <label>Gutscheincode<input id="couponCode" name="coupon_code" placeholder="optional"></label>
+          <div id="couponResult"></div>
+
+          <div class="booking-summary" id="bookingSummary" aria-live="polite">
+            <h3>Deine Buchung auf einen Blick</h3>
+            <div class="booking-summary-grid">
+              <div class="booking-summary-row"><span>Zeitraum</span><strong id="summaryDates">–</strong></div>
+              <div class="booking-summary-row"><span>Nächte</span><strong id="summaryNights">–</strong></div>
+              <div class="booking-summary-row"><span>Gäste</span><strong id="summaryGuests">–</strong></div>
+              <div class="booking-summary-row"><span>Zimmer</span><strong>Gartenzimmer</strong></div>
+              <div class="booking-summary-row"><span>Extras</span><strong id="summaryExtras">Keine</strong></div>
+              <div class="booking-summary-row"><span>Zahlungsart</span><strong id="summaryPayment">PayPal</strong></div>
+            </div>
+            <div class="booking-summary-total"><span>Gesamtpreis</span><strong id="summaryTotal">–</strong></div>
+            <div class="booking-summary-note">✓ Flexible Rate · kostenfrei stornierbar bis 7 Tage vor Anreise</div>
+          </div>
+
+          <h3>Zahlungsart</h3>
           <div class="payment-grid">
             <label><input type="radio" name="payment_method" value="PayPal" checked><span><strong>PayPal</strong><small>{{ paypal_email }}</small></span></label>
             <label><input type="radio" name="payment_method" value="Banküberweisung"><span><strong>Banküberweisung</strong><small>IBAN wird sofort angezeigt</small></span></label>
@@ -857,7 +889,7 @@
 
 <div class="mobile-conversion-bar"><span id="stickyLabel">Gartenzimmer ab 99 € / Nacht</span><a href="#booking" id="stickyCta">Verfügbarkeit prüfen</a></div>
 
-<script src="{{ url_for('static', filename='js/app.js') }}?v=20260921-11"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}?v=20260930-conversion2"></script>
 <script>
 (function(){
   const lang=new URLSearchParams(location.search).get("lang");
