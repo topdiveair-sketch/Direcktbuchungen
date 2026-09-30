@@ -283,7 +283,9 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                      recipient=excluded.recipient,
                      body=excluded.body,
                      updated_at=excluded.updated_at,
-                     status=CASE WHEN email_outbox.status='sent' THEN 'sent' ELSE 'pending' END""",
+                     status=CASE WHEN email_outbox.status='sent' THEN 'sent' ELSE 'pending' END,
+                     attempts=CASE WHEN email_outbox.status='sent' THEN email_outbox.attempts ELSE 0 END,
+                     last_error=CASE WHEN email_outbox.status='sent' THEN email_outbox.last_error ELSE '' END""",
                 (dedupe_key, booking_id, role, recipient, subject, body, now, now),
             )
         return dedupe_key
@@ -611,27 +613,52 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
         owner_recipient = forced_recipient or owner
         guest_recipient = booking["email"]
 
-        app.logger.warning("booking_mail_queue booking_id=%s owner=%s", booking_id, owner_recipient)
+        app.logger.warning(
+            "booking_mail_queue booking_id=%s owner=%s guest=%s",
+            booking_id, owner_recipient, guest_recipient,
+        )
         owner_key = _queue_mail(booking_id, "owner", owner_recipient, owner_subject, owner_body)
+        guest_key = _queue_mail(booking_id, "guest", guest_recipient, guest_subject, guest_body)
 
-        with db() as conn:
-            row = conn.execute(
-                "SELECT * FROM email_outbox WHERE dedupe_key=?",
-                (owner_key,),
-            ).fetchone()
+        def deliver_key(dedupe_key, missing_reason):
+            with db() as conn:
+                row = conn.execute(
+                    "SELECT * FROM email_outbox WHERE dedupe_key=?",
+                    (dedupe_key,),
+                ).fetchone()
+            if row and row["status"] == "sent":
+                return True, "already_sent"
+            if row:
+                return _deliver_outbox_row(row)
+            return False, missing_reason
 
-        if row and row["status"] == "sent":
-            ok_owner, msg_owner = True, "already_sent"
-        elif row:
-            ok_owner, msg_owner = _deliver_outbox_row(row)
-        else:
-            ok_owner, msg_owner = False, "owner_missing"
+        ok_owner, msg_owner = deliver_key(owner_key, "owner_missing")
+        ok_guest, msg_guest = deliver_key(guest_key, "guest_missing")
 
         app.logger.warning(
-            "booking_mail_results booking_id=%s owner_ok=%s owner_status=%s",
-            booking_id, ok_owner, msg_owner,
+            "booking_mail_results booking_id=%s owner_ok=%s owner_status=%s guest_ok=%s guest_status=%s",
+            booking_id, ok_owner, msg_owner, ok_guest, msg_guest,
         )
-        return ok_owner
+
+        # A transient provider failure must not lose the mail: both rows remain in
+        # the durable outbox and the retry worker sends them again. Return success
+        # once both messages are either delivered or safely queued for retry.
+        with db() as conn:
+            pending_rows = conn.execute(
+                """SELECT role,status,attempts,last_error
+                   FROM email_outbox
+                   WHERE dedupe_key IN (?,?)""",
+                (owner_key, guest_key),
+            ).fetchall()
+        safely_queued = len(pending_rows) == 2 and all(
+            row["status"] in ("sent", "pending") for row in pending_rows
+        )
+        if safely_queued and not (ok_owner and ok_guest):
+            app.logger.warning(
+                "booking_mail_queued_for_retry booking_id=%s owner_status=%s guest_status=%s",
+                booking_id, msg_owner, msg_guest,
+            )
+        return bool((ok_owner and ok_guest) or safely_queued)
 
     app.extensions["zab_send_confirmation"] = send_booking_confirmation
     app.extensions["zab_ensure_tokens"] = ensure_booking_tokens
