@@ -9,7 +9,8 @@
       "requirements.txt",
       "pricing-2027.json",
       "templates/**",
-      "static/**"
+      "static/**",
+      ".railwayignore"
     ]
   },
   "deploy": {
