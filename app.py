@@ -821,7 +821,8 @@ def os_demand_stats():
     try:
         with db() as conn:
             rows = conn.execute(
-                """SELECT country_code,local_date,local_weekday,local_hour,available,visitor_hash
+                """SELECT country_code,local_date,local_weekday,local_hour,available,visitor_hash,
+                          arrival,departure,created_at
                    FROM demand_searches
                    WHERE room='Bachblick' AND created_at>=?
                    ORDER BY created_at""",
@@ -900,33 +901,68 @@ def os_demand_stats():
     booking_abandoned = sum(1 for r in event_rows if str(r["event"] or "") == "booking_abandoned")
     abandonment_rate = round((100.0 * booking_abandoned / booking_attempts), 1) if booking_attempts else 0.0
 
-    # Monatswerte fuer den Enterprise-Kalender. Besucher werden pro Monat
-    # eindeutig gezaehlt, damit ein Monatswechsel im OS echte Monats-KPIs zeigt.
+    # Monatswerte beziehen sich auf den angefragten Aufenthaltsmonat.
+    # Beispiel: Im Oktober-Kalender werden Interessenten fuer Oktober-Aufenthalte
+    # gezaehlt, auch wenn die Suche bereits im September stattgefunden hat.
     month_searches = {}
     month_visitors = {}
+    month_countries = {}
+    visitor_search_history = {}
+    for row in rows:
+        visitor = str(row["visitor_hash"] or "")
+        try:
+            arr = parse_date(str(row["arrival"] or "")[:10])
+            dep = parse_date(str(row["departure"] or "")[:10])
+        except Exception:
+            continue
+        if dep <= arr:
+            continue
+        cc = str(row["country_code"] or "XX").upper()
+        created = str(row["created_at"] or "")
+        if visitor:
+            visitor_search_history.setdefault(visitor, []).append((created, arr, dep))
+        current_month = date(arr.year, arr.month, 1)
+        last_day = dep - timedelta(days=1)
+        last_month = date(last_day.year, last_day.month, 1)
+        while current_month <= last_month:
+            month = current_month.strftime("%Y-%m")
+            month_searches[month] = month_searches.get(month, 0) + 1
+            if visitor:
+                month_visitors.setdefault(month, set()).add(visitor)
+                month_countries.setdefault(month, {}).setdefault(cc, set()).add(visitor)
+            if current_month.month == 12:
+                current_month = date(current_month.year + 1, 1, 1)
+            else:
+                current_month = date(current_month.year, current_month.month + 1, 1)
+
+    for history in visitor_search_history.values():
+        history.sort(key=lambda item: item[0])
+
+    def _event_stay_month(row):
+        visitor = str(row["visitor_hash"] or "")
+        created = str(row["created_at"] or "")
+        if not visitor or not created:
+            return ""
+        chosen = None
+        for item in visitor_search_history.get(visitor, []):
+            if item[0] and item[0] <= created:
+                chosen = item
+            else:
+                break
+        return chosen[1].strftime("%Y-%m") if chosen else ""
+
     month_attempts = {}
     month_abandoned = {}
-    month_countries = {}
-    for row in rows:
-        month = str(row["local_date"] or "")[:7]
-        if not month:
-            continue
-        month_searches[month] = month_searches.get(month, 0) + 1
     for row in event_rows:
-        created = str(row["created_at"] or "")
-        month = created[:7]
+        event = str(row["event"] or "")
+        month = _event_stay_month(row)
         if not month:
             continue
-        event = str(row["event"] or "")
-        visitor = str(row["visitor_hash"] or "")
-        cc = str(row["country_code"] or "XX").upper()
-        if event == "landing_view" and visitor:
-            month_visitors.setdefault(month, set()).add(visitor)
-            month_countries.setdefault(month, {}).setdefault(cc, set()).add(visitor)
-        elif event == "checkout_started":
+        if event == "checkout_started":
             month_attempts[month] = month_attempts.get(month, 0) + 1
         elif event == "booking_abandoned":
             month_abandoned[month] = month_abandoned.get(month, 0) + 1
+
     all_months = sorted(set(month_searches) | set(month_visitors) | set(month_attempts) | set(month_abandoned))
     by_month = []
     for month in all_months:
