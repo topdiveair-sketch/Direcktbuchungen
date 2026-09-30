@@ -313,6 +313,19 @@
   {% endwith %}
 
   
+  <section id="gapNightOffer" class="booking-shell hidden" aria-live="polite">
+    <div class="booking-card">
+      <div class="section-heading">
+        <span class="section-icon">★</span>
+        <div>
+          <h2>Kurzfristige 1-Nacht-Lücke</h2>
+          <p id="gapNightText">Einzelne freie Nacht zwischen bestehenden Buchungen verfügbar.</p>
+        </div>
+      </div>
+      <a class="btn" href="#booking" id="gapNightBook">Termin prüfen</a>
+    </div>
+  </section>
+
   <section id="booking" class="booking-shell">
     <div class="booking-card">
       <div class="section-heading">
@@ -325,6 +338,11 @@
 
       <form id="bookingForm" action="{{ url_for('book') }}" method="post">
         <input type="hidden" name="idempotency_key" id="idempotencyKey">
+        <input type="hidden" name="source" id="bookingSource">
+        <input type="hidden" name="utm_medium" id="bookingUtmMedium">
+        <input type="hidden" name="utm_campaign" id="bookingUtmCampaign">
+        <input type="hidden" name="landing_page" id="bookingLandingPage">
+        <input type="hidden" name="referrer" id="bookingReferrer">
         <div class="booking-grid">
           <label>Anreise
             <input type="date" id="arrival" name="arrival" aria-label="Anreisedatum" title="Anreisedatum" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
@@ -1131,6 +1149,36 @@
   }
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",applyHotelParams);
   else applyHotelParams();
+})();
+</script>
+<script id="booking-attribution-20260930">
+(function(){
+  const params=new URLSearchParams(window.location.search);
+  const source=params.get("utm_source") || params.get("source") || (document.referrer ? "referral" : "direct");
+  const fields={
+    bookingSource:source,
+    bookingUtmMedium:params.get("utm_medium")||"",
+    bookingUtmCampaign:params.get("utm_campaign")||"",
+    bookingLandingPage:window.location.pathname + window.location.search,
+    bookingReferrer:document.referrer||""
+  };
+  Object.entries(fields).forEach(([id,value])=>{const el=document.getElementById(id); if(el) el.value=String(value).slice(0,300);});
+  fetch("/api/public/gap-nights",{cache:"no-store"})
+    .then(r=>r.ok?r.json():null)
+    .then(data=>{
+      if(!data?.ok || !Array.isArray(data.dates) || !data.dates.length) return;
+      const section=document.getElementById("gapNightOffer");
+      const text=document.getElementById("gapNightText");
+      const link=document.getElementById("gapNightBook");
+      if(!section||!text||!link) return;
+      const day=data.dates[0];
+      const d=new Date(day+"T12:00:00");
+      const dep=new Date(d); dep.setDate(dep.getDate()+1);
+      const depIso=dep.toISOString().slice(0,10);
+      text.textContent="Frei am "+d.toLocaleDateString("de-AT",{day:"2-digit",month:"2-digit",year:"numeric"})+" – ideal für eine Etappe am Donauradweg oder Welterbesteig.";
+      link.href="/?arrival="+encodeURIComponent(day)+"&departure="+encodeURIComponent(depIso)+"&source=gap-night#booking";
+      section.classList.remove("hidden");
+    }).catch(()=>{});
 })();
 </script>
 </body>
