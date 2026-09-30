@@ -65,6 +65,16 @@ public partial class MasterCalendarWindow : Window
                 : "PayPal: Hybrid-Sicherheitsmodus";
             LiveVisitorsText.Text = $"👥 Besucher live: {_snapshot.LiveMetrics.UniqueVisitors}";
             LiveChecksText.Text = $"🔎 Verfügbarkeitsprüfungen live: {_snapshot.LiveMetrics.AvailabilityChecks}";
+            BookingAttemptsText.Text = $"🧾 Buchungsversuche: {_snapshot.LiveMetrics.BookingAttempts}";
+            BookingAbandonedText.Text = $"↩ Abbrüche: {_snapshot.LiveMetrics.BookingAbandoned} ({_snapshot.LiveMetrics.AbandonmentRate:0.0} %)";
+            StatsVisitorsText.Text = _snapshot.LiveMetrics.UniqueVisitors.ToString(CultureInfo.InvariantCulture);
+            StatsChecksText.Text = _snapshot.LiveMetrics.AvailabilityChecks.ToString(CultureInfo.InvariantCulture);
+            StatsAttemptsText.Text = _snapshot.LiveMetrics.BookingAttempts.ToString(CultureInfo.InvariantCulture);
+            StatsAbandonedText.Text = _snapshot.LiveMetrics.BookingAbandoned.ToString(CultureInfo.InvariantCulture);
+            StatsAbandonmentRateText.Text = $"{_snapshot.LiveMetrics.AbandonmentRate:0.0} %";
+            CountryStatsText.Text = _snapshot.LiveMetrics.VisitorCountries.Count == 0
+                ? "Noch keine Herkunftsländer verfügbar."
+                : string.Join(" · ", _snapshot.LiveMetrics.VisitorCountries.Select(x => $"{CountryLabel(x.CountryCode)}: {x.Visitors}"));
             BuildRows();
             LoadImportUrlForSelection();
             StatusText.Text = result.Message;
@@ -138,6 +148,24 @@ public partial class MasterCalendarWindow : Window
         "hiker" => "🥾 Wanderer",
         "other" => "Sonstiges",
         _ => "—",
+    };
+
+    private static string CountryLabel(string code) => (code ?? "").Trim().ToUpperInvariant() switch
+    {
+        "AT" => "🇦🇹 Österreich",
+        "DE" => "🇩🇪 Deutschland",
+        "CH" => "🇨🇭 Schweiz",
+        "CZ" => "🇨🇿 Tschechien",
+        "SK" => "🇸🇰 Slowakei",
+        "HU" => "🇭🇺 Ungarn",
+        "NL" => "🇳🇱 Niederlande",
+        "PL" => "🇵🇱 Polen",
+        "IT" => "🇮🇹 Italien",
+        "FR" => "🇫🇷 Frankreich",
+        "GB" => "🇬🇧 Großbritannien",
+        "US" => "🇺🇸 USA",
+        "" or "XX" => "Unbekannt",
+        var other => other,
     };
 
     private async void PreviousMonth_Click(object sender, RoutedEventArgs e)
