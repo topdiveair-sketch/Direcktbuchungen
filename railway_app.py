@@ -31,6 +31,7 @@ from provider_radar import init_provider_radar
 from pricing_2027 import nightly_direct_rate, pricing_config
 from master_calendar import init_master_calendar
 from zab_control_center_v3 import make_master_checkout_sync
+from host_automation import init_host_automation
 
 
 # Bump this marker when Railway must rebuild after checkout/notification changes.
@@ -261,6 +262,7 @@ init_paypal_checkout(
 init_booking_notifications(app, db)
 init_provider_monitor(app, db, require_admin)
 init_provider_radar(app, db, require_admin)
+init_host_automation(app, db, require_admin, core_app.DB_PATH)
 
 
 @app.before_request
