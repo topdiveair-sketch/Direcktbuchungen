@@ -827,8 +827,16 @@ def os_demand_stats():
                    ORDER BY created_at""",
                 (cutoff,),
             ).fetchall()
+            event_rows = conn.execute(
+                """SELECT event,visitor_hash,country_code,created_at
+                   FROM site_events
+                   WHERE created_at>=?
+                   ORDER BY created_at""",
+                (cutoff,),
+            ).fetchall()
     except Exception:
         rows = []
+        event_rows = []
 
     total = len(rows)
     unique_visitors = len({str(r["visitor_hash"] or "") for r in rows if r["visitor_hash"]})
@@ -870,14 +878,41 @@ def os_demand_stats():
         for day, n in sorted(date_counts.items())
     ]
 
+    landing_rows = [r for r in event_rows if str(r["event"] or "") == "landing_view"]
+    visitor_hashes = {str(r["visitor_hash"] or "") for r in landing_rows if r["visitor_hash"]}
+    visitor_country_sets = {}
+    for row in landing_rows:
+        visitor = str(row["visitor_hash"] or "")
+        if not visitor:
+            continue
+        cc = str(row["country_code"] or "XX").upper()
+        visitor_country_sets.setdefault(cc, set()).add(visitor)
+    visitor_total = len(visitor_hashes)
+    by_visitor_country = [
+        {
+            "country_code": cc,
+            "visitors": len(values),
+            "percent": round((100.0 * len(values) / visitor_total), 1) if visitor_total else 0.0,
+        }
+        for cc, values in sorted(visitor_country_sets.items(), key=lambda item: (-len(item[1]), item[0]))
+    ]
+    booking_attempts = sum(1 for r in event_rows if str(r["event"] or "") == "checkout_started")
+    booking_abandoned = sum(1 for r in event_rows if str(r["event"] or "") == "booking_abandoned")
+    abandonment_rate = round((100.0 * booking_abandoned / booking_attempts), 1) if booking_attempts else 0.0
+
     return jsonify(
         ok=True,
         period_days=days,
         generated_at=datetime.now().isoformat(timespec="seconds"),
         total_searches=total,
-        unique_visitors=unique_visitors,
+        unique_visitors=visitor_total if visitor_total else unique_visitors,
+        search_unique_visitors=unique_visitors,
         available_searches=available_count,
         available_percent=pct(available_count),
+        booking_attempts=booking_attempts,
+        booking_abandoned=booking_abandoned,
+        abandonment_rate=abandonment_rate,
+        by_visitor_country=by_visitor_country,
         by_country=by_country,
         by_weekday=by_weekday,
         by_hour=by_hour,
@@ -925,6 +960,17 @@ def os_direct_prices():
         display_price = direct_nightly_price_for_day(room, current)
         checkout_price = round(display_price * (1.0 - direct_discount / 100.0), 2)
         demand_percent, unique_checks = _demand_percent_for_day(room, current)
+        try:
+            with db() as conn:
+                live_row = conn.execute(
+                    """SELECT COUNT(DISTINCT visitor_hash) AS n
+                       FROM demand_signals
+                       WHERE room=? AND target_day=?""",
+                    (room, current.isoformat()),
+                ).fetchone()
+            unique_checks_live = int(live_row["n"] or 0) if live_row else 0
+        except Exception:
+            unique_checks_live = unique_checks
         event = event_pricing_for_day(current)
         override = central_override_for_day(room, current)
         days.append({
@@ -934,6 +980,7 @@ def os_direct_prices():
             "direct_discount_percent": direct_discount,
             "demand_percent": demand_percent,
             "unique_checks_48h": unique_checks,
+            "unique_checks_live": unique_checks_live,
             "source": "os_override" if override.get("price") is not None else ("event" if event else ("high" if is_high(current) else ("weekend" if current.weekday() in (4, 5) else "standard"))),
         })
         current += timedelta(days=1)
