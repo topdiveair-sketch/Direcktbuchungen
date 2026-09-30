@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+  <title>Automatik-Zentrale – Zuhause am Bach</title>
+</head>
+<body class="admin-page">
+<header class="admin-header">
+  <div><strong>Automatik-Zentrale</strong><small>Buchungssicherheit, Mails, Kalender, Housekeeping</small></div>
+  <a href="{{ url_for('admin') }}">Verwaltung</a>
+</header>
+<main class="admin-main">
+  <div class="metric-grid">
+    <article><strong>{{ alerts|selectattr('active','equalto',1)|list|length }}</strong><span>aktive Warnungen</span></article>
+    <article><strong>{{ pending_mail|length }}</strong><span>offene Mails</span></article>
+    <article><strong>{{ gap_nights|length }}</strong><span>1-Nacht-Lücken</span></article>
+    <article><strong>{{ 'aktiv' if whatsapp_ready else 'bereit, nicht verbunden' }}</strong><span>WhatsApp</span></article>
+  </div>
+
+  <section class="admin-panel">
+    <h2>Systemampel</h2>
+    {% set active_alerts = alerts|selectattr('active','equalto',1)|list %}
+    {% if active_alerts %}
+      {% for a in active_alerts %}
+        <div class="flash {{ 'error' if a.severity=='critical' else 'warning' }}">
+          <strong>{{ a.severity|upper }}</strong> · {{ a.message }}<br>
+          <small>{{ a.updated_at }}</small>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="flash success">🟢 Keine aktiven Automatik-Warnungen.</div>
+    {% endif %}
+  </section>
+
+  <section class="admin-panel">
+    <h2>Mail-Outbox</h2>
+    {% if pending_mail %}
+    <div class="table-scroll">
+      <table class="booking-table">
+        <tr><th>Buchung</th><th>Rolle</th><th>Empfänger</th><th>Versuche</th><th>Letzter Fehler</th><th>Aktualisiert</th></tr>
+        {% for m in pending_mail %}
+        <tr><td>{{ m.booking_id }}</td><td>{{ m.role }}</td><td>{{ m.recipient }}</td><td>{{ m.attempts }}</td><td>{{ m.last_error or '-' }}</td><td>{{ m.updated_at }}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% else %}<p>Keine offenen Mails.</p>{% endif %}
+  </section>
+
+  <section class="admin-panel">
+    <h2>Housekeeping</h2>
+    {% for h in housekeeping %}
+      <p><strong>{{ h.room }}</strong> · {{ h.status }} · {{ h.note or '-' }} · {{ h.updated_at }}</p>
+    {% endfor %}
+  </section>
+
+  <section class="admin-panel">
+    <h2>Einzelne freie Nächte</h2>
+    {% if gap_nights %}
+      <p>{{ gap_nights|join(' · ') }}</p>
+      <p class="muted">Diese Termine werden auf der Website automatisch als mögliche 1-Nacht-Lücken hervorgehoben.</p>
+    {% else %}<p>Aktuell keine isolierten Einzelnächte erkannt.</p>{% endif %}
+  </section>
+
+  <section class="admin-panel">
+    <h2>Direktbuchungs-Funnel – letzte Tage</h2>
+    <div class="table-scroll">
+      <table class="booking-table">
+        <tr><th>Tag</th><th>Verfügbarkeit</th><th>Buchungsbereich</th><th>Gästedaten</th><th>Formular</th><th>PayPal</th><th>Buchungen</th><th>Umsatz</th></tr>
+        {% for m in metrics %}
+        <tr>
+          <td>{{ m.metric_day }}</td><td>{{ m.availability_checks }}</td><td>{{ m.booking_section_views }}</td>
+          <td>{{ m.guest_details_started }}</td><td>{{ m.booking_submits }}</td><td>{{ m.paypal_orders }}</td>
+          <td>{{ m.confirmed_bookings }}</td><td>{{ '%.2f'|format(m.revenue) }} €</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </section>
+
+  <section class="admin-panel">
+    <h2>Letzte Automatikläufe</h2>
+    {% for r in runs %}<p><strong>{{ r.run_key }}</strong> · {{ r.status }} · {{ r.updated_at }}</p>{% else %}<p>Noch keine Läufe protokolliert.</p>{% endfor %}
+  </section>
+</main>
+</body>
+</html>
