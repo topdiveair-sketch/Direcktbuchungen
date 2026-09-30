@@ -1104,5 +1104,34 @@
 })();
 </script>
 
+
+<script id="google-hotel-prefill-20260930">
+(function(){
+  function validDate(v){ return /^\\d{4}-\\d{2}-\\d{2}$/.test(v||""); }
+  function firstParam(params,names){ for(const n of names){ const v=params.get(n); if(v) return v; } return ""; }
+  function applyHotelParams(){
+    const params=new URLSearchParams(window.location.search);
+    const checkin=firstParam(params,["checkin","arrival","start_date"]);
+    const checkout=firstParam(params,["checkout","departure","end_date"]);
+    const guests=firstParam(params,["adults","guests","occupancy"]);
+    if(!validDate(checkin) || !validDate(checkout)) return;
+    const arrival=document.getElementById("arrival");
+    const departure=document.getElementById("departure");
+    const adults=document.getElementById("adults");
+    if(!arrival || !departure) return;
+    arrival.value=checkin;
+    departure.value=checkout;
+    if(adults && (guests==="1" || guests==="2")) adults.value=guests;
+    [arrival,departure,adults].filter(Boolean).forEach(el=>el.dispatchEvent(new Event("change",{bubbles:true})));
+    const btn=document.getElementById("checkAvailability");
+    if(btn){ setTimeout(()=>btn.click(),150); }
+    if(params.get("source")==="google-hotel" || params.has("checkin")){
+      setTimeout(()=>document.getElementById("booking")?.scrollIntoView({behavior:"smooth",block:"start"}),250);
+    }
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",applyHotelParams);
+  else applyHotelParams();
+})();
+</script>
 </body>
 </html>
