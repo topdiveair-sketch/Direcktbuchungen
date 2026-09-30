@@ -323,7 +323,11 @@
       }
     ],
     "last_room_event_policy": "Do not discount confirmed event dates merely to chase occupancy.",
-    "direct_vs_booking_policy": "Keep direct rate attractive but retain most commission savings as margin."
+    "direct_vs_booking_policy": "Keep direct rate attractive but retain most commission savings as margin.",
+    "same_day_after_hour_local": 20,
+    "same_day_after_hour_timezone": "Europe/Vienna",
+    "same_day_after_hour_add_eur": 100,
+    "same_day_after_hour_note": "For arrivals today, add 100 EUR automatically from 20:00 Europe/Vienna onward."
   },
   "source_status": {
     "pricing_start": "2026-09-14",
