@@ -459,7 +459,6 @@ def init_master_calendar(app, db, require_admin, rooms):
                     """SELECT room,target_day,COUNT(DISTINCT visitor_hash) AS checks
                        FROM demand_signals
                        WHERE target_day>=? AND target_day<?
-                         AND created_at>=datetime('now','-48 hours')
                        GROUP BY room,target_day""",
                     (grid_start.isoformat(), grid_end.isoformat()),
                 ).fetchall()
@@ -556,7 +555,7 @@ def init_master_calendar(app, db, require_admin, rooms):
                     "booking_price": booking_price,
                     "direct_price_override": direct_setting is not None and direct_setting["price"] is not None,
                     "booking_price_override": booking_setting is not None and booking_setting["price"] is not None,
-                    "demand_checks_48h": demand_by_day.get((room, current.isoformat()), 0),
+                    "demand_checks_live": demand_by_day.get((room, current.isoformat()), 0),
                 })
                 current += timedelta(days=1)
             by_room[room] = days
@@ -615,6 +614,22 @@ def init_master_calendar(app, db, require_admin, rooms):
                     "SELECT room, COUNT(*) AS n FROM external_blocks GROUP BY room"
                 )
             }
+            try:
+                visitor_row = conn.execute(
+                    """SELECT COUNT(DISTINCT visitor_hash) AS n
+                       FROM site_events
+                       WHERE event='landing_view' AND visitor_hash<>''"""
+                ).fetchone()
+                live_visitors = int(visitor_row["n"] or 0) if visitor_row else 0
+            except Exception:
+                live_visitors = 0
+            try:
+                availability_row = conn.execute(
+                    "SELECT COUNT(*) AS n FROM demand_searches WHERE room='Bachblick'"
+                ).fetchone()
+                live_availability_checks = int(availability_row["n"] or 0) if availability_row else 0
+            except Exception:
+                live_availability_checks = 0
 
         token = _feed_token()
         base = request.url_root.rstrip("/")
@@ -659,6 +674,8 @@ def init_master_calendar(app, db, require_admin, rooms):
             edit_room=edit_room,
             edit_day=edit_day_raw,
             selected=selected,
+            live_visitors=live_visitors,
+            live_availability_checks=live_availability_checks,
         )
 
     @app.post("/os/calendar/day")
