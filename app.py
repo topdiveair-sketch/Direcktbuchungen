@@ -278,7 +278,12 @@ def init_db() -> None:
             ("payment_status", "TEXT DEFAULT ''"),
             ("payment_reference", "TEXT DEFAULT ''"),
             ("paypal_order_id", "TEXT DEFAULT ''"),
-            ("cancelled_at", "TEXT DEFAULT ''")
+            ("cancelled_at", "TEXT DEFAULT ''"),
+            ("source", "TEXT DEFAULT ''"),
+            ("utm_medium", "TEXT DEFAULT ''"),
+            ("utm_campaign", "TEXT DEFAULT ''"),
+            ("landing_page", "TEXT DEFAULT ''"),
+            ("referrer", "TEXT DEFAULT ''")
         ):
             if column not in cols:
                 conn.execute(f"ALTER TABLE bookings ADD COLUMN {column} {definition}")
@@ -2457,6 +2462,11 @@ def book():
         phone = request.form["phone"].strip()
         payment_method = request.form["payment_method"].strip()
         idempotency_key = request.form.get("idempotency_key", "").strip()[:120]
+        booking_source = request.form.get("source", "").strip()[:120]
+        utm_medium = request.form.get("utm_medium", "").strip()[:120]
+        utm_campaign = request.form.get("utm_campaign", "").strip()[:160]
+        landing_page = request.form.get("landing_page", "").strip()[:300]
+        referrer = request.form.get("referrer", "").strip()[:300]
     except (KeyError, ValueError):
         flash("Bitte alle Pflichtfelder korrekt ausfüllen.", "error")
         return redirect(url_for("index") + "#booking")
@@ -2518,8 +2528,9 @@ def book():
                 INSERT INTO bookings
                 (uid, room, arrival, departure, adults, breakfast, first_name,
                  last_name, email, phone, message, payment_method, total, status,
-                 created_at, idempotency_key, price_breakdown_json)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inquiry', ?, ?, ?)
+                 created_at, idempotency_key, price_breakdown_json,
+                 source,utm_medium,utm_campaign,landing_page,referrer)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inquiry', ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     uid, room, arrival.isoformat(), departure.isoformat(), adults,
@@ -2527,6 +2538,7 @@ def book():
                     request.form.get("message", "").strip(), payment_method, total,
                     datetime.now().isoformat(timespec="seconds"), idempotency_key,
                     json.dumps(breakdown, ensure_ascii=False),
+                    booking_source, utm_medium, utm_campaign, landing_page, referrer,
                 ),
             )
             booking_id = cur.lastrowid
