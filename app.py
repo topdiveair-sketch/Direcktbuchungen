@@ -1102,6 +1102,16 @@ def os_direct_prices():
             unique_checks_live = int(live_row["n"] or 0) if live_row else 0
         except Exception:
             unique_checks_live = unique_checks
+
+        persistent_day_checks = app.extensions.get("zab_demand_analytics_day_checks")
+        if callable(persistent_day_checks):
+            try:
+                unique_checks_live = max(
+                    int(unique_checks_live or 0),
+                    int(persistent_day_checks(current.isoformat()) or 0),
+                )
+            except Exception:
+                pass
         event = event_pricing_for_day(current)
         override = central_override_for_day(room, current)
         days.append({
