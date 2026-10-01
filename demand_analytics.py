@@ -6,9 +6,11 @@ addresses, phone numbers, message text, IP addresses or user agents are stored.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from urllib.parse import urlsplit
 
 from flask import jsonify, redirect, request, url_for
@@ -20,7 +22,12 @@ except Exception:
     psycopg = None
     dict_row = None
 
-PUBLIC_ORIGIN = "https://topdiveair-sketch.github.io"
+PUBLIC_ORIGINS = {
+    "https://topdiveair-sketch.github.io",
+    "https://www.zuhauseambach-wachau.at",
+    "https://zuhauseambach-wachau.at",
+    "https://direcktbuchungen-production.up.railway.app",
+}
 ALLOWED_EVENTS = {
     "page_view",
     "booking_cta_click",
@@ -30,6 +37,8 @@ ALLOWED_EVENTS = {
     "email_click",
     "whatsapp_click",
     "copy_request_click",
+    "checkout_started",
+    "booking_abandoned",
 }
 ALLOWED_DETAIL_KEYS = {
     "arrival", "departure", "nights", "total", "language", "cta", "room"
@@ -90,9 +99,22 @@ def _init_event_store(db):
                         total DOUBLE PRECISION,
                         cta TEXT NOT NULL DEFAULT '',
                         language TEXT NOT NULL DEFAULT '',
-                        created_at TEXT NOT NULL
+                        created_at TEXT NOT NULL,
+                        visitor_hash TEXT NOT NULL DEFAULT '',
+                        country_code TEXT NOT NULL DEFAULT 'XX',
+                        local_date TEXT NOT NULL DEFAULT '',
+                        local_weekday INTEGER NOT NULL DEFAULT 0,
+                        local_hour INTEGER NOT NULL DEFAULT 0
                     )
                 """)
+                for ddl in (
+                    "ALTER TABLE demand_events ADD COLUMN IF NOT EXISTS visitor_hash TEXT NOT NULL DEFAULT ''",
+                    "ALTER TABLE demand_events ADD COLUMN IF NOT EXISTS country_code TEXT NOT NULL DEFAULT 'XX'",
+                    "ALTER TABLE demand_events ADD COLUMN IF NOT EXISTS local_date TEXT NOT NULL DEFAULT ''",
+                    "ALTER TABLE demand_events ADD COLUMN IF NOT EXISTS local_weekday INTEGER NOT NULL DEFAULT 0",
+                    "ALTER TABLE demand_events ADD COLUMN IF NOT EXISTS local_hour INTEGER NOT NULL DEFAULT 0",
+                ):
+                    cur.execute(ddl)
                 cur.execute(
                     "CREATE INDEX IF NOT EXISTS idx_demand_events_created "
                     "ON demand_events(created_at,event)"
@@ -118,7 +140,12 @@ def _init_event_store(db):
             total REAL,
             cta TEXT NOT NULL DEFAULT '',
             language TEXT NOT NULL DEFAULT '',
-            created_at TEXT NOT NULL
+            created_at TEXT NOT NULL,
+            visitor_hash TEXT NOT NULL DEFAULT '',
+            country_code TEXT NOT NULL DEFAULT 'XX',
+            local_date TEXT NOT NULL DEFAULT '',
+            local_weekday INTEGER NOT NULL DEFAULT 0,
+            local_hour INTEGER NOT NULL DEFAULT 0
         );
         CREATE INDEX IF NOT EXISTS idx_demand_events_created
             ON demand_events(created_at,event);
@@ -135,8 +162,9 @@ def _insert_event(db, values):
             with pg.cursor() as cur:
                 cur.execute(
                     """INSERT INTO demand_events
-                       (event,page,referrer_host,room,arrival,departure,nights,total,cta,language,created_at)
-                       VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                       (event,page,referrer_host,room,arrival,departure,nights,total,cta,language,created_at,
+                        visitor_hash,country_code,local_date,local_weekday,local_hour)
+                       VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
                     values,
                 )
         pg.close()
@@ -144,8 +172,9 @@ def _insert_event(db, values):
     with db() as conn:
         conn.execute(
             """INSERT INTO demand_events
-               (event,page,referrer_host,room,arrival,departure,nights,total,cta,language,created_at)
-               VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
+               (event,page,referrer_host,room,arrival,departure,nights,total,cta,language,created_at,
+                visitor_hash,country_code,local_date,local_weekday,local_hour)
+               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             values,
         )
 
@@ -225,6 +254,29 @@ def _event_summary(db, since: str):
     return counts, demand_dates, months, sources
 
 
+def _country_code() -> str:
+    for header in ("CF-IPCountry","CloudFront-Viewer-Country","X-Country-Code","X-Geo-Country","X-Vercel-IP-Country"):
+        value = (request.headers.get(header) or "").strip().upper()
+        if len(value) == 2 and value.isalpha():
+            return value
+    return "XX"
+
+
+def _visitor_hash(app) -> str:
+    remote = (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
+    agent = request.headers.get("User-Agent", "")[:200]
+    salt = app.secret_key or "zab-demand"
+    return hashlib.sha256(f"{salt}|{remote}|{agent}".encode("utf-8")).hexdigest()
+
+
+def _local_parts():
+    try:
+        now = datetime.now(ZoneInfo("Europe/Vienna"))
+    except Exception:
+        now = datetime.now()
+    return now.date().isoformat(), int(now.weekday()), int(now.hour)
+
+
 def init_demand_analytics(app, db, require_admin):
     if app.extensions.get("zab_demand_analytics_initialized"):
         return
@@ -233,7 +285,8 @@ def init_demand_analytics(app, db, require_admin):
     app.extensions["zab_demand_analytics_store"] = event_store
 
     def cors(response):
-        response.headers["Access-Control-Allow-Origin"] = PUBLIC_ORIGIN
+        origin = request.headers.get("Origin", "")
+        response.headers["Access-Control-Allow-Origin"] = origin if origin in PUBLIC_ORIGINS else "https://www.zuhauseambach-wachau.at"
         response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type"
         response.headers["Cache-Control"] = "no-store"
@@ -244,7 +297,7 @@ def init_demand_analytics(app, db, require_admin):
         if request.method == "OPTIONS":
             return cors(app.make_response(("", 204)))
         origin = request.headers.get("Origin", "")
-        if origin and origin != PUBLIC_ORIGIN:
+        if origin and origin not in PUBLIC_ORIGINS:
             return cors(jsonify({"ok": False, "error": "origin_not_allowed"})), 403
         payload = request.get_json(silent=True) or {}
         event = str(payload.get("event", ""))[:40]
@@ -280,6 +333,9 @@ def init_demand_analytics(app, db, require_admin):
                     str(details.get("cta") or "")[:80],
                     str(details.get("language") or "")[:12],
                     _now(),
+                    _visitor_hash(app),
+                    _country_code(),
+                    *_local_parts(),
                 ),
             )
         except Exception:
@@ -348,3 +404,77 @@ def init_demand_analytics(app, db, require_admin):
 
     app.extensions["zab_demand_analytics_initialized"] = True
     app.extensions["zab_demand_analytics_summary"] = summary
+    def os_summary(days: int = 30):
+        days = max(1, min(int(days or 30), 730))
+        since = (datetime.now() - timedelta(days=days)).isoformat(timespec="seconds")
+        pg = _pg_connect()
+        if pg is None:
+            return None
+        with pg:
+            with pg.cursor() as cur:
+                cur.execute("""SELECT event,arrival,departure,visitor_hash,country_code,local_date,local_weekday,local_hour,created_at
+                               FROM demand_events WHERE created_at >= %s ORDER BY created_at""", (since,))
+                rows = list(cur.fetchall())
+        pg.close()
+        searches = [r for r in rows if r["event"] == "dates_selected" and r["arrival"] and r["departure"]]
+        page_views = [r for r in rows if r["event"] == "page_view"]
+        checkout_starts = [r for r in rows if r["event"] == "checkout_started"]
+        checkout_abandoned = [r for r in rows if r["event"] == "booking_abandoned"]
+        total = len(searches)
+        visitors = {r["visitor_hash"] for r in searches if r["visitor_hash"]}
+        page_visitors = {r["visitor_hash"] for r in page_views if r["visitor_hash"]}
+        def pct(n):
+            return round(100.0*n/total,1) if total else 0.0
+        country_counts={}
+        weekday_counts={i:0 for i in range(7)}
+        hour_counts={i:0 for i in range(24)}
+        date_counts={}
+        month_searches={}
+        month_visitors={}
+        for r in searches:
+            cc=(r["country_code"] or "XX").upper()
+            country_counts[cc]=country_counts.get(cc,0)+1
+            wd=int(r["local_weekday"] or 0); hr=int(r["local_hour"] or 0)
+            weekday_counts[wd]=weekday_counts.get(wd,0)+1
+            hour_counts[hr]=hour_counts.get(hr,0)+1
+            day=str(r["local_date"] or "")
+            if day: date_counts[day]=date_counts.get(day,0)+1
+            month=str(r["arrival"] or "")[:7]
+            if month:
+                month_searches[month]=month_searches.get(month,0)+1
+                if r["visitor_hash"]: month_visitors.setdefault(month,set()).add(r["visitor_hash"])
+        weekday_names=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"]
+        by_month=[{
+            "month":m,
+            "unique_visitors":len(month_visitors.get(m,set())),
+            "total_searches":n,
+            "booking_attempts":0,
+            "booking_abandoned":0,
+            "abandonment_rate":0.0,
+            "by_visitor_country":[],
+            "by_weekday":[],
+            "by_hour":[],
+        } for m,n in sorted(month_searches.items())]
+        attempts=len(checkout_starts); abandoned=len(checkout_abandoned)
+        return {
+            "ok":True,
+            "period_days":days,
+            "generated_at":datetime.now().isoformat(timespec="seconds"),
+            "total_searches":total,
+            "unique_visitors":len(page_visitors) if page_visitors else len(visitors),
+            "search_unique_visitors":len(visitors),
+            "available_searches":sum(1 for r in rows if r["event"]=="price_quote_loaded"),
+            "available_percent":pct(sum(1 for r in rows if r["event"]=="price_quote_loaded")),
+            "booking_attempts":attempts,
+            "booking_abandoned":abandoned,
+            "abandonment_rate":round(100.0*abandoned/attempts,1) if attempts else 0.0,
+            "by_visitor_country":[{"country_code":cc,"visitors":n,"percent":pct(n)} for cc,n in sorted(country_counts.items(),key=lambda x:(-x[1],x[0]))],
+            "by_month":by_month,
+            "by_country":[{"country_code":cc,"searches":n,"percent":pct(n)} for cc,n in sorted(country_counts.items(),key=lambda x:(-x[1],x[0]))],
+            "by_weekday":[{"weekday":weekday_names[i],"weekday_index":i,"searches":weekday_counts[i],"percent":pct(weekday_counts[i])} for i in range(7)],
+            "by_hour":[{"hour":i,"label":f"{i:02d}:00","searches":hour_counts[i],"percent":pct(hour_counts[i])} for i in range(24)],
+            "by_date":[{"date":d,"searches":n,"percent":pct(n)} for d,n in sorted(date_counts.items())],
+            "privacy":"Aggregated only; no raw IP address or user-agent is exposed.",
+        }
+
+    app.extensions["zab_demand_analytics_os_summary"] = os_summary
