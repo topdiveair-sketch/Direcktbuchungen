@@ -818,6 +818,16 @@ def os_demand_stats():
         days = max(1, min(730, int(request.args.get("days", "30"))))
     except Exception:
         days = 30
+
+    persistent_summary = app.extensions.get("zab_demand_analytics_os_summary")
+    if callable(persistent_summary):
+        try:
+            payload = persistent_summary(days)
+            if payload is not None:
+                return jsonify(payload)
+        except Exception:
+            app.logger.exception("persistent demand analytics summary failed")
+
     try:
         cutoff = (datetime.now(ZoneInfo("Europe/Vienna")) - timedelta(days=days)).isoformat(timespec="seconds")
     except Exception:
