@@ -55,9 +55,22 @@ function track(event) {
   fetch("/api/events", {method:"POST", headers:{"Content-Type":"application/json"}, body, keepalive:true}).catch(()=>{});
 }
 
+const DEMAND_TRACKING_URL = "https://direcktbuchungen-production.up.railway.app/api/demand-event";
+function trackDemand(event, details = {}) {
+  const body = JSON.stringify({event, details:{...details, language:checkoutLang, room:selectedRoom()?.value || "Bachblick"}});
+  fetch(DEMAND_TRACKING_URL, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body,
+    keepalive:true,
+    mode:"cors"
+  }).catch(()=>{});
+}
+
 document.getElementById("idempotencyKey").value =
   (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
 track("landing_view");
+trackDemand("page_view");
 const bookingSection=document.getElementById("booking");
 if (bookingSection && "IntersectionObserver" in window) {
   let bookingViewed=false;
@@ -223,6 +236,11 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
   result.textContent = tx("checking");
   result.className = "availability-result";
   track("availability_started");
+  trackDemand("dates_selected", {
+    arrival:arrival.value,
+    departure:departure.value,
+    nights:nights()
+  });
 
   try {
     const response = await fetch("/api/availability", {method:"POST", body:fd});
@@ -233,10 +251,24 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
       : (status === "free" ? tx("free") : status === "unknown" ? tx("unknown") : tx("blocked"));
     result.className = status === "free" ? "availability-result ok" : status === "unknown" ? "availability-result unknown" : "availability-result bad";
     track(`availability_result_${status}`);
+    if (status === "free") {
+      trackDemand("price_quote_loaded", {
+        arrival:arrival.value,
+        departure:departure.value,
+        nights:nights(),
+        total:Number(data.total || 0)
+      });
+    }
     if (status === "free" || status === "unknown") {
       guestArea.classList.remove("hidden");
       checkoutOpen = true;
       track("checkout_started");
+      trackDemand("checkout_started", {
+        arrival:arrival.value,
+        departure:departure.value,
+        nights:nights(),
+        total:Number(data.total || 0)
+      });
       if (status === "free") updatePaymentUI();
       else bookingSubmit.textContent = tx("personal");
       stickyLabel.textContent = status === "free" ? tx("stickyBook") : tx("stickyAsk");
@@ -346,7 +378,15 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
   }
 });
 window.addEventListener("pagehide", () => {
-  if (checkoutOpen && !bookingSubmitted) track("booking_abandoned");
+  if (checkoutOpen && !bookingSubmitted) {
+    track("booking_abandoned");
+    trackDemand("booking_abandoned", {
+      arrival:arrival.value,
+      departure:departure.value,
+      nights:nights(),
+      total:Number(lastQuotedTotal || 0)
+    });
+  }
 });
 
 window.addEventListener("pageshow", () => {
