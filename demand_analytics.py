@@ -277,6 +277,32 @@ def _local_parts():
     return now.date().isoformat(), int(now.weekday()), int(now.hour)
 
 
+def _persistent_day_checks(target_day: str) -> int:
+    """Distinct visitors whose selected stay includes target_day."""
+    target_day = str(target_day or "")[:10]
+    if len(target_day) != 10:
+        return 0
+    pg = _pg_connect()
+    if pg is None:
+        return 0
+    try:
+        with pg:
+            with pg.cursor() as cur:
+                cur.execute(
+                    """SELECT COUNT(DISTINCT visitor_hash) AS n
+                       FROM demand_events
+                       WHERE event='dates_selected'
+                         AND visitor_hash!=''
+                         AND arrival<=%s
+                         AND departure>%s""",
+                    (target_day, target_day),
+                )
+                row = cur.fetchone()
+                return int((row or {}).get("n") or 0)
+    finally:
+        pg.close()
+
+
 def init_demand_analytics(app, db, require_admin):
     if app.extensions.get("zab_demand_analytics_initialized"):
         return
@@ -478,3 +504,4 @@ def init_demand_analytics(app, db, require_admin):
         }
 
     app.extensions["zab_demand_analytics_os_summary"] = os_summary
+    app.extensions["zab_demand_analytics_day_checks"] = _persistent_day_checks
