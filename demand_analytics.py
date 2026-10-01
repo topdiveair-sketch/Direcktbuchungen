@@ -7,10 +7,18 @@ addresses, phone numbers, message text, IP addresses or user agents are stored.
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timedelta
 from urllib.parse import urlsplit
 
 from flask import jsonify, redirect, request, url_for
+
+try:
+    import psycopg
+    from psycopg.rows import dict_row
+except Exception:
+    psycopg = None
+    dict_row = None
 
 PUBLIC_ORIGIN = "https://topdiveair-sketch.github.io"
 ALLOWED_EVENTS = {
@@ -50,9 +58,51 @@ def _pct(num: int, den: int):
     return round(num * 100.0 / den, 1) if den else None
 
 
-def init_demand_analytics(app, db, require_admin):
-    if app.extensions.get("zab_demand_analytics_initialized"):
-        return
+def _analytics_database_url() -> str:
+    return os.environ.get("DATABASE_URL", "").strip()
+
+
+def _pg_connect():
+    url = _analytics_database_url()
+    if not url:
+        return None
+    if psycopg is None:
+        raise RuntimeError("DATABASE_URL ist gesetzt, aber psycopg ist nicht installiert.")
+    return psycopg.connect(url, row_factory=dict_row)
+
+
+def _init_event_store(db):
+    """Use Postgres for persistent demand events when DATABASE_URL is configured."""
+    pg = _pg_connect()
+    if pg is not None:
+        with pg:
+            with pg.cursor() as cur:
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS demand_events(
+                        id BIGSERIAL PRIMARY KEY,
+                        event TEXT NOT NULL,
+                        page TEXT NOT NULL DEFAULT '/',
+                        referrer_host TEXT NOT NULL DEFAULT '',
+                        room TEXT NOT NULL DEFAULT '',
+                        arrival TEXT NOT NULL DEFAULT '',
+                        departure TEXT NOT NULL DEFAULT '',
+                        nights INTEGER,
+                        total DOUBLE PRECISION,
+                        cta TEXT NOT NULL DEFAULT '',
+                        language TEXT NOT NULL DEFAULT '',
+                        created_at TEXT NOT NULL
+                    )
+                """)
+                cur.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_demand_events_created "
+                    "ON demand_events(created_at,event)"
+                )
+                cur.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_demand_events_arrival "
+                    "ON demand_events(arrival,event)"
+                )
+        pg.close()
+        return "postgres"
 
     with db() as conn:
         conn.executescript("""
@@ -75,6 +125,112 @@ def init_demand_analytics(app, db, require_admin):
         CREATE INDEX IF NOT EXISTS idx_demand_events_arrival
             ON demand_events(arrival,event);
         """)
+    return "sqlite"
+
+
+def _insert_event(db, values):
+    pg = _pg_connect()
+    if pg is not None:
+        with pg:
+            with pg.cursor() as cur:
+                cur.execute(
+                    """INSERT INTO demand_events
+                       (event,page,referrer_host,room,arrival,departure,nights,total,cta,language,created_at)
+                       VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                    values,
+                )
+        pg.close()
+        return
+    with db() as conn:
+        conn.execute(
+            """INSERT INTO demand_events
+               (event,page,referrer_host,room,arrival,departure,nights,total,cta,language,created_at)
+               VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
+            values,
+        )
+
+
+def _event_summary(db, since: str):
+    pg = _pg_connect()
+    if pg is not None:
+        with pg:
+            with pg.cursor() as cur:
+                cur.execute(
+                    "SELECT event,COUNT(*) n FROM demand_events WHERE created_at>=%s GROUP BY event",
+                    (since,),
+                )
+                counts = {r["event"]: int(r["n"]) for r in cur.fetchall()}
+                cur.execute(
+                    """SELECT arrival,COUNT(*) interest,
+                              ROUND(AVG(COALESCE(nights,0))::numeric,1) avg_nights,
+                              ROUND(AVG(COALESCE(total,0))::numeric,2) avg_quote
+                       FROM demand_events
+                       WHERE created_at>=%s AND event IN ('dates_selected','price_quote_loaded')
+                         AND arrival!=''
+                       GROUP BY arrival ORDER BY interest DESC,arrival LIMIT 12""",
+                    (since,),
+                )
+                demand_dates = list(cur.fetchall())
+                cur.execute(
+                    """SELECT substr(arrival,1,7) month,COUNT(*) interest
+                       FROM demand_events
+                       WHERE created_at>=%s AND event IN ('dates_selected','price_quote_loaded')
+                         AND length(arrival)>=7
+                       GROUP BY substr(arrival,1,7) ORDER BY interest DESC,month LIMIT 12""",
+                    (since,),
+                )
+                months = list(cur.fetchall())
+                cur.execute(
+                    """SELECT COALESCE(NULLIF(referrer_host,''),'direkt') source,COUNT(*) events
+                       FROM demand_events WHERE created_at>=%s
+                       GROUP BY source ORDER BY events DESC LIMIT 10""",
+                    (since,),
+                )
+                sources = list(cur.fetchall())
+        pg.close()
+        return counts, demand_dates, months, sources
+
+    with db() as conn:
+        counts = {
+            r["event"]: int(r["n"])
+            for r in conn.execute(
+                "SELECT event,COUNT(*) n FROM demand_events WHERE created_at>=? GROUP BY event",
+                (since,),
+            ).fetchall()
+        }
+        demand_dates = [dict(r) for r in conn.execute(
+            """SELECT arrival,COUNT(*) interest,
+                      ROUND(AVG(COALESCE(nights,0)),1) avg_nights,
+                      ROUND(AVG(COALESCE(total,0)),2) avg_quote
+               FROM demand_events
+               WHERE created_at>=? AND event IN ('dates_selected','price_quote_loaded')
+                 AND arrival!=''
+               GROUP BY arrival ORDER BY interest DESC,arrival LIMIT 12""",
+            (since,),
+        ).fetchall()]
+        months = [dict(r) for r in conn.execute(
+            """SELECT substr(arrival,1,7) month,COUNT(*) interest
+               FROM demand_events
+               WHERE created_at>=? AND event IN ('dates_selected','price_quote_loaded')
+                 AND length(arrival)>=7
+               GROUP BY substr(arrival,1,7) ORDER BY interest DESC,month LIMIT 12""",
+            (since,),
+        ).fetchall()]
+        sources = [dict(r) for r in conn.execute(
+            """SELECT COALESCE(NULLIF(referrer_host,''),'direkt') source,COUNT(*) events
+               FROM demand_events WHERE created_at>=?
+               GROUP BY source ORDER BY events DESC LIMIT 10""",
+            (since,),
+        ).fetchall()]
+    return counts, demand_dates, months, sources
+
+
+def init_demand_analytics(app, db, require_admin):
+    if app.extensions.get("zab_demand_analytics_initialized"):
+        return
+
+    event_store = _init_event_store(db)
+    app.extensions["zab_demand_analytics_store"] = event_store
 
     def cors(response):
         response.headers["Access-Control-Allow-Origin"] = PUBLIC_ORIGIN
@@ -110,25 +266,22 @@ def init_demand_analytics(app, db, require_admin):
         if total is not None and not 0 <= total <= 10000:
             total = None
         try:
-            with db() as conn:
-                conn.execute(
-                    """INSERT INTO demand_events
-                       (event,page,referrer_host,room,arrival,departure,nights,total,cta,language,created_at)
-                       VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
-                    (
-                        event,
-                        _safe_path(request.headers.get("Referer", "")),
-                        _safe_host(request.headers.get("Referer", "")),
-                        str(details.get("room") or "")[:60],
-                        arrival,
-                        departure,
-                        nights,
-                        total,
-                        str(details.get("cta") or "")[:80],
-                        str(details.get("language") or "")[:12],
-                        _now(),
-                    ),
-                )
+            _insert_event(
+                db,
+                (
+                    event,
+                    _safe_path(request.headers.get("Referer", "")),
+                    _safe_host(request.headers.get("Referer", "")),
+                    str(details.get("room") or "")[:60],
+                    arrival,
+                    departure,
+                    nights,
+                    total,
+                    str(details.get("cta") or "")[:80],
+                    str(details.get("language") or "")[:12],
+                    _now(),
+                ),
+            )
         except Exception:
             return cors(jsonify({"ok": False, "error": "storage_failed"})), 503
         return cors(jsonify({"ok": True}))
@@ -136,38 +289,8 @@ def init_demand_analytics(app, db, require_admin):
     def summary(days: int = 30):
         days = max(1, min(int(days or 30), 3650))
         since = (datetime.now() - timedelta(days=days)).isoformat(timespec="seconds")
+        counts, demand_dates, months, sources = _event_summary(db, since)
         with db() as conn:
-            counts = {
-                r["event"]: int(r["n"])
-                for r in conn.execute(
-                    "SELECT event,COUNT(*) n FROM demand_events WHERE created_at>=? GROUP BY event",
-                    (since,),
-                ).fetchall()
-            }
-            demand_dates = [dict(r) for r in conn.execute(
-                """SELECT arrival,COUNT(*) interest,
-                          ROUND(AVG(COALESCE(nights,0)),1) avg_nights,
-                          ROUND(AVG(COALESCE(total,0)),2) avg_quote
-                   FROM demand_events
-                   WHERE created_at>=? AND event IN ('dates_selected','price_quote_loaded')
-                     AND arrival!=''
-                   GROUP BY arrival ORDER BY interest DESC,arrival LIMIT 12""",
-                (since,),
-            ).fetchall()]
-            months = [dict(r) for r in conn.execute(
-                """SELECT substr(arrival,1,7) month,COUNT(*) interest
-                   FROM demand_events
-                   WHERE created_at>=? AND event IN ('dates_selected','price_quote_loaded')
-                     AND length(arrival)>=7
-                   GROUP BY substr(arrival,1,7) ORDER BY interest DESC,month LIMIT 12""",
-                (since,),
-            ).fetchall()]
-            sources = [dict(r) for r in conn.execute(
-                """SELECT COALESCE(NULLIF(referrer_host,''),'direkt') source,COUNT(*) events
-                   FROM demand_events WHERE created_at>=?
-                   GROUP BY source ORDER BY events DESC LIMIT 10""",
-                (since,),
-            ).fetchall()]
             confirmed = conn.execute(
                 """SELECT COUNT(*) bookings,COALESCE(SUM(total),0) revenue
                    FROM bookings WHERE status='confirmed' AND created_at>=?""",
