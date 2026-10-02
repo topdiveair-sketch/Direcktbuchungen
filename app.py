@@ -1923,6 +1923,7 @@ def seo_aggsbach_markt():
 
 
 @app.get("/1-nacht-wachau")
+@app.get("/1-nacht-wachau/")
 def seo_eine_nacht_wachau():
     return render_template("seo_landing.html", **seo_landing_context("1nacht"))
 
