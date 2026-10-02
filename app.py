@@ -1598,6 +1598,20 @@ def seo_landing_context(slug: str) -> dict:
             "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer in Aggsbach Markt","secondary_image_caption":"Das Gartenzimmer für maximal zwei Gäste.",
             "faq":faq_direct,
         },
+        "1nacht": {
+            "title":"1 Nacht Wachau | Etappen-Unterkunft in Aggsbach Markt",
+            "description":"Nur 1 Nacht in der Wachau? Bei Zuhause am Bach in Aggsbach Markt grundsätzlich möglich – ideal für Donauradweg und Welterbesteig. Direkt Verfügbarkeit prüfen.",
+            "canonical":"https://www.zuhauseambach-wachau.at/1-nacht-wachau",
+            "h1":"1 Nacht in der Wachau übernachten",
+            "lead":"Für Radfahrer am Donauradweg, Wanderer am Welterbesteig und Durchreisende ist bei Zuhause am Bach auch eine einzelne Übernachtung grundsätzlich möglich – sofern der Termin verfügbar ist.",
+            "eyebrow":"1 Nacht · Donauradweg · Welterbesteig",
+            "subheading":"Etappenübernachtung direkt beim Gastgeber",
+            "paragraphs":["Wer auf einer Rad- oder Wanderetappe unterwegs ist, braucht oft kein Wochenende, sondern genau eine ruhige Nacht. Unser Gartenzimmer in Aggsbach Markt ist für maximal zwei Gäste direkt buchbar.","Frühstück auf Wunsch, sichere Fahrradunterbringung, E-Bike-Lademöglichkeit, Trocknungsmöglichkeit und Gepäcktransport auf Anfrage unterstützen die Weiterreise.","Freie Einzelübernachtungen können direkt im Live-Kalender geprüft werden. An einzelnen stark nachgefragten Veranstaltungsterminen können abweichende Mindestaufenthalte gelten."],
+            "features":[("🌙","1 Nacht möglich","Einzelübernachtungen direkt auf Verfügbarkeit prüfen."),("🚲","Für Radreisende","Fahrrad sicher unterbringen und E-Bike laden."),("🥾","Für Wanderer","Praktisch für Etappen am Welterbesteig."),("🍳","Frühstück auf Wunsch","Stärkung vor der nächsten Etappe.")],
+            "hero_image":"images/gartenzimmer-04-web.jpg","hero_image_alt":"Gartenzimmer für eine Nacht in der Wachau bei Zuhause am Bach","hero_image_caption":"Eine ruhige Nacht in Aggsbach Markt zwischen zwei Etappen.",
+            "secondary_image":"images/bach-hinterm-haus-v11.webp","secondary_image_alt":"Ruhige Umgebung bei Zuhause am Bach in Aggsbach Markt","secondary_image_caption":"Ruhig ankommen, schlafen und am nächsten Tag weiterziehen.",
+            "faq":faq_direct,
+        },
         "radfahrer": {
             "title":"Radfahrer Unterkunft Wachau | Donauradweg Zuhause am Bach",
             "description":"Radfahrer-Unterkunft in der Wachau: sichere Fahrradunterbringung, E-Bike-Laden, Frühstück, Trocknung und Gepäcktransport in Aggsbach Markt.",
@@ -1908,6 +1922,11 @@ def seo_aggsbach_markt():
     return render_template("seo_landing.html", **seo_landing_context("aggsbach"))
 
 
+@app.get("/1-nacht-wachau")
+def seo_eine_nacht_wachau():
+    return render_template("seo_landing.html", **seo_landing_context("1nacht"))
+
+
 @app.get("/radfahrer-unterkunft-wachau")
 def seo_radfahrer_wachau():
     return render_template("seo_landing.html", **seo_landing_context("radfahrer"))
@@ -2197,6 +2216,7 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/ch/",
         "https://www.zuhauseambach-wachau.at/ch/wachau-unterkunft",
         "https://www.zuhauseambach-wachau.at/uebernachten-aggsbach-markt",
+        "https://www.zuhauseambach-wachau.at/1-nacht-wachau",
         "https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-jauerling-wachau",
         "https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau",
