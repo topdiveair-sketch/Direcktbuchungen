@@ -596,63 +596,170 @@ def init_host_automation(app, db, require_admin, db_path):
         if now.hour < 7:
             return
         day = now.date()
+        tomorrow = day + timedelta(days=1)
+
+        try:
+            with db() as conn:
+                active_guests = conn.execute(
+                    """SELECT room,first_name,last_name,adults,arrival,departure,status
+                       FROM bookings
+                       WHERE status!='cancelled' AND arrival<=? AND departure>?
+                       ORDER BY room,arrival""",
+                    (day.isoformat(), day.isoformat()),
+                ).fetchall()
+                arrivals = conn.execute(
+                    """SELECT room,first_name,last_name,adults,arrival_time,status
+                       FROM bookings
+                       WHERE status!='cancelled' AND arrival=?
+                       ORDER BY room""",
+                    (day.isoformat(),),
+                ).fetchall()
+                departures = conn.execute(
+                    """SELECT room,first_name,last_name,adults,status
+                       FROM bookings
+                       WHERE status!='cancelled' AND departure=?
+                       ORDER BY room""",
+                    (day.isoformat(),),
+                ).fetchall()
+                tomorrow_rows = conn.execute(
+                    """SELECT room,first_name,last_name,adults,arrival_time,status
+                       FROM bookings
+                       WHERE status!='cancelled' AND arrival=?
+                       ORDER BY room""",
+                    (tomorrow.isoformat(),),
+                ).fetchall()
+                external_active = conn.execute(
+                    """SELECT DISTINCT room,start_date,end_date,source,summary
+                       FROM external_blocks
+                       WHERE start_date<=? AND end_date>?
+                       ORDER BY room,source""",
+                    (day.isoformat(), day.isoformat()),
+                ).fetchall()
+                external_arrivals = conn.execute(
+                    """SELECT DISTINCT room,start_date,end_date,source,summary
+                       FROM external_blocks
+                       WHERE start_date=?
+                       ORDER BY room,source""",
+                    (day.isoformat(),),
+                ).fetchall()
+                external_departures = conn.execute(
+                    """SELECT DISTINCT room,start_date,end_date,source,summary
+                       FROM external_blocks
+                       WHERE end_date=?
+                       ORDER BY room,source""",
+                    (day.isoformat(),),
+                ).fetchall()
+                external_tomorrow = conn.execute(
+                    """SELECT DISTINCT room,start_date,end_date,source,summary
+                       FROM external_blocks
+                       WHERE start_date=?
+                       ORDER BY room,source""",
+                    (tomorrow.isoformat(),),
+                ).fetchall()
+                open_payments = conn.execute(
+                    "SELECT COUNT(*) c,COALESCE(SUM(total),0) total FROM bookings WHERE status!='cancelled' AND COALESCE(paid,0)=0"
+                ).fetchone()
+                pending_mail = conn.execute(
+                    "SELECT COUNT(*) c FROM email_outbox WHERE status='pending'"
+                ).fetchone()["c"]
+                alerts = conn.execute(
+                    "SELECT severity,message FROM automation_alerts WHERE active=1 ORDER BY severity DESC,updated_at DESC LIMIT 20"
+                ).fetchall()
+                metrics = conn.execute(
+                    "SELECT * FROM automation_metrics WHERE metric_day=?",
+                    (day.isoformat(),),
+                ).fetchone()
+                try:
+                    source_rows = conn.execute(
+                        """SELECT COALESCE(NULLIF(source,''),'unbekannt') source,COUNT(*) c
+                           FROM bookings
+                           WHERE created_at>=? AND created_at<?
+                           GROUP BY COALESCE(NULLIF(source,''),'unbekannt')
+                           ORDER BY c DESC""",
+                        (day.isoformat(), (day + timedelta(days=1)).isoformat()),
+                    ).fetchall()
+                except Exception:
+                    source_rows = []
+        except Exception as exc:
+            app.logger.exception("daily_operator_report_data_failed")
+            _upsert_alert(
+                f"daily-report-data:{day.isoformat()}",
+                "critical",
+                f"Tagesübersicht konnte Live-Daten nicht lesen: {exc}",
+            )
+            return
+
         run_key = f"daily-report:{day.isoformat()}"
         if not _run_once_key(run_key, "operator morning report"):
             return
 
-        tomorrow = day + timedelta(days=1)
-        with db() as conn:
-            arrivals = conn.execute(
-                "SELECT first_name,last_name,arrival_time FROM bookings WHERE status='confirmed' AND arrival=?",
-                (day.isoformat(),),
-            ).fetchall()
-            departures = conn.execute(
-                "SELECT first_name,last_name FROM bookings WHERE status='confirmed' AND departure=?",
-                (day.isoformat(),),
-            ).fetchall()
-            tomorrow_rows = conn.execute(
-                "SELECT first_name,last_name,arrival_time FROM bookings WHERE status='confirmed' AND arrival=?",
-                (tomorrow.isoformat(),),
-            ).fetchall()
-            open_payments = conn.execute(
-                "SELECT COUNT(*) c,COALESCE(SUM(total),0) total FROM bookings WHERE status='confirmed' AND COALESCE(paid,0)=0"
-            ).fetchone()
-            pending_mail = conn.execute(
-                "SELECT COUNT(*) c FROM email_outbox WHERE status='pending'"
-            ).fetchone()["c"]
-            alerts = conn.execute(
-                "SELECT severity,message FROM automation_alerts WHERE active=1 ORDER BY severity DESC,updated_at DESC LIMIT 20"
-            ).fetchall()
-            metrics = conn.execute(
-                "SELECT * FROM automation_metrics WHERE metric_day=?",
-                (day.isoformat(),),
-            ).fetchone()
-            try:
-                source_rows = conn.execute(
-                    """SELECT COALESCE(NULLIF(source,''),'unbekannt') source,COUNT(*) c
-                       FROM bookings
-                       WHERE created_at>=? AND created_at<?
-                       GROUP BY COALESCE(NULLIF(source,''),'unbekannt')
-                       ORDER BY c DESC""",
-                    (day.isoformat(), (day + timedelta(days=1)).isoformat()),
-                ).fetchall()
-            except Exception:
-                source_rows = []
+        def _guest_name(row):
+            name = f"{row['first_name']} {row['last_name']}".strip()
+            return name or "Gastname nicht hinterlegt"
+
+        def _external_label(row):
+            summary = str(row["summary"] or "").strip()
+            source = str(row["source"] or "extern").strip()
+            return summary if summary else f"Externe Belegung ({source})"
 
         gaps = _gap_nights()
         lines = [
             f"Zuhause am Bach – Tagesübersicht {day.isoformat()}",
             "",
-            f"Heutige Anreisen: {len(arrivals)}",
+            f"Gäste aktuell im Haus: {len(active_guests)}",
         ]
+        for row in active_guests:
+            lines.append(
+                f"  • {row['room']} · {_guest_name(row)} · {int(row['adults'] or 0)} Pers. · "
+                f"{row['arrival']} bis {row['departure']} · Status {row['status']}"
+            )
+        if external_active:
+            lines.append(f"Externe Belegungen aktuell: {len(external_active)}")
+            for row in external_active:
+                lines.append(
+                    f"  • {row['room']} · {_external_label(row)} · {row['start_date']} bis {row['end_date']} · "
+                    f"Quelle {row['source']}"
+                )
+
+        lines.append("")
+        lines.append(f"Heutige Anreisen: {len(arrivals)}")
         for row in arrivals:
-            lines.append(f"  • {row['first_name']} {row['last_name']} · Ankunft {row['arrival_time'] or 'noch offen'}")
+            lines.append(
+                f"  • {row['room']} · {_guest_name(row)} · {int(row['adults'] or 0)} Pers. · "
+                f"Ankunft {row['arrival_time'] or 'noch offen'} · Status {row['status']}"
+            )
+        if external_arrivals:
+            lines.append(f"Externe Anreisen heute: {len(external_arrivals)}")
+            for row in external_arrivals:
+                lines.append(
+                    f"  • {row['room']} · {_external_label(row)} · Quelle {row['source']}"
+                )
+
         lines.append(f"Heutige Abreisen: {len(departures)}")
         for row in departures:
-            lines.append(f"  • {row['first_name']} {row['last_name']}")
+            lines.append(
+                f"  • {row['room']} · {_guest_name(row)} · {int(row['adults'] or 0)} Pers. · Status {row['status']}"
+            )
+        if external_departures:
+            lines.append(f"Externe Abreisen heute: {len(external_departures)}")
+            for row in external_departures:
+                lines.append(
+                    f"  • {row['room']} · {_external_label(row)} · Quelle {row['source']}"
+                )
+
         lines.append(f"Morgige Anreisen: {len(tomorrow_rows)}")
         for row in tomorrow_rows:
-            lines.append(f"  • {row['first_name']} {row['last_name']} · Ankunft {row['arrival_time'] or 'noch offen'}")
+            lines.append(
+                f"  • {row['room']} · {_guest_name(row)} · {int(row['adults'] or 0)} Pers. · "
+                f"Ankunft {row['arrival_time'] or 'noch offen'} · Status {row['status']}"
+            )
+        if external_tomorrow:
+            lines.append(f"Externe Anreisen morgen: {len(external_tomorrow)}")
+            for row in external_tomorrow:
+                lines.append(
+                    f"  • {row['room']} · {_external_label(row)} · Quelle {row['source']}"
+                )
+
         lines.extend([
             "",
             f"Offene Zahlungen: {int(open_payments['c'] or 0)} · {float(open_payments['total'] or 0):.2f} EUR",
