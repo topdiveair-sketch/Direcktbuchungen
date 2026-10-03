@@ -16,6 +16,30 @@ from flask import jsonify, redirect, render_template, url_for
 VIENNA = ZoneInfo("Europe/Vienna")
 
 
+def _report_calendar_blocks(rows):
+    """Union overlapping iCal blocks per room, without inventing guest stays.
+
+    A feed can combine several stays or manual closures into one interval.
+    Its endpoints therefore cannot establish arrivals, departures or guest counts.
+    """
+    result = []
+    for row in sorted(rows, key=lambda r: (r["room"], r["start_date"], r["end_date"])):
+        if row["end_date"] <= row["start_date"]:
+            continue
+        if (result and result[-1]["room"] == row["room"]
+                and row["start_date"] < result[-1]["end_date"]):
+            block = result[-1]
+            block["end_date"] = max(block["end_date"], row["end_date"])
+            block["sources"].add(row["source"] or "unbekannt")
+        else:
+            result.append({
+                "room": row["room"], "start_date": row["start_date"],
+                "end_date": row["end_date"],
+                "sources": {row["source"] or "unbekannt"},
+            })
+    return result
+
+
 def init_host_automation(app, db, require_admin, db_path):
     """Business-safety automations for Zuhause am Bach.
 
@@ -603,61 +627,46 @@ def init_host_automation(app, db, require_admin, db_path):
                 active_guests = conn.execute(
                     """SELECT room,first_name,last_name,adults,arrival,departure,status
                        FROM bookings
-                       WHERE status!='cancelled' AND arrival<=? AND departure>?
+                       WHERE status='confirmed' AND arrival<=? AND departure>?
                        ORDER BY room,arrival""",
                     (day.isoformat(), day.isoformat()),
                 ).fetchall()
                 arrivals = conn.execute(
                     """SELECT room,first_name,last_name,adults,arrival_time,status
                        FROM bookings
-                       WHERE status!='cancelled' AND arrival=?
+                       WHERE status='confirmed' AND arrival=?
                        ORDER BY room""",
                     (day.isoformat(),),
                 ).fetchall()
                 departures = conn.execute(
                     """SELECT room,first_name,last_name,adults,status
                        FROM bookings
-                       WHERE status!='cancelled' AND departure=?
+                       WHERE status='confirmed' AND departure=?
                        ORDER BY room""",
                     (day.isoformat(),),
                 ).fetchall()
                 tomorrow_rows = conn.execute(
                     """SELECT room,first_name,last_name,adults,arrival_time,status
                        FROM bookings
-                       WHERE status!='cancelled' AND arrival=?
+                       WHERE status='confirmed' AND arrival=?
                        ORDER BY room""",
                     (tomorrow.isoformat(),),
                 ).fetchall()
-                external_active = conn.execute(
-                    """SELECT DISTINCT room,start_date,end_date,source,summary
+                # Read intersecting intervals before merging; DATE ends are exclusive.
+                calendar_rows = conn.execute(
+                    """SELECT room,start_date,end_date,source
                        FROM external_blocks
                        WHERE start_date<=? AND end_date>?
-                       ORDER BY room,source""",
+                       ORDER BY room,start_date,end_date""",
                     (day.isoformat(), day.isoformat()),
                 ).fetchall()
-                external_arrivals = conn.execute(
-                    """SELECT DISTINCT room,start_date,end_date,source,summary
-                       FROM external_blocks
-                       WHERE start_date=?
-                       ORDER BY room,source""",
-                    (day.isoformat(),),
-                ).fetchall()
-                external_departures = conn.execute(
-                    """SELECT DISTINCT room,start_date,end_date,source,summary
-                       FROM external_blocks
-                       WHERE end_date=?
-                       ORDER BY room,source""",
-                    (day.isoformat(),),
-                ).fetchall()
-                external_tomorrow = conn.execute(
-                    """SELECT DISTINCT room,start_date,end_date,source,summary
-                       FROM external_blocks
-                       WHERE start_date=?
-                       ORDER BY room,source""",
-                    (tomorrow.isoformat(),),
-                ).fetchall()
+                calendar_blocks = _report_calendar_blocks(calendar_rows)
                 open_payments = conn.execute(
-                    "SELECT COUNT(*) c,COALESCE(SUM(total),0) total FROM bookings WHERE status!='cancelled' AND COALESCE(paid,0)=0"
+                    """SELECT COUNT(*) c,
+                              COALESCE(SUM(MAX(COALESCE(total,0)-COALESCE(amount_paid,0),0)),0) total
+                       FROM bookings
+                       WHERE status='confirmed' AND COALESCE(paid,0)=0
+                         AND COALESCE(total,0)>COALESCE(amount_paid,0)"""
                 ).fetchone()
                 pending_mail = conn.execute(
                     "SELECT COUNT(*) c FROM email_outbox WHERE status='pending'"
@@ -697,69 +706,46 @@ def init_host_automation(app, db, require_admin, db_path):
             name = f"{row['first_name']} {row['last_name']}".strip()
             return name or "Gastname nicht hinterlegt"
 
-        def _external_label(row):
-            summary = str(row["summary"] or "").strip()
-            source = str(row["source"] or "extern").strip()
-            return summary if summary else f"Externe Belegung ({source})"
-
         gaps = _gap_nights()
         lines = [
             f"Zuhause am Bach – Tagesübersicht {day.isoformat()}",
             "",
-            f"Gäste aktuell im Haus: {len(active_guests)}",
+            f"Bestätigte Buchungen mit Aufenthalt heute: {len(active_guests)}",
+            f"Personen laut diesen Buchungen: {sum(int(row['adults'] or 0) for row in active_guests)}",
         ]
         for row in active_guests:
             lines.append(
                 f"  • {row['room']} · {_guest_name(row)} · {int(row['adults'] or 0)} Pers. · "
                 f"{row['arrival']} bis {row['departure']} · Status {row['status']}"
             )
-        if external_active:
-            lines.append(f"Externe Belegungen aktuell: {len(external_active)}")
-            for row in external_active:
-                lines.append(
-                    f"  • {row['room']} · {_external_label(row)} · {row['start_date']} bis {row['end_date']} · "
-                    f"Quelle {row['source']}"
-                )
+        lines.append(f"Zimmer mit iCal-Sperre heute: {len({row['room'] for row in calendar_blocks})}")
+        for row in calendar_blocks:
+            sources = sorted(row["sources"], key=lambda source: (source != "beds24_ical", source))
+            lines.append(
+                f"  • {row['room']} · {row['start_date']} bis {row['end_date']} · "
+                f"Quellen {', '.join(sources)}"
+            )
+        lines.append("iCal-Sperren können Buchungen oder manuelle Sperren sein; "
+                     "Gästezahl und An-/Abreisen sind daraus nicht verlässlich bestimmbar.")
 
         lines.append("")
-        lines.append(f"Heutige Anreisen: {len(arrivals)}")
+        lines.append(f"Bestätigte Anreisen heute: {len(arrivals)}")
         for row in arrivals:
             lines.append(
                 f"  • {row['room']} · {_guest_name(row)} · {int(row['adults'] or 0)} Pers. · "
                 f"Ankunft {row['arrival_time'] or 'noch offen'} · Status {row['status']}"
             )
-        if external_arrivals:
-            lines.append(f"Externe Anreisen heute: {len(external_arrivals)}")
-            for row in external_arrivals:
-                lines.append(
-                    f"  • {row['room']} · {_external_label(row)} · Quelle {row['source']}"
-                )
-
-        lines.append(f"Heutige Abreisen: {len(departures)}")
+        lines.append(f"Bestätigte Abreisen heute: {len(departures)}")
         for row in departures:
             lines.append(
                 f"  • {row['room']} · {_guest_name(row)} · {int(row['adults'] or 0)} Pers. · Status {row['status']}"
             )
-        if external_departures:
-            lines.append(f"Externe Abreisen heute: {len(external_departures)}")
-            for row in external_departures:
-                lines.append(
-                    f"  • {row['room']} · {_external_label(row)} · Quelle {row['source']}"
-                )
-
-        lines.append(f"Morgige Anreisen: {len(tomorrow_rows)}")
+        lines.append(f"Bestätigte Anreisen morgen: {len(tomorrow_rows)}")
         for row in tomorrow_rows:
             lines.append(
                 f"  • {row['room']} · {_guest_name(row)} · {int(row['adults'] or 0)} Pers. · "
                 f"Ankunft {row['arrival_time'] or 'noch offen'} · Status {row['status']}"
             )
-        if external_tomorrow:
-            lines.append(f"Externe Anreisen morgen: {len(external_tomorrow)}")
-            for row in external_tomorrow:
-                lines.append(
-                    f"  • {row['room']} · {_external_label(row)} · Quelle {row['source']}"
-                )
-
         lines.extend([
             "",
             f"Offene Zahlungen: {int(open_payments['c'] or 0)} · {float(open_payments['total'] or 0):.2f} EUR",
