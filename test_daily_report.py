@@ -1,11 +1,12 @@
 """Isolated report regressions; no production database or email delivery."""
 import ast
+import os
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
 import sqlite3
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from zoneinfo import ZoneInfo
 from host_automation import _report_calendar_blocks
 
@@ -61,7 +62,7 @@ class ReportTests(unittest.TestCase):
         queued = []
         namespace = dict(
             _now=lambda: datetime(2026, 10, 3, 7, tzinfo=ZoneInfo('Europe/Vienna')),
-            timedelta=timedelta, db=db, _report_calendar_blocks=_report_calendar_blocks,
+            os=os, timedelta=timedelta, db=db, _report_calendar_blocks=_report_calendar_blocks,
             _run_once_key=lambda *a: True, _gap_nights=lambda: [],
             _owner_recipients=lambda: ['owner@example.test'],
             _queue_mail=lambda *args: queued.append(args),
@@ -89,6 +90,30 @@ class ReportTests(unittest.TestCase):
         namespace['_now'] = lambda: datetime(2026, 10, 2, 7, tzinfo=ZoneInfo('Europe/Vienna'))
         namespace['_daily_report']()
         self.assertIn('Bestätigte Anreisen morgen: 1', queued[-1][-1])
+        namespace['_now'] = lambda: datetime(2026, 10, 3, 7, tzinfo=ZoneInfo('Europe/Vienna'))
+        run_keys = set()
+        def run_once(key, details):
+            if key in run_keys:
+                return False
+            run_keys.add(key)
+            return True
+        namespace['_run_once_key'] = run_once
+        with patch.dict('os.environ', {
+            'ZAB_DAILY_REPORT_CORRECTION_DATE': '2026-10-03',
+            'ZAB_DAILY_REPORT_CORRECTION_TO': 'operator@example.test',
+        }):
+            before = len(queued)
+            namespace['_daily_report']()
+            namespace['_daily_report']()
+            self.assertEqual(len(queued), before + 1)
+            self.assertEqual(queued[-1][0], 'automation-report-correction:2026-10-03:v2:0')
+            self.assertEqual(queued[-1][3], 'operator@example.test')
+            self.assertIn('Korrigierte Tagesübersicht', queued[-1][4])
+            namespace['_now'] = lambda: datetime(2026, 10, 4, 7, tzinfo=ZoneInfo('Europe/Vienna'))
+            namespace['_daily_report']()
+            self.assertEqual(queued[-1][0], 'automation-report:2026-10-04:0')
+            self.assertEqual(queued[-1][3], 'owner@example.test')
+            self.assertNotIn('Korrigierte', queued[-1][4])
 
 
 if __name__ == '__main__':

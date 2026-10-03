@@ -698,7 +698,15 @@ def init_host_automation(app, db, require_admin, db_path):
             )
             return
 
-        run_key = f"daily-report:{day.isoformat()}"
+        # A dated operator request gets its own durable run/outbox keys.
+        # The ordinary once-daily report remains untouched; stale requests expire.
+        correction_to = os.environ.get("ZAB_DAILY_REPORT_CORRECTION_TO", "").strip()
+        correction = (
+            os.environ.get("ZAB_DAILY_REPORT_CORRECTION_DATE", "").strip() == day.isoformat()
+            and bool(correction_to)
+        )
+        report_key = f"report-correction:{day.isoformat()}:v2" if correction else f"report:{day.isoformat()}"
+        run_key = f"daily-{report_key}"
         if not _run_once_key(run_key, "operator morning report"):
             return
 
@@ -778,13 +786,18 @@ def init_host_automation(app, db, require_admin, db_path):
             lines.extend(["", "Systemstatus: keine aktiven Automatik-Warnungen."])
 
         body = "\n".join(lines)
-        for idx, recipient in enumerate(_owner_recipients()):
+        recipients = [correction_to] if correction else _owner_recipients()
+        subject = (
+            f"Zuhause am Bach – Korrigierte Tagesübersicht {day.isoformat()}"
+            if correction else f"Zuhause am Bach – Tagesübersicht {day.isoformat()}"
+        )
+        for idx, recipient in enumerate(recipients):
             _queue_mail(
-                f"automation-report:{day.isoformat()}:{idx}",
+                f"automation-{report_key}:{idx}",
                 0,
                 "daily_operator_report",
                 recipient,
-                f"Zuhause am Bach – Tagesübersicht {day.isoformat()}",
+                subject,
                 body,
             )
 
