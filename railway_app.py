@@ -28,7 +28,7 @@ from paypal_checkout import init_paypal_checkout
 from booking_notifications import init_booking_notifications
 from provider_monitor import init_provider_monitor
 from provider_radar import init_provider_radar
-from pricing_2027 import nightly_direct_rate, pricing_config
+from pricing_2027 import nightly_direct_rate, pricing_config, cap_room_rate
 from master_calendar import init_master_calendar
 from zab_control_center_v3 import make_master_checkout_sync
 from host_automation import init_host_automation
@@ -215,6 +215,7 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
             except Exception:
                 pass
 
+        nightly = cap_room_rate(nightly)
         dynamic_rates.append(float(nightly))
         yield_details.append(
             {
@@ -230,7 +231,7 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
         current += timedelta(days=1)
 
     room_total = round(
-        sum(dynamic_rates) if dynamic_rates else PUBLIC_BACHBLICK_NIGHTLY_PRICE * nights,
+        sum(dynamic_rates) if dynamic_rates else cap_room_rate(PUBLIC_BACHBLICK_NIGHTLY_PRICE) * nights,
         2,
     )
     extras_total = round(

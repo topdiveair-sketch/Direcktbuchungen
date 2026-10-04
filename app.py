@@ -36,7 +36,7 @@ from smart_host import init_smart_host
 from knowledge import init_knowledge
 from quality_v12 import init_quality_v12
 from alltag import init_alltag
-from pricing_2027 import nightly_direct_rate, pricing_config
+from pricing_2027 import nightly_direct_rate, pricing_config, cap_room_rate
 
 BASE = Path(__file__).resolve().parent
 DATA_DIR = Path(os.environ.get("DATA_DIR", str(BASE / "data"))).expanduser().resolve()
@@ -607,7 +607,7 @@ def direct_nightly_price_for_day(room: str, day: date) -> float:
     percent, _checks = _demand_percent_for_day(room, day)
     cfg = _demand_rule_config()
     adjusted = base * (1.0 + percent / 100.0)
-    return round(min(cfg["cap_eur"], max(cfg["floor_eur"], adjusted)), 2)
+    return round(cap_room_rate(min(cfg["cap_eur"], max(cfg["floor_eur"], adjusted))), 2)
 
 
 def _request_country_code() -> str:

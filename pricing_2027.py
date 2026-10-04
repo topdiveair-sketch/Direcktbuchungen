@@ -7,6 +7,12 @@ from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
 CONFIG_PATH = BASE / "pricing-2027.json"
+MAX_ROOM_NIGHTLY_PRICE = 149.0
+
+
+def cap_room_rate(rate: float) -> float:
+    """Cap room-only nightly rates; optional extras are priced separately."""
+    return min(float(rate), MAX_ROOM_NIGHTLY_PRICE)
 
 
 @lru_cache(maxsize=1)
@@ -40,14 +46,14 @@ def nightly_direct_rate(day: date) -> float | None:
 
     for row in cfg.get("date_overrides", []):
         if _contains(day, row):
-            return max(floor, float(row["price_eur"]))
+            return cap_room_rate(max(floor, float(row["price_eur"])))
 
     for row in cfg.get("season_ranges", []):
         if _contains(day, row):
             key = "fri_sat" if day.weekday() in (4, 5) else "sun_thu"
-            return max(floor, float(row[key]))
+            return cap_room_rate(max(floor, float(row[key])))
 
-    return floor
+    return cap_room_rate(floor)
 
 
 def stay_room_total(arrival: date, departure: date) -> float:

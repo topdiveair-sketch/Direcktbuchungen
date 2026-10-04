@@ -350,7 +350,7 @@
   "demand_rules": {
     "lookback_hours": 48,
     "floor_eur": 99,
-    "cap_eur": 159,
+    "cap_eur": 149,
     "unique_checks_thresholds": [
       {
         "checks": 3,
