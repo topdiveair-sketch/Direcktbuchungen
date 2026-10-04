@@ -26,6 +26,11 @@
         "name":"Zuhause am Bach – Wachau",
         "url":"https://www.zuhauseambach-wachau.at/",
         "description":"Persönliche Unterkunft in Aggsbach Markt für Donauradweg, Welterbesteig und Wachau-Aufenthalte.",
+        "numberOfRooms":1,
+        "priceRange":"Direktpreis je nach Reisedatum",
+        "checkinTime":"14:00",
+        "checkoutTime":"10:00",
+        "geo":{"@type":"GeoCoordinates","latitude":48.293669,"longitude":15.396011},
         "address":{
           "@type":"PostalAddress",
           "streetAddress":"Aggsbach Markt 82",
@@ -39,6 +44,7 @@
         "amenityFeature":[
           {"@type":"LocationFeatureSpecification","name":"WLAN","value":true},
           {"@type":"LocationFeatureSpecification","name":"Frühstück auf Wunsch","value":true},
+          {"@type":"LocationFeatureSpecification","name":"Trocknungsmöglichkeit für Sportbekleidung","value":true},
           {"@type":"LocationFeatureSpecification","name":"Gepäcktransport auf Anfrage","value":true}
           {% if kind == "bike" %},
           {"@type":"LocationFeatureSpecification","name":"Sichere Fahrradunterbringung","value":true},
@@ -64,7 +70,9 @@
         "name":"{{ page_title }}",
         "description":"{{ meta_description }}",
         "about":{"@id":"https://www.zuhauseambach-wachau.at/#unterkunft"},
-        "audience":{"@type":"Audience","audienceType":"{{ audience }}"}
+        "audience":{"@type":"Audience","audienceType":"{{ audience }}"},
+        "isPartOf":{"@type":"WebSite","name":"Zuhause am Bach – Wachau","url":"https://www.zuhauseambach-wachau.at/"},
+        "primaryImageOfPage":{"@type":"ImageObject","url":"https://www.zuhauseambach-wachau.at/static/images/{% if kind == 'bike' %}donauradweg-web.jpg{% else %}welterbesteig-original.jpg{% endif %}"}
       },
       {
         "@type":"BreadcrumbList",
@@ -168,6 +176,13 @@
       <a class="btn" href="{{ url_for('seo_eine_nacht_wachau') }}">Nur 1 Nacht in der Wachau?</a>
       <a class="activity-secondary" href="{{ url_for('future_planning') }}">Wachau 2027/2028 planen</a>
       <a class="activity-secondary" href="{{ url_for('wachau_events') }}">Starke Wachau-Termine</a>
+      {% if kind == "bike" %}
+      <a class="activity-secondary" href="{{ url_for('seo_radfahrer_wachau') }}">Radfahrer-Unterkunft Wachau</a>
+      <a class="activity-secondary" href="{{ url_for('activity_welterbesteig') }}">Auch am Welterbesteig unterwegs?</a>
+      {% else %}
+      <a class="activity-secondary" href="{{ url_for('seo_wanderer_wachau') }}">Wanderer-Unterkunft Wachau</a>
+      <a class="activity-secondary" href="{{ url_for('activity_donauradweg') }}">Auch am Donauradweg unterwegs?</a>
+      {% endif %}
     </div>
   </section>
 
