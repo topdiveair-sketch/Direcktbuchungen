@@ -1742,33 +1742,38 @@ def seo_landing_context(slug: str) -> dict:
             "faq":faq_direct,
         },
         "business": {
-            "title":"Business Unterkunft zwischen Melk und Krems | Zuhause am Bach",
-            "description":"Ruhige Business- und Projektunterkunft in der Wachau zwischen Melk und Krems für 1–2 Personen: WLAN, Parkplatz, Frühstück auf Wunsch und Direktkontakt.",
+            "title":"Business-Unterkunft & Monteurzimmer Melk–Krems | Zuhause am Bach",
+            "description":"Business-Unterkunft, Monteurzimmer und Firmenunterkunft zwischen Melk und Krems: 1–2 Personen, WLAN, Parkplatz, eigenes Bad, Frühstück auf Wunsch und direkte Buchung.",
             "canonical":"https://www.zuhauseambach-wachau.at/business-unterkunft-melk-krems",
-            "h1":"Business-Unterkunft zwischen Melk und Krems",
-            "lead":"Zuhause am Bach in Aggsbach Markt ist eine ruhige Unterkunft für Geschäftsreisende, Servicetechniker und Projektmitarbeiter, die zwischen Melk und Krems arbeiten und persönlich statt anonym übernachten möchten.",
-            "eyebrow":"Business · Projekt · Wachau",
-            "subheading":"Ruhig schlafen, zuverlässig arbeiten, unkompliziert direkt anfragen",
+            "h1":"Business-Unterkunft & Monteurzimmer zwischen Melk und Krems",
+            "lead":"Zuhause am Bach in Aggsbach Markt ist eine ruhige Firmenunterkunft für Geschäftsreisende, Monteure, Servicetechniker und Projektmitarbeiter zwischen Melk und Krems – für eine oder zwei Personen, mit direktem Gastgeberkontakt statt anonymer Massenunterkunft.",
+            "eyebrow":"Business · Monteure · Firmen · Wachau",
+            "subheading":"Ruhig schlafen, zuverlässig arbeiten, mehrere Nächte unkompliziert direkt buchen",
             "paragraphs":[
-                "Das Gartenzimmer eignet sich für eine oder zwei Personen und ist besonders für kurze Geschäfts-, Service- und Projekteinsätze interessant.",
-                "WLAN, kostenloser Parkplatz, eigenes Bad und Frühstück auf Wunsch decken die wichtigsten Anforderungen für kurze berufliche Aufenthalte ab.",
-                "Mehrere Nächte und wiederkehrende Firmenaufenthalte können direkt angefragt werden. Verfügbarkeit und aktueller Preis werden über die offizielle Website geprüft."
+                "Das Gartenzimmer ist für eine oder zwei Personen ausgelegt und eignet sich für Geschäftsreisen, Montageeinsätze, Servicearbeiten und Projektaufenthalte zwischen Melk, Aggsbach Markt, Spitz und Krems.",
+                "WLAN, kostenloser Parkplatz, eigenes Bad und Frühstück auf Wunsch decken die wichtigsten Anforderungen für berufliche Aufenthalte ab. Durch die kleine Einheit bleibt der Aufenthalt ruhig und persönlich.",
+                "Besonders im Winter sind mehrtägige Aufenthalte von Sonntag bis Freitag interessant. Auch wiederkehrende Firmenbuchungen und mehrere Arbeitswochen können direkt angefragt werden.",
+                "Wer nach Monteurzimmer Wachau, Firmenunterkunft Melk Krems, Arbeiterzimmer Wachau oder Unterkunft für Servicetechniker sucht, findet hier eine kleine Alternative zu großen Monteurhäusern."
             ],
             "features":[
-                ("📶","WLAN","Für E-Mail, Planung und Arbeit unterwegs."),
+                ("📶","WLAN","Für E-Mail, Planung, Videocalls und Arbeit unterwegs."),
                 ("🚗","Parkplatz","Kostenlos direkt bei der Unterkunft."),
                 ("🛏️","1–2 Personen","Ruhiges Gartenzimmer mit eigenem Bad."),
-                ("🍳","Frühstück","Auf Wunsch vor dem Arbeitstag.")
+                ("🍳","Frühstück","Auf Wunsch vor dem Arbeitstag."),
+                ("📅","So–Fr geeignet","Ideal für klassische Arbeitswochen und Montageeinsätze."),
+                ("🏢","Firmenaufenthalte","Mehrere Nächte und wiederkehrende Buchungen direkt anfragen.")
             ],
             "hero_image":"images/gartenzimmer-04-web.jpg",
-            "hero_image_alt":"Gartenzimmer bei Zuhause am Bach für Geschäftsreisende zwischen Melk und Krems",
-            "hero_image_caption":"Ruhiges Gartenzimmer für kurze Business- und Projekteinsätze.",
+            "hero_image_alt":"Business-Unterkunft und Monteurzimmer bei Zuhause am Bach zwischen Melk und Krems",
+            "hero_image_caption":"Ruhiges Gartenzimmer für Geschäftsreisende, Monteure und Servicetechniker.",
             "secondary_image":"images/gaestekueche-zuhause-am-bach-v2.webp",
-            "secondary_image_alt":"Gästeküche bei Zuhause am Bach in der Wachau",
-            "secondary_image_caption":"Praktische Infrastruktur für einen unkomplizierten Aufenthalt.",
+            "secondary_image_alt":"Gästeküche für Firmenreisende und Monteure bei Zuhause am Bach",
+            "secondary_image_caption":"Praktische Infrastruktur für mehrtägige Arbeitsaufenthalte.",
             "faq":[
-                {"@type":"Question","name":"Ist Zuhause am Bach für Geschäftsreisende geeignet?","acceptedAnswer":{"@type":"Answer","text":"Ja. Das Gartenzimmer ist für ein bis zwei Personen ausgelegt und bietet WLAN, Parkplatz, eigenes Bad und Frühstück auf Wunsch."}},
-                {"@type":"Question","name":"Können Servicetechniker oder Monteure mehrere Nächte bleiben?","acceptedAnswer":{"@type":"Answer","text":"Ja, sofern der gewünschte Zeitraum verfügbar ist. Mehrtägige und wiederkehrende Firmenaufenthalte können direkt angefragt werden."}},
+                {"@type":"Question","name":"Gibt es bei Zuhause am Bach ein Monteurzimmer zwischen Melk und Krems?","acceptedAnswer":{"@type":"Answer","text":"Ja. Das Gartenzimmer kann von einer oder zwei Personen für Montage-, Service- und Projektaufenthalte genutzt werden, sofern der gewünschte Zeitraum verfügbar ist."}},
+                {"@type":"Question","name":"Ist die Unterkunft für Geschäftsreisende und Servicetechniker geeignet?","acceptedAnswer":{"@type":"Answer","text":"Ja. WLAN, kostenloser Parkplatz, eigenes Bad, Frühstück auf Wunsch und direkter Gastgeberkontakt sind vorhanden."}},
+                {"@type":"Question","name":"Sind Aufenthalte von Sonntag bis Freitag möglich?","acceptedAnswer":{"@type":"Answer","text":"Ja, sofern die Reisedaten verfügbar sind. Solche Arbeitswochen sind besonders in den Wintermonaten interessant."}},
+                {"@type":"Question","name":"Können Firmen mehrere Nächte oder wiederkehrend buchen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Mehrtägige und wiederkehrende Firmenaufenthalte können direkt angefragt und abgestimmt werden."}},
                 {"@type":"Question","name":"Wie kann ein Firmenaufenthalt angefragt werden?","acceptedAnswer":{"@type":"Answer","text":"Freie Termine und Preise können auf der offiziellen Website geprüft werden. Zusätzliche Anforderungen können direkt mit den Gastgebern abgestimmt werden."}}
             ],
         },
@@ -2069,6 +2074,13 @@ def seo_winterurlaub_wachau():
 @app.get("/business-unterkunft-melk-krems")
 def seo_business_unterkunft():
     return render_template("seo_landing.html", **seo_landing_context("business"))
+
+@app.get("/monteurzimmer-wachau")
+@app.get("/monteurzimmer-melk-krems")
+@app.get("/firmenunterkunft-melk-krems")
+@app.get("/arbeiterzimmer-wachau")
+def business_search_aliases():
+    return redirect(url_for("seo_business_unterkunft"), code=301)
 
 
 @app.get("/unterkunft-donauradweg-wachau")
@@ -2389,6 +2401,7 @@ Type: Small personal accommodation / guest room with direct booking
 - Marillenernte / Marillenzeit: https://www.zuhauseambach-wachau.at/marillenernte-wachau-unterkunft
 - Jauerling ski season: https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau
 - Winter in the Wachau: https://www.zuhauseambach-wachau.at/winterurlaub-wachau
+- Business accommodation / Monteurzimmer Melk–Krems: https://www.zuhauseambach-wachau.at/business-unterkunft-melk-krems
 - Wachau events: https://www.zuhauseambach-wachau.at/wachau-events-2027-2028
 
 ## Direct-booking features
