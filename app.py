@@ -7,6 +7,10 @@ import os
 import base64
 import json
 import sqlite3
+import socket
+import ssl
+import http.client
+from contextlib import contextmanager
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -190,10 +194,17 @@ def room_is_suspended(room: str) -> bool:
 ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 
 
-def db() -> sqlite3.Connection:
+@contextmanager
+def db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        # sqlite3's own context manager commits/rolls back but does not close.
+        # Close even on exceptions instead of accumulating connections in workers.
+        with conn:
+            yield conn
+    finally:
+        conn.close()
 
 
 def init_db() -> None:
@@ -1278,6 +1289,31 @@ def _calendar_sources_for_room(room: str) -> list[tuple[str, str, str]]:
     return unique
 
 
+def _calendar_failure(exc: Exception) -> tuple[str, bool]:
+    """Allowlisted diagnostics only: exception text may contain feed credentials."""
+    if isinstance(exc, urllib.error.HTTPError):
+        return f"HTTP {exc.code}", exc.code in {429, 500, 502, 503, 504}
+    reason = exc.reason if isinstance(exc, urllib.error.URLError) else exc
+    if isinstance(reason, TimeoutError):
+        return "Zeitüberschreitung", True
+    if isinstance(reason, ssl.SSLError):
+        return "TLS-/Zertifikatsfehler", False
+    if isinstance(reason, socket.gaierror):
+        return "DNS-Auflösung fehlgeschlagen", reason.errno == socket.EAI_AGAIN
+    if isinstance(reason, (ConnectionError, http.client.IncompleteRead)):
+        return "Verbindung unterbrochen oder abgelehnt", True
+    if isinstance(exc, urllib.error.URLError):
+        return "Netzwerkfehler", False
+    if isinstance(exc, ValueError):
+        return "Ungültige Kalenderdaten", False
+    if isinstance(exc, sqlite3.Error):
+        code = getattr(exc, "sqlite_errorcode", 0) & 0xff
+        if code in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED}:
+            return "Datenbank gesperrt", False
+        return "Datenbankfehler", False
+    return "Kalenderverarbeitung fehlgeschlagen", False
+
+
 def sync_room(room: str) -> tuple[int, str]:
     now = datetime.now().isoformat(timespec="seconds")
     if room_is_suspended(room):
@@ -1302,6 +1338,7 @@ def sync_room(room: str) -> tuple[int, str]:
     any_success = False
 
     for source, label, url in sources:
+        attempts = 0
         try:
             req = urllib.request.Request(
                 url,
@@ -1310,8 +1347,21 @@ def sync_room(room: str) -> tuple[int, str]:
                     "Cache-Control": "no-cache",
                 },
             )
-            with urllib.request.urlopen(req, timeout=20) as response:
-                text = response.read().decode("utf-8", errors="replace")
+            # One immediate retry only, confined to transient fetch/read errors.
+            # Do not repeat parsing or database writes, or retry auth/TLS errors.
+            for _ in range(2):
+                attempts += 1
+                try:
+                    with urllib.request.urlopen(req, timeout=8) as response:
+                        text = response.read().decode("utf-8", errors="replace")
+                    break
+                except Exception as exc:
+                    if attempts == 2 or not _calendar_failure(exc)[1]:
+                        raise
+            # An HTML error page or truncated response must not erase old blocks.
+            lines = unfold_ical(text.lstrip("\ufeff").strip())
+            if not lines or lines[0] != "BEGIN:VCALENDAR" or lines[-1] != "END:VCALENDAR":
+                raise ValueError("Invalid iCal envelope")
             events = parse_ical(text)
 
             # Replace only this provider's previous snapshot. If another provider
@@ -1341,10 +1391,16 @@ def sync_room(room: str) -> tuple[int, str]:
 
             total += len(events)
             any_success = True
-            results.append(f"{label}: {len(events)}")
+            results.append(f"{label}: {len(events)}" + (" (nach Retry)" if attempts > 1 else ""))
         except Exception as exc:
-            app.logger.exception("external_calendar_sync_failed room=%s source=%s", room, source)
-            results.append(f"{label}: Fehler")
+            reason, _ = _calendar_failure(exc)
+            app.logger.warning(
+                "external_calendar_sync_failed room=%s source=%s attempts=%s reason=%s",
+                room, source, attempts, reason,
+            )
+            results.append(
+                f"{label}: Fehler ({reason}; Versuche: {attempts}; letzter Stand beibehalten)"
+            )
 
     message = " · ".join(results)
     with db() as conn:
