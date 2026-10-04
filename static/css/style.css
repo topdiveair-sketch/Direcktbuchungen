@@ -574,3 +574,24 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
     line-height:1.03;
   }
 }
+
+/* Keep the public booking flow within narrow and enlarged viewports. */
+@media (max-width:1000px){
+  .booking-shell{grid-template-columns:minmax(0,1fr)}
+  .booking-card,.benefit-column,.section-heading>div,
+  .booking-grid>*,.guest-grid>*,.room-copy{min-width:0}
+}
+@media (max-width:700px){
+  .booking-grid,.guest-grid,.payment-grid{grid-template-columns:minmax(0,1fr)}
+  .booking-grid input,.booking-grid select,.guest-grid input,
+  .guest-grid textarea{min-width:0;max-width:100%}
+  .section-heading h2,.section-heading p,.room-copy,
+  .booking-review-link,.booking-summary-row{overflow-wrap:anywhere}
+  .booking-review-link a{white-space:normal}
+  .zab-gallery-actions .btn{min-width:0;max-width:100%}
+  .live-calendar{grid-template-columns:repeat(7,minmax(0,1fr))}
+  .mobile-conversion-bar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+  .mobile-conversion-bar span,.mobile-conversion-bar a{min-width:0;overflow-wrap:anywhere;font-size:.85rem;line-height:1.25}
+  .mobile-conversion-bar a{display:flex;align-items:center;justify-content:center;text-align:center;min-height:48px;padding:10px}
+  body:has(#bookingForm){padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+}
