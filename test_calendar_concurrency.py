@@ -76,6 +76,36 @@ class ConcurrentHomepageTests(unittest.TestCase):
         cls.env.stop()
         cls.tmp.cleanup()
 
+    def test_public_quote_and_checkout_use_same_final_price(self):
+        def fetch(req, **kwargs):
+            if 'direct-booking-calendar' in req.full_url:
+                return response('{"ok":true,"events":[],"source":"test"}')
+            return response(feed(1))
+
+        payload = {'room': 'Bachblick', 'arrival': '2026-10-26',
+                   'departure': '2026-10-29', 'adults': 2}
+        with patch('urllib.request.urlopen', side_effect=fetch):
+            for breakfast in (False, True):
+                with self.subTest(breakfast=breakfast):
+                    client = self.app.test_client()
+                    public = client.post('/api/availability', data={
+                        **payload, 'breakfast': str(breakfast).lower(),
+                    })
+                    checkout = client.post('/api/paypal/quote', json={
+                        **payload, 'extras': {'breakfast': breakfast},
+                    })
+                    self.assertEqual(public.status_code, 200)
+                    self.assertEqual(checkout.status_code, 200)
+                    first = public.get_json()['breakdown']
+                    second = checkout.get_json()['breakdown']
+                    for key in ('total', 'room_total', 'extras', 'discounts', 'nightly_rates'):
+                        self.assertEqual(first[key], second[key], key)
+                    self.assertEqual(first['discounts'], [])
+                    self.assertLessEqual(first['room_total'], 149 * 3)
+                    self.assertEqual(sum(row['rate'] for row in first['nightly_rates']), first['room_total'])
+                    if breakfast:
+                        self.assertGreater(first['total'], first['room_total'])
+
     def test_parallel_home_calendar_and_checks_keep_safety_snapshot(self):
         def fetch(req, **kwargs):
             if 'beds24.test' in req.full_url:

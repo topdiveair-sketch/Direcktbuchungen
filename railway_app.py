@@ -238,13 +238,30 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
         sum(float(line.get("amount", 0) or 0) for line in breakdown.get("extras", [])),
         2,
     )
+    nightly_rates = [
+        {"date": row["date"], "rate": row["final_rate"]}
+        for row in yield_details
+    ]
+    if not nightly_rates:
+        nightly_rates = [
+            {"date": (arrival + timedelta(days=index)).isoformat(),
+             "rate": round(cap_room_rate(PUBLIC_BACHBLICK_NIGHTLY_PRICE), 2)}
+            for index in range(nights)
+        ]
     return {
         **breakdown,
+        "nightly_rates": nightly_rates,
         "room_total": room_total,
         "discounts": [],
         "revenue_management": yield_details,
         "total": round(room_total + extras_total, 2),
     }
+
+
+# Public availability, booking requests and payment use the same final direct
+# rates. The imported price_breakdown above remains the legacy extras calculator,
+# so this assignment does not recurse into direct_checkout_price_breakdown.
+core_app.price_breakdown = direct_checkout_price_breakdown
 
 
 # Install the OS-owned availability layer after app.py has initialized its base
