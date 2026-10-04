@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+  <title>Monteur Gap Optimizer · Zuhause am Bach OS</title>
+</head>
+<body class="admin-page">
+<header class="os-header">
+  <div>
+    <strong>Zuhause am Bach OS v112.11</strong>
+    <small>Monteur Gap Optimizer · {{ today }}</small>
+  </div>
+  <nav>
+    <a href="{{ url_for('os_dashboard') }}">OS</a>
+    <a href="{{ url_for('master_calendar_dashboard') }}">Master-Kalender</a>
+    <a href="{{ url_for('demand_dashboard') }}">Nachfrage & Buchungen</a>
+  </nav>
+</header>
+
+<main class="admin-main">
+  <section class="os-grid">
+    <article class="admin-panel" style="grid-column:1/-1;border-width:2px">
+      <h1>🛠 Monteur Gap Optimizer</h1>
+      <p>Ein Zimmer · 1 Doppelbett · maximal 2 Personen. Geprüft werden Winterfenster von Sonntag bis Freitag (5 Nächte).</p>
+      <div class="finance-summary">
+        <div><span>Freie Fenster</span><strong>{{ free_windows }}</strong></div>
+        <div><span>Als veröffentlicht markiert</span><strong>{{ published_windows }}</strong></div>
+        <div><span>1 Person</span><strong>{{ '%.0f'|format(single_room_rate) }} € / Nacht</strong><small>{{ '%.0f'|format(weekly_single) }} € / So–Fr</small></div>
+        <div><span>2 Personen</span><strong>{{ '%.0f'|format(double_pppn) }} € p. P. / Nacht</strong><small>{{ '%.0f'|format(weekly_double) }} € / So–Fr</small></div>
+      </div>
+      <p><small>Die OS-Markierung dokumentiert, ob du das Zeitfenster auf zimmmer.at veröffentlicht hast. Sie schreibt derzeit nicht automatisch in zimmmer.at, weil keine verifizierte Schreibschnittstelle hinterlegt ist.</small></p>
+      <div class="os-links">
+        <a href="{{ channel_url }}" target="_blank" rel="noopener">↗ zimmmer.at Einstellungen öffnen</a>
+        <a href="{{ url_for('master_calendar_dashboard') }}">🗓 Master-Kalender öffnen</a>
+      </div>
+    </article>
+  </section>
+
+  <section class="os-grid">
+    <article class="admin-panel" style="grid-column:1/-1">
+      <h2>Winterfenster</h2>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:.6rem">Zeitraum</th>
+              <th style="text-align:left;padding:.6rem">Kalender</th>
+              <th style="text-align:left;padding:.6rem">1 Person</th>
+              <th style="text-align:left;padding:.6rem">2 Personen</th>
+              <th style="text-align:left;padding:.6rem">zimmmer.at</th>
+              <th style="text-align:left;padding:.6rem">Aktion</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for w in windows %}
+            <tr>
+              <td style="padding:.6rem;border-top:1px solid #ddd"><strong>{{ w.start_label }}–{{ w.end_label }}</strong><br><small>So–Fr · {{ w.nights }} Nächte</small></td>
+              <td style="padding:.6rem;border-top:1px solid #ddd">
+                {% if w.available %}
+                  ✅ frei
+                {% else %}
+                  ❌ {{ w.blocker }}
+                {% endif %}
+              </td>
+              <td style="padding:.6rem;border-top:1px solid #ddd">{{ '%.0f'|format(w.single_total) }} € netto</td>
+              <td style="padding:.6rem;border-top:1px solid #ddd">{{ '%.0f'|format(w.double_total) }} € netto</td>
+              <td style="padding:.6rem;border-top:1px solid #ddd">
+                {% if w.channel_status == 'published' %}
+                  🟢 veröffentlicht markiert
+                  {% if w.updated_at %}<br><small>{{ w.updated_at }}</small>{% endif %}
+                {% else %}
+                  ⚪ nicht veröffentlicht
+                {% endif %}
+              </td>
+              <td style="padding:.6rem;border-top:1px solid #ddd">
+                {% if w.available %}
+                  <form method="post" style="display:inline">
+                    <input type="hidden" name="start_date" value="{{ w.start_date }}">
+                    <input type="hidden" name="end_date" value="{{ w.end_date }}">
+                    {% if w.channel_status == 'published' %}
+                      <input type="hidden" name="action" value="unpublish">
+                      <button type="submit">Als nicht veröffentlicht markieren</button>
+                    {% else %}
+                      <input type="hidden" name="action" value="publish">
+                      <button type="submit">Als veröffentlicht markieren</button>
+                    {% endif %}
+                  </form>
+                {% else %}
+                  <small>Keine Freigabe möglich</small>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="6" style="padding:1rem">Keine Winterfenster gefunden.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+</main>
+</body>
+</html>
