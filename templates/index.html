@@ -341,6 +341,27 @@
         <input type="hidden" name="utm_campaign" id="bookingUtmCampaign">
         <input type="hidden" name="landing_page" id="bookingLandingPage">
         <input type="hidden" name="referrer" id="bookingReferrer">
+        <section class="booking-services" aria-label="Zusatzleistungen">
+          <div class="service-heading">
+            <span>Auf Wunsch gleich dazu</span>
+            <strong>Frühstück, Wachauer Jause und Gepäcktransport</strong>
+          </div>
+          <div class="extras-grid featured-extras">
+            {% for key in ['breakfast', 'jause', 'luggage'] %}
+              {% set item = extras.get(key) %}
+              {% if item and item.enabled %}
+              <label class="extra-option featured-extra">
+                <input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}">
+                <span>
+                  <strong>{{ item.label }}</strong>
+                  <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} € {% if item.unit=='person_night' %}pro Person/Nacht{% elif item.unit=='night' %}pro Nacht{% else %}einmalig{% endif %}</small>
+                </span>
+              </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </section>
+
         <div class="booking-grid">
           <label>Anreise
             <input type="date" id="arrival" name="arrival" aria-label="Anreisedatum" title="Anreisedatum" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
@@ -362,26 +383,15 @@
 
         <div id="availabilityResult" class="availability-result hidden"></div>
 
-        <section class="booking-services" aria-label="Zusatzleistungen">
-          <div class="service-heading">
-            <span>Auf Wunsch gleich dazu</span>
-            <strong>Frühstück, Wachauer Jause und Gepäcktransport</strong>
-          </div>
-          <div class="extras-grid featured-extras">
-            {% for key in ['breakfast', 'jause', 'luggage'] %}
-              {% set item = extras.get(key) %}
-              {% if item and item.enabled %}
-              <label class="extra-option featured-extra">
-                <input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}">
-                <span>
-                  <strong>{{ item.label }}</strong>
-                  <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} € {% if item.unit=='person_night' %}pro Person/Nacht{% elif item.unit=='night' %}pro Nacht{% else %}einmalig{% endif %}</small>
-                </span>
-              </label>
-              {% endif %}
-            {% endfor %}
-          </div>
-        </section>
+        <div id="priceBreakdown" class="price-breakdown"></div>
+
+        <div class="total-row">
+          <span><strong>Flexible Rate</strong> <small>(inkl. gewählter Extras)</small></span>
+          <strong id="totalPrice">ab 99,00 € / Nacht</strong>
+        </div>
+        <div class="legal-note" id="flexibleRateNote" style="margin-top:6px">
+          ✓ Kostenfrei stornierbar bis 7 Tage vor Anreise
+        </div>
 
         <h3 class="subheading">Gartenzimmer</h3>
         <div id="zimmer" class="room-list">
@@ -430,16 +440,6 @@
               <button type="button" class="btn secondary" id="openPanorama">↻ 360° Zimmer ansehen</button>
             </div>
           </div>
-        </div>
-
-        <div id="priceBreakdown" class="price-breakdown"></div>
-
-        <div class="total-row">
-          <span><strong>Flexible Rate</strong> <small>(inkl. gewählter Extras)</small></span>
-          <strong id="totalPrice">ab 99,00 € / Nacht</strong>
-        </div>
-        <div class="legal-note" id="flexibleRateNote" style="margin-top:6px">
-          ✓ Kostenfrei stornierbar bis 7 Tage vor Anreise
         </div>
 
         <div class="booking-trust-strip" aria-label="Vorteile der Direktbuchung">
