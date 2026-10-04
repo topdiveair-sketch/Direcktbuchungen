@@ -86,7 +86,7 @@ def _init_paypal_checkout_2027(
         db,
         rooms,
         parse_date,
-        price_breakdown_2027,
+        _legacy_direct_checkout_price_breakdown,
         room_available_in_conn,
         sync_room,
     )

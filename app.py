@@ -536,6 +536,15 @@ def central_override_for_day(room: str, day: date) -> dict:
 def _base_direct_nightly_price_for_day(room: str, day: date) -> float:
     """Return the OS/base rate before demand adjustment."""
     prices, _discounts, _extras, _seasons = pricing_data()
+    getter = app.extensions.get("zab_channel_price_for_day")
+    if callable(getter):
+        value = getter(room, "direct", day, None)
+        if value is not None:
+            return round(float(value), 2)
+    manual_base = app.extensions.get("zab_manual_room_base")
+    if callable(manual_base) and manual_base(room):
+        row = prices[room]
+        return float(row["high"] if is_high(day) else row["weekend"] if day.weekday() in (4, 5) else row["standard"])
     override = central_override_for_day(room, day)
     if override.get("price") is not None:
         return round(float(override["price"]), 2)
@@ -3203,7 +3212,10 @@ def admin_prices():
     if not require_admin(): return redirect(url_for("admin_login"))
     with db() as c:
         for r in ROOMS: c.execute("UPDATE room_prices SET standard=?,weekend=?,high=? WHERE room=?",(float(request.form[f"{r}_standard"]),float(request.form[f"{r}_weekend"]),float(request.form[f"{r}_high"]),r))
-    flash("Preise gespeichert.","success"); return redirect(url_for("admin"))
+    manager = app.extensions.get("zab_manage_rate_days")
+    if callable(manager):
+        manager("Bachblick", date.today(), date.today() + timedelta(days=370), manual_base=True)
+    flash("Preise gespeichert; Portalpreise mit 5 % Aufschlag (max. 149 €) sind vorgemerkt; Übertragungsstatus prüfen.","success"); return redirect(url_for("admin"))
 
 @app.post("/admin/discounts")
 def admin_discounts():

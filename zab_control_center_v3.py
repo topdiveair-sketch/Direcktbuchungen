@@ -240,6 +240,10 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
             return None, False
 
     def _channel_price(conn, room: str, channel: str, day: date):
+        reader = app.extensions.get("zab_final_direct_rate" if channel == "direct" else "zab_portal_rate")
+        if room == "Bachblick" and callable(reader):
+            row = _day_row(conn, room, "direct", day)
+            return reader(room, day), bool(row is not None and row["price"] is not None)
         if channel == "direct":
             return _direct_price(conn, room, day)
         row = _day_row(conn, room, channel, day)
@@ -623,7 +627,10 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
         except ValueError as exc:
             return jsonify(ok=False, error=str(exc) or "invalid_values"), 400
         sync_results = []
-        if data.get("sync_booking_price", True):
+        manager = app.extensions.get("zab_manage_rate_days")
+        if callable(manager) and any(f"{channel}_price" in data for channel in CHANNELS):
+            manager(room, start, end)
+        elif data.get("sync_booking_price", True):
             for day_value, price in booking_prices:
                 sync_results.append({"date": day_value.isoformat(), **_sync_booking_rate(room, day_value, price)})
         return jsonify(ok=True, room=room, start_date=start.isoformat(), end_date=end.isoformat(), booking_sync=sync_results), 200

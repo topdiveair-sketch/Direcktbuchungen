@@ -192,7 +192,7 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
 
     current = arrival
     while current < departure:
-        nightly = nightly_direct_rate(current)
+        nightly = core_app.direct_nightly_price_for_day(room, current)
         if nightly is None:
             dynamic_rates = []
             yield_details = []
@@ -207,13 +207,6 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
         if current == today and now_local.hour >= late_hour:
             same_day_late_add_eur = late_add_eur
             nightly += same_day_late_add_eur
-
-        price_getter = app.extensions.get("zab_channel_price_for_day")
-        if callable(price_getter):
-            try:
-                nightly = price_getter(room, "direct", current, float(nightly))
-            except Exception:
-                pass
 
         nightly = cap_room_rate(nightly)
         dynamic_rates.append(float(nightly))
@@ -263,11 +256,21 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
 # so this assignment does not recurse into direct_checkout_price_breakdown.
 core_app.price_breakdown = direct_checkout_price_breakdown
 
+from channel_pricing import init_channel_pricing
+
+
+def final_direct_rate(room, day):
+    return direct_checkout_price_breakdown(room, day, day + timedelta(days=1), 2, {})["room_total"]
+
+
+
+
 
 # Install the OS-owned availability layer after app.py has initialized its base
 # schema and routes. The wrapper is then injected back into the app module, so
 # /book, /api/availability and the PayPal checkout all consult the same source.
 init_master_calendar(app, db, require_admin, ROOMS)
+init_channel_pricing(app, db, final_direct_rate, require_admin)
 _legacy_room_available_in_conn = core_app.room_available_in_conn
 
 

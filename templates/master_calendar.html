@@ -102,15 +102,16 @@
         <label>Von<input type="date" name="start_date" value="{{ selected.date }}" required></label>
         <label>Bis einschließlich<input type="date" name="end_date" value="{{ selected.date }}" required></label>
         <label>Direkt-Verfügbarkeit<select name="direct_status"><option value="keep">nicht ändern</option><option value="open">offen erzwingen</option><option value="closed">geschlossen</option><option value="reset">auf Standard zurücksetzen</option></select></label>
-        <label>Direktpreis pro Nacht<input name="direct_price" inputmode="decimal" placeholder="aktuell {{ selected.direct_price if selected.direct_price is not none else '—' }}"></label>
+        <label>Direkt-Basispreis pro Nacht<input name="direct_price" inputmode="decimal" placeholder="aktuell {{ selected.direct_price if selected.direct_price is not none else '—' }}"></label>
         <label>Booking-Verfügbarkeit<select name="booking_status"><option value="keep">nicht ändern</option><option value="open">offen erzwingen</option><option value="closed">geschlossen</option><option value="reset">auf Standard zurücksetzen</option></select></label>
-        <label>Booking-Sollpreis pro Nacht<input name="booking_price" inputmode="decimal" placeholder="aktuell {{ selected.booking_price if selected.booking_price is not none else '—' }}"></label>
+        <label>Portal-Sollpreis pro Nacht<input readonly value="{{ selected.booking_price if selected.booking_price is not none else '—' }} € · automatisch +5 %, maximal 149 €"></label>
       </div>
       <label><input type="checkbox" name="clear_direct_price" value="1"> Direkt-Tagespreis löschen und Standardpreis verwenden</label>
-      <label><input type="checkbox" name="clear_booking_price" value="1"> Booking-Sollpreis löschen</label>
       <button type="submit">Zeitraum speichern</button>
     </form>
-    <p class="info-note"><strong>Booking-Preis:</strong> Der Sollpreis wird im OS gespeichert und im Kalender angezeigt. Über iCal kann Booking.com keinen Preis empfangen; bis zu einer echten Booking-Connectivity-Anbindung muss dieser Preis im Booking-Extranet manuell gesetzt werden. Die Verfügbarkeit kann dagegen über den ZAB-iCal-Feed gesteuert werden.</p>
+    <p><strong>Preisübertragung:</strong> Beds24 {{ 'eingerichtet' if beds24_price_ready else 'API/Portal-Zuordnung fehlt' }} · Booking {{ 'eingerichtet' if booking_price_ready else 'Connectivity-Zuordnung fehlt' }}.</p>
+    {% for row in portal_rate_sync %}<p>{{ row.provider }}: {{ row.count }} Tagespreise {{ row.label }}.</p>{% endfor %}
+    <p class="info-note">Der eingegebene Basispreis wird nach Nachfrage, Auslastung und Buchungszeit angepasst, maximal auf 149 €. Portal-Sollpreise liegen 5 % darüber, ebenfalls höchstens 149 €. Preise werden ausschließlich über eingerichtete APIs übertragen; iCal überträgt keine Preise. <a href="/os/channel-pricing/status">Übertragungsstatus prüfen</a></p>
   </section>
   {% endif %}
 

@@ -76,6 +76,64 @@ class ConcurrentHomepageTests(unittest.TestCase):
         cls.env.stop()
         cls.tmp.cleanup()
 
+    def test_admin_price_change_becomes_authoritative_base(self):
+        from datetime import date
+        import railway_app
+        day = date(2026,10,26)
+        client = self.app.test_client()
+        with client.session_transaction() as session:
+            session['admin'] = True
+        prices = self.core.pricing_data()[0]
+        form = {f'{room}_{kind}': str(row[kind]) for room,row in prices.items()
+                for kind in ('standard','weekend','high')}
+        form.update({f'Bachblick_{kind}':'100' for kind in ('standard','weekend','high')})
+        outbox = self.app.extensions['zab_rate_outbox']
+        original = self.app.extensions['zab_manage_rate_days']
+        self.app.extensions['zab_manage_rate_days'] = lambda room,*args,**kw: outbox.manage(room,day,day,**kw)
+        try:
+            with patch.object(self.core,'_demand_percent_for_day',return_value=(5,4)), \
+                 patch.object(railway_app,'_revenue_adjustment_for_day',return_value=(0,0)):
+                self.assertEqual(client.post('/admin/prices',data=form).status_code,302)
+                self.assertEqual(railway_app.final_direct_rate('Bachblick',day),105)
+                self.assertEqual(self.app.extensions['zab_portal_rate']('Bachblick',day),110.25)
+        finally:
+            self.app.extensions['zab_manage_rate_days'] = original
+            with self.core.db() as conn:
+                for room,row in prices.items():
+                    conn.execute('UPDATE room_prices SET standard=?,weekend=?,high=? WHERE room=?',
+                                 (row['standard'],row['weekend'],row['high'],room))
+                conn.execute('DELETE FROM zab_manual_price_base')
+                for table in ('zab_rate_managed_days','zab_rate_outbox'):
+                    conn.execute(f'DELETE FROM {table} WHERE room=? AND day=?',('Bachblick',day.isoformat()))
+
+    def test_os_base_price_gets_demand_and_portal_markup(self):
+        from datetime import date
+        import railway_app
+        from channel_pricing import portal_price
+        day = date(2026,10,26)
+        client = self.app.test_client()
+        with client.session_transaction() as session:
+            session['admin'] = True
+        try:
+            with patch.object(self.core, '_demand_percent_for_day', return_value=(5,4)), \
+                 patch.object(railway_app, '_revenue_adjustment_for_day', return_value=(0,0)):
+                result = client.post('/os/calendar/day', data={
+                    'room':'Bachblick','start_date':day.isoformat(),'end_date':day.isoformat(),
+                    'direct_price':'100','direct_status':'keep','booking_status':'keep',
+                })
+                self.assertEqual(result.status_code, 302)
+                self.assertEqual(railway_app.final_direct_rate('Bachblick', day), 105)
+                self.assertEqual(self.app.extensions['zab_portal_rate']('Bachblick', day), 110.25)
+                self.assertEqual(self.app.extensions['zab_channel_price_for_day']('Bachblick','booking',day), 110.25)
+                with self.core.db() as conn:
+                    rows = conn.execute('SELECT desired_price FROM zab_rate_outbox WHERE day=?', (day.isoformat(),)).fetchall()
+                self.assertEqual([r['desired_price'] for r in rows], [110.25,110.25])
+                self.assertEqual(client.get('/os/channel-pricing/status').status_code,200)
+        finally:
+            with self.core.db() as conn:
+                for table in ('zab_channel_day_settings','zab_rate_managed_days','zab_rate_outbox'):
+                    conn.execute(f'DELETE FROM {table} WHERE room=? AND day=?', ('Bachblick', day.isoformat()))
+
     def test_public_quote_and_checkout_use_same_final_price(self):
         def fetch(req, **kwargs):
             if 'direct-booking-calendar' in req.full_url:

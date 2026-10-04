@@ -313,6 +313,9 @@ def init_master_calendar_desktop_api(app, db, rooms, authorize, direct_rate_fn=N
                         )
                     updated += 1
                 current += timedelta(days=1)
+        manager = app.extensions.get("zab_manage_rate_days")
+        if callable(manager) and any((channel, "price") in supplied for channel in CHANNELS):
+            manager(room, start, end)
         return jsonify(ok=True, updated=updated), 200, {"Cache-Control": "no-store"}
 
     @app.post("/api/central/master-calendar/channel")
