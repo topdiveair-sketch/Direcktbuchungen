@@ -86,6 +86,17 @@ def init_zab_os(app, DB_PATH, db, require_admin, ROOMS):
             planned_date TEXT NOT NULL DEFAULT '',
             created_at TEXT NOT NULL
         );
+
+        CREATE TABLE IF NOT EXISTS monteur_channel_windows(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            start_date TEXT NOT NULL,
+            end_date TEXT NOT NULL,
+            channel TEXT NOT NULL DEFAULT 'zimmmer.at',
+            status TEXT NOT NULL DEFAULT 'not_published',
+            note TEXT NOT NULL DEFAULT '',
+            updated_at TEXT NOT NULL,
+            UNIQUE(start_date, end_date, channel)
+        );
         """)
 
         # Grundinventar nur einmal anlegen
@@ -177,6 +188,125 @@ def init_zab_os(app, DB_PATH, db, require_admin, ROOMS):
             """, (month_prefix + "%",)).fetchone()["value"]
         return float(revenue or 0), float(costs or 0), float(revenue or 0) - float(costs or 0)
 
+    MONTEUR_ROOM = "Bachblick"
+    MONTEUR_CHANNEL = "zimmmer.at"
+    MONTEUR_CHANNEL_URL = "https://www.zimmmer.at/de/einstellungen"
+    MONTEUR_WINTER_MONTHS = {11, 12, 1, 2, 3}
+    MONTEUR_NIGHTS = 5
+    MONTEUR_MAX_GUESTS = 2
+    MONTEUR_TWO_PERSON_PRICE_PER_PERSON = 55.0
+    MONTEUR_SINGLE_ROOM_PRICE = 80.0
+
+    def _monteur_blocker(conn, start_day, end_day):
+        booking = conn.execute(
+            """SELECT 1 FROM bookings
+               WHERE room=?
+                 AND status IN ('pending','confirmed')
+                 AND arrival < ?
+                 AND departure > ?
+               LIMIT 1""",
+            (MONTEUR_ROOM, end_day.isoformat(), start_day.isoformat()),
+        ).fetchone()
+        if booking:
+            return "Direktbuchung"
+
+        external = conn.execute(
+            """SELECT 1 FROM external_blocks
+               WHERE room=?
+                 AND start_date < ?
+                 AND end_date > ?
+               LIMIT 1""",
+            (MONTEUR_ROOM, end_day.isoformat(), start_day.isoformat()),
+        ).fetchone()
+        if external:
+            return "Externer Buchungskanal"
+
+        closed = conn.execute(
+            """SELECT 1 FROM central_overrides
+               WHERE room=?
+                 AND availability=0
+                 AND day>=?
+                 AND day<?
+               LIMIT 1""",
+            (MONTEUR_ROOM, start_day.isoformat(), end_day.isoformat()),
+        ).fetchone()
+        if closed:
+            return "Im Master-Kalender gesperrt"
+        return ""
+
+    def monteur_gap_windows(limit=18, horizon_weeks=64):
+        today_day = date.today()
+        days_to_sunday = (6 - today_day.weekday()) % 7
+        first_sunday = today_day + timedelta(days=days_to_sunday)
+        windows = []
+
+        with db() as conn:
+            states = {
+                (row["start_date"], row["end_date"]): row
+                for row in conn.execute(
+                    """SELECT start_date,end_date,status,note,updated_at
+                       FROM monteur_channel_windows
+                       WHERE channel=?""",
+                    (MONTEUR_CHANNEL,),
+                ).fetchall()
+            }
+
+            for week in range(horizon_weeks + 1):
+                start_day = first_sunday + timedelta(days=7 * week)
+                end_day = start_day + timedelta(days=MONTEUR_NIGHTS)
+                nights = [start_day + timedelta(days=i) for i in range(MONTEUR_NIGHTS)]
+                if not all(day.month in MONTEUR_WINTER_MONTHS for day in nights):
+                    continue
+
+                blocker = _monteur_blocker(conn, start_day, end_day)
+                state = states.get((start_day.isoformat(), end_day.isoformat()))
+                status = str(state["status"]) if state else "not_published"
+                note = str(state["note"] or "") if state else ""
+                updated_at = str(state["updated_at"] or "") if state else ""
+
+                windows.append({
+                    "start_date": start_day.isoformat(),
+                    "end_date": end_day.isoformat(),
+                    "start_label": start_day.strftime("%d.%m.%Y"),
+                    "end_label": end_day.strftime("%d.%m.%Y"),
+                    "available": not blocker,
+                    "blocker": blocker,
+                    "channel_status": status,
+                    "channel_note": note,
+                    "updated_at": updated_at,
+                    "nights": MONTEUR_NIGHTS,
+                    "single_total": round(MONTEUR_SINGLE_ROOM_PRICE * MONTEUR_NIGHTS, 2),
+                    "double_total": round(
+                        MONTEUR_TWO_PERSON_PRICE_PER_PERSON * MONTEUR_MAX_GUESTS * MONTEUR_NIGHTS,
+                        2,
+                    ),
+                    "double_pppn": MONTEUR_TWO_PERSON_PRICE_PER_PERSON,
+                    "single_room_rate": MONTEUR_SINGLE_ROOM_PRICE,
+                })
+                if len(windows) >= limit:
+                    break
+
+        return windows
+
+    def monteur_gap_summary():
+        windows = monteur_gap_windows(limit=18)
+        free = [window for window in windows if window["available"]]
+        published = [
+            window for window in windows
+            if window["available"] and window["channel_status"] == "published"
+        ]
+        next_free = free[0] if free else None
+        return {
+            "free_windows": len(free),
+            "published_windows": len(published),
+            "next_free": next_free,
+            "weekly_single": round(MONTEUR_SINGLE_ROOM_PRICE * MONTEUR_NIGHTS, 2),
+            "weekly_double": round(
+                MONTEUR_TWO_PERSON_PRICE_PER_PERSON * MONTEUR_MAX_GUESTS * MONTEUR_NIGHTS,
+                2,
+            ),
+        }
+
     @app.get("/os")
     def os_dashboard():
         if not require_admin():
@@ -213,6 +343,7 @@ def init_zab_os(app, DB_PATH, db, require_admin, ROOMS):
             ).fetchone()["c"]
 
         revenue, costs, profit = month_profit(month_prefix)
+        monteur_summary = monteur_gap_summary()
 
         guardian_state = app.extensions.get("projectos_system_guardian_state") or {}
         guardian_result = guardian_state.get("last_result") if isinstance(guardian_state, dict) else None
@@ -240,6 +371,7 @@ def init_zab_os(app, DB_PATH, db, require_admin, ROOMS):
             revenue=revenue,
             costs=costs,
             profit=profit,
+            monteur_summary=monteur_summary,
             today=today,
         )
 
@@ -578,6 +710,90 @@ def init_zab_os(app, DB_PATH, db, require_admin, ROOMS):
                 "SELECT * FROM marketing_ideas ORDER BY planned_date,id DESC"
             ).fetchall()
         return render_template("marketing_center.html", ideas=ideas)
+
+    @app.route("/os/monteur", methods=["GET", "POST"])
+    def monteur_gap_optimizer():
+        if not require_admin():
+            return redirect(url_for("admin_login"))
+
+        if request.method == "POST":
+            action = request.form.get("action", "").strip().lower()
+            start_raw = request.form.get("start_date", "").strip()
+            end_raw = request.form.get("end_date", "").strip()
+            try:
+                start_day = date.fromisoformat(start_raw)
+                end_day = date.fromisoformat(end_raw)
+            except ValueError:
+                flash("Ungültiger Zeitraum.", "error")
+                return redirect(url_for("monteur_gap_optimizer"))
+
+            nights = [start_day + timedelta(days=i) for i in range(MONTEUR_NIGHTS)]
+            valid_window = (
+                start_day.weekday() == 6
+                and end_day == start_day + timedelta(days=MONTEUR_NIGHTS)
+                and all(day.month in MONTEUR_WINTER_MONTHS for day in nights)
+            )
+            if not valid_window:
+                flash("Nur Winter-Monteurfenster Sonntag bis Freitag können verwaltet werden.", "error")
+                return redirect(url_for("monteur_gap_optimizer"))
+
+            with db() as conn:
+                blocker = _monteur_blocker(conn, start_day, end_day)
+                if action == "publish":
+                    if blocker:
+                        flash(f"Nicht freigeschaltet: Zeitraum ist belegt oder gesperrt ({blocker}).", "error")
+                        return redirect(url_for("monteur_gap_optimizer"))
+                    status = "published"
+                    message = "Zeitraum als auf zimmmer.at veröffentlicht markiert."
+                elif action == "unpublish":
+                    status = "not_published"
+                    message = "Zeitraum als nicht veröffentlicht markiert."
+                else:
+                    flash("Unbekannte Aktion.", "error")
+                    return redirect(url_for("monteur_gap_optimizer"))
+
+                conn.execute(
+                    """INSERT INTO monteur_channel_windows
+                       (start_date,end_date,channel,status,note,updated_at)
+                       VALUES(?,?,?,?,?,?)
+                       ON CONFLICT(start_date,end_date,channel) DO UPDATE SET
+                           status=excluded.status,
+                           note=excluded.note,
+                           updated_at=excluded.updated_at""",
+                    (
+                        start_day.isoformat(),
+                        end_day.isoformat(),
+                        MONTEUR_CHANNEL,
+                        status,
+                        "",
+                        datetime.now().isoformat(timespec="seconds"),
+                    ),
+                )
+            flash(message, "success")
+            return redirect(url_for("monteur_gap_optimizer"))
+
+        windows = monteur_gap_windows()
+        free_windows = [window for window in windows if window["available"]]
+        published_windows = [
+            window for window in windows
+            if window["available"] and window["channel_status"] == "published"
+        ]
+        return render_template(
+            "monteur_optimizer.html",
+            windows=windows,
+            free_windows=len(free_windows),
+            published_windows=len(published_windows),
+            channel_url=MONTEUR_CHANNEL_URL,
+            single_room_rate=MONTEUR_SINGLE_ROOM_PRICE,
+            double_pppn=MONTEUR_TWO_PERSON_PRICE_PER_PERSON,
+            weekly_single=round(MONTEUR_SINGLE_ROOM_PRICE * MONTEUR_NIGHTS, 2),
+            weekly_double=round(
+                MONTEUR_TWO_PERSON_PRICE_PER_PERSON * MONTEUR_MAX_GUESTS * MONTEUR_NIGHTS,
+                2,
+            ),
+            today=date.today().isoformat(),
+        )
+
 
     @app.get("/os/status.json")
     def os_status():
