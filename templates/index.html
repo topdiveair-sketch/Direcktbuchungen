@@ -344,7 +344,7 @@
         <section class="booking-services" aria-label="Zusatzleistungen">
           <div class="service-heading">
             <span>Auf Wunsch gleich dazu</span>
-            <strong>Frühstück, Wachauer Jause und Gepäcktransport</strong>
+            <strong>Frühstück, Abendjause und Gepäcktransport</strong>
           </div>
           <div class="extras-grid featured-extras">
             {% for key in ['breakfast', 'jause', 'luggage'] %}
@@ -353,8 +353,9 @@
               <label class="extra-option featured-extra">
                 <input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}">
                 <span>
-                  <strong>{{ item.label }}</strong>
+                  <strong>{% if key == 'jause' %}Wachauer Jause zum Abendessen{% else %}{{ item.label }}{% endif %}</strong>
                   <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} € {% if item.unit=='person_night' %}pro Person/Nacht{% elif item.unit=='night' %}pro Nacht{% else %}einmalig{% endif %}</small>
+                  {% if key == 'jause' %}<small>Die Gebus-Terrasse hat dienstags und mittwochs geschlossen. Unsere Wachauer Jause kannst du als Abendessen dazubuchen.</small>{% endif %}
                 </span>
               </label>
               {% endif %}
@@ -678,7 +679,7 @@
     <div class="direct-value-grid">
       <article><strong>✓ Live-Verfügbarkeit</strong><small>Kalender und Terminprüfung direkt auf der Website.</small></article>
       <article><strong>✓ Persönlicher Kontakt</strong><small>Fragen und Wünsche gehen direkt an Zuhause am Bach.</small></article>
-      <article><strong>✓ Extras im selben Ablauf</strong><small>Frühstück, Jause und Gepäcktransport gleich mit auswählen.</small></article>
+      <article><strong>✓ Extras im selben Ablauf</strong><small>Frühstück, Abendjause und Gepäcktransport gleich mit auswählen.</small></article>
       <article><strong>✓ Klarer Gesamtpreis</strong><small>Nach der Verfügbarkeitsprüfung siehst du den Preis inklusive gewählter Extras.</small></article>
     </div>
   </section>
@@ -727,7 +728,7 @@
              loading="eager" decoding="async">
         <div class="active-service-card-body">
           <h3>Regionale Genussmomente</h3>
-          <p>Wachauer Jause, regionale Spezialitäten und kleine Genussmomente für den Aufenthalt und die nächste Etappe.</p>
+          <p>Wachauer Jause zum Abendessen, regionale Spezialitäten und kleine Genussmomente für deinen Aufenthalt.</p>
         </div>
       </article>
       <article class="active-service-card active-service-card--welterbesteig">
@@ -973,7 +974,7 @@
     it:{labels:["Arrivo","Partenza","Notti","Ospiti"],check:"VERIFICA DISPONIBILITÀ",services:"Aggiungi al soggiorno",servicesTitle:"Colazione, merenda della Wachau e trasporto bagagli",room:"Camera sul giardino",roomText:"Tranquilla camera doppia dall'atmosfera personale e accogliente.",features:"Letto matrimoniale · bagno privato · Wi-Fi · posizione tranquilla",total:"Prezzo totale",guest:"Dati dell'ospite",first:"Nome",last:"Cognome",phone:"Telefono",msg:"Richieste o messaggio",coupon:"Codice sconto",payment:"Metodo di pagamento",bank:"Bonifico bancario",onsite:"Pagamento all'arrivo",submit:"PRENOTA DIRETTAMENTE",note:"La richiesta viene registrata subito nel calendario delle prenotazioni dirette. Riceverai poi la nostra conferma personale."},
     es:{labels:["Llegada","Salida","Noches","Huéspedes"],check:"COMPROBAR DISPONIBILIDAD",services:"Añadir a la estancia",servicesTitle:"Desayuno, merienda de Wachau y traslado de equipaje",room:"Habitación jardín",roomText:"Habitación doble tranquila, acogedora y de ambiente personal.",features:"Cama doble · baño privado · Wi-Fi · ubicación tranquila",total:"Precio total",guest:"Datos del huésped",first:"Nombre",last:"Apellidos",phone:"Teléfono",msg:"Peticiones o mensaje",coupon:"Código de descuento",payment:"Forma de pago",bank:"Transferencia bancaria",onsite:"Pago a la llegada",submit:"RESERVAR DIRECTAMENTE",note:"La solicitud se registra inmediatamente en el calendario de reservas directas. Después recibirás nuestra confirmación personal."},
     fr:{labels:["Arrivée","Départ","Nuits","Voyageurs"],check:"VÉRIFIER LES DISPONIBILITÉS",services:"Ajouter au séjour",servicesTitle:"Petit-déjeuner, collation de la Wachau et transport des bagages",room:"Chambre côté jardin",roomText:"Chambre double calme, personnelle et confortable.",features:"Lit double · salle de bain privée · Wi-Fi · emplacement calme",total:"Prix total",guest:"Coordonnées du voyageur",first:"Prénom",last:"Nom",phone:"Téléphone",msg:"Demandes ou message",coupon:"Code promotionnel",payment:"Mode de paiement",bank:"Virement bancaire",onsite:"Paiement à l'arrivée",submit:"RÉSERVER EN DIRECT",note:"Votre demande est immédiatement enregistrée dans le calendrier des réservations directes. Nous vous envoyons ensuite une confirmation personnelle."},
-    ch:{labels:["Aareis","Abreis","Nächt","Gäste"],check:"VERFÜGBARKEIT PRÜEFE",services:"Zum Ufenthalt dezue",servicesTitle:"Frühstück, Wachauer Proviant und Gepäcktransport",room:"Gartenzimmer",roomText:"Ruhigs Doppelzimmer mit persönlicher und gemütlicher Atmosphäre.",features:"Doppelbett · eigets Bad · WLAN · ruhigi Lag",total:"Gesamtpriis",guest:"Gästedate",first:"Vorname",last:"Nachname",phone:"Telefon",msg:"Wünsch oder Nachricht",coupon:"Gutscheincode",payment:"Zahligsart",bank:"Banküberwiisig",onsite:"Zahlig bi de Aareis",submit:"DIREKT BUECHE",note:"D Afrag wird sofort im Direktbuechigskalender vorgmerkt. Nachher chunnt üsi persönlechi Bestätigung."},
+    ch:{labels:["Aareis","Abreis","Nächt","Gäste"],check:"VERFÜGBARKEIT PRÜEFE",services:"Zum Ufenthalt dezue",servicesTitle:"Frühstück, Wachauer Abendjause und Gepäcktransport",room:"Gartenzimmer",roomText:"Ruhigs Doppelzimmer mit persönlicher und gemütlicher Atmosphäre.",features:"Doppelbett · eigets Bad · WLAN · ruhigi Lag",total:"Gesamtpriis",guest:"Gästedate",first:"Vorname",last:"Nachname",phone:"Telefon",msg:"Wünsch oder Nachricht",coupon:"Gutscheincode",payment:"Zahligsart",bank:"Banküberwiisig",onsite:"Zahlig bi de Aareis",submit:"DIREKT BUECHE",note:"D Afrag wird sofort im Direktbuechigskalender vorgmerkt. Nachher chunnt üsi persönlechi Bestätigung."},
     ar:{labels:["الوصول","المغادرة","الليالي","الضيوف"],check:"تحقق من التوافر",services:"أضف إلى إقامتك",servicesTitle:"الإفطار ووجبة Wachau ونقل الأمتعة",room:"غرفة الحديقة",roomText:"غرفة مزدوجة هادئة بأجواء شخصية ومريحة.",features:"سرير مزدوج · حمام خاص · واي فاي · موقع هادئ",total:"السعر الإجمالي",guest:"بيانات الضيف",first:"الاسم الأول",last:"اسم العائلة",phone:"الهاتف",msg:"طلبات أو رسالة",coupon:"رمز الخصم",payment:"طريقة الدفع",bank:"تحويل بنكي",onsite:"الدفع عند الوصول",submit:"احجز مباشرة",note:"يتم تسجيل طلبك فوراً في تقويم الحجوزات المباشرة، ثم نرسل لك تأكيداً شخصياً."}
   }[lang];
   if(!T) return;
