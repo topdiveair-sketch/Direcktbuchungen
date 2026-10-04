@@ -123,6 +123,10 @@ init_booking_guest_sync(app, legacy_app.db, _desktop_admin_ok)
 
 
 def _effective_direct_rate(room: str, day: date, fallback: float) -> tuple[float, bool]:
+    final_rate = app.extensions.get("zab_final_direct_rate")
+    if callable(final_rate):
+        value = float(final_rate(room, day))
+        return value, value != fallback
     getter = app.extensions.get("zab_channel_price_for_day")
     if not callable(getter):
         return fallback, False

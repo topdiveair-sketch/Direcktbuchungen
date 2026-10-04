@@ -237,6 +237,9 @@ def init_master_calendar(app, db, require_admin, rooms):
     def channel_price_for_day(room: str, channel: str, day: date, fallback=None):
         if room not in rooms or channel not in CHANNELS:
             return fallback
+        portal = app.extensions.get("zab_portal_rate")
+        if channel != "direct" and callable(portal) and room == "Bachblick":
+            return portal(room, day)
         with db() as conn:
             row = _day_setting(conn, room, channel, day)
         if row is not None and row["price"] is not None:
@@ -532,6 +535,8 @@ def init_master_calendar(app, db, require_admin, rooms):
                     direct_setting = _day_setting(conn, room, "direct", current)
                     booking_setting = _day_setting(conn, room, "booking", current)
                 base_direct = _base_direct_price(room, current)
+                base_reader = app.extensions.get("zab_direct_base_rate")
+                direct_base_price = base_reader(room, current) if room == "Bachblick" and callable(base_reader) else base_direct
                 direct_price = (
                     float(direct_setting["price"])
                     if direct_setting is not None and direct_setting["price"] is not None
@@ -542,6 +547,11 @@ def init_master_calendar(app, db, require_admin, rooms):
                     if booking_setting is not None and booking_setting["price"] is not None
                     else None
                 )
+                final_rate = app.extensions.get("zab_final_direct_rate")
+                portal_rate = app.extensions.get("zab_portal_rate")
+                if room == "Bachblick" and callable(final_rate):
+                    direct_price = final_rate(room, current)
+                    booking_price = portal_rate(room, current)
                 days.append({
                     "date": current.isoformat(),
                     "day": current.day,
@@ -552,6 +562,7 @@ def init_master_calendar(app, db, require_admin, rooms):
                     "direct_open": direct_open,
                     "booking_open": booking_open,
                     "direct_price": direct_price,
+                    "direct_base_price": direct_base_price,
                     "booking_price": booking_price,
                     "direct_price_override": direct_setting is not None and direct_setting["price"] is not None,
                     "booking_price_override": booking_setting is not None and booking_setting["price"] is not None,
@@ -764,7 +775,10 @@ def init_master_calendar(app, db, require_admin, rooms):
                             (room, current.isoformat(), channel, enabled_override, stored_price, now),
                         )
                 current += timedelta(days=1)
-        flash(f"Kalendereinstellungen für {room} gespeichert.", "success")
+        manager = app.extensions.get("zab_manage_rate_days")
+        if callable(manager) and (direct_price_changed or clear_direct):
+            manager(room, start, end)
+        flash(f"Kalendereinstellungen für {room} gespeichert. Portalpreis: Direktpreis + 5 %, maximal 149 €; Übertragungsstatus separat prüfen.", "success")
         return redirect(url_for(
             "master_calendar_dashboard",
             year=start.year, month=start.month, room=room, edit=start.isoformat()

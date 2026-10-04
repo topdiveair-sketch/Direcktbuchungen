@@ -28,6 +28,7 @@ class PriceCapTests(unittest.TestCase):
             def now(tz):
                 return datetime(2026,10,4,21,tzinfo=tz)
         ns = {'date':date,'timedelta':timedelta,'datetime':LateDatetime,'ZoneInfo':ZoneInfo,'cap_room_rate':cap_room_rate,'pricing_config':lambda: {},'nightly_direct_rate':lambda day:149,'_booked_nights_next_30_days':lambda day:set(),'_revenue_adjustment_for_day':lambda *a,**kw:(30,85),'PUBLIC_BACHBLICK_NIGHTLY_PRICE':300,'app':SimpleNamespace(extensions={})}
+        ns['core_app'] = SimpleNamespace(direct_nightly_price_for_day=lambda *a:149)
         ns['price_breakdown'] = lambda *a: {'extras':[{'label':'Breakfast','amount':24}],'total':999,'room_total':999,'discounts':[]}
         load_functions('railway_app.py',['direct_checkout_price_breakdown'],ns)
         for getter in [None,lambda *a:350]:
@@ -37,7 +38,7 @@ class PriceCapTests(unittest.TestCase):
                 self.assertEqual(result['room_total'],149)
                 self.assertEqual(result['total'],173)
                 self.assertEqual(result['revenue_management'][0]['final_rate'],149)
-        ns['nightly_direct_rate']=lambda day:None
+        ns['core_app'].direct_nightly_price_for_day=lambda *a:None
         result=ns['direct_checkout_price_breakdown']('Bachblick',date(2028,1,1),date(2028,1,3),2,{})
         self.assertEqual(result['room_total'],298)
 
