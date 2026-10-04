@@ -193,18 +193,40 @@ def room_is_suspended(room: str) -> bool:
 
 ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 
+# The deployed app uses one worker with multiple request/background threads.
+# Coordinate short database scopes; feed HTTP requests stay outside this lock.
+_DB_LOCK = threading.RLock()
+
 
 @contextmanager
 def db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    try:
-        # sqlite3's own context manager commits/rolls back but does not close.
-        # Close even on exceptions instead of accumulating connections in workers.
-        with conn:
-            yield conn
-    finally:
-        conn.close()
+    with _DB_LOCK:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        try:
+            # sqlite3's context manager commits/rolls back but does not close.
+            with conn:
+                yield conn
+        finally:
+            conn.close()
+
+
+@app.errorhandler(sqlite3.OperationalError)
+def calendar_database_error(exc):
+    """Also cover a busy DB in before_request; never confirm availability."""
+    code = getattr(exc, "sqlite_errorcode", 0) & 0xff
+    if code not in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED} or request.path not in {
+        "/api/availability", "/api/calendar", "/api/paypal/quote", "/api/paypal/create-order",
+    }:
+        raise exc
+    app.logger.warning("calendar_database_busy path=%s code=%s", request.path, code)
+    response = jsonify(
+        ok=False, available=False, status="unknown", live=False, days={},
+        message="Kalenderprüfung vorübergehend ausgelastet. Bitte kurz warten und erneut prüfen.",
+    )
+    response.headers["Retry-After"] = "2"
+    response.headers["Cache-Control"] = "no-store"
+    return response, 503
 
 
 def init_db() -> None:

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import sqlite3
 import tempfile
+import threading
 import unittest
 
 from test_calendar_sync import load_functions
@@ -14,7 +15,8 @@ class CalendarDatabaseTests(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         self.path = Path(tmp.name) / 'test.db'
-        self.ns = dict(sqlite3=sqlite3, DB_PATH=self.path, contextmanager=contextmanager)
+        self.ns = dict(sqlite3=sqlite3, DB_PATH=self.path, contextmanager=contextmanager,
+                       _DB_LOCK=threading.RLock())
         load_functions('app.py', ['db'], self.ns)
         with self.ns['db']() as conn:
             conn.execute('CREATE TABLE records(value)')
@@ -36,6 +38,61 @@ class CalendarDatabaseTests(unittest.TestCase):
             conn.execute('SELECT 1')
         with self.ns['db']() as reader:
             self.assertEqual(reader.execute('SELECT COUNT(*) FROM records').fetchone()[0], 0)
+
+    def test_reader_and_writer_scopes_cannot_deadlock_each_other(self):
+        with self.ns['db']() as conn:
+            conn.executemany('INSERT INTO records VALUES(?)', [(1,), (2,)])
+        reader_ready = threading.Event()
+        release_reader = threading.Event()
+        writer_started = threading.Event()
+        writer_entered = threading.Event()
+        failures = []
+
+        def read():
+            try:
+                with self.ns['db']() as conn:
+                    cursor = conn.execute('SELECT value FROM records')
+                    cursor.fetchone()  # Keep the SELECT active while the writer starts.
+                    reader_ready.set()
+                    if not release_reader.wait(3):
+                        raise AssertionError('Reader was not released')
+                    cursor.close()
+            except Exception as exc:
+                failures.append(exc)
+
+        def write():
+            writer_started.set()
+            try:
+                with self.ns['db']() as conn:
+                    writer_entered.set()
+                    conn.execute('INSERT INTO records VALUES(3)')
+            except Exception as exc:
+                failures.append(exc)
+
+        reader = threading.Thread(target=read)
+        writer = threading.Thread(target=write)
+        reader.start()
+        try:
+            self.assertTrue(reader_ready.wait(3))
+            writer.start()
+            self.assertTrue(writer_started.wait(3))
+            self.assertFalse(writer_entered.wait(0.05))
+        finally:
+            release_reader.set()
+            reader.join(3)
+            if writer.ident:
+                writer.join(3)
+        self.assertFalse(reader.is_alive() or writer.is_alive())
+        self.assertEqual(failures, [])
+        self.assertTrue(writer_entered.is_set())
+        with self.ns['db']() as conn:
+            self.assertEqual(conn.execute('SELECT COUNT(*) FROM records').fetchone()[0], 3)
+
+    def test_nested_read_scope_does_not_deadlock(self):
+        with self.ns['db']() as outer:
+            outer.execute('INSERT INTO records VALUES(1)')
+            with self.ns['db']() as inner:
+                self.assertEqual(inner.execute('SELECT COUNT(*) FROM records').fetchone()[0], 0)
 
 class PaymentCleanupTests(unittest.TestCase):
     def setUp(self):
