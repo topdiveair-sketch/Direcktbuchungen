@@ -129,6 +129,10 @@ class ConcurrentHomepageTests(unittest.TestCase):
                     rows = conn.execute('SELECT desired_price FROM zab_rate_outbox WHERE day=?', (day.isoformat(),)).fetchall()
                 self.assertEqual([r['desired_price'] for r in rows], [110.25,110.25])
                 self.assertEqual(client.get('/os/channel-pricing/status').status_code,200)
+                dashboard = client.get('/os/calendar?year=2026&month=10&room=Bachblick&edit=2026-10-26')
+                self.assertEqual(dashboard.status_code,200)
+                self.assertIn('110.25',dashboard.get_data(as_text=True))
+                self.assertIn('aktuelle Basis 100.0',dashboard.get_data(as_text=True))
         finally:
             with self.core.db() as conn:
                 for table in ('zab_channel_day_settings','zab_rate_managed_days','zab_rate_outbox'):

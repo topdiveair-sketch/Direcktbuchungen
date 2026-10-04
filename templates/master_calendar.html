@@ -58,8 +58,8 @@
       {% for cell in calendar_rooms[room] %}
       <article class="day-cell {{ '' if cell.in_month else 'outside' }} {{ 'today' if cell.today else '' }}">
         <div class="day-top"><strong>{{ cell.day }}</strong><a class="day-edit" href="{{ url_for('master_calendar_dashboard',year=year,month=month,room=room,edit=cell.date) }}#day-editor">Einstellen</a></div>
-        <div class="channel-line {{ '' if cell.direct_open else 'closed' }}"><span>{{ '🟢' if cell.direct_open else '🔴' }} Direkt</span><span class="{{ 'price-override' if cell.direct_price_override else '' }}">{% if cell.direct_price is not none %}{{ '%.0f'|format(cell.direct_price) }} €{{ '*' if cell.direct_price_override else '' }}{% else %}—{% endif %}</span></div>
-        <div class="channel-line {{ '' if cell.booking_open else 'closed' }}"><span>{{ '🟢' if cell.booking_open else '🔴' }} Booking</span><span class="{{ 'price-override' if cell.booking_price_override else '' }}">{% if cell.booking_price is not none %}{{ '%.0f'|format(cell.booking_price) }} €*{% else %}—{% endif %}</span></div>
+        <div class="channel-line {{ '' if cell.direct_open else 'closed' }}"><span>{{ '🟢' if cell.direct_open else '🔴' }} Direkt</span><span class="{{ 'price-override' if cell.direct_price_override else '' }}">{% if cell.direct_price is not none %}{{ '%.2f'|format(cell.direct_price) }} €{{ '*' if cell.direct_price_override else '' }}{% else %}—{% endif %}</span></div>
+        <div class="channel-line {{ '' if cell.booking_open else 'closed' }}"><span>{{ '🟢' if cell.booking_open else '🔴' }} Booking</span><span class="{{ 'price-override' if cell.booking_price_override else '' }}">{% if cell.booking_price is not none %}{{ '%.2f'|format(cell.booking_price) }} €*{% else %}—{% endif %}</span></div>
         <div class="demand-line">👁 {{ cell.demand_checks_live }} Interessent{{ '' if cell.demand_checks_live == 1 else 'en' }} · live gesamt</div>
         {% if cell.master_reason %}<div class="os-block">OS-Sperre: {{ cell.master_reason }}</div>{% endif %}
         {% for occ in cell.occupancy %}
@@ -102,7 +102,7 @@
         <label>Von<input type="date" name="start_date" value="{{ selected.date }}" required></label>
         <label>Bis einschließlich<input type="date" name="end_date" value="{{ selected.date }}" required></label>
         <label>Direkt-Verfügbarkeit<select name="direct_status"><option value="keep">nicht ändern</option><option value="open">offen erzwingen</option><option value="closed">geschlossen</option><option value="reset">auf Standard zurücksetzen</option></select></label>
-        <label>Direkt-Basispreis pro Nacht<input name="direct_price" inputmode="decimal" placeholder="aktuell {{ selected.direct_price if selected.direct_price is not none else '—' }}"></label>
+        <label>Direkt-Basispreis pro Nacht<input name="direct_price" inputmode="decimal" placeholder="aktuelle Basis {{ selected.direct_base_price if selected.direct_base_price is not none else '—' }}"></label>
         <label>Booking-Verfügbarkeit<select name="booking_status"><option value="keep">nicht ändern</option><option value="open">offen erzwingen</option><option value="closed">geschlossen</option><option value="reset">auf Standard zurücksetzen</option></select></label>
         <label>Portal-Sollpreis pro Nacht<input readonly value="{{ selected.booking_price if selected.booking_price is not none else '—' }} € · automatisch +5 %, maximal 149 €"></label>
       </div>

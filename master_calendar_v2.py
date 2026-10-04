@@ -535,6 +535,8 @@ def init_master_calendar(app, db, require_admin, rooms):
                     direct_setting = _day_setting(conn, room, "direct", current)
                     booking_setting = _day_setting(conn, room, "booking", current)
                 base_direct = _base_direct_price(room, current)
+                base_reader = app.extensions.get("zab_direct_base_rate")
+                direct_base_price = base_reader(room, current) if room == "Bachblick" and callable(base_reader) else base_direct
                 direct_price = (
                     float(direct_setting["price"])
                     if direct_setting is not None and direct_setting["price"] is not None
@@ -560,6 +562,7 @@ def init_master_calendar(app, db, require_admin, rooms):
                     "direct_open": direct_open,
                     "booking_open": booking_open,
                     "direct_price": direct_price,
+                    "direct_base_price": direct_base_price,
                     "booking_price": booking_price,
                     "direct_price_override": direct_setting is not None and direct_setting["price"] is not None,
                     "booking_price_override": booking_setting is not None and booking_setting["price"] is not None,

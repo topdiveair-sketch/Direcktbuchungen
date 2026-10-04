@@ -271,6 +271,7 @@ def final_direct_rate(room, day):
 # /book, /api/availability and the PayPal checkout all consult the same source.
 init_master_calendar(app, db, require_admin, ROOMS)
 init_channel_pricing(app, db, final_direct_rate, require_admin)
+app.extensions["zab_direct_base_rate"] = core_app._base_direct_nightly_price_for_day
 _legacy_room_available_in_conn = core_app.room_available_in_conn
 
 
