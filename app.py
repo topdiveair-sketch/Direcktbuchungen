@@ -1713,6 +1713,20 @@ def seo_landing_context(slug: str) -> dict:
             "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer für Radfahrer in der Wachau","secondary_image_caption":"Ruhige Nacht zwischen zwei Etappen.",
             "faq":faq_direct,
         },
+        "wanderer": {
+            "title":"Wanderer Unterkunft Wachau | Welterbesteig Zuhause am Bach",
+            "description":"Wanderer-Unterkunft am Welterbesteig Wachau in Aggsbach Markt: Frühstück, Trocknung, Gepäcktransport auf Anfrage und Direktbuchung für 1–2 Personen.",
+            "canonical":"https://www.zuhauseambach-wachau.at/wanderer-unterkunft-wachau",
+            "h1":"Wanderer-Unterkunft am Welterbesteig Wachau",
+            "lead":"Für Wanderer am Welterbesteig bietet Zuhause am Bach in Aggsbach Markt einen ruhigen, persönlichen Etappenstopp mit Frühstück auf Wunsch und praktischer Unterstützung für die nächste Etappe.",
+            "eyebrow":"Für Wanderer · Welterbesteig",
+            "subheading":"Ruhig ankommen, trocknen, stärken und weiterwandern",
+            "paragraphs":["Das Gartenzimmer ist für maximal zwei Gäste gedacht und eignet sich besonders für eine einzelne Etappenübernachtung.","Frühstück auf Wunsch, Trocknungsmöglichkeit für Wanderbekleidung und Gepäcktransport auf Anfrage unterstützen die Weiterreise.","Aggsbach Markt liegt auf dem Welterbesteig; freie Termine können direkt über die offizielle Website geprüft werden."],
+            "features":[("🥾","Welterbesteig","Etappenstopp direkt in Aggsbach Markt."),("🍳","Frühstück","Auf Wunsch vor der nächsten Etappe."),("👕","Trocknen","Für nasse Wanderbekleidung."),("🧳","Gepäcktransport","Auf Anfrage für die nächste Etappe.")],
+            "hero_image":"images/welterbesteig-original.jpg","hero_image_alt":"Welterbesteig Wachau für Wanderer nahe Zuhause am Bach in Aggsbach Markt","hero_image_caption":"Etappenquartier für Wanderer am Welterbesteig Wachau.",
+            "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer für Wanderer bei Zuhause am Bach in Aggsbach Markt","secondary_image_caption":"Ruhige Nacht zwischen zwei Wanderetappen.",
+            "faq":faq_direct,
+        },
         "jauerling": {
             "title":"Unterkunft Jauerling Wachau | Zuhause am Bach Aggsbach",
             "description":"Unterkunft nahe Jauerling und Wachau: ruhig in Aggsbach Markt übernachten, wandern, Naturpark erleben und direkt bei Zuhause am Bach buchen.",
@@ -2019,6 +2033,10 @@ def seo_eine_nacht_wachau():
 def seo_radfahrer_wachau():
     return render_template("seo_landing.html", **seo_landing_context("radfahrer"))
 
+@app.get("/wanderer-unterkunft-wachau")
+def seo_wanderer_wachau():
+    return render_template("seo_landing.html", **seo_landing_context("wanderer"))
+
 
 @app.get("/unterkunft-jauerling-wachau")
 def seo_jauerling():
@@ -2071,6 +2089,15 @@ def activity_welterbesteig():
         booking_horizon_year=date.today().year + 2,
         settings=get_settings(),
     )
+
+@app.get("/donauradweg-unterkunft-wachau")
+def legacy_donauradweg_redirect():
+    return redirect(url_for("activity_donauradweg"), code=301)
+
+
+@app.get("/welterbesteig-unterkunft-wachau")
+def legacy_welterbesteig_redirect():
+    return redirect(url_for("activity_welterbesteig"), code=301)
 
 
 @app.get("/wachau-aktivurlaub-2027-2028")
@@ -2306,6 +2333,7 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/uebernachten-aggsbach-markt",
         "https://www.zuhauseambach-wachau.at/1-nacht-wachau",
         "https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
+        "https://www.zuhauseambach-wachau.at/wanderer-unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-jauerling-wachau",
         "https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/marillenbluete-wachau-unterkunft",
@@ -2355,6 +2383,8 @@ Type: Small personal accommodation / guest room with direct booking
 - Seasonal Wachau travel: https://www.zuhauseambach-wachau.at/wachau-jahreszeiten-urlaub
 - Donauradweg accommodation: https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau
 - Welterbesteig accommodation: https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau
+- Radfahrer-Unterkunft Wachau: https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau
+- Wanderer-Unterkunft Wachau: https://www.zuhauseambach-wachau.at/wanderer-unterkunft-wachau
 - Marillenblüte Wachau: https://www.zuhauseambach-wachau.at/marillenbluete-wachau-unterkunft
 - Marillenernte / Marillenzeit: https://www.zuhauseambach-wachau.at/marillenernte-wachau-unterkunft
 - Jauerling ski season: https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau
