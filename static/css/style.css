@@ -595,3 +595,16 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
   .mobile-conversion-bar a{display:flex;align-items:center;justify-content:center;text-align:center;min-height:48px;padding:10px}
   body:has(#bookingForm){padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 }
+
+/* Nested room/gallery grids must shrink with the booking card as well. */
+@media (max-width:1000px){
+  .room-list{grid-template-columns:minmax(0,1fr);min-width:0}
+  .room-list>*,.zab-room-gallery,.zab-gallery-head,
+  .zab-gallery-thumbs,.zab-gallery-actions{min-width:0;max-width:100%}
+}
+@media (max-width:700px){
+  .total-row{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;justify-content:stretch;text-align:left}
+  .total-row>*{min-width:0;overflow-wrap:anywhere}
+  .total-row strong{font-size:clamp(1.3rem,5vw,1.65rem)}
+  .price-breakdown div{flex-wrap:wrap;gap:4px 12px;overflow-wrap:anywhere}
+}
