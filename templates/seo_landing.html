@@ -55,6 +55,26 @@
   ]}|tojson }}
   </script>
   {% if faq %}<script type="application/ld+json">{{ {"@context":"https://schema.org","@type":"FAQPage","mainEntity": faq}|tojson }}</script>{% endif %}
+  {% if business_mode %}
+  <script type="application/ld+json">
+  {{ {
+    "@context":"https://schema.org",
+    "@type":"Service",
+    "name":"Business-Unterkunft zwischen Melk und Krems",
+    "provider":{"@type":"BedAndBreakfast","@id":"https://www.zuhauseambach-wachau.at/#unterkunft","name":"Zuhause am Bach – Wachau"},
+    "areaServed":[{"@type":"City","name":"Melk"},{"@type":"Place","name":"Aggsbach Markt"},{"@type":"Place","name":"Spitz"},{"@type":"City","name":"Krems an der Donau"}],
+    "audience":[
+      {"@type":"Audience","audienceType":"Geschäftsreisende"},
+      {"@type":"Audience","audienceType":"Servicetechniker"},
+      {"@type":"Audience","audienceType":"Projektleiter"},
+      {"@type":"Audience","audienceType":"Inbetriebnehmer"},
+      {"@type":"Audience","audienceType":"qualifizierte Fachkräfte"}
+    ],
+    "serviceType":"Business accommodation / Firmenunterkunft",
+    "url":"https://www.zuhauseambach-wachau.at/business-unterkunft-melk-krems"
+  }|tojson }}
+  </script>
+  {% endif %}
 </head>
 <body>
 <header class="hero" id="start">
@@ -169,5 +189,18 @@
   <a class="admin-link" href="{{ url_for('legal_page',key='impressum') }}">Impressum</a>
   <a class="admin-link" href="{{ url_for('legal_page',key='datenschutz') }}">Datenschutz</a>
 </footer>
+{% if business_mode %}
+<script>
+(function(){
+  function track(event){
+    try{fetch("/api/events",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({event:event}),keepalive:true});}catch(e){}
+  }
+  track("business_landing_view");
+  document.querySelectorAll('a[href*="utm_campaign=business"]').forEach(function(a){
+    a.addEventListener("click",function(){track("business_booking_cta_click");});
+  });
+})();
+</script>
+{% endif %}
 </body>
 </html>
