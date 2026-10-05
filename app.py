@@ -1756,6 +1756,7 @@ def seo_landing_context(slug: str) -> dict:
             "title":"Business-Unterkunft Melk–Krems | Geschäftsreisende & Fachkräfte | Zuhause am Bach",
             "description":"Ruhige Business- und Firmenunterkunft zwischen Melk und Krems für Geschäftsreisende, Servicetechniker, Projektleiter und qualifizierte Fachkräfte: WLAN, Parkplatz, eigenes Bad, Frühstück auf Wunsch und direkte Buchung.",
             "canonical":"https://www.zuhauseambach-wachau.at/business-unterkunft-melk-krems",
+            "business_mode":True,
             "h1":"Business-Unterkunft zwischen Melk und Krems",
             "lead":"Zuhause am Bach in Aggsbach Markt richtet sich in erster Linie an Geschäftsreisende, Servicetechniker, Projektleiter und qualifizierte Fachkräfte, die zwischen Melk und Krems ruhig, ordentlich und mit direktem Gastgeberkontakt übernachten möchten.",
             "eyebrow":"Business · Servicetechnik · Projekte · Firmen",
