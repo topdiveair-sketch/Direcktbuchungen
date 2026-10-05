@@ -2650,6 +2650,19 @@ def book():
         utm_campaign = request.form.get("utm_campaign", "").strip()[:160]
         landing_page = request.form.get("landing_page", "").strip()[:300]
         referrer = request.form.get("referrer", "").strip()[:300]
+        company = request.form.get("company", "").strip()[:160]
+        invoice_address = request.form.get("invoice_address", "").strip()[:300]
+        recurring_business = request.form.get("recurring_business") == "on"
+        guest_message = request.form.get("message", "").strip()
+        business_notes = []
+        if company:
+            business_notes.append(f"Firma/Auftraggeber: {company}")
+        if invoice_address:
+            business_notes.append(f"Rechnungsadresse: {invoice_address}")
+        if recurring_business:
+            business_notes.append("Wiederkehrende Arbeits-/Projektaufenthalte: ja")
+        if business_notes:
+            guest_message = " | ".join(business_notes + ([guest_message] if guest_message else []))
     except (KeyError, ValueError):
         flash("Bitte alle Pflichtfelder korrekt ausfüllen.", "error")
         return redirect(url_for("index") + "#booking")
@@ -2718,7 +2731,7 @@ def book():
                 (
                     uid, room, arrival.isoformat(), departure.isoformat(), adults,
                     1 if breakfast else 0, first_name, last_name, email, phone,
-                    request.form.get("message", "").strip(), payment_method, total,
+                    guest_message, payment_method, total,
                     datetime.now().isoformat(timespec="seconds"), idempotency_key,
                     json.dumps(breakdown, ensure_ascii=False),
                     booking_source, utm_medium, utm_campaign, landing_page, referrer,
