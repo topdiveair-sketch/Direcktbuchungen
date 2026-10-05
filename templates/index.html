@@ -466,6 +466,11 @@
             <label>E-Mail<input type="email" name="email" required></label>
             <label>Telefon<input type="tel" name="phone" required></label>
           </div>
+          <div id="businessFields" class="guest-grid hidden" aria-label="Firmendaten">
+            <label>Firma / Auftraggeber<input type="text" name="company" placeholder="optional"></label>
+            <label>Rechnungsadresse<input type="text" name="invoice_address" placeholder="optional"></label>
+            <label style="grid-column:1/-1"><input type="checkbox" name="recurring_business" value="on"> Wiederkehrende Arbeits- oder Projektaufenthalte gewünscht</label>
+          </div>
           <label>Wünsche oder Nachricht
             <textarea name="message" rows="4" placeholder="z. B. vegetarisches Frühstück, Fahrräder oder spätere Anreise"></textarea>
           </label>
@@ -1192,6 +1197,10 @@
 (function(){
   const params=new URLSearchParams(window.location.search);
   const source=params.get("utm_source") || params.get("source") || (document.referrer ? "referral" : "direct");
+  const businessFields=document.getElementById("businessFields");
+  if(businessFields && (source==="business" || source==="corporate" || params.get("utm_campaign")==="business")){
+    businessFields.classList.remove("hidden");
+  }
   const fields={
     bookingSource:source,
     bookingUtmMedium:params.get("utm_medium")||"",
