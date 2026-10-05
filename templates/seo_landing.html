@@ -61,11 +61,11 @@
   <nav class="topbar">
     <a class="brand" href="{{ url_for('index') }}"><span class="logo-mark">⌂</span><span>Zuhause am Bach<small>Gästehaus Wachau</small></span></a>
     <div class="nav-links">
-      <a href="{{ url_for('index') }}#booking">Direkt buchen</a>
+      <a href="{{ url_for('index') }}{% if business_mode %}?source=business&utm_medium=organic&utm_campaign=business#booking{% else %}#booking{% endif %}">Direkt buchen</a>
       <a href="{{ url_for('index') }}#kalender">Kalender</a>
       <a href="{{ url_for('index') }}#kontakt">Kontakt</a>
     </div>
-    <a href="{{ url_for('index') }}#booking" class="btn top-btn">Verfügbarkeit prüfen</a>
+    <a href="{{ url_for('index') }}{% if business_mode %}?source=business&utm_medium=organic&utm_campaign=business#booking{% else %}#booking{% endif %}" class="btn top-btn">{% if business_mode %}Firmenaufenthalt prüfen{% else %}Verfügbarkeit prüfen{% endif %}</a>
   </nav>
   <div class="hero-content">
     <h1>{{ h1 }}</h1>
@@ -97,9 +97,9 @@
       {% for paragraph in paragraphs %}<p>{{ paragraph }}</p>{% endfor %}
     </div>
     <div class="review-box">
-      <strong>Direkt bei uns anfragen</strong>
-      <small>Freie Termine und Preis direkt auf der offiziellen Website prüfen.</small>
-      <a href="{{ url_for('index') }}#booking">Verfügbarkeit &amp; Preis</a>
+      <strong>{% if business_mode %}Firmenaufenthalt direkt anfragen{% else %}Direkt bei uns anfragen{% endif %}</strong>
+      <small>{% if business_mode %}Freie Termine, Direktpreis und Firmendaten auf der offiziellen Website erfassen.{% else %}Freie Termine und Preis direkt auf der offiziellen Website prüfen.{% endif %}</small>
+      <a href="{{ url_for('index') }}{% if business_mode %}?source=business&utm_medium=organic&utm_campaign=business#booking{% else %}#booking{% endif %}">{% if business_mode %}Firmenanfrage &amp; Preis{% else %}Verfügbarkeit &amp; Preis{% endif %}</a>
       {% if official_url %}<small style="display:block;margin-top:12px">Aktuelle Streckeninfos:</small><a href="{{ official_url }}" target="_blank" rel="noopener">{{ official_label or "Offizielle Routeninformation" }}</a>{% endif %}
     </div>
   </section>
@@ -110,12 +110,28 @@
     {% endfor %}
   </section>
 
+  {% if business_mode %}
+  <section class="story-section">
+    <div>
+      <span class="eyebrow">Für Firmenkunden</span>
+      <h2>Geeignet für wiederkehrende Arbeits- und Projektaufenthalte</h2>
+      <p>Besonders angesprochen sind Geschäftsreisende, Servicetechniker, Projektleiter, Inbetriebnehmer und qualifizierte Fachkräfte. Das Angebot ist bewusst auf ruhige Einzel- oder Doppelbelegung statt auf günstige Massenunterbringung ausgerichtet.</p>
+      <p>Für Firmen können wiederkehrende Aufenthalte, Rechnungsdaten und besondere Anforderungen direkt bei der Buchungsanfrage angegeben werden.</p>
+    </div>
+    <div class="review-box">
+      <strong>Typische Firmenanforderungen</strong>
+      <small>WLAN · Parkplatz · eigenes Bad · direkte Abstimmung · Firmenrechnung · wiederkehrende Aufenthalte</small>
+      <a href="{{ url_for('index') }}?source=business&utm_medium=organic&utm_campaign=business#booking">Firmenaufenthalt direkt prüfen</a>
+    </div>
+  </section>
+  {% endif %}
+
   <section class="story-section">
     <div>
       <span class="eyebrow">Gartenzimmer</span>
-      <h2>Ruhig übernachten und die Wachau erleben</h2>
+      <h2>{% if business_mode %}Ruhig übernachten und konzentriert in den Arbeitstag starten{% else %}Ruhig übernachten und die Wachau erleben{% endif %}</h2>
       <p>Das Gartenzimmer ist das aktuell direkt angebotene Doppelzimmer bei Zuhause am Bach. Verfügbarkeit und Preis werden über den Live-Kalender der offiziellen Website geprüft.</p>
-      <p>Für aktuelle Preise, freie Termine und Zusatzleistungen gilt immer die Direktbuchungsseite von Zuhause am Bach.</p>
+      <p>{% if business_mode %}Bei Firmenaufenthalten können Firma, Rechnungsdaten und der Wunsch nach wiederkehrenden Arbeitswochen direkt mitgesendet werden.{% else %}Für aktuelle Preise, freie Termine und Zusatzleistungen gilt immer die Direktbuchungsseite von Zuhause am Bach.{% endif %}</p>
     </div>
     <div class="review-box">
       <strong>Offizielle Unterkunftsseite</strong>
