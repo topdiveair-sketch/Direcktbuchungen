@@ -10,8 +10,13 @@ import beds24_rates
 from booking_connectivity import push_rate as booking_push_rate, connectivity_status
 
 
+PORTAL_MARKUP = Decimal("1.15")
+PORTAL_MAX = Decimal("149")
+
+
 def portal_price(direct):
-    amount = min(Decimal("149"), Decimal(str(direct)) * Decimal("1.05"))
+    """Keep OTA/Beds24 target above the public direct-booking rate."""
+    amount = min(PORTAL_MAX, Decimal(str(direct)) * PORTAL_MARKUP)
     return float(amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
@@ -108,6 +113,12 @@ def init_channel_pricing(app, db, direct_rate, require_admin):
     if os.environ.get('BEDS24_MANAGES_BOOKING', '').lower() not in ('1', 'true', 'yes'):
         providers['booking'] = booking_push_rate
     outbox = RateOutbox(db, direct_rate, providers)
+
+    # Direct-booking-first policy: keep every sellable future day managed so
+    # Beds24/Booking receives the OTA target instead of drifting below direct.
+    # 460 days covers the configured calendar through 31.12.2027 from Oct 2026.
+    outbox.manage("Bachblick", date.today(), date.today() + timedelta(days=460))
+
     app.extensions['zab_manual_room_base'] = outbox.manual_base
     app.extensions['zab_manage_rate_days'] = outbox.manage
     app.extensions['zab_final_direct_rate'] = direct_rate
@@ -116,7 +127,7 @@ def init_channel_pricing(app, db, direct_rate, require_admin):
 
     @app.get('/health/channel-pricing', endpoint='channel_pricing_health')
     def health():
-        return jsonify(ok=True, portal_markup_percent=5, max_room_price=149,
+        return jsonify(ok=True, portal_markup_percent=15, max_room_price=149,
                        beds24_configured=beds24_rates.configuration('Bachblick')['configured'],
                        booking_configured=connectivity_status('Bachblick')['configured'],
                        booking_via_beds24='booking' not in providers)
