@@ -139,6 +139,13 @@
   ],
   "date_overrides": [
     {
+      "start": "2026-10-05",
+      "end": "2026-10-05",
+      "price_eur": 105,
+      "lock_price": true,
+      "label": "Direktbuchungsvorteil gegenueber Booking.com"
+    },
+    {
       "start": "2026-09-18",
       "end": "2026-09-20",
       "price_eur": 149,
