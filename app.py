@@ -619,7 +619,7 @@ def direct_nightly_price_for_day(room: str, day: date) -> float:
     # not silently erase that direct-booking advantage.
     try:
         for row in pricing_config().get("date_overrides", []):
-            if row.get("lock_price") and _parse(row["start"]) <= day <= _parse(row["end"]):
+            if row.get("lock_price") and date.fromisoformat(row["start"]) <= day <= date.fromisoformat(row["end"]):
                 return round(cap_room_rate(float(row["price_eur"])), 2)
     except Exception:
         pass
