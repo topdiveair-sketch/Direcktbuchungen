@@ -2652,6 +2652,10 @@ def book():
         referrer = request.form.get("referrer", "").strip()[:300]
         company = request.form.get("company", "").strip()[:160]
         invoice_address = request.form.get("invoice_address", "").strip()[:300]
+        company_tax_id = request.form.get("company_tax_id", "").strip()[:120]
+        company_reference = request.form.get("company_reference", "").strip()[:160]
+        company_contact = request.form.get("company_contact", "").strip()[:160]
+        company_email = request.form.get("company_email", "").strip()[:200]
         recurring_business = request.form.get("recurring_business") == "on"
         guest_message = request.form.get("message", "").strip()
         business_notes = []
@@ -2659,6 +2663,14 @@ def book():
             business_notes.append(f"Firma/Auftraggeber: {company}")
         if invoice_address:
             business_notes.append(f"Rechnungsadresse: {invoice_address}")
+        if company_tax_id:
+            business_notes.append(f"UID/Steuerangabe: {company_tax_id}")
+        if company_reference:
+            business_notes.append(f"Kostenstelle/Bestellnummer: {company_reference}")
+        if company_contact:
+            business_notes.append(f"Firmen-Ansprechpartner: {company_contact}")
+        if company_email:
+            business_notes.append(f"Firmen-E-Mail: {company_email}")
         if recurring_business:
             business_notes.append("Wiederkehrende Arbeits-/Projektaufenthalte: ja")
         if business_notes:
