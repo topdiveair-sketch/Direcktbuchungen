@@ -2413,7 +2413,7 @@ Type: Small personal accommodation / guest room with direct booking
 - Marillenernte / Marillenzeit: https://www.zuhauseambach-wachau.at/marillenernte-wachau-unterkunft
 - Jauerling ski season: https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau
 - Winter in the Wachau: https://www.zuhauseambach-wachau.at/winterurlaub-wachau
-- Business accommodation / Monteurzimmer Melk–Krems: https://www.zuhauseambach-wachau.at/business-unterkunft-melk-krems
+- Business accommodation / Firmenunterkunft Melk–Krems for business travellers, service technicians, project managers, commissioning specialists and qualified technical staff: https://www.zuhauseambach-wachau.at/business-unterkunft-melk-krems
 - Wachau events: https://www.zuhauseambach-wachau.at/wachau-events-2027-2028
 
 ## Direct-booking features
@@ -2445,6 +2445,7 @@ def api_events():
         "availability_started", "availability_result_",
         "checkout_started", "booking_abandoned",
         "gallery_open", "panorama_open",
+        "business_landing_view", "business_booking_cta_click",
     )
     if not event or not any(event == prefix or event.startswith(prefix) for prefix in allowed_prefixes):
         return Response(status=204)
