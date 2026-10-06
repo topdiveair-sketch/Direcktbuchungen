@@ -2,6 +2,7 @@
 from datetime import date, datetime, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 import os
+import logging
 import threading
 import time
 
@@ -76,6 +77,7 @@ class RateOutbox:
         if not self.lock.acquire(blocking=False):
             return
         try:
+            failures = set()
             with self.db() as conn:
                 rows = conn.execute("""SELECT * FROM zab_rate_outbox WHERE status!='applied'
                     AND next_attempt<=? AND day>=? ORDER BY next_attempt,day LIMIT ?""",
@@ -90,6 +92,9 @@ class RateOutbox:
                 message = ('Provider hat den Preis bestätigt.' if ok else
                            'API-Zugang oder Zimmer-/Preiszuordnung fehlt.' if status == 'not_configured' else
                            'Preisübertragung nicht bestätigt; erneuter Versuch folgt.')
+                if not ok and status != 'not_configured' and row['provider'] == 'beds24':
+                    message = beds24_rates.diagnostic_message(result)
+                    failures.add(message)
                 delay = min(3600, 300 * 2 ** min(row['attempts'], 4))
                 with self.db() as conn:
                     conn.execute("""UPDATE zab_rate_outbox SET status=?,applied_price=CASE WHEN ? THEN desired_price ELSE applied_price END,
@@ -97,6 +102,8 @@ class RateOutbox:
                         WHERE room=? AND day=? AND provider=? AND desired_price=?""",
                         (status, int(ok), now+delay, message, datetime.now().isoformat(timespec='seconds'),
                          row['room'], row['day'], row['provider'], row['desired_price']))
+            for message in sorted(failures):
+                logging.getLogger(__name__).warning('Portalpreis-Synchronisierung: %s', message)
         finally:
             self.lock.release()
 
@@ -104,6 +111,14 @@ class RateOutbox:
         with self.db() as conn:
             rows = conn.execute("""SELECT provider,status,COUNT(*) AS count FROM zab_rate_outbox
                 WHERE day>=? GROUP BY provider,status""", (date.today().isoformat(),)).fetchall()
+        return [dict(row) for row in rows]
+
+    def details(self):
+        with self.db() as conn:
+            rows = conn.execute("""SELECT day,provider,desired_price,applied_price,status,
+                attempts,message,updated_at FROM zab_rate_outbox WHERE day>=?
+                AND status!='applied' ORDER BY updated_at DESC,day LIMIT 5""",
+                (date.today().isoformat(),)).fetchall()
         return [dict(row) for row in rows]
 
 
@@ -136,7 +151,8 @@ def init_channel_pricing(app, db, direct_rate, require_admin):
     def status():
         if not require_admin():
             return jsonify(ok=False, error='unauthorized'), 401
-        return jsonify(ok=True, rates=outbox.status())
+        return jsonify(ok=True, rates=outbox.status(), details=outbox.details(),
+                       beds24_mapping=beds24_rates.configuration('Bachblick'))
 
     @app.context_processor
     def pricing_context():
