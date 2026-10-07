@@ -1967,6 +1967,12 @@ def seo_jauerling():
     return render_template("seo_landing.html", **seo_landing_context("jauerling"))
 
 
+@app.get("/jauerling-winter.html")
+@app.get("/jauerling-winter.html/")
+def redirect_jauerling_winter_legacy():
+    return redirect("/skifahren-jauerling-unterkunft-wachau", code=301)
+
+
 @app.get("/skifahren-jauerling-unterkunft-wachau")
 def seo_ski_jauerling():
     return render_template("seo_landing.html", **seo_landing_context("ski"))
@@ -2219,7 +2225,14 @@ def event_sonnenwende_2028():
     return render_template("event_landing.html", **event_landing_context("sonnenwende-wachau-2028"))
 
 
-INDEXNOW_KEY = "b6a40fb2c8d14f87a1e3f0a526e0bd39"\n\n@app.get("/b6a40fb2c8d14f87a1e3f0a526e0bd39.txt")\ndef indexnow_key():\n    return Response(INDEXNOW_KEY, mimetype="text/plain")\n\n\n@app.get("/sitemap.xml")
+INDEXNOW_KEY = "b6a40fb2c8d14f87a1e3f0a526e0bd39"
+
+@app.get("/b6a40fb2c8d14f87a1e3f0a526e0bd39.txt")
+def indexnow_key():
+    return Response(INDEXNOW_KEY, mimetype="text/plain")
+
+
+@app.get("/sitemap.xml")
 def sitemap():
     today_iso = date.today().isoformat()
     urls = [
