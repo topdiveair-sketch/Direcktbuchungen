@@ -1781,9 +1781,10 @@ def seo_landing_context(slug: str) -> dict:
             "eyebrow":"Winter in der Wachau",
             "subheading":"Jauerling-Ausflug und ruhige Nacht kombinieren",
             "paragraphs":["Das Gartenzimmer bietet eine kleine, persönliche Basis in Aggsbach Markt für Wintertage in der Wachau.","Die Skiarena Jauerling bewirbt unter anderem Flutlichtskifahren, einen Kinderskipark sowie Skischule und Skiverleih direkt an der Piste. Winterbetrieb, Liftzeiten, Schnee- und Pistenstatus bleiben wetterabhängig und sollten vor der Fahrt immer auf jauerling.at geprüft werden.","Für nasse Outdoorbekleidung gibt es eine Trocknungsmöglichkeit; Frühstück ist auf Wunsch verfügbar."],
-            "features":[("❄️","Winterbasis","Ruhig in Aggsbach Markt übernachten."),("👕","Trocknung","Für nasse Outdoorbekleidung."),("🍳","Frühstück","Auf Wunsch vor dem Ausflug."),("📅","Direkt planen","Termin früh prüfen.")],
-            "hero_image":"images/welterbesteig-original.jpg","hero_image_alt":"Winter- und Wanderregion Wachau Jauerling","hero_image_caption":"Wachau und Jauerling als Winterausflug verbinden.",
-            "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer als Winterunterkunft in der Wachau","secondary_image_caption":"Ruhige Übernachtung in Aggsbach Markt.",
+            "features":[("❄️","Winterbasis","Ruhig in Aggsbach Markt übernachten."),("🎿","Ski-Aufbewahrung","Sicher und auf Wunsch beheizt."),("♨️","Trockenraum","Für nasse Winterausrüstung; auf Wunsch beheizt."),("🍳","Frühstück","Auf Wunsch vor dem Ausflug.")],
+            "hero_image":"images/jauerling-flutlicht.webp","hero_image_alt":"Winterliche Ski- und Flutlichtpiste als Jauerling-Winterimpression","hero_image_caption":"Ski- und Flutlicht-Winterimpression / Symbolbild. Aktuelle Pistenbedingungen bitte beim Betreiber prüfen.",
+            "secondary_image":"images/jauerling-apres-ski.webp","secondary_image_alt":"Gemütliche Après-Ski-Winterimpression","secondary_image_caption":"Après-Ski-Winterimpression / Symbolbild.",
+            "third_image":"images/gartenzimmer-winter.webp","third_image_alt":"Echtes Gartenzimmer bei Zuhause am Bach in Aggsbach Markt","third_image_caption":"Originalfoto: Gartenzimmer Zuhause am Bach.",
             "faq":faq_direct,
         },
     }
