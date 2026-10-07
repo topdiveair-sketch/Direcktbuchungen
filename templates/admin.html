@@ -161,12 +161,14 @@
   </section>
 
   <section class="admin-panel">
-    <h2>Buchungen</h2>
+    {% set active_bookings = bookings|rejectattr("status", "equalto", "cancelled")|list %}
+    {% set cancelled_bookings = bookings|selectattr("status", "equalto", "cancelled")|list %}
+    <h2>Buchungen ({{ active_bookings|length }})</h2>
     <div class="table-scroll">
       <table class="booking-table">
         <thead><tr><th>Status</th><th>Zimmer</th><th>Zeitraum</th><th>Gast</th><th>Frühstück</th><th>Zahlung</th><th>Preis</th><th>Aktionen</th></tr></thead>
         <tbody>
-        {% for b in bookings %}
+        {% for b in active_bookings %}
         <tr>
           <td><span class="status {{ b.status }}">{{ b.status }}</span></td>
           <td>{{ b.room }}</td>
@@ -189,11 +191,34 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="8">Noch keine Direktbuchungen vorhanden.</td></tr>
+        <tr><td colspan="8">Keine aktiven Direktbuchungen vorhanden.</td></tr>
         {% endfor %}
         </tbody>
       </table>
     </div>
+    <details id="cancelledBookings" style="margin-top:24px">
+      <summary style="cursor:pointer;font-weight:700">Stornierte Buchungen ({{ cancelled_bookings|length }}) anzeigen</summary>
+      <div class="table-scroll" style="margin-top:12px">
+        <table class="booking-table">
+          <thead><tr><th>Status</th><th>Zimmer</th><th>Zeitraum</th><th>Gast</th><th>Zahlung</th><th>Preis</th><th>Dokumente</th></tr></thead>
+          <tbody>
+          {% for b in cancelled_bookings %}
+          <tr>
+            <td><span class="status cancelled">Storniert</span></td>
+            <td>{{ b.room }}</td>
+            <td>{{ b.arrival }}<br>{{ b.departure }}</td>
+            <td><strong>{{ b.first_name }} {{ b.last_name }}</strong><br><small>{{ b.email }}<br>{{ b.phone }}</small></td>
+            <td>{{ b.payment_method }}</td>
+            <td>{{ '%.2f'|format(b.total)|replace('.', ',') }} €</td>
+            <td>{% if b.public_token %}<a href="{{ url_for('invoice_pdf',token=b.public_token) }}">PDF</a>{% else %}–{% endif %}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7">Keine stornierten Buchungen vorhanden.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </details>
   </section>
 </main>
 </body>
