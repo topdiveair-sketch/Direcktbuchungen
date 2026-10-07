@@ -1501,12 +1501,12 @@ def activity_landing_context(kind: str) -> dict:
     if kind == "bike":
         return {
             "kind": "bike",
-            "page_title": "Donauradweg Unterkunft Wachau | Zuhause am Bach Aggsbach",
-            "meta_description": "Donauradweg Unterkunft Wachau: auch 1 Nacht möglich. Sichere Fahrradunterbringung, E-Bike laden, Frühstück und Gepäcktransport in Aggsbach Markt.",
+            "page_title": "Donauradweg Unterkunft Wachau | Radurlaub bei Zuhause am Bach",
+            "meta_description": "Donauradweg Unterkunft Wachau für Radurlaub und Etappen: auch 1 Nacht möglich, sichere Fahrradunterbringung, E-Bike laden, Frühstück und Direktbuchung in Aggsbach Markt.",
             "canonical": "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
             "eyebrow": "Donauradweg Wachau · Aggsbach Markt",
             "headline": "Unterkunft am Donauradweg in der Wachau",
-            "intro": "Zuhause am Bach ist ein ruhiger Etappenstopp in Aggsbach Markt für Radreisende in der Wachau. Auch eine einzelne Übernachtung für 1 Nacht ist grundsätzlich möglich – mit sicherer Fahrradunterbringung, E-Bike-Lademöglichkeit und persönlichem Kontakt.",
+            "intro": "Zuhause am Bach ist ein ruhiger Etappenstopp in Aggsbach Markt für Radreisende und Radurlauber aus Österreich, Deutschland und der Schweiz. Auch eine einzelne Übernachtung für 1 Nacht ist grundsätzlich möglich – mit sicherer Fahrradunterbringung, E-Bike-Lademöglichkeit und persönlichem Kontakt.",
             "benefits": [
                 "Sichere Unterbringung für Fahrräder",
                 "E-Bike-Lademöglichkeit",
@@ -1529,12 +1529,12 @@ def activity_landing_context(kind: str) -> dict:
         }
     return {
         "kind": "hike",
-        "page_title": "Welterbesteig Unterkunft Wachau | Zuhause am Bach Aggsbach",
-        "meta_description": "Welterbesteig Unterkunft Wachau in Aggsbach Markt: Gartenzimmer ab 99 €, auch 1 Nacht möglich, Frühstück, Gepäcktransport und direkte Terminprüfung.",
+        "page_title": "Welterbesteig Unterkunft Wachau | Wanderurlaub Zuhause am Bach",
+        "meta_description": "Welterbesteig Unterkunft Wachau für Wanderurlaub und Etappen: Gartenzimmer ab 99 €, auch 1 Nacht möglich, Frühstück, Gepäcktransport und Direktbuchung.",
         "canonical": "https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau",
         "eyebrow": "Welterbesteig Wachau · Aggsbach Markt",
         "headline": "Unterkunft am Welterbesteig Wachau",
-        "intro": "Zuhause am Bach ist ein ruhiger Etappenstopp für Wanderer am Welterbesteig Wachau. Auch eine einzelne Übernachtung für 1 Nacht ist grundsätzlich möglich – persönlich, überschaubar und auf die nächste Etappe ausgerichtet.",
+        "intro": "Zuhause am Bach ist ein ruhiger Etappenstopp für Wanderer am Welterbesteig Wachau und für Wanderurlauber aus Österreich, Deutschland und der Schweiz. Auch eine einzelne Übernachtung für 1 Nacht ist grundsätzlich möglich – persönlich, überschaubar und auf die nächste Etappe ausgerichtet.",
         "benefits": [
             "Ruhige Übernachtung in Aggsbach Markt",
             "Frühstück auf Wunsch vor der nächsten Etappe",
@@ -1570,15 +1570,37 @@ def seo_landing_context(slug: str) -> dict:
         {"@type":"Question","name":"Wie weit im Voraus kann ich planen?","acceptedAnswer":{"@type":"Answer","text":"Zuhause am Bach kommuniziert aktuell einen Planungshorizont bis %s." % (date.today().year + 2)}},
     ]
     pages = {
+        "dach": {
+            "title":"Wachau Urlaub in Österreich | Unterkunft für Gäste aus Deutschland & Schweiz",
+            "description":"Wachau Urlaub in Österreich: deutschsprachiges Privatzimmer in Aggsbach Markt für Gäste aus Deutschland und der Schweiz. Direkt buchen, 1 Nacht möglich, Donauradweg und Welterbesteig.",
+            "canonical":"https://www.zuhauseambach-wachau.at/wachau-urlaub-deutschland-schweiz",
+            "h1":"Wachau Urlaub in Österreich – Unterkunft für Gäste aus Deutschland und der Schweiz",
+            "lead":"Zuhause am Bach ist ein kleines, persönlich geführtes Privatzimmer in Aggsbach Markt. Die deutschsprachige Direktbuchung ist besonders unkompliziert für Gäste aus Deutschland und der Schweiz, die die Wachau per Rad, zu Fuß oder individuell entdecken.",
+            "eyebrow":"Wachau · Österreich · Deutschland · Schweiz",
+            "subheading":"Deutschsprachig direkt buchen und die Wachau persönlich erleben",
+            "paragraphs":[
+                "Preis und Verfügbarkeit werden direkt auf der offiziellen Website in Euro angezeigt. Das Gartenzimmer ist für maximal zwei Gäste gedacht; auch eine einzelne Nacht ist grundsätzlich möglich, sofern der Termin frei ist.",
+                "Für Radreisende am Donauradweg stehen sichere Fahrradunterbringung und E-Bike-Lademöglichkeit bereit. Wanderer am Welterbesteig können Frühstück auf Wunsch, Trocknungsmöglichkeit und Gepäcktransport auf Anfrage nutzen.",
+                "Kostenloser Parkplatz, WLAN und direkter Gastgeberkontakt machen die Unterkunft auch für individuelle Wachau-Reisen aus Deutschland und der Schweiz praktisch."
+            ],
+            "features":[("🇩🇪","Deutschsprachig","Information und Direktkontakt auf Deutsch."),("€","Preis in Euro","Aktuellen Direktpreis online prüfen."),("🚲","Rad & Wandern","Donauradweg und Welterbesteig verbinden."),("🚗","Parkplatz","Kostenlos direkt bei der Unterkunft.")],
+            "hero_image":"images/gartenzimmer-04-web.jpg","hero_image_alt":"Gartenzimmer für Wachau Urlaub bei Zuhause am Bach","hero_image_caption":"Kleine persönliche Unterkunft in Aggsbach Markt.",
+            "secondary_image":"images/donauradweg-web.jpg","secondary_image_alt":"Donauradweg in der Wachau für Gäste aus Deutschland und der Schweiz","secondary_image_caption":"Wachau aktiv erleben – per Rad oder zu Fuß.",
+            "faq":[
+                {"@type":"Question","name":"Kann ich aus Deutschland oder der Schweiz direkt bei Zuhause am Bach buchen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Verfügbarkeit, Preis und Zusatzleistungen können direkt auf der deutschsprachigen offiziellen Website geprüft werden."}},
+                {"@type":"Question","name":"In welcher Währung wird der Aufenthalt bezahlt?","acceptedAnswer":{"@type":"Answer","text":"Die Preise auf der Direktbuchungsseite werden in Euro angegeben."}},
+                {"@type":"Question","name":"Ist auch nur eine Nacht in der Wachau möglich?","acceptedAnswer":{"@type":"Answer","text":"Ja. Eine einzelne Übernachtung ist grundsätzlich möglich, sofern der Termin verfügbar ist. An einzelnen stark nachgefragten Terminen können abweichende Mindestaufenthalte gelten."}}
+            ],
+        },
         "wachau": {
-            "title":"Unterkunft Wachau zwischen Melk und Krems | Zuhause am Bach",
-            "description":"Persönliche Unterkunft in der Wachau zwischen Melk und Krems: Aggsbach Markt, Donauradweg, Welterbesteig, Frühstück und Direktbuchung bei Zuhause am Bach.",
+            "title":"Unterkunft & Privatzimmer Wachau | Zuhause am Bach",
+            "description":"Kleine persönliche Unterkunft und Privatzimmer in der Wachau zwischen Melk und Krems: Aggsbach Markt, Donauradweg, Welterbesteig, Frühstück und Direktbuchung.",
             "canonical":"https://www.zuhauseambach-wachau.at/unterkunft-wachau",
-            "h1":"Unterkunft in der Wachau zwischen Melk und Krems",
-            "lead":"Zuhause am Bach ist eine kleine, persönliche Unterkunft in Aggsbach Markt – ruhig zwischen Melk und Krems gelegen und praktisch für Donauradweg, Welterbesteig und Wachau-Ausflüge.",
+            "h1":"Unterkunft & Privatzimmer in der Wachau zwischen Melk und Krems",
+            "lead":"Zuhause am Bach ist eine kleine, persönliche Unterkunft mit Gartenzimmer in Aggsbach Markt – für Gäste aus Österreich, Deutschland und der Schweiz, praktisch für Donauradweg, Welterbesteig und Wachau-Ausflüge.",
             "eyebrow":"Wachau direkt erleben",
             "subheading":"Kleine Unterkunft statt anonymer Bettenburg",
-            "paragraphs":["Das Gartenzimmer ist für maximal zwei Gäste gedacht und liegt in Aggsbach Markt am nördlichen Wachauufer.","Donauradweg und Welterbesteig lassen sich mit persönlichen Tipps, Frühstück auf Wunsch und direktem Gastgeberkontakt verbinden.","Wer starke Wochenenden oder Veranstaltungen bereits kennt, kann seinen Termin früh direkt prüfen."],
+            "paragraphs":["Das Gartenzimmer ist für maximal zwei Gäste gedacht und liegt in Aggsbach Markt am nördlichen Wachauufer. Wer nach Privatzimmer, Gästezimmer, kleiner Pension oder persönlicher Unterkunft in der Wachau sucht, findet hier bewusst nur ein direkt angebotenes Zimmer.","Donauradweg und Welterbesteig lassen sich mit persönlichen Tipps, Frühstück auf Wunsch und direktem Gastgeberkontakt verbinden.","Die deutschsprachige Direktbuchung richtet sich gleichermaßen an Gäste aus Österreich, Deutschland und der Schweiz. Preise werden in Euro angezeigt; freie Termine können direkt geprüft werden."],
             "features":common_features,
             "hero_image":"images/gartenzimmer-04-web.jpg","hero_image_alt":"Gartenzimmer bei Zuhause am Bach in Aggsbach Markt","hero_image_caption":"Das direkt angebotene Gartenzimmer.",
             "secondary_image":"images/bach-hinterm-haus-v11.webp","secondary_image_alt":"Bach hinter Zuhause am Bach in Aggsbach Markt","secondary_image_caption":"Ruhige Wege beginnen direkt hinter dem Haus.",
@@ -1772,6 +1794,11 @@ def seo_landing_context(slug: str) -> dict:
 @app.get("/unterkunft-wachau")
 def seo_unterkunft_wachau():
     return render_template("seo_landing.html", **seo_landing_context("wachau"))
+
+
+@app.get("/wachau-urlaub-deutschland-schweiz")
+def seo_wachau_dach():
+    return render_template("seo_landing.html", **seo_landing_context("dach"))
 
 
 @app.get("/cs/ubytovani-wachau")
@@ -2196,6 +2223,7 @@ def sitemap():
     urls = [
         "https://www.zuhauseambach-wachau.at/",
         "https://www.zuhauseambach-wachau.at/unterkunft-wachau",
+        "https://www.zuhauseambach-wachau.at/wachau-urlaub-deutschland-schweiz",
         "https://www.zuhauseambach-wachau.at/cs/ubytovani-wachau",
         "https://www.zuhauseambach-wachau.at/sk/ubytovanie-wachau",
         "https://www.zuhauseambach-wachau.at/en/",
@@ -2223,6 +2251,7 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/marillenbluete-wachau-unterkunft",
         "https://www.zuhauseambach-wachau.at/marillenernte-wachau-unterkunft",
+        "https://www.zuhauseambach-wachau.at/wachau-jahreszeiten-urlaub",
         "https://www.zuhauseambach-wachau.at/winterurlaub-wachau",
         "https://www.zuhauseambach-wachau.at/business-unterkunft-melk-krems",
         "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
@@ -2264,7 +2293,8 @@ Location: Aggsbach Markt, Wachau, Lower Austria
 Type: Small personal accommodation / guest room with direct booking
 
 ## Primary travel topics
-- Wachau accommodation: https://www.zuhauseambach-wachau.at/unterkunft-wachau
+- Wachau accommodation / Privatzimmer / Gästezimmer: https://www.zuhauseambach-wachau.at/unterkunft-wachau
+- Wachau travel for German and Swiss guests: https://www.zuhauseambach-wachau.at/wachau-urlaub-deutschland-schweiz
 - Seasonal Wachau travel: https://www.zuhauseambach-wachau.at/wachau-jahreszeiten-urlaub
 - Donauradweg accommodation: https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau
 - Welterbesteig accommodation: https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau
@@ -2273,6 +2303,9 @@ Type: Small personal accommodation / guest room with direct booking
 - Jauerling ski season: https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau
 - Winter in the Wachau: https://www.zuhauseambach-wachau.at/winterurlaub-wachau
 - Wachau events: https://www.zuhauseambach-wachau.at/wachau-events-2027-2028
+
+## DACH relevance
+German-language information and direct booking are intended for guests from Austria, Germany and Switzerland. Typical search intents include Unterkunft Wachau, Privatzimmer Wachau, Gästezimmer Wachau, Pension Wachau, Donauradweg Unterkunft, Radurlaub Wachau, Welterbesteig Unterkunft and Wanderurlaub Wachau.
 
 ## Direct-booking features
 One-night stays are generally possible when available. Bicycle storage, e-bike charging, breakfast on request, drying options and luggage transfer on request are available depending on the stay.
