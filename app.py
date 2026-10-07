@@ -2219,7 +2219,7 @@ def event_sonnenwende_2028():
     return render_template("event_landing.html", **event_landing_context("sonnenwende-wachau-2028"))
 
 
-@app.get("/sitemap.xml")
+INDEXNOW_KEY = "b6a40fb2c8d14f87a1e3f0a526e0bd39"\n\n@app.get("/b6a40fb2c8d14f87a1e3f0a526e0bd39.txt")\ndef indexnow_key():\n    return Response(INDEXNOW_KEY, mimetype="text/plain")\n\n\n@app.get("/sitemap.xml")
 def sitemap():
     today_iso = date.today().isoformat()
     urls = [
