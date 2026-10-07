@@ -1,16 +1,13 @@
-name: Submit changed pages to IndexNow
+name: Submit production pages to IndexNow
 
 on:
   push:
     branches: [main]
     paths:
-      - '**/*.html'
-      - 'sitemap.xml'
-      - 'gaeste/sitemap.xml'
-      - 'robots.txt'
-      - 'llms.txt'
-      - 'zab-sync-config.js'
-      - 'b6a40fb2c8d14f87a1e3f0a526e0bd39.txt'
+      - 'app.py'
+      - 'templates/**'
+      - 'translations/**'
+      - 'static/**'
       - '.github/workflows/indexnow-submit.yml'
   workflow_dispatch:
 
@@ -21,43 +18,55 @@ jobs:
   submit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Wait briefly for production deploy
+        run: sleep 45
 
-      - name: Collect public URLs and submit to IndexNow
+      - name: Read live sitemap and submit official URLs
         shell: bash
         run: |
           python3 - <<'PY'
-          from pathlib import Path
           import json
+          import time
           import urllib.error
           import urllib.request
           import xml.etree.ElementTree as ET
 
-          host = 'topdiveair-sketch.github.io'
-          base = 'https://topdiveair-sketch.github.io/Direcktbuchungen/'
+          host = 'www.zuhauseambach-wachau.at'
+          base = 'https://www.zuhauseambach-wachau.at/'
           key = 'b6a40fb2c8d14f87a1e3f0a526e0bd39'
           key_location = base + key + '.txt'
+          sitemap_url = base + 'sitemap.xml'
 
           urls = []
-          for sitemap_path in ('sitemap.xml', 'gaeste/sitemap.xml'):
-              sitemap = Path(sitemap_path)
-              if not sitemap.exists():
-                  continue
+          for attempt in range(3):
               try:
-                  root = ET.fromstring(sitemap.read_text(encoding='utf-8'))
+                  with urllib.request.urlopen(sitemap_url, timeout=20) as response:
+                      root = ET.fromstring(response.read())
                   ns = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
-                  for loc in root.findall('.//sm:loc', ns):
-                      if loc.text and loc.text.startswith(base):
-                          urls.append(loc.text.strip())
+                  urls = [
+                      loc.text.strip()
+                      for loc in root.findall('.//sm:loc', ns)
+                      if loc.text and loc.text.strip().startswith(base)
+                  ]
+                  if urls:
+                      break
               except Exception as exc:
-                  print(f'Sitemap parse warning for {sitemap_path}:', exc)
+                  print('Live sitemap attempt failed:', attempt + 1, exc)
+              time.sleep(20)
 
           if not urls:
-              urls = [base]
-              for page in Path('.').rglob('index.html'):
-                  rel = page.parent.as_posix().strip('./')
-                  if rel and not rel.startswith('.github'):
-                      urls.append(base + rel.rstrip('/') + '/')
+              urls = [
+                  base,
+                  base + 'unterkunft-wachau',
+                  base + 'skifahren-jauerling-unterkunft-wachau',
+                  base + 'winterurlaub-wachau',
+                  base + 'en/',
+                  base + 'cs/',
+                  base + 'sk/',
+                  base + 'hu/',
+                  base + 'pl/',
+                  base + 'nl/',
+              ]
 
           urls = sorted(dict.fromkeys(urls))[:100]
           payload = json.dumps({
@@ -72,17 +81,16 @@ jobs:
               data=payload,
               headers={
                   'Content-Type': 'application/json; charset=utf-8',
-                  'User-Agent': 'Zuhause-am-Bach-IndexNow/1.1',
+                  'User-Agent': 'Zuhause-am-Bach-IndexNow/2.0',
               },
               method='POST',
           )
+
           try:
-              with urllib.request.urlopen(req, timeout=20) as response:
+              with urllib.request.urlopen(req, timeout=25) as response:
                   print('IndexNow status:', response.status)
-                  print('Submitted URLs:', len(urls))
+                  print('Official-domain URLs submitted:', len(urls))
           except urllib.error.HTTPError as exc:
               body = exc.read().decode('utf-8', errors='replace')[:500]
-              print(f'IndexNow warning: HTTP {exc.code}; submission skipped. {body}')
-          except urllib.error.URLError as exc:
-              print(f'IndexNow warning: provider unreachable; submission skipped. {exc}')
+              raise SystemExit(f'IndexNow HTTP {exc.code}: {body}')
           PY
