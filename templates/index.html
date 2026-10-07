@@ -333,7 +333,7 @@
         <span class="section-icon">▣</span>
         <div>
           <h2>Verfügbarkeit &amp; Preis</h2>
-          <p>Auch lange im Voraus planen: Reisedaten bis {{ booking_horizon_year }} prüfen und direkt anfragen.</p>
+          <p>Auch lange im Voraus planen: Reisedaten bis {{ booking_horizon_year }} prüfen und direkt buchen.</p>
         </div>
       </div>
 
@@ -393,13 +393,17 @@
           </div>
         </div>
 
+        {% set breakfast_item = extras.get('breakfast') %}
+        {% if breakfast_item and breakfast_item.enabled %}
+        <label hidden><input type="checkbox" id="breakfast" name="breakfast" data-price="{{ breakfast_item.price }}" data-unit="{{ breakfast_item.unit }}"><strong>Frühstück</strong></label>
+        {% endif %}
         <section class="booking-services" aria-label="Zusatzleistungen">
           <div class="service-heading">
             <span>Auf Wunsch gleich dazu</span>
-            <strong>Frühstück, Abendjause und Gepäcktransport</strong>
+            <strong>Abendjause und Gepäcktransport</strong>
           </div>
           <div class="extras-grid featured-extras">
-            {% for key in ['breakfast', 'jause', 'luggage'] %}
+            {% for key in ['jause', 'luggage'] %}
               {% set item = extras.get(key) %}
               {% if item and item.enabled %}
               <label class="extra-option featured-extra">
@@ -435,6 +439,18 @@
         </div>
 
         <div id="availabilityResult" class="availability-result hidden"></div>
+
+        <section id="rateChoices" class="hidden" aria-label="Übernachtung auswählen">
+          <h3>Wählt euren Aufenthalt</h3>
+          <div class="rate-choice-grid">
+            <button type="button" class="rate-choice selected" id="rateWithoutBreakfast" aria-pressed="true"><strong>Ohne Frühstück</strong><span id="rateWithoutPrice">–</span><small>Gesamtpreis für alle Gäste und Nächte</small></button>
+            {% if breakfast_item and breakfast_item.enabled %}
+            <button type="button" class="rate-choice" id="rateWithBreakfast" aria-pressed="false"><strong>Mit Frühstück</strong><span id="rateWithPrice">–</span><small id="rateBreakfastDetail">Frühstück für alle Gäste und Nächte</small></button>
+            {% endif %}
+          </div>
+          <p>✓ Flexible Rate · kostenfrei stornierbar bis 7 Tage vor Anreise</p>
+          <button type="button" class="btn full" id="continueBooking">WEITER ZU DEN GÄSTEDATEN</button>
+        </section>
 
         <div id="priceBreakdown" class="price-breakdown"></div>
 
@@ -500,15 +516,14 @@
           <h3>Zahlungsart</h3>
           <div class="payment-grid">
             <label><input type="radio" name="payment_method" value="PayPal" checked><span><strong>PayPal</strong><small>{{ paypal_email }}</small></span></label>
-            <label><input type="radio" name="payment_method" value="Banküberweisung"><span><strong>Banküberweisung</strong><small>IBAN wird sofort angezeigt</small></span></label>
-            <label><input type="radio" name="payment_method" value="Vor Ort"><span><strong>Zahlung vor Ort</strong><small>E-Mail-Bestätigung innerhalb von 2 Stunden · nicht bei Anreise in unter 3 Tagen</small></span></label>
+            <label><input type="radio" name="payment_method" value="Banküberweisung"><span><strong>Banküberweisung</strong><small>Zahlungseingang innerhalb von 48 Stunden</small></span></label>
           </div>
           <div id="paymentNotice" class="legal-note" style="display:block;margin:10px 0 12px"></div>
           <div id="bankTransferDetails" class="paypal-note hidden" style="margin:10px 0 12px">
             <strong>Banküberweisung</strong><br>
             Kontoinhaber: <strong>{{ bank_account_holder }}</strong><br>
             IBAN: <strong>{{ bank_iban_display or bank_iban }}</strong><br>
-            Der genaue Betrag und Verwendungszweck werden angezeigt. Bitte erst nach unserer persönlichen Buchungsbestätigung überweisen.
+            Das Zimmer wird beim Abschluss verbindlich reserviert. Betrag, Verwendungszweck und Zahlungsfrist stehen in der Bestätigung. Zahlungseingang innerhalb von 48 Stunden; sonst wird die Reservierung aufgehoben.
           </div>
 
           <button class="btn full" id="bookingSubmit" type="submit">JETZT DIREKT BUCHEN</button>
@@ -518,7 +533,7 @@
     </div>
 
     <aside class="benefit-column">
-      <article><span>⌾</span><div><strong>Direkt anfragen</strong><small>Ohne Umweg über ein Buchungsportal.</small></div></article>
+      <article><span>⌾</span><div><strong>Direkt buchen</strong><small>Ohne Umweg über ein Buchungsportal.</small></div></article>
       <article><span>♡</span><div><strong>Persönlich & herzlich</strong><small>Wir sind vor, während und nach dem Aufenthalt da.</small></div></article>
       <article><span>🐾</span><div><strong>Windis inklusive</strong><small>Fidel, Gloria und Pia freuen sich auf Besuch.</small></div></article>
       <article><span>⌖</span><div><strong>Top-Lage</strong><small>Am Welterbesteig und nur wenige Minuten vom Donauradweg.</small></div></article>
@@ -555,8 +570,8 @@
     <span class="eyebrow">Gut zu wissen</span>
     <h2 id="sales-faq-title">Häufige Fragen vor der Buchung</h2>
     <details><summary>Wo befindet sich das Privatbad?</summary><p>Das Bad liegt außerhalb des Gartenzimmers direkt gegenüber. Es steht ausschließlich den Gästen dieses Zimmers zur Verfügung.</p></details>
-    <details><summary>Wann ist meine Buchung bestätigt?</summary><p>Bei PayPal ist die Buchung nach erfolgreicher Zahlung bestätigt. Bei Überweisung oder Zahlung vor Ort sendet ihr zunächst eine Anfrage; verbindlich wird die Buchung mit unserer persönlichen Bestätigung. Bei Zahlung vor Ort bestätigt bitte eure E-Mail innerhalb von 2 Stunden, damit der Zeitraum vorläufig reserviert wird.</p></details>
-    <details><summary>Kann ich direkt bei Zuhause am Bach buchen?</summary><p>Ja. Reisedaten wählen, Verfügbarkeit prüfen und anschließend direkt über die offizielle Website buchen oder anfragen.</p></details>
+    <details><summary>Wann ist meine Buchung bestätigt?</summary><p>Bei PayPal ist die Buchung nach erfolgreicher Zahlung bestätigt. Bei Überweisung ist das Zimmer nach dem Buchungsabschluss verbindlich reserviert. Die Zahlung muss innerhalb von 48 Stunden eingehen; sonst wird die Reservierung aufgehoben. Bei Anreise in weniger als 3 Tagen ist nur PayPal verfügbar.</p></details>
+    <details><summary>Kann ich direkt bei Zuhause am Bach buchen?</summary><p>Ja. Reisedaten wählen, Verfügbarkeit prüfen und anschließend direkt über die offizielle Website buchen.</p></details>
     <details><summary>Ist die Unterkunft für Radfahrer am Donauradweg geeignet?</summary><p>Ja. Fahrradunterbringung, E-Bike-Lademöglichkeit, Werkzeug und weitere Services für Radreisende gehören zu unserer Ausrichtung.</p></details>
     <details><summary>Ist Zuhause am Bach für Wanderer am Welterbesteig geeignet?</summary><p>Ja. Aggsbach Markt ist ein guter Ausgangs- und Zwischenpunkt für Wachau-Wanderungen; zusätzlich gibt es persönliche Tipps und unseren Etappenstempel.</p></details>
     <details><summary>Kann ich Frühstück oder eine Jause dazubuchen?</summary><p>Verfügbare Zusatzleistungen werden direkt im Buchungsbereich angezeigt und können dort ausgewählt werden.</p></details>
@@ -755,7 +770,7 @@
       <p><a href="https://www.outdooractive.com/de/list/welterbesteig-rundwege-bei-aggsbach-markt-zuhause-am-bach/354392012/" target="_blank" rel="noopener noreferrer">Rundwege &amp; Welterbesteig-Sammlung öffnen</a></p>
       <p>Bitte vor dem Start Wetter, Wegzustand und aktuelle Sperren prüfen. Für einzelne Outdooractive-Funktionen kann eine Anmeldung oder ein kostenpflichtiger Tarif erforderlich sein.</p>
       <p>Deine Übernachtung dazu: ein Doppelzimmer für maximal zwei Gäste mit exklusivem Privatbad direkt gegenüber. Frühstück und Gepäcktransport nach Vereinbarung.</p>
-      <a class="btn" href="#booking">Zimmer anfragen – Verfügbarkeit &amp; Preis prüfen</a>
+      <a class="btn" href="#booking">Zimmer buchen – Verfügbarkeit &amp; Preis prüfen</a>
     </div>
   </section>
 
@@ -818,7 +833,7 @@
 
 <div class="mobile-conversion-bar"><span id="stickyLabel">Gartenzimmer ab 99 € / Nacht</span><a href="#booking" id="stickyCta">Verfügbarkeit prüfen</a></div>
 
-<script src="{{ url_for('static', filename='js/app.js') }}?v=20261007-booking-clarity1"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}?v=20261007-direct-rates1"></script>
 <script>
 (function(){
   const lang=new URLSearchParams(location.search).get("lang");

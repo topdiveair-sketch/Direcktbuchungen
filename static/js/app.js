@@ -1,9 +1,9 @@
 const checkoutLang = new URLSearchParams(window.location.search).get("lang") || "de";
 const I18N = {
-  de:{blocked:"⛔ Termin nicht verfügbar.",roomLabel:"Zimmer",afterCheck:"Nach Verfügbarkeitsprüfung",missing:"Bitte Reisedaten und Zimmer auswählen.",checking:"Verfügbarkeit wird geprüft …",fail:"Die Prüfung konnte nicht durchgeführt werden.",free:"✅ Termin frei – direkt buchbar.",unknown:"Verfügbarkeit bitte persönlich anfragen.",paypal:"MIT PAYPAL BEZAHLEN",paypalNote:"Nach dem Klick prüfen wir den Termin erneut und öffnen PayPal. Nach erfolgreicher Zahlung ist eure Buchung bestätigt. Ohne abgeschlossene Zahlung entsteht keine bestätigte Buchung.",bank:"ANFRAGE SENDEN & BANKDATEN ERHALTEN",bankNote:"Die Bankverbindung wird direkt angezeigt. Der Termin wird erst nach persönlicher Bestätigung verbindlich reserviert.",onsite:"BUCHUNGSANFRAGE SENDEN",onsiteNote:"Ihr sendet zunächst eine Anfrage. Bitte bestätigt eure E-Mail innerhalb von 2 Stunden; danach wird der Zeitraum vorläufig reserviert. Verbindlich wird die Buchung mit unserer persönlichen Bestätigung. Zahlung bei Anreise; weniger als 3 Tage vorher nicht verfügbar.",personal:"VERFÜGBARKEIT PERSÖNLICH ANFRAGEN",stickyBook:"Jetzt direkt buchen",stickyAsk:"Persönlich anfragen",book:"Buchen",ask:"Anfragen",sending:"Anfrage wird gesendet …",paypalPrep:"PAYPAL WIRD VORBEREITET …",finalCheck:"Verfügbarkeit und Preis werden nochmals sicher geprüft.",paypalOpen:"PAYPAL WIRD GEÖFFNET …",calendarLive:"Live-Kalender aktuell",calendarDown:"Live-Kalender derzeit nicht erreichbar – freie Tage werden nicht automatisch bestätigt.",months:["Jänner","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"],days:["Mo","Di","Mi","Do","Fr","Sa","So"]},
+  de:{blocked:"⛔ Termin nicht verfügbar.",roomLabel:"Zimmer",afterCheck:"Nach Verfügbarkeitsprüfung",missing:"Bitte Reisedaten und Zimmer auswählen.",checking:"Verfügbarkeit wird geprüft …",fail:"Die Prüfung konnte nicht durchgeführt werden.",free:"✅ Termin frei – direkt buchbar.",unknown:"Verfügbarkeit bitte persönlich anfragen.",paypal:"MIT PAYPAL BEZAHLEN",paypalNote:"Nach dem Klick prüfen wir den Termin erneut und öffnen PayPal. Nach erfolgreicher Zahlung ist eure Buchung bestätigt. Ohne abgeschlossene Zahlung entsteht keine bestätigte Buchung.",bank:"ZAHLUNGSPFLICHTIG BUCHEN",bankNote:"Beim Abschluss wird das Zimmer verbindlich reserviert. Die Zahlung muss innerhalb von 48 Stunden eingehen; sonst wird die Reservierung aufgehoben. Bei Anreise in weniger als 3 Tagen bitte PayPal wählen.",onsite:"BUCHUNGSANFRAGE SENDEN",onsiteNote:"Ihr sendet zunächst eine Anfrage. Bitte bestätigt eure E-Mail innerhalb von 2 Stunden; danach wird der Zeitraum vorläufig reserviert. Verbindlich wird die Buchung mit unserer persönlichen Bestätigung. Zahlung bei Anreise; weniger als 3 Tage vorher nicht verfügbar.",personal:"VERFÜGBARKEIT PERSÖNLICH ANFRAGEN",stickyBook:"Jetzt direkt buchen",stickyAsk:"Persönlich anfragen",book:"Buchen",ask:"Anfragen",sending:"Anfrage wird gesendet …",paypalPrep:"PAYPAL WIRD VORBEREITET …",finalCheck:"Verfügbarkeit und Preis werden nochmals sicher geprüft.",paypalOpen:"PAYPAL WIRD GEÖFFNET …",calendarLive:"Live-Kalender aktuell",calendarDown:"Live-Kalender derzeit nicht erreichbar – freie Tage werden nicht automatisch bestätigt.",months:["Jänner","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"],days:["Mo","Di","Mi","Do","Fr","Sa","So"]},
   cs:{blocked:"⛔ Termín není dostupný.",roomLabel:"Pokoj",afterCheck:"Po ověření dostupnosti",missing:"Vyberte prosím termín a pokoj.",checking:"Ověřujeme dostupnost …",fail:"Dostupnost se nepodařilo ověřit.",free:"✅ Termín je volný – můžete rezervovat přímo.",unknown:"Dostupnost prosím ověřte osobně.",paypal:"ZAPLATIT PŘES PAYPAL",paypalNote:"Po kliknutí ještě jednou ověříme termín a poté se otevře zabezpečená platba přes PayPal.",bank:"ODESLAT POPTÁVKU A ZÍSKAT BANKOVNÍ ÚDAJE",bankNote:"Bankovní údaje se zobrazí přímo. Termín je závazně rezervován až po našem osobním potvrzení.",onsite:"ODESLAT POPTÁVKU",onsiteNote:"Termín je závazně rezervován až po našem osobním potvrzení. Platba proběhne při příjezdu.",personal:"OSOBNĚ OVĚŘIT DOSTUPNOST",stickyBook:"Rezervovat přímo",stickyAsk:"Osobní dotaz",book:"Rezervovat",ask:"Zeptat se",sending:"Odesíláme poptávku …",paypalPrep:"PŘIPRAVUJEME PAYPAL …",finalCheck:"Ještě jednou bezpečně ověřujeme dostupnost a cenu.",paypalOpen:"OTEVÍRÁME PAYPAL …",calendarLive:"Aktuální kalendář",calendarDown:"Aktuální kalendář není právě dostupný – volné dny proto automaticky nepotvrzujeme.",months:["leden","únor","březen","duben","květen","červen","červenec","srpen","září","říjen","listopad","prosinec"],days:["Po","Út","St","Čt","Pá","So","Ne"]},
   sk:{blocked:"⛔ Termín nie je dostupný.",roomLabel:"Izba",afterCheck:"Po overení dostupnosti",missing:"Vyberte si prosím termín a izbu.",checking:"Overujeme dostupnosť …",fail:"Dostupnosť sa nepodarilo overiť.",free:"✅ Termín je voľný – môžete rezervovať priamo.",unknown:"Dostupnosť si prosím overte osobne.",paypal:"ZAPLATIŤ CEZ PAYPAL",paypalNote:"Po kliknutí ešte raz overíme termín a potom sa otvorí zabezpečená platba cez PayPal.",bank:"ODOSLAŤ POŽIADAVKU A ZÍSKAŤ BANKOVÉ ÚDAJE",bankNote:"Bankové údaje sa zobrazia priamo. Termín je záväzne rezervovaný až po našom osobnom potvrdení.",onsite:"ODOSLAŤ POŽIADAVKU",onsiteNote:"Termín je záväzne rezervovaný až po našom osobnom potvrdení. Platba prebehne pri príchode.",personal:"OSOBNE OVERIŤ DOSTUPNOSŤ",stickyBook:"Rezervovať priamo",stickyAsk:"Osobná požiadavka",book:"Rezervovať",ask:"Opýtať sa",sending:"Odosielame požiadavku …",paypalPrep:"PRIPRAVUJEME PAYPAL …",finalCheck:"Ešte raz bezpečne overujeme dostupnosť a cenu.",paypalOpen:"OTVÁRAME PAYPAL …",calendarLive:"Aktuálny kalendár",calendarDown:"Aktuálny kalendár momentálne nie je dostupný – voľné dni preto automaticky nepotvrdzujeme.",months:["január","február","marec","apríl","máj","jún","júl","august","september","október","november","december"],days:["Po","Ut","St","Št","Pi","So","Ne"]},
-  en:{blocked:"⛔ These dates are not available.",roomLabel:"Room",afterCheck:"After availability check",missing:"Please select travel dates and a room.",checking:"Checking availability …",fail:"Availability could not be checked.",free:"✅ Available – book direct.",unknown:"Please request availability personally.",paypal:"PAY SECURELY WITH PAYPAL",paypalNote:"We check your dates again before opening PayPal. Your booking is confirmed after successful payment. An unfinished payment does not confirm a booking.",bank:"SEND REQUEST & GET BANK DETAILS",bankNote:"Bank details will be shown directly. The stay becomes binding only after our personal confirmation.",onsite:"SEND BOOKING REQUEST",onsiteNote:"The stay becomes binding only after our personal confirmation. Payment is made on arrival.",personal:"REQUEST AVAILABILITY",stickyBook:"Book direct",stickyAsk:"Send request",book:"Book",ask:"Request",sending:"Sending request …",paypalPrep:"PREPARING PAYPAL …",finalCheck:"Availability and price are being checked once more.",paypalOpen:"OPENING PAYPAL …",calendarLive:"Live calendar up to date",calendarDown:"Live calendar is currently unavailable – free dates are not automatically confirmed.",months:["January","February","March","April","May","June","July","August","September","October","November","December"],days:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]},
+  en:{blocked:"⛔ These dates are not available.",roomLabel:"Room",afterCheck:"After availability check",missing:"Please select travel dates and a room.",checking:"Checking availability …",fail:"Availability could not be checked.",free:"✅ Available – book direct.",unknown:"Please request availability personally.",paypal:"PAY SECURELY WITH PAYPAL",paypalNote:"We check your dates again before opening PayPal. Your booking is confirmed after successful payment. An unfinished payment does not confirm a booking.",bank:"BOOK WITH OBLIGATION TO PAY",bankNote:"Your room is reserved immediately when you book. Payment must arrive within 48 hours; otherwise the reservation is cancelled. For arrival in less than 3 days, please use PayPal.",onsite:"SEND BOOKING REQUEST",onsiteNote:"The stay becomes binding only after our personal confirmation. Payment is made on arrival.",personal:"REQUEST AVAILABILITY",stickyBook:"Book direct",stickyAsk:"Send request",book:"Book",ask:"Request",sending:"Sending request …",paypalPrep:"PREPARING PAYPAL …",finalCheck:"Availability and price are being checked once more.",paypalOpen:"OPENING PAYPAL …",calendarLive:"Live calendar up to date",calendarDown:"Live calendar is currently unavailable – free dates are not automatically confirmed.",months:["January","February","March","April","May","June","July","August","September","October","November","December"],days:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]},
   hu:{blocked:"⛔ Ez az időpont nem elérhető.",roomLabel:"Szoba",afterCheck:"Elérhetőség ellenőrzése után",missing:"Kérjük, válasszon dátumot és szobát.",checking:"Elérhetőség ellenőrzése …",fail:"Az elérhetőség ellenőrzése nem sikerült.",free:"✅ Szabad – közvetlenül foglalható.",unknown:"Kérjük, érdeklődjön személyesen az elérhetőségről.",paypal:"BIZTONSÁGOS FIZETÉS PAYPALLAL",paypalNote:"A PayPal megnyitása előtt még egyszer ellenőrizzük a dátumot.",bank:"ÉRDEKLŐDÉS KÜLDÉSE ÉS BANKI ADATOK",bankNote:"A banki adatok közvetlenül megjelennek. A foglalás személyes visszaigazolásunk után válik véglegessé.",onsite:"FOGLALÁSI ÉRDEKLŐDÉS KÜLDÉSE",onsiteNote:"A foglalás személyes visszaigazolásunk után válik véglegessé. Fizetés érkezéskor.",personal:"ELÉRHETŐSÉG KÉRÉSE",stickyBook:"Közvetlen foglalás",stickyAsk:"Érdeklődés",book:"Foglalás",ask:"Érdeklődés",sending:"Érdeklődés küldése …",paypalPrep:"PAYPAL ELŐKÉSZÍTÉSE …",finalCheck:"Az elérhetőséget és az árat még egyszer ellenőrizzük.",paypalOpen:"PAYPAL MEGNYITÁSA …",calendarLive:"Élő naptár aktuális",calendarDown:"Az élő naptár jelenleg nem elérhető – a szabad napokat nem erősítjük meg automatikusan.",months:["január","február","március","április","május","június","július","augusztus","szeptember","október","november","december"],days:["H","K","Sze","Cs","P","Szo","V"]},
   nl:{blocked:"⛔ Deze data zijn niet beschikbaar.",roomLabel:"Kamer",afterCheck:"Na controle van beschikbaarheid",missing:"Kies uw reisdata en kamer.",checking:"Beschikbaarheid controleren …",fail:"Beschikbaarheid kon niet worden gecontroleerd.",free:"✅ Beschikbaar – direct boeken.",unknown:"Vraag de beschikbaarheid persoonlijk aan.",paypal:"VEILIG BETALEN MET PAYPAL",paypalNote:"We controleren de data nog één keer voordat de beveiligde PayPal-checkout opent.",bank:"AANVRAAG VERSTUREN & BANKGEGEVENS ONTVANGEN",bankNote:"De bankgegevens worden direct getoond. De reservering is pas definitief na onze persoonlijke bevestiging.",onsite:"BOEKINGSAANVRAAG VERSTUREN",onsiteNote:"De reservering is pas definitief na onze persoonlijke bevestiging. Betaling bij aankomst.",personal:"BESCHIKBAARHEID AANVRAGEN",stickyBook:"Direct boeken",stickyAsk:"Aanvragen",book:"Boeken",ask:"Aanvragen",sending:"Aanvraag wordt verzonden …",paypalPrep:"PAYPAL VOORBEREIDEN …",finalCheck:"Beschikbaarheid en prijs worden nogmaals gecontroleerd.",paypalOpen:"PAYPAL WORDT GEOPEND …",calendarLive:"Live kalender actueel",calendarDown:"De live kalender is momenteel niet bereikbaar – vrije dagen worden niet automatisch bevestigd.",months:["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"],days:["ma","di","wo","do","vr","za","zo"]},
   pl:{blocked:"⛔ Ten termin nie jest dostępny.",roomLabel:"Pokój",afterCheck:"Po sprawdzeniu dostępności",missing:"Wybierz termin i pokój.",checking:"Sprawdzamy dostępność …",fail:"Nie udało się sprawdzić dostępności.",free:"✅ Termin wolny – rezerwuj bezpośrednio.",unknown:"Zapytaj nas o dostępność.",paypal:"ZAPŁAĆ BEZPIECZNIE PRZEZ PAYPAL",paypalNote:"Przed otwarciem bezpiecznej płatności PayPal ponownie sprawdzimy termin.",bank:"WYŚLIJ ZAPYTANIE I OTRZYMAJ DANE BANKOWE",bankNote:"Dane bankowe zostaną wyświetlone bezpośrednio. Rezerwacja staje się wiążąca po naszym osobistym potwierdzeniu.",onsite:"WYŚLIJ ZAPYTANIE O REZERWACJĘ",onsiteNote:"Rezerwacja staje się wiążąca po naszym osobistym potwierdzeniu. Płatność przy przyjeździe.",personal:"ZAPYTAJ O DOSTĘPNOŚĆ",stickyBook:"Rezerwuj bezpośrednio",stickyAsk:"Wyślij zapytanie",book:"Rezerwuj",ask:"Zapytaj",sending:"Wysyłanie zapytania …",paypalPrep:"PRZYGOTOWUJEMY PAYPAL …",finalCheck:"Ponownie sprawdzamy dostępność i cenę.",paypalOpen:"OTWIERAMY PAYPAL …",calendarLive:"Kalendarz na żywo aktualny",calendarDown:"Kalendarz na żywo jest obecnie niedostępny – wolne dni nie są automatycznie potwierdzane.",months:["styczeń","luty","marzec","kwiecień","maj","czerwiec","lipiec","sierpień","wrzesień","październik","listopad","grudzień"],days:["pon.","wt.","śr.","czw.","pt.","sob.","niedz."]},
@@ -45,6 +45,19 @@ let checkoutOpen = false;
 let bookingSubmitted = false;
 let lastQuotedTotal = null;
 let guestDetailsTracked = false;
+let rateQuotes = null;
+let quoteRevision = 0;
+let quoteLoading = false;
+const rateChoices = document.getElementById("rateChoices");
+const breakfastInput = document.getElementById("breakfast");
+// All languages must describe the same binding bank booking behavior.
+Object.entries(I18N).forEach(([lang,copy])=>{
+  if (!['de','en'].includes(lang)) {
+    copy.bank = I18N.en.bank;
+    copy.bankNote = I18N.en.bankNote;
+  }
+});
+
 
 function track(event) {
   const body = JSON.stringify({event});
@@ -147,31 +160,19 @@ function onsiteAllowedForArrival() {
 }
 
 function updateOnsiteOption() {
-  const onsiteRadio = document.querySelector('input[name="payment_method"][value="Vor Ort"]');
-  if (!onsiteRadio) return;
+  const bankRadio = document.querySelector('input[name="payment_method"][value="Banküberweisung"]');
+  if (!bankRadio) return;
   const allowed = onsiteAllowedForArrival();
-  onsiteRadio.disabled = !allowed;
-  const card = onsiteRadio.closest("label");
-  if (card) {
-    card.classList.toggle("disabled", !allowed);
-    const small = card.querySelector("small");
-    if (small && checkoutLang === "de") {
-      small.textContent = allowed
-        ? "E-Mail-Bestätigung innerhalb von 2 Stunden"
-        : "Nicht verfügbar bei Anreise in weniger als 3 Tagen";
-    }
-  }
-  if (!allowed && onsiteRadio.checked) {
-    const bank = document.querySelector('input[name="payment_method"][value="Banküberweisung"]');
-    if (bank) bank.checked = true;
-  }
+  bankRadio.disabled = !allowed;
+  bankRadio.closest("label")?.classList.toggle("disabled", !allowed);
+  if (!allowed && bankRadio.checked) document.querySelector('input[name="payment_method"][value="PayPal"]').checked = true;
 }
 
 function updatePaymentUI() {
   updateOnsiteOption();
   const method = selectedPayment();
 
-  bookingSubmit.disabled = false;
+  bookingSubmit.disabled = quoteLoading || !rateQuotes;
   bookingSubmit.removeAttribute("aria-busy");
 
   if (bankTransferDetails) {
@@ -194,6 +195,14 @@ function resetAvailability() {
   result.classList.add("hidden");
   guestArea.classList.add("hidden");
   lastQuotedTotal = null;
+  rateQuotes = null;
+  quoteRevision++;
+  quoteLoading = false;
+  rateChoices?.classList.add("hidden");
+  document.getElementById("continueBooking")?.classList.remove("hidden");
+  checkoutOpen = false;
+  bookingSubmit.disabled = true;
+  updateTotals();
   updateBookingSummary();
 }
 
@@ -209,81 +218,110 @@ arrival.addEventListener("change", () => {
   resetAvailability();
 });
 
-[departure, adults, ...extraInputs, ...roomRadios].forEach(el => {
+[departure, adults, ...roomRadios].forEach(el => {
   el.addEventListener("change", () => {
     if (el.matches('input[name="room"]')) track("room_selected");
-    if (extraInputs.includes(el)) track("extras_selected");
-    updateTotals();
-    updateBookingSummary();
     resetAvailability();
   });
 });
 
-document.getElementById("checkAvailability").addEventListener("click", async () => {
+extraInputs.filter(el=>el.id !== "breakfast").forEach(el=>el.addEventListener("change",()=>{
+  track("extras_selected");
+  if (rateQuotes || quoteLoading) loadRateQuotes();
+  else resetAvailability();
+}));
+couponCode?.addEventListener("change",()=>{
+  if (rateQuotes || quoteLoading) loadRateQuotes();
+  else resetAvailability();
+});
+
+function applyRateChoice(withBreakfast) {
+  if (!rateQuotes || quoteLoading) return;
+  if (breakfastInput) breakfastInput.checked = withBreakfast;
+  const data = withBreakfast ? rateQuotes.withBreakfast : rateQuotes.withoutBreakfast;
+  lastQuotedTotal = Number(data.total);
+  totalPrice.textContent = euro(data.total);
+  document.getElementById("rateWithoutBreakfast")?.setAttribute("aria-pressed",String(!withBreakfast));
+  document.getElementById("rateWithoutBreakfast")?.classList.toggle("selected",!withBreakfast);
+  document.getElementById("rateWithBreakfast")?.setAttribute("aria-pressed",String(withBreakfast));
+  document.getElementById("rateWithBreakfast")?.classList.toggle("selected",withBreakfast);
+  // Build text nodes so provider-controlled labels cannot become HTML.
+  priceBreakdown.replaceChildren();
+  if (data.breakdown) {
+    const rows=[{label:tx("roomLabel"),amount:data.breakdown.room_total},...data.breakdown.extras];
+    rows.forEach(row=>{
+      const div=document.createElement("div"),label=document.createElement("span"),amount=document.createElement("strong");
+      label.textContent=row.label; amount.textContent=euro(row.amount); div.append(label,amount);priceBreakdown.append(div);
+    });
+    data.breakdown.discounts.forEach(row=>{
+      const div=document.createElement("div"),label=document.createElement("span"),amount=document.createElement("strong");
+      div.className="discount-line";label.textContent=`${row.label} (${row.percent}%)`;amount.textContent=`− ${euro(row.amount)}`;div.append(label,amount);priceBreakdown.append(div);
+    });
+  }
+  updatePaymentUI();
+  updateBookingSummary();
+}
+
+async function loadRateQuotes() {
   if (!arrival.value || !departure.value || !selectedRoom()) {
-    result.textContent = tx("missing");
-    result.className = "availability-result bad";
-    return;
+    result.textContent=tx("missing");result.className="availability-result bad";return;
   }
-  const fd = new FormData();
-  fd.append("arrival", arrival.value);
-  fd.append("departure", departure.value);
-  fd.append("room", selectedRoom().value);
-  fd.append("adults", adults.value);
-  extraIds.forEach(id=>{const el=document.getElementById(id);fd.append(id,el&&el.checked?"true":"false")});
-  fd.append("coupon_code", couponCode?.value.trim() || "");
-
-  result.textContent = tx("checking");
-  result.className = "availability-result";
-  track("availability_started");
-  trackDemand("dates_selected", {
-    arrival:arrival.value,
-    departure:departure.value,
-    nights:nights()
-  });
-
+  const revision=++quoteRevision;
+  quoteLoading=true;bookingSubmit.disabled=true;
+  document.getElementById("continueBooking").disabled=true;
+  ["rateWithoutBreakfast","rateWithBreakfast"].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=true;});
+  result.textContent=tx("checking");result.className="availability-result";
+  const quote=async withBreakfast=>{
+    const fd=new FormData();
+    fd.append("arrival",arrival.value);fd.append("departure",departure.value);fd.append("room",selectedRoom().value);fd.append("adults",adults.value);
+    extraIds.forEach(id=>{const el=document.getElementById(id);fd.append(id,(id==="breakfast" ? withBreakfast : el?.checked)?"true":"false");});
+    fd.append("coupon_code",couponCode?.value.trim() || "");
+    const response=await fetch("/api/availability",{method:"POST",body:fd});
+    if (!response.ok) throw new Error("quote_failed");
+    return response.json();
+  };
   try {
-    const response = await fetch("/api/availability", {method:"POST", body:fd});
-    const data = await response.json();
-    const status = data.status || (data.available === true ? "free" : data.available === false ? "blocked" : "unknown");
-    result.textContent = checkoutLang === "de"
-      ? data.message
-      : (status === "free" ? tx("free") : status === "unknown" ? tx("unknown") : tx("blocked"));
-    result.className = status === "free" ? "availability-result ok" : status === "unknown" ? "availability-result unknown" : "availability-result bad";
-    track(`availability_result_${status}`);
-    if (status === "free") {
-      trackDemand("price_quote_loaded", {
-        arrival:arrival.value,
-        departure:departure.value,
-        nights:nights(),
-        total:Number(data.total || 0)
-      });
+    const [withoutBreakfast,withBreakfast]=await Promise.all([quote(false),breakfastInput ? quote(true) : Promise.resolve(null)]);
+    if (revision !== quoteRevision) return;
+    const responses=[withoutBreakfast,...(withBreakfast?[withBreakfast]:[])];
+    if (responses.some(data=>data.status ? data.status !== "free" : data.available !== true)) {
+      resetAvailability();
+      result.textContent=withoutBreakfast.message || tx("blocked");result.className="availability-result bad";
+      return;
     }
-    if (status === "free" || status === "unknown") {
-      guestArea.classList.remove("hidden");
-      checkoutOpen = true;
-      track("checkout_started");
-      trackDemand("checkout_started", {
-        arrival:arrival.value,
-        departure:departure.value,
-        nights:nights(),
-        total:Number(data.total || 0)
-      });
-      if (status === "free") updatePaymentUI();
-      else bookingSubmit.textContent = tx("personal");
-      stickyLabel.textContent = status === "free" ? tx("stickyBook") : tx("stickyAsk");
-      stickyCta.textContent = status === "free" ? tx("book") : tx("ask");
-      lastQuotedTotal = Number(data.total);
-      totalPrice.textContent=euro(data.total);
-      updateBookingSummary();
-      if(data.breakdown){let h=`<div><span>${tx("roomLabel")}</span><strong>${euro(data.breakdown.room_total)}</strong></div>`;data.breakdown.extras.forEach(x=>h+=`<div><span>${x.label}</span><strong>${euro(x.amount)}</strong></div>`);data.breakdown.discounts.forEach(x=>h+=`<div class="discount-line"><span>${x.label} (${x.percent}%)</span><strong>− ${euro(x.amount)}</strong></div>`);priceBreakdown.innerHTML=h;}
-    } else {
-      guestArea.classList.add("hidden");
+    if (responses.some(data=>!Number.isFinite(Number(data.total)) || Number(data.total) <= 0)) throw new Error("invalid_price");
+    rateQuotes={withoutBreakfast,withBreakfast:withBreakfast || withoutBreakfast};quoteLoading=false;
+    document.getElementById("rateWithoutPrice").textContent=euro(withoutBreakfast.total);
+    if (withBreakfast) {
+      document.getElementById("rateWithPrice").textContent=euro(withBreakfast.total);
+      document.getElementById("rateBreakfastDetail").textContent=(checkoutLang==="de"?"Frühstück für alle Gäste und Nächte · Aufpreis ":"Breakfast for all guests and nights · extra ")+euro(withBreakfast.total-withoutBreakfast.total);
     }
+    rateChoices.classList.remove("hidden");
+    result.textContent=checkoutLang==="de"?withoutBreakfast.message:tx("free");result.className="availability-result ok";
+    ["rateWithoutBreakfast","rateWithBreakfast"].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=false;});
+    document.getElementById("continueBooking").disabled=false;
+    document.getElementById("continueBooking").classList.toggle("hidden",!guestArea.classList.contains("hidden"));
+    applyRateChoice(Boolean(breakfastInput?.checked));
   } catch {
-    result.textContent = tx("fail");
-    result.className = "availability-result bad";
+    if (revision !== quoteRevision) return;
+    resetAvailability();result.textContent=tx("fail");result.className="availability-result bad";
   }
+}
+
+document.getElementById("checkAvailability").addEventListener("click",()=>{
+  track("availability_started");
+  trackDemand("dates_selected",{arrival:arrival.value,departure:departure.value,nights:nights()});
+  loadRateQuotes();
+});
+document.getElementById("rateWithoutBreakfast")?.addEventListener("click",()=>applyRateChoice(false));
+document.getElementById("rateWithBreakfast")?.addEventListener("click",()=>applyRateChoice(true));
+document.getElementById("continueBooking")?.addEventListener("click",()=>{
+  if (!rateQuotes || quoteLoading) return;
+  guestArea.classList.remove("hidden");checkoutOpen=true;
+  document.getElementById("continueBooking").classList.add("hidden");
+  track("checkout_started");
+  trackDemand("checkout_started",{arrival:arrival.value,departure:departure.value,nights:nights(),total:lastQuotedTotal});
+  guestArea.scrollIntoView({behavior:"smooth",block:"start"});
 });
 
 paymentRadios.forEach(radio => radio.addEventListener("change", () => {
@@ -301,6 +339,7 @@ guestArea?.addEventListener("input", () => {
 
 document.getElementById("bookingForm").addEventListener("submit", async (event) => {
   const method = selectedPayment();
+  if (quoteLoading || !rateQuotes) { event.preventDefault(); return; }
   if (method !== "PayPal") {
     track("booking_submit_nonpaypal");
     bookingSubmitted = true;
@@ -372,7 +411,7 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
     window.location.assign(order.approval_url);
   } catch (error) {
     track("paypal_checkout_error");
-    bookingSubmit.disabled = false;
+    bookingSubmit.disabled = quoteLoading || !rateQuotes;
     bookingSubmit.textContent = tx("paypal");
     if (paymentNotice) paymentNotice.textContent = "⚠️ " + (error?.message || "PayPal konnte nicht gestartet werden.");
   }
@@ -392,7 +431,7 @@ window.addEventListener("pagehide", () => {
 window.addEventListener("pageshow", () => {
   bookingSubmitted = false;
   if (bookingSubmit) {
-    bookingSubmit.disabled = false;
+    bookingSubmit.disabled = quoteLoading || !rateQuotes;
     bookingSubmit.removeAttribute("aria-busy");
   }
   updatePaymentUI();

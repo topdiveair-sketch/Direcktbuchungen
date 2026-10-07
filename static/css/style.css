@@ -608,3 +608,5 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
   .total-row strong{font-size:clamp(1.3rem,5vw,1.65rem)}
   .price-breakdown div{flex-wrap:wrap;gap:4px 12px;overflow-wrap:anywhere}
 }
+
+.rate-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:12px 0}.rate-choice{display:flex;flex-direction:column;gap:10px;align-items:flex-start;padding:20px;border:2px solid #dce2d0;border-radius:14px;background:white;color:#27351b;cursor:pointer;text-align:left;font:inherit}.rate-choice span{font-size:1.5rem;font-weight:800}.rate-choice.selected{border-color:#60742d;background:#f2f6e8}.rate-choice:focus-visible{outline:3px solid #60742d;outline-offset:3px}.rate-choice small{line-height:1.5}.rate-choice:disabled{opacity:.7;cursor:wait}@media(max-width:600px){.rate-choice-grid{grid-template-columns:1fr}}

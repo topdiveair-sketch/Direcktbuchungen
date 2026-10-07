@@ -306,6 +306,7 @@ def init_db() -> None:
             ("sms_verified_at", "TEXT DEFAULT ''"),
             ("sms_sent_at", "TEXT DEFAULT ''"),
             ("payment_hold_expires_at", "TEXT DEFAULT ''"),
+            ("bank_payment_due_at", "TEXT DEFAULT ''"),
             ("deposit_percent", "INTEGER DEFAULT 0"),
             ("amount_paid", "REAL DEFAULT 0"),
             ("payment_status", "TEXT DEFAULT ''"),
@@ -2683,13 +2684,18 @@ def book():
     if payment_method == "PayPal":
         flash("PayPal-Zahlungen bitte über den sicheren PayPal-Button starten.", "error")
         return redirect(url_for("index") + "#booking")
-    if payment_method not in {"Banküberweisung", "Vor Ort"}:
+    if payment_method != "Banküberweisung":
         flash("Bitte eine gültige Zahlungsart wählen.", "error")
         return redirect(url_for("index") + "#booking")
 
-    if payment_method == "Vor Ort" and (arrival - date.today()).days < 3:
-        flash("Zahlung vor Ort ist bei Anreise in weniger als 3 Tagen nicht verfügbar. Bitte Banküberweisung oder PayPal wählen.", "error")
+    if (arrival - date.today()).days < 3:
+        flash("Bei Anreise in weniger als 3 Tagen bitte PayPal wählen.", "error")
         return redirect(url_for("index") + "#booking")
+    if not env_value("BANK_ACCOUNT_HOLDER") or not env_value("BANK_IBAN"):
+        flash("Banküberweisung ist derzeit nicht verfügbar. Bitte PayPal wählen.", "error")
+        return redirect(url_for("index") + "#booking")
+    from bank_booking import bank_payment_deadline
+    bank_due_at = bank_payment_deadline()
 
     if idempotency_key:
         with db() as conn:
@@ -2738,8 +2744,8 @@ def book():
                 (uid, room, arrival, departure, adults, breakfast, first_name,
                  last_name, email, phone, message, payment_method, total, status,
                  created_at, idempotency_key, price_breakdown_json,
-                 source,utm_medium,utm_campaign,landing_page,referrer)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inquiry', ?, ?, ?, ?, ?, ?, ?, ?)
+                 source,utm_medium,utm_campaign,landing_page,referrer,bank_payment_due_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     uid, room, arrival.isoformat(), departure.isoformat(), adults,
@@ -2747,7 +2753,7 @@ def book():
                     guest_message, payment_method, total,
                     datetime.now().isoformat(timespec="seconds"), idempotency_key,
                     json.dumps(breakdown, ensure_ascii=False),
-                    booking_source, utm_medium, utm_campaign, landing_page, referrer,
+                    booking_source, utm_medium, utm_campaign, landing_page, referrer, bank_due_at,
                 ),
             )
             booking_id = cur.lastrowid

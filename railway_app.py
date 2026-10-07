@@ -291,6 +291,9 @@ room_available_in_conn = master_room_available_in_conn
 checkout_sync_room = make_master_checkout_sync(app, db, sync_room)
 
 init_payment_hold(app, db)
+from bank_booking import init_bank_booking
+app.extensions["zab_bank_settings"] = core_app.get_settings
+init_bank_booking(app, db)
 init_paypal_checkout(
     app,
     db,

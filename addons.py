@@ -771,7 +771,10 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
                 f"IBAN: {iban_display}\n"
                 f"Betrag: {booking['total']:.2f} EUR\n"
                 f"Verwendungszweck: ZAB-{booking_id:06d} · {booking['first_name']}\n"
-                "Bitte erst nach unserer persönlichen Buchungsbestätigung überweisen.\n"
+                + (f"Zahlungseingang spätestens bis {booking['bank_payment_due_at']} UTC (48 Stunden).\n"
+                 "Bei fehlendem Zahlungseingang wird die Reservierung nach Fristablauf aufgehoben.\n"
+                 if is_confirmed and booking["bank_payment_due_at"] else
+                 "Bitte erst nach unserer persönlichen Buchungsbestätigung überweisen.\n")
             )
         elif payment_method == "PayPal":
             payment_info = (
@@ -899,6 +902,7 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
     app.extensions["zab_send_onsite_verification"] = send_onsite_verification
     app.extensions["zab_expire_unverified_onsite"] = expire_unverified_onsite
     app.extensions["zab_process_mail_outbox"] = process_mail_outbox
+    app.extensions["zab_queue_transactional_mail"] = _queue_mail
     if not app.extensions.get("zab_mail_retry_worker_started"):
         app.extensions["zab_mail_retry_worker_started"] = True
         threading.Thread(target=_mail_retry_worker, name="zab-mail-retry", daemon=True).start()
@@ -1176,6 +1180,9 @@ def init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL):
             booking = conn.execute("SELECT status FROM bookings WHERE id=?", (booking_id,)).fetchone()
             if not booking:
                 flash("Buchung wurde nicht gefunden.", "error")
+                return redirect(url_for("dashboard"))
+            if booking["status"] == "cancelled":
+                flash("Diese Reservierung wurde aufgehoben. Bitte Verfügbarkeit prüfen, bevor eine neue Buchung bestätigt wird.", "error")
                 return redirect(url_for("dashboard"))
             if booking["status"] == "inquiry":
                 flash("Bitte die Anfrage zuerst bestätigen. Erst danach kann sie als bezahlt markiert werden.", "error")
