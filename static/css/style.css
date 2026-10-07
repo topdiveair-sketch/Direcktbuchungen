@@ -6,7 +6,7 @@
 }
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--cream);line-height:1.45}
-a{color:inherit}.hero{height:66vh;min-height:560px;background:linear-gradient(to bottom,rgba(0,0,0,.12),rgba(0,0,0,.50)),url("/static/images/aggsbach-markt-luftbild.png") center/cover;position:relative;color:white}
+a{color:inherit}.hero{height:66vh;min-height:560px;position:relative;color:white}.hero:not(.hero-room){background:linear-gradient(to bottom,rgba(0,0,0,.12),rgba(0,0,0,.50)),url("/static/images/aggsbach-markt-luftbild.png") center/cover}
 .topbar{height:76px;padding:0 4vw;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(0,0,0,.55),transparent)}
 .brand{display:flex;gap:12px;align-items:center;text-decoration:none;font-size:1.35rem;font-weight:800}.brand small{display:block;text-transform:uppercase;letter-spacing:.12em;font-size:.64rem}.logo-mark{font-size:2rem}
 .nav-links{display:flex;gap:28px}.nav-links a{text-decoration:none;font-weight:700;font-size:.95rem}.top-btn{padding:11px 18px}
@@ -154,7 +154,7 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
   .feature-strip.feature-strip-i18n{grid-template-columns:1fr}
 }
 \n
-.hero-room{background-image:linear-gradient(to bottom,rgba(0,0,0,.18),rgba(0,0,0,.58)),url("/static/images/rooms/bachblick.jpg");background-position:center 48%}
+.hero-room{background:linear-gradient(to bottom,rgba(0,0,0,.18),rgba(0,0,0,.58)),url("/static/images/rooms/bachblick.jpg") center 48%/cover no-repeat}
 .identity-section{margin:26px 0 46px;padding:36px;background:#fff;border-radius:18px;box-shadow:var(--shadow)}
 .identity-intro{max-width:880px;margin:0 auto 26px;text-align:center}
 .identity-intro h2{font:clamp(2rem,4vw,3.5rem)/1.05 Georgia,serif;margin:.45rem 0 1rem}
