@@ -1663,17 +1663,17 @@ def seo_landing_context(slug: str) -> dict:
             "faq":faq_direct,
         },
         "business": {
-            "title":"Business Unterkunft zwischen Melk und Krems | Zuhause am Bach",
-            "description":"Ruhige Business- und Projektunterkunft in der Wachau zwischen Melk und Krems für 1–2 Personen: WLAN, Parkplatz, Frühstück auf Wunsch und Direktkontakt.",
+            "title":"Monteurzimmer & Business Unterkunft Melk–Krems | Zuhause am Bach",
+            "description":"Ruhige Business-Unterkunft und Monteurzimmer zwischen Melk und Krems für 1–2 Personen: WLAN, Parkplatz, eigenes Bad, Frühstück auf Wunsch und Direktbuchung.",
             "canonical":"https://www.zuhauseambach-wachau.at/business-unterkunft-melk-krems",
-            "h1":"Business-Unterkunft zwischen Melk und Krems",
-            "lead":"Zuhause am Bach in Aggsbach Markt ist eine ruhige Unterkunft für Geschäftsreisende, Servicetechniker und Projektmitarbeiter, die zwischen Melk und Krems arbeiten und persönlich statt anonym übernachten möchten.",
-            "eyebrow":"Business · Projekt · Wachau",
-            "subheading":"Ruhig schlafen, zuverlässig arbeiten, unkompliziert direkt anfragen",
+            "h1":"Business-Unterkunft & Monteurzimmer zwischen Melk und Krems",
+            "lead":"Zuhause am Bach in Aggsbach Markt ist eine kleine, ruhige Unterkunft für Geschäftsreisende, Servicetechniker, Monteure und Projektmitarbeiter zwischen Melk und Krems. Statt Gruppenquartier gibt es ein persönliches Gartenzimmer für maximal zwei Personen.",
+            "eyebrow":"Business · Monteure · Projekt · Wachau",
+            "subheading":"Ruhig schlafen, zuverlässig arbeiten, direkt buchen",
             "paragraphs":[
-                "Das Gartenzimmer eignet sich für eine oder zwei Personen und ist besonders für kurze Geschäfts-, Service- und Projekteinsätze interessant.",
-                "WLAN, kostenloser Parkplatz, eigenes Bad und Frühstück auf Wunsch decken die wichtigsten Anforderungen für kurze berufliche Aufenthalte ab.",
-                "Mehrere Nächte und wiederkehrende Firmenaufenthalte können direkt angefragt werden. Verfügbarkeit und aktueller Preis werden über die offizielle Website geprüft."
+                "Das Gartenzimmer eignet sich für eine oder zwei Personen und besonders für kurze oder mehrtägige Geschäfts-, Montage-, Service- und Projekteinsätze im Raum Melk, Emmersdorf, Aggsbach, Spitz und Krems.",
+                "WLAN, kostenloser Parkplatz, eigenes Bad und Frühstück auf Wunsch decken die wichtigsten Anforderungen für berufliche Aufenthalte ab. Die kleine Einheit ist bewusst kein Massen- oder Gruppenquartier.",
+                "Mehrere Nächte und wiederkehrende Firmenaufenthalte können direkt angefragt werden. Freie Termine und aktueller Preis werden über die offizielle Website geprüft; der direkte Kontakt ermöglicht eine unkomplizierte Abstimmung."
             ],
             "features":[
                 ("📶","WLAN","Für E-Mail, Planung und Arbeit unterwegs."),
@@ -1682,14 +1682,16 @@ def seo_landing_context(slug: str) -> dict:
                 ("🍳","Frühstück","Auf Wunsch vor dem Arbeitstag.")
             ],
             "hero_image":"images/gartenzimmer-04-web.jpg",
-            "hero_image_alt":"Gartenzimmer bei Zuhause am Bach für Geschäftsreisende zwischen Melk und Krems",
-            "hero_image_caption":"Ruhiges Gartenzimmer für kurze Business- und Projekteinsätze.",
+            "hero_image_alt":"Business-Unterkunft und Monteurzimmer bei Zuhause am Bach zwischen Melk und Krems",
+            "hero_image_caption":"Ruhiges Gartenzimmer für Geschäfts-, Montage-, Service- und Projekteinsätze.",
             "secondary_image":"images/gaestekueche-zuhause-am-bach-v2.webp",
-            "secondary_image_alt":"Gästeküche bei Zuhause am Bach in der Wachau",
+            "secondary_image_alt":"Gästeküche bei Zuhause am Bach für berufliche Aufenthalte in der Wachau",
             "secondary_image_caption":"Praktische Infrastruktur für einen unkomplizierten Aufenthalt.",
             "faq":[
-                {"@type":"Question","name":"Ist Zuhause am Bach für Geschäftsreisende geeignet?","acceptedAnswer":{"@type":"Answer","text":"Ja. Das Gartenzimmer ist für ein bis zwei Personen ausgelegt und bietet WLAN, Parkplatz, eigenes Bad und Frühstück auf Wunsch."}},
-                {"@type":"Question","name":"Können Servicetechniker oder Monteure mehrere Nächte bleiben?","acceptedAnswer":{"@type":"Answer","text":"Ja, sofern der gewünschte Zeitraum verfügbar ist. Mehrtägige und wiederkehrende Firmenaufenthalte können direkt angefragt werden."}},
+                {"@type":"Question","name":"Ist Zuhause am Bach für Geschäftsreisende geeignet?","acceptedAnswer":{"@type":"Answer","text":"Ja. Das Gartenzimmer ist für ein bis zwei Personen ausgelegt und bietet WLAN, kostenlosen Parkplatz, eigenes Bad und Frühstück auf Wunsch."}},
+                {"@type":"Question","name":"Gibt es bei Zuhause am Bach ein Monteurzimmer zwischen Melk und Krems?","acceptedAnswer":{"@type":"Answer","text":"Das Gartenzimmer kann von Monteuren, Servicetechnikern und Projektmitarbeitern für ein- oder mehrtägige berufliche Aufenthalte genutzt werden, sofern der gewünschte Zeitraum verfügbar ist."}},
+                {"@type":"Question","name":"Ist die Unterkunft für Monteurgruppen geeignet?","acceptedAnswer":{"@type":"Answer","text":"Nein. Zuhause am Bach bietet aktuell ein Gartenzimmer für maximal zwei Personen und richtet sich daher eher an einzelne Fachkräfte oder kleine Zweier-Teams als an größere Gruppen."}},
+                {"@type":"Question","name":"Welche Orte sind für berufliche Einsätze gut erreichbar?","acceptedAnswer":{"@type":"Answer","text":"Die Unterkunft liegt in Aggsbach Markt in der Wachau zwischen Melk und Krems und eignet sich als ruhiger Ausgangspunkt für Einsätze im Umfeld von Melk, Emmersdorf, Aggsbach, Spitz und Krems."}},
                 {"@type":"Question","name":"Wie kann ein Firmenaufenthalt angefragt werden?","acceptedAnswer":{"@type":"Answer","text":"Freie Termine und Preise können auf der offiziellen Website geprüft werden. Zusätzliche Anforderungen können direkt mit den Gastgebern abgestimmt werden."}}
             ],
         },
