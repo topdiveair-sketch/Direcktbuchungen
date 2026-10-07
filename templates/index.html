@@ -8,6 +8,7 @@
   <meta name="description" content="Kleine persönliche Unterkunft und Privatzimmer in der Wachau: Gartenzimmer in Aggsbach Markt ab 99 € pro Nacht, auch 1 Nacht möglich. Für Österreich, Deutschland und Schweiz direkt buchen.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <link rel="canonical" href="https://www.zuhauseambach-wachau.at/">
+  <link rel="preload" as="image" href="{{ url_for('static', filename='images/rooms/bachblick.jpg') }}" fetchpriority="high">
   <link rel="alternate" hreflang="de" href="https://www.zuhauseambach-wachau.at/">
   <link rel="alternate" hreflang="de-AT" href="https://www.zuhauseambach-wachau.at/">
   <link rel="alternate" hreflang="de-DE" href="https://www.zuhauseambach-wachau.at/">
@@ -353,7 +354,7 @@
             <input type="radio" name="room" value="Bachblick" data-price="{{ info.price }}"
                    data-from="{{ info.available_from.isoformat() }}" checked>
             <img src="{{ url_for('static', filename='images/gartenzimmer-04-web.jpg') }}?v=20260925-final3"
-                  alt="Gartenzimmer mit Doppelbett bei Zuhause am Bach in Aggsbach Markt, Wachau" loading="eager" decoding="async" width="1600" height="1200">
+                  alt="Gartenzimmer mit Doppelbett bei Zuhause am Bach in Aggsbach Markt, Wachau" loading="lazy" decoding="async" fetchpriority="low" width="1600" height="1200">
             <span class="room-copy">
               <strong>Gartenzimmer</strong>
               <small>Ruhiges Doppelzimmer für bis zu 2 Personen. Das Privatbad liegt außerhalb des Zimmers direkt gegenüber und ist ausschließlich für euch reserviert.</small>
