@@ -56,7 +56,7 @@
   <section class="admin-panel">
     <h2>Wartung und Zimmersperren</h2>
     <form action="{{ url_for('maintenance_add') }}" method="post" class="season-form">
-      <select name="room">{% for room in rooms %}<option>{{ room }}</option>{% endfor %}</select>
+      <select name="room">{% for room in rooms %}<option value="{{ room }}">{{ "Gartenzimmer" if room == "Bachblick" else room }}</option>{% endfor %}</select>
       <input type="date" name="start_date" required>
       <input type="date" name="end_date" required>
       <input name="reason" placeholder="z. B. Renovierung">
@@ -113,12 +113,12 @@
     {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
   {% endwith %}
 
-  <section class="admin-panel"><h2>Preismanager</h2><form method="post" action="{{ url_for('admin_prices') }}"><div class="price-admin-grid">{% for room,p in price_settings.items() %}<div class="price-admin-card"><h3>{{ room }}</h3><label>Standard<input type="number" step="0.01" name="{{room}}_standard" value="{{p.standard}}"></label><label>Wochenende<input type="number" step="0.01" name="{{room}}_weekend" value="{{p.weekend}}"></label><label>Hochsaison<input type="number" step="0.01" name="{{room}}_high" value="{{p.high}}"></label></div>{% endfor %}</div><button class="btn">Preise speichern</button></form></section><section class="admin-panel"><h2>Saisonen</h2>{% for x in seasons %}<div class="season-row"><span><b>{{x.name}}</b> {{x.start_date}} bis {{x.end_date}}</span><form method="post" action="{{ url_for('del_season',i=x.id) }}"><button>Löschen</button></form></div>{% endfor %}<form class="season-form" method="post" action="{{ url_for('add_season') }}"><input name="name" placeholder="Saison" required><input type="date" name="start_date" required><input type="date" name="end_date" required><button class="btn">Hinzufügen</button></form></section><section class="admin-panel"><h2>Rabatte</h2><form method="post" action="{{ url_for('admin_discounts') }}"><div class="discount-admin-grid">{% for k,d in discounts.items() %}<div class="discount-card"><label><input type="checkbox" name="{{k}}_enabled" {% if d.enabled %}checked{% endif %}> {{k|replace('_',' ')|title}}</label><label>Prozent<input type="number" step="0.1" name="{{k}}_percent" value="{{d.percent}}"></label><label>Mindestnächte<input type="number" name="{{k}}_min_nights" value="{{d.min_nights}}"></label><label>Tage vorher<input type="number" name="{{k}}_days_before" value="{{d.days_before}}"></label></div>{% endfor %}</div><button class="btn">Rabatte speichern</button></form></section><section class="admin-panel"><h2>Zusatzleistungen</h2><form method="post" action="{{ url_for('admin_extras') }}"><div class="extras-admin-grid">{% for k,e in extras_cfg.items() %}<div class="extra-admin-card"><label><input type="checkbox" name="{{k}}_enabled" {% if e.enabled %}checked{% endif %}> aktiv</label><label>Name<input name="{{k}}_label" value="{{e.label}}"></label><label>Preis<input type="number" step="0.01" name="{{k}}_price" value="{{e.price}}"></label><label>Einheit<select name="{{k}}_unit"><option value="person_night" {% if e.unit=='person_night' %}selected{% endif %}>Person/Nacht</option><option value="night" {% if e.unit=='night' %}selected{% endif %}>Nacht</option><option value="booking" {% if e.unit=='booking' %}selected{% endif %}>einmalig</option></select></label></div>{% endfor %}</div><button class="btn">Extras speichern</button></form></section><section class="admin-panel">
+  <section class="admin-panel"><h2>Preismanager</h2><form method="post" action="{{ url_for('admin_prices') }}"><div class="price-admin-grid">{% for room,p in price_settings.items() %}<div class="price-admin-card"><h3>{{ "Gartenzimmer" if room == "Bachblick" else room }}</h3><label>Standard<input type="number" step="0.01" name="{{room}}_standard" value="{{p.standard}}"></label><label>Wochenende<input type="number" step="0.01" name="{{room}}_weekend" value="{{p.weekend}}"></label><label>Hochsaison<input type="number" step="0.01" name="{{room}}_high" value="{{p.high}}"></label></div>{% endfor %}</div><button class="btn">Preise speichern</button></form></section><section class="admin-panel"><h2>Saisonen</h2>{% for x in seasons %}<div class="season-row"><span><b>{{x.name}}</b> {{x.start_date}} bis {{x.end_date}}</span><form method="post" action="{{ url_for('del_season',i=x.id) }}"><button>Löschen</button></form></div>{% endfor %}<form class="season-form" method="post" action="{{ url_for('add_season') }}"><input name="name" placeholder="Saison" required><input type="date" name="start_date" required><input type="date" name="end_date" required><button class="btn">Hinzufügen</button></form></section><section class="admin-panel"><h2>Rabatte</h2><form method="post" action="{{ url_for('admin_discounts') }}"><div class="discount-admin-grid">{% for k,d in discounts.items() %}<div class="discount-card"><label><input type="checkbox" name="{{k}}_enabled" {% if d.enabled %}checked{% endif %}> {{k|replace('_',' ')|title}}</label><label>Prozent<input type="number" step="0.1" name="{{k}}_percent" value="{{d.percent}}"></label><label>Mindestnächte<input type="number" name="{{k}}_min_nights" value="{{d.min_nights}}"></label><label>Tage vorher<input type="number" name="{{k}}_days_before" value="{{d.days_before}}"></label></div>{% endfor %}</div><button class="btn">Rabatte speichern</button></form></section><section class="admin-panel"><h2>Zusatzleistungen</h2><form method="post" action="{{ url_for('admin_extras') }}"><div class="extras-admin-grid">{% for k,e in extras_cfg.items() %}<div class="extra-admin-card"><label><input type="checkbox" name="{{k}}_enabled" {% if e.enabled %}checked{% endif %}> aktiv</label><label>Name<input name="{{k}}_label" value="{{e.label}}"></label><label>Preis<input type="number" step="0.01" name="{{k}}_price" value="{{e.price}}"></label><label>Einheit<select name="{{k}}_unit"><option value="person_night" {% if e.unit=='person_night' %}selected{% endif %}>Person/Nacht</option><option value="night" {% if e.unit=='night' %}selected{% endif %}>Nacht</option><option value="booking" {% if e.unit=='booking' %}selected{% endif %}>einmalig</option></select></label></div>{% endfor %}</div><button class="btn">Extras speichern</button></form></section><section class="admin-panel">
     <h2>Booking-iCal</h2>
     <form action="{{ url_for('admin_ical') }}" method="post">
       {% for row in ical %}
       <div class="ical-row">
-        <label>{{ row.room }}
+        <label>{{ "Gartenzimmer" if row.room == "Bachblick" else row.room }}
           <input type="url" name="ical_{{ row.room }}" value="{{ row.import_url }}" placeholder="https://...calendar.ics">
         </label>
         <small>Letzter Abgleich: {{ row.last_sync or 'noch nie' }} · {{ row.last_result or 'kein Ergebnis' }}</small>
@@ -137,8 +137,8 @@
     <div class="admin-room-grid">
       {% for room in rooms %}
       <form action="{{ url_for('admin_room_image', room=room) }}" method="post" enctype="multipart/form-data">
-        <img src="{{ url_for('static', filename='images/rooms/' + room_images[room]) }}" alt="{{ room }}">
-        <strong>{{ room }}</strong>
+        <img src="{{ url_for('static', filename='images/rooms/' + room_images[room]) }}" alt="{{ "Gartenzimmer" if room == "Bachblick" else room }}">
+        <strong>{{ "Gartenzimmer" if room == "Bachblick" else room }}</strong>
         <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" required>
         <button class="btn">Bild ersetzen</button>
       </form>
@@ -171,7 +171,7 @@
         {% for b in active_bookings %}
         <tr>
           <td><span class="status {{ b.status }}">{{ b.status }}</span></td>
-          <td>{{ b.room }}</td>
+          <td>{{ "Gartenzimmer" if b.room == "Bachblick" else b.room }}</td>
           <td>{{ b.arrival }}<br>{{ b.departure }}</td>
           <td><strong>{{ b.first_name }} {{ b.last_name }}</strong><br><small>{{ b.email }}<br>{{ b.phone }}</small></td>
           <td>{{ 'Ja' if b.breakfast else 'Nein' }}</td>
@@ -205,7 +205,7 @@
           {% for b in cancelled_bookings %}
           <tr>
             <td><span class="status cancelled">Storniert</span></td>
-            <td>{{ b.room }}</td>
+            <td>{{ "Gartenzimmer" if b.room == "Bachblick" else b.room }}</td>
             <td>{{ b.arrival }}<br>{{ b.departure }}</td>
             <td><strong>{{ b.first_name }} {{ b.last_name }}</strong><br><small>{{ b.email }}<br>{{ b.phone }}</small></td>
             <td>{{ b.payment_method }}</td>
@@ -226,7 +226,7 @@
 <script>
 fetch("/admin/v6-data").then(r=>r.json()).then(data=>{
  const m=document.getElementById("maintenanceList");
- m.innerHTML=data.blocks.map(x=>`<div class="season-row"><span><strong>${x.room}</strong><small>${x.start_date} bis ${x.end_date} · ${x.reason}</small></span><form method="post" action="/admin/maintenance/${x.id}/delete"><button>Löschen</button></form></div>`).join("") || "<p>Keine Sperren.</p>";
+ m.innerHTML=data.blocks.map(x=>`<div class="season-row"><span><strong>${x.room === "Bachblick" ? "Gartenzimmer" : x.room}</strong><small>${x.start_date} bis ${x.end_date} · ${x.reason}</small></span><form method="post" action="/admin/maintenance/${x.id}/delete"><button>Löschen</button></form></div>`).join("") || "<p>Keine Sperren.</p>";
  const c=document.getElementById("channelSettings");
  c.innerHTML=data.channels.map(x=>{const k=x.channel.replaceAll(".","_").replaceAll("-","_").replaceAll(" ","_");return `<div class="channel-card"><label><input type="checkbox" name="${k}_enabled" ${x.enabled?"checked":""}> <strong>${x.channel}</strong></label><input name="${k}_import_url" value="${x.import_url||""}" placeholder="iCal- oder Import-URL"><input name="${k}_api_key" value="${x.api_key||""}" placeholder="API-Schlüssel, falls vorhanden"><input name="${k}_note" value="${x.note||""}" placeholder="Notiz"></div>`}).join("");
 });
