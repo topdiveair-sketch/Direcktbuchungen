@@ -16,7 +16,8 @@
   <meta property="og:title" content="{{ title }}">
   <meta property="og:description" content="{{ description }}">
   <meta property="og:url" content="{{ canonical }}">
-  <meta property="og:image" content="{{ (_CANONICAL_ORIGIN if _CANONICAL_ORIGIN is defined else 'https://www.zuhauseambach-wachau.at') }}/static/{% if hero_image == 'images/jauerling-flutlicht.webp' %}images/jauerling-apres-ski.webp{% else %}{{ hero_image or 'images/rooms/bachblick.jpg' }}{% endif %}">\n  <meta property="og:image:alt" content="{{ hero_image_alt or h1 }}">
+  <meta property="og:image" content="{{ (_CANONICAL_ORIGIN if _CANONICAL_ORIGIN is defined else 'https://www.zuhauseambach-wachau.at') }}/static/{% if hero_image == 'images/jauerling-flutlicht.webp' %}images/jauerling-apres-ski.webp{% else %}{{ hero_image or 'images/rooms/bachblick.jpg' }}{% endif %}">
+  <meta property="og:image:alt" content="{{ hero_image_alt or h1 }}">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260924-seoimg">
   <style>
