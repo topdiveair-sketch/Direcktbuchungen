@@ -470,6 +470,37 @@ def init_demand_analytics(app, db, require_admin):
         html = f"""<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>ZAB OS – Nachfrage & Buchungen</title><style>body{{font-family:system-ui;margin:0;background:#f4f7f5;color:#17372f}}main{{max-width:1180px;margin:auto;padding:28px 18px 60px}}a{{color:#176b5a}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}}article,section{{background:#fff;border:1px solid #d8e4dc;border-radius:14px;padding:16px}}article span{{display:block;font-size:12px;font-weight:800;text-transform:uppercase;color:#647970}}article strong{{font-size:26px}}section{{margin-top:18px}}table{{width:100%;border-collapse:collapse}}td,th{{padding:9px;border-bottom:1px solid #e5ece8;text-align:left}}.conv{{display:flex;gap:18px;flex-wrap:wrap}}</style></head><body><main><p><a href='/os'>← Zuhause am Bach OS</a></p><h1>📈 Nachfrage & Direktbuchungen</h1><p>Datenschutzarme First-Party-Statistik · letzte {d['days']} Tage. Keine Namen, E-Mails, Telefonnummern oder Nachrichtentexte werden für diese Klickstatistik gespeichert.</p><div class='grid'>{card_html}</div><section><h2>Conversion</h2><div class='conv'><b>Ansicht → CTA: {pct(d['view_to_cta_pct'])}</b><b>Preis → Anfrage: {pct(d['quote_to_request_pct'])}</b><b>Anfrage → bestätigte Buchung: {pct(d['request_to_booking_pct'])}</b><b>Ansicht → Buchung: {pct(d['view_to_booking_pct'])}</b></div></section><section><h2>Stärkste Reisedaten</h2><table><tr><th>Anreise</th><th>Interesse</th><th>Ø Nächte</th><th>Ø Quote</th></tr>{dates}</table></section><section><h2>Nachfrage nach Monat</h2><table><tr><th>Monat</th><th>Interesse</th></tr>{months}</table></section></main></body></html>"""
         return html, 200
 
+    def record_server_event(event: str, details: dict | None = None):
+        """Store an internal funnel event without exposing personal data."""
+        if event not in ALLOWED_EVENTS:
+            return False
+        details = details if isinstance(details, dict) else {}
+        try:
+            _insert_event(
+                db,
+                (
+                    event,
+                    "/paypal/cancel",
+                    "www.zuhauseambach-wachau.at",
+                    str(details.get("room") or "Bachblick")[:60],
+                    str(details.get("arrival") or "")[:10],
+                    str(details.get("departure") or "")[:10],
+                    details.get("nights"),
+                    details.get("total"),
+                    str(details.get("cta") or "")[:80],
+                    str(details.get("language") or "")[:12],
+                    _now(),
+                    _visitor_hash(app),
+                    _country_code(),
+                    *_local_parts(),
+                ),
+            )
+            return True
+        except Exception:
+            app.logger.exception("server funnel event failed event=%s", event)
+            return False
+
+    app.extensions["zab_demand_analytics_record_event"] = record_server_event
     app.extensions["zab_demand_analytics_initialized"] = True
     app.extensions["zab_demand_analytics_summary"] = summary
     def os_summary(days: int = 30):
