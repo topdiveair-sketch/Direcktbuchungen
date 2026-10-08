@@ -118,6 +118,18 @@
       <figcaption>{{ third_image_caption }}</figcaption>
     </figure>
     {% endif %}
+    {% if fourth_image %}
+    <figure>
+      <img src="{{ url_for('static', filename=fourth_image) }}" alt="{{ fourth_image_alt }}" loading="lazy" decoding="async">
+      <figcaption>{{ fourth_image_caption }}</figcaption>
+    </figure>
+    {% endif %}
+    {% if fifth_image %}
+    <figure>
+      <img src="{{ url_for('static', filename=fifth_image) }}" alt="{{ fifth_image_alt }}" loading="lazy" decoding="async">
+      <figcaption>{{ fifth_image_caption }}</figcaption>
+    </figure>
+    {% endif %}
   </section>
   {% endif %}
 

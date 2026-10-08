@@ -1902,6 +1902,8 @@ def seo_landing_context(slug: str) -> dict:
             "hero_image":"images/jauerling-flutlicht.webp","hero_image_alt":"Winterliche Ski- und Flutlichtpiste als Jauerling-Winterimpression","hero_image_caption":"Ski- und Flutlicht-Winterimpression / Symbolbild. Aktuelle Pistenbedingungen bitte beim Betreiber prüfen.",
             "secondary_image":"images/jauerling-apres-ski.webp","secondary_image_alt":"Gemütliche Après-Ski-Winterimpression","secondary_image_caption":"Après-Ski-Winterimpression / Symbolbild.",
             "third_image":"images/gartenzimmer-winter.webp","third_image_alt":"Echtes Gartenzimmer bei Zuhause am Bach in Aggsbach Markt","third_image_caption":"Originalfoto: Gartenzimmer Zuhause am Bach.",
+            "fourth_image":"images/ski-aufbewahrung-symbolbild.webp","fourth_image_alt":"Ski-Aufbewahrung als Winterausstattungs-Beispiel","fourth_image_caption":"Ski-Aufbewahrung / Symbolbild. Die tatsächliche Ausführung bei Zuhause am Bach kann abweichen.",
+            "fifth_image":"images/trockenraum-symbolbild.webp","fifth_image_alt":"Trockenraum für Winterbekleidung als Ausstattungs-Beispiel","fifth_image_caption":"Trockenraum / Symbolbild. Die tatsächliche Ausführung bei Zuhause am Bach kann abweichen.",
             "faq":faq_direct,
         },
     }
