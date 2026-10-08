@@ -311,7 +311,7 @@
       if(mountainCm!==null) parts.push("Berg "+mountainCm+" cm");
       snowEl.textContent=parts.length?parts.join(" · "):"derzeit keine Modellangabe";
       snowDetail.textContent=(Number.isFinite(fresh)?"Schneefall heute (Modell): "+fresh.toFixed(1).replace(".",",")+" cm. ":"")+"Keine offizielle Pistenmessung.";
-      updatedEl.textContent="Wetter/Schnee abgerufen: "+new Date().toLocaleString("de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+" Uhr. Schneehöhen sind Modellwerte und ersetzen keine offizielle Pistenmeldung.";
+      updatedEl.textContent="Wetter/Schnee abgerufen: "+new Date().toLocaleString("de-AT",{timeZone:"Europe/Vienna",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+" Uhr. Schneehöhen sind Modellwerte und ersetzen keine offizielle Pistenmeldung.";
     }catch(e){
       weatherEl.textContent="Wetter derzeit nicht abrufbar";
       weatherDetail.textContent="Bitte offizielle Wettercam öffnen.";
