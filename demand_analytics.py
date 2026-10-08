@@ -416,29 +416,144 @@ def init_demand_analytics(app, db, require_admin):
             days = 30
         payload = os_summary(days)
         if payload is None:
-            # Fall back to the local event store summary when Postgres is absent.
+            # Fall back to the local SQLite event store when Postgres is absent.
+            # Keep the same aggregated detail fields as the Postgres path so
+            # the Windows OS can populate country/weekday/hour/date tables.
             since = (datetime.now() - timedelta(days=days)).isoformat(timespec="seconds")
-            counts, _dates, _months, _sources = _event_summary(db, since)
-            attempts = int(counts.get("checkout_started", 0))
-            abandoned = int(counts.get("booking_abandoned", 0))
+            with db() as conn:
+                rows = [
+                    dict(r) for r in conn.execute(
+                        """SELECT event,arrival,departure,visitor_hash,country_code,
+                                  local_date,local_weekday,local_hour,created_at
+                           FROM demand_events
+                           WHERE created_at>=?
+                           ORDER BY created_at""",
+                        (since,),
+                    ).fetchall()
+                ]
+            searches = [r for r in rows if r.get("event") == "dates_selected" and r.get("arrival") and r.get("departure")]
+            page_views = [r for r in rows if r.get("event") == "page_view"]
+            checkout_starts = [r for r in rows if r.get("event") == "checkout_started"]
+            checkout_abandoned = [r for r in rows if r.get("event") == "booking_abandoned"]
+            total = len(searches)
+            visitors = {r.get("visitor_hash") for r in searches if r.get("visitor_hash")}
+            page_visitors = {r.get("visitor_hash") for r in page_views if r.get("visitor_hash")}
+            def pct(n):
+                return round(100.0 * n / total, 1) if total else 0.0
+
+            country_counts = {}
+            country_visitors = {}
+            weekday_counts = {i: 0 for i in range(7)}
+            hour_counts = {i: 0 for i in range(24)}
+            date_counts = {}
+            month_searches = {}
+            month_visitors = {}
+            month_countries = {}
+            month_weekdays = {}
+            month_hours = {}
+            for r in searches:
+                cc = str(r.get("country_code") or "XX").upper()
+                country_counts[cc] = country_counts.get(cc, 0) + 1
+                if r.get("visitor_hash"):
+                    country_visitors.setdefault(cc, set()).add(r.get("visitor_hash"))
+                wd = int(r.get("local_weekday") or 0)
+                hr = int(r.get("local_hour") or 0)
+                weekday_counts[wd] = weekday_counts.get(wd, 0) + 1
+                hour_counts[hr] = hour_counts.get(hr, 0) + 1
+                day = str(r.get("local_date") or "")
+                if day:
+                    date_counts[day] = date_counts.get(day, 0) + 1
+                month = str(r.get("arrival") or "")[:7]
+                if month:
+                    month_searches[month] = month_searches.get(month, 0) + 1
+                    month_weekdays.setdefault(month, {})[wd] = month_weekdays.setdefault(month, {}).get(wd, 0) + 1
+                    month_hours.setdefault(month, {})[hr] = month_hours.setdefault(month, {}).get(hr, 0) + 1
+                    if r.get("visitor_hash"):
+                        month_visitors.setdefault(month, set()).add(r.get("visitor_hash"))
+                        month_countries.setdefault(month, {}).setdefault(cc, set()).add(r.get("visitor_hash"))
+
+            weekday_names = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"]
+            month_attempts = {}
+            month_abandoned = {}
+            for r in checkout_starts:
+                m = str(r.get("arrival") or "")[:7]
+                if m:
+                    month_attempts[m] = month_attempts.get(m, 0) + 1
+            for r in checkout_abandoned:
+                m = str(r.get("arrival") or "")[:7]
+                if m:
+                    month_abandoned[m] = month_abandoned.get(m, 0) + 1
+
+            all_months = sorted(set(month_searches) | set(month_attempts) | set(month_abandoned))
+            by_month = []
+            for m in all_months:
+                n = int(month_searches.get(m, 0))
+                attempts_m = int(month_attempts.get(m, 0))
+                abandoned_m = int(month_abandoned.get(m, 0))
+                by_month.append({
+                    "month": m,
+                    "unique_visitors": len(month_visitors.get(m, set())),
+                    "total_searches": n,
+                    "booking_attempts": attempts_m,
+                    "booking_abandoned": abandoned_m,
+                    "abandonment_rate": round(100.0 * abandoned_m / attempts_m, 1) if attempts_m else 0.0,
+                    "by_visitor_country": [
+                        {"country_code": cc, "visitors": len(vals),
+                         "percent": round(100.0 * len(vals) / len(month_visitors.get(m, set())), 1)
+                                    if month_visitors.get(m, set()) else 0.0}
+                        for cc, vals in sorted(month_countries.get(m, {}).items(), key=lambda x:(-len(x[1]), x[0]))
+                    ],
+                    "by_weekday": [
+                        {"weekday": weekday_names[i], "weekday_index": i,
+                         "searches": int(month_weekdays.get(m, {}).get(i, 0)),
+                         "percent": round(100.0 * int(month_weekdays.get(m, {}).get(i, 0)) / n, 1) if n else 0.0}
+                        for i in range(7)
+                    ],
+                    "by_hour": [
+                        {"hour": i, "label": f"{i:02d}:00",
+                         "searches": int(month_hours.get(m, {}).get(i, 0)),
+                         "percent": round(100.0 * int(month_hours.get(m, {}).get(i, 0)) / n, 1) if n else 0.0}
+                        for i in range(24)
+                    ],
+                })
+
+            attempts = len(checkout_starts)
+            abandoned = len(checkout_abandoned)
+            available = sum(1 for r in rows if r.get("event") == "price_quote_loaded")
             payload = {
                 "ok": True,
                 "period_days": days,
                 "generated_at": datetime.now().isoformat(timespec="seconds"),
-                "total_searches": int(counts.get("dates_selected", 0)),
-                "unique_visitors": 0,
-                "search_unique_visitors": 0,
-                "available_searches": int(counts.get("price_quote_loaded", 0)),
-                "available_percent": 0.0,
+                "total_searches": total,
+                "unique_visitors": len(page_visitors) if page_visitors else len(visitors),
+                "search_unique_visitors": len(visitors),
+                "available_searches": available,
+                "available_percent": pct(available),
                 "booking_attempts": attempts,
                 "booking_abandoned": abandoned,
                 "abandonment_rate": round(100.0 * abandoned / attempts, 1) if attempts else 0.0,
-                "by_visitor_country": [],
-                "by_month": [],
-                "by_country": [],
-                "by_weekday": [],
-                "by_hour": [],
-                "by_date": [],
+                "by_visitor_country": [
+                    {"country_code": cc, "visitors": len(vals),
+                     "percent": round(100.0 * len(vals) / len(visitors), 1) if visitors else 0.0}
+                    for cc, vals in sorted(country_visitors.items(), key=lambda x:(-len(x[1]), x[0]))
+                ],
+                "by_month": by_month,
+                "by_country": [
+                    {"country_code": cc, "searches": n, "percent": pct(n)}
+                    for cc, n in sorted(country_counts.items(), key=lambda x:(-x[1], x[0]))
+                ],
+                "by_weekday": [
+                    {"weekday": weekday_names[i], "weekday_index": i, "searches": weekday_counts[i], "percent": pct(weekday_counts[i])}
+                    for i in range(7)
+                ],
+                "by_hour": [
+                    {"hour": i, "label": f"{i:02d}:00", "searches": hour_counts[i], "percent": pct(hour_counts[i])}
+                    for i in range(24)
+                ],
+                "by_date": [
+                    {"date": d, "searches": n, "percent": pct(n)}
+                    for d, n in sorted(date_counts.items())
+                ],
                 "privacy": "Aggregated only; no personal data is exposed.",
             }
         response = jsonify(payload)
