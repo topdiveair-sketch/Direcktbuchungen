@@ -3403,6 +3403,28 @@ _cancelled_cleanup_last_run = datetime.min
 
 
 @app.before_request
+def track_paypal_cancel_for_conversion():
+    """PayPal redirect cancellations are real checkout abandons.
+
+    The browser intentionally suppresses pagehide-abandonment while opening
+    PayPal, so the provider cancel callback is the authoritative signal.
+    """
+    if request.method == "GET" and request.path == "/paypal/cancel":
+        recorder = app.extensions.get("zab_demand_analytics_record_event")
+        if callable(recorder):
+            recorder("booking_abandoned", {"room": "Bachblick", "cta": "paypal_cancel"})
+        try:
+            with db() as conn:
+                conn.execute(
+                    "INSERT INTO site_events(event, created_at, visitor_hash, country_code) VALUES (?, ?, ?, ?)",
+                    ("booking_abandoned", datetime.now().isoformat(timespec="seconds"), _visitor_hash(), _request_country_code()),
+                )
+        except Exception:
+            app.logger.exception("paypal cancel site-event tracking failed")
+    return None
+
+
+@app.before_request
 def automatic_cancelled_booking_cleanup():
     """Run the cancelled-booking cleanup at most once every 24 hours per worker."""
     global _cancelled_cleanup_last_run
