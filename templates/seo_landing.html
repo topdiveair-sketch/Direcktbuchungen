@@ -21,11 +21,11 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260924-seoimg">
   <style>
     .seo-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin:24px 0 38px}
-    .seo-gallery figure{margin:0;background:#fff;border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+    .seo-gallery figure{margin:0;background:#fff;border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}\n    .jauerling-flutlicht-frame{height:320px;overflow:hidden}\n    .jauerling-flutlicht-frame img{height:320px;transform:scale(4);transform-origin:50% 0}
     .seo-gallery img{display:block;width:100%;height:320px;object-fit:cover}
     .seo-gallery figure:nth-child(2) img{height:320px}
     .seo-gallery figcaption{padding:11px 14px;color:var(--muted);font-size:.9rem}
-    @media(max-width:760px){.seo-gallery{grid-template-columns:1fr}.seo-gallery img,.seo-gallery figure:nth-child(2) img{height:240px}}
+    @media(max-width:760px){.seo-gallery{grid-template-columns:1fr}.seo-gallery img,.seo-gallery figure:nth-child(2) img{height:240px}.jauerling-flutlicht-frame{height:240px}.jauerling-flutlicht-frame img{height:240px}}
     .winter-live{margin:8px 0 38px;padding:24px;border:1px solid #d9e4e8;border-radius:18px;background:linear-gradient(180deg,#f7fbfd,#fff);box-shadow:var(--shadow)}
     .winter-live-head{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:16px}
     .winter-live-head h2{margin:.25rem 0 0;font:clamp(1.8rem,3vw,2.6rem)/1.08 Georgia,serif}
@@ -116,8 +116,10 @@
 <main>
   {% if hero_image %}
   <section class="seo-gallery" aria-label="Bilder zur Unterkunft">
-    <figure>
+    <figure{% if hero_image == 'images/jauerling-flutlicht.webp' %} class="jauerling-flutlicht-fix"{% endif %}>
+      {% if hero_image == 'images/jauerling-flutlicht.webp' %}<div class="jauerling-flutlicht-frame">{% endif %}
       <img src="{{ url_for('static', filename=hero_image) }}" alt="{{ hero_image_alt }}" loading="eager" decoding="async">
+      {% if hero_image == 'images/jauerling-flutlicht.webp' %}</div>{% endif %}
       <figcaption>{{ hero_image_caption }}</figcaption>
     </figure>
     {% if secondary_image %}
