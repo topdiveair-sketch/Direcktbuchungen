@@ -27,6 +27,10 @@ const nightsEl = document.getElementById("nights");
 const totalPrice = document.getElementById("totalPrice");
 const result = document.getElementById("availabilityResult");
 const guestArea = document.getElementById("guestArea");
+const directBookStep = document.getElementById("directBookStep");
+const continueBooking = document.getElementById("continueBooking");
+const directBookHeadline = document.getElementById("directBookHeadline");
+const directBookPrice = document.getElementById("directBookPrice");
 const roomRadios = [...document.querySelectorAll('input[name="room"]')];
 const bookingSubmit = document.getElementById("bookingSubmit");
 const stickyLabel = document.getElementById("stickyLabel");
@@ -193,6 +197,8 @@ function updatePaymentUI() {
 function resetAvailability() {
   result.classList.add("hidden");
   guestArea.classList.add("hidden");
+  if (directBookStep) directBookStep.classList.add("hidden");
+  checkoutOpen = false;
   lastQuotedTotal = null;
   updateBookingSummary();
 }
@@ -260,15 +266,21 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
       });
     }
     if (status === "free" || status === "unknown") {
-      guestArea.classList.remove("hidden");
-      checkoutOpen = true;
-      track("checkout_started");
-      trackDemand("checkout_started", {
-        arrival:arrival.value,
-        departure:departure.value,
-        nights:nights(),
-        total:Number(data.total || 0)
-      });
+      guestArea.classList.add("hidden");
+      checkoutOpen = false;
+      if (directBookStep) {
+        directBookStep.classList.remove("hidden");
+        if (directBookHeadline) {
+          directBookHeadline.textContent = status === "free"
+            ? "Termin frei – jetzt direkt buchen"
+            : "Termin wird persönlich bestätigt";
+        }
+        if (directBookPrice) {
+          directBookPrice.textContent = status === "free" && data.total != null
+            ? "Gesamtpreis: " + euro(Number(data.total))
+            : "Gästedaten eingeben und Anfrage absenden";
+        }
+      }
       if (status === "free") updatePaymentUI();
       else bookingSubmit.textContent = tx("personal");
       stickyLabel.textContent = status === "free" ? tx("stickyBook") : tx("stickyAsk");
@@ -279,12 +291,32 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
       if(data.breakdown){let h=`<div><span>${tx("roomLabel")}</span><strong>${euro(data.breakdown.room_total)}</strong></div>`;data.breakdown.extras.forEach(x=>h+=`<div><span>${x.label}</span><strong>${euro(x.amount)}</strong></div>`);data.breakdown.discounts.forEach(x=>h+=`<div class="discount-line"><span>${x.label} (${x.percent}%)</span><strong>− ${euro(x.amount)}</strong></div>`);priceBreakdown.innerHTML=h;}
     } else {
       guestArea.classList.add("hidden");
+      if (directBookStep) directBookStep.classList.add("hidden");
     }
   } catch {
     result.textContent = tx("fail");
     result.className = "availability-result bad";
   }
 });
+
+if (continueBooking) {
+  continueBooking.addEventListener("click", () => {
+    guestArea.classList.remove("hidden");
+    directBookStep?.classList.add("hidden");
+    checkoutOpen = true;
+    track("checkout_started");
+    trackDemand("checkout_started", {
+      arrival:arrival.value,
+      departure:departure.value,
+      nights:nights(),
+      total:Number(lastQuotedTotal || 0)
+    });
+    updatePaymentUI();
+    guestArea.scrollIntoView({behavior:"smooth", block:"start"});
+    const firstName = guestArea.querySelector('[name="first_name"]');
+    if (firstName) setTimeout(() => firstName.focus({preventScroll:true}), 350);
+  });
+}
 
 paymentRadios.forEach(radio => radio.addEventListener("change", () => {
   bookingSubmitted = false;
