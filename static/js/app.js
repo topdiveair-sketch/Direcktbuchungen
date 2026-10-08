@@ -68,15 +68,19 @@ function track(event) {
   fetch("/api/events", {method:"POST", headers:{"Content-Type":"application/json"}, body, keepalive:true}).catch(()=>{});
 }
 
-const DEMAND_TRACKING_URL = "https://direcktbuchungen-production.up.railway.app/api/demand-event";
+const DEMAND_TRACKING_URL = "/api/demand-event";
 function trackDemand(event, details = {}) {
   const body = JSON.stringify({event, details:{...details, language:checkoutLang, room:selectedRoom()?.value || "Bachblick"}});
+  if (navigator.sendBeacon && event === "booking_abandoned") {
+    navigator.sendBeacon(DEMAND_TRACKING_URL, new Blob([body], {type:"application/json"}));
+    return;
+  }
   fetch(DEMAND_TRACKING_URL, {
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body,
     keepalive:true,
-    mode:"cors"
+    credentials:"same-origin"
   }).catch(()=>{});
 }
 
