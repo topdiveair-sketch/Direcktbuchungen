@@ -36,6 +36,7 @@ from smart_host import init_smart_host
 from knowledge import init_knowledge
 from quality_v12 import init_quality_v12
 from alltag import init_alltag
+from demand_analytics import init_demand_analytics
 from pricing_2027 import nightly_direct_rate, pricing_config, cap_room_rate
 
 BASE = Path(__file__).resolve().parent
@@ -3419,6 +3420,7 @@ def automatic_cancelled_booking_cleanup():
 init_db()
 cleanup_cancelled_bookings(14)
 init_addons(app, DB_PATH, db, require_admin, ROOMS, PAYPAL_EMAIL)
+init_demand_analytics(app, db, require_admin)
 
 # Optional one-shot resend used for operational recovery. Keep this synchronous so
 # the process cannot exit before the mail attempt completes.
