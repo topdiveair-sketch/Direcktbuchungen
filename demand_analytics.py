@@ -470,17 +470,33 @@ def init_demand_analytics(app, db, require_admin):
                 month_searches[month]=month_searches.get(month,0)+1
                 if r["visitor_hash"]: month_visitors.setdefault(month,set()).add(r["visitor_hash"])
         weekday_names=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"]
-        by_month=[{
-            "month":m,
-            "unique_visitors":len(month_visitors.get(m,set())),
-            "total_searches":n,
-            "booking_attempts":0,
-            "booking_abandoned":0,
-            "abandonment_rate":0.0,
-            "by_visitor_country":[],
-            "by_weekday":[],
-            "by_hour":[],
-        } for m,n in sorted(month_searches.items())]
+        month_attempts={}
+        month_abandoned={}
+        for r in checkout_starts:
+            m=str(r["arrival"] or "")[:7]
+            if m:
+                month_attempts[m]=month_attempts.get(m,0)+1
+        for r in checkout_abandoned:
+            m=str(r["arrival"] or "")[:7]
+            if m:
+                month_abandoned[m]=month_abandoned.get(m,0)+1
+        all_months=sorted(set(month_searches) | set(month_attempts) | set(month_abandoned))
+        by_month=[]
+        for m in all_months:
+            n=month_searches.get(m,0)
+            attempts_m=month_attempts.get(m,0)
+            abandoned_m=month_abandoned.get(m,0)
+            by_month.append({
+                "month":m,
+                "unique_visitors":len(month_visitors.get(m,set())),
+                "total_searches":n,
+                "booking_attempts":attempts_m,
+                "booking_abandoned":abandoned_m,
+                "abandonment_rate":round(100.0*abandoned_m/attempts_m,1) if attempts_m else 0.0,
+                "by_visitor_country":[],
+                "by_weekday":[],
+                "by_hour":[],
+            })
         attempts=len(checkout_starts); abandoned=len(checkout_abandoned)
         return {
             "ok":True,
