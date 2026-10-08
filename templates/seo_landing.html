@@ -26,6 +26,20 @@
     .seo-gallery figure:nth-child(2) img{height:320px}
     .seo-gallery figcaption{padding:11px 14px;color:var(--muted);font-size:.9rem}
     @media(max-width:760px){.seo-gallery{grid-template-columns:1fr}.seo-gallery img,.seo-gallery figure:nth-child(2) img{height:240px}}
+    .winter-live{margin:8px 0 38px;padding:24px;border:1px solid #d9e4e8;border-radius:18px;background:linear-gradient(180deg,#f7fbfd,#fff);box-shadow:var(--shadow)}
+    .winter-live-head{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:16px}
+    .winter-live-head h2{margin:.25rem 0 0;font:clamp(1.8rem,3vw,2.6rem)/1.08 Georgia,serif}
+    .winter-live-head p{margin:0;color:var(--muted);max-width:700px}
+    .winter-live-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .winter-live-card{border:1px solid var(--line);border-radius:14px;background:#fff;padding:16px;min-width:0}
+    .winter-live-card>span{display:block;font-size:.72rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--green)}
+    .winter-live-card strong{display:block;font-size:1.28rem;margin:.35rem 0;overflow-wrap:anywhere}
+    .winter-live-card small{display:block;color:var(--muted);line-height:1.45}
+    .winter-live-links{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+    .winter-live-links a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 13px;border:1px solid var(--green);border-radius:9px;text-decoration:none;font-weight:800;color:var(--green-dark);background:#fff}
+    .winter-live-note{margin:13px 0 0;color:var(--muted);font-size:.82rem}
+    @media(max-width:900px){.winter-live-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:600px){.winter-live{padding:18px 14px}.winter-live-head{display:block}.winter-live-head p{margin-top:8px}.winter-live-grid{grid-template-columns:1fr}.winter-live-links a{width:100%}}
   </style>
   <script type="application/ld+json">
   {
@@ -133,6 +147,47 @@
   </section>
   {% endif %}
 
+  {% if winter_live %}
+  <section class="winter-live" id="jauerling-live" aria-labelledby="jauerling-live-title">
+    <div class="winter-live-head">
+      <div>
+        <span class="eyebrow">Jauerling aktuell</span>
+        <h2 id="jauerling-live-title">Wetter, Schnee &amp; Pisteninfo</h2>
+      </div>
+      <p>Live-Wetter und Schnee-Modellwerte für Tal- und Bergstation. Lift, Piste und Flutlicht werden über die offiziellen Jauerling-Meldungen geprüft.</p>
+    </div>
+    <div class="winter-live-grid">
+      <article class="winter-live-card">
+        <span>🌡 Wetter Berg · 956 m</span>
+        <strong id="jau-weather">wird geladen …</strong>
+        <small id="jau-weather-detail">Aktuelle Wetterdaten werden abgerufen.</small>
+      </article>
+      <article class="winter-live-card">
+        <span>❄️ Schneehöhe · Modell</span>
+        <strong id="jau-snow">wird geladen …</strong>
+        <small id="jau-snow-detail">Tal 825 m · Berg 956 m · keine offizielle Pistenmessung</small>
+      </article>
+      <article class="winter-live-card">
+        <span>🎿 Lift &amp; Piste</span>
+        <strong>Offiziellen Status prüfen</strong>
+        <small>Der aktuelle Betriebs- und Pistenstatus kommt direkt vom Betreiber der Skiarena Jauerling.</small>
+      </article>
+      <article class="winter-live-card">
+        <span>💡 Flutlicht &amp; Webcam</span>
+        <strong>Vor der Anfahrt prüfen</strong>
+        <small>Betriebszeiten sind saison- und wetterabhängig. Livebilder stehen über die offizielle Wettercam bereit.</small>
+      </article>
+    </div>
+    <div class="winter-live-links">
+      <a href="https://www.jauerling.at/piste" target="_blank" rel="noopener">Aktuelle Pisteninfos</a>
+      <a href="https://www.jauerling.at/lift/betriebszeiten" target="_blank" rel="noopener">Lift &amp; Flutlicht</a>
+      <a href="https://www.jauerling.at/wettercam/hd-webcam-talstation" target="_blank" rel="noopener">Live-Webcam</a>
+      <a href="https://www.jauerling.at/" target="_blank" rel="noopener">Jauerling offiziell</a>
+    </div>
+    <p class="winter-live-note" id="jau-updated">Wetterdaten: noch nicht geladen. Schneehöhen sind Modellwerte und ersetzen keine offizielle Pistenmeldung.</p>
+  </section>
+  {% endif %}
+
   <section class="story-section">
     <div>
       <span class="eyebrow">{{ eyebrow }}</span>
@@ -213,6 +268,62 @@
   <a class="admin-link" href="{{ url_for('legal_page',key='impressum') }}">Impressum</a>
   <a class="admin-link" href="{{ url_for('legal_page',key='datenschutz') }}">Datenschutz</a>
 </footer>
+{% if winter_live %}
+<script>
+(function(){
+  const weatherEl=document.getElementById("jau-weather");
+  const weatherDetail=document.getElementById("jau-weather-detail");
+  const snowEl=document.getElementById("jau-snow");
+  const snowDetail=document.getElementById("jau-snow-detail");
+  const updatedEl=document.getElementById("jau-updated");
+  const weatherText={0:"klar",1:"überwiegend klar",2:"teilweise bewölkt",3:"bewölkt",45:"Nebel",48:"Raureifnebel",51:"leichter Nieselregen",53:"Nieselregen",55:"starker Nieselregen",61:"leichter Regen",63:"Regen",65:"starker Regen",71:"leichter Schneefall",73:"Schneefall",75:"starker Schneefall",77:"Schneegriesel",80:"leichte Regenschauer",81:"Regenschauer",82:"starke Regenschauer",85:"leichte Schneeschauer",86:"starke Schneeschauer",95:"Gewitter",96:"Gewitter mit Hagel",99:"starkes Gewitter mit Hagel"};
+  function cm(value){
+    if(value===null||value===undefined||Number.isNaN(Number(value))) return null;
+    return Math.max(0,Math.round(Number(value)*100));
+  }
+  async function jauPoint(elevation){
+    const q=new URLSearchParams({
+      latitude:"48.33",longitude:"15.34",elevation:String(elevation),
+      current:"temperature_2m,apparent_temperature,weather_code,wind_speed_10m,snow_depth",
+      daily:"snowfall_sum",timezone:"Europe/Vienna",forecast_days:"1"
+    });
+    const res=await fetch("https://api.open-meteo.com/v1/forecast?"+q.toString(),{cache:"no-store"});
+    if(!res.ok) throw new Error("weather");
+    return res.json();
+  }
+  async function jauLoadWinter(){
+    try{
+      const data=await Promise.all([jauPoint(825),jauPoint(956)]);
+      const valley=data[0],mountain=data[1],m=mountain.current||{};
+      const temp=Number(m.temperature_2m),feel=Number(m.apparent_temperature),wind=Number(m.wind_speed_10m),code=Number(m.weather_code);
+      if(Number.isFinite(temp)){
+        weatherEl.textContent=temp.toFixed(1).replace(".",",")+" °C · "+(weatherText[code]||"Wetter aktuell");
+        weatherDetail.textContent=(Number.isFinite(feel)?"gefühlt "+feel.toFixed(1).replace(".",",")+" °C · ":"")+(Number.isFinite(wind)?"Wind "+Math.round(wind)+" km/h":"");
+      }else{
+        weatherEl.textContent="keine aktuelle Wetterangabe";
+        weatherDetail.textContent="Bitte Wettercam bzw. Betreiber prüfen.";
+      }
+      const valleyCm=cm(valley.current&&valley.current.snow_depth);
+      const mountainCm=cm(m.snow_depth);
+      const fresh=mountain.daily&&Array.isArray(mountain.daily.snowfall_sum)?Number(mountain.daily.snowfall_sum[0]):NaN;
+      const parts=[];
+      if(valleyCm!==null) parts.push("Tal "+valleyCm+" cm");
+      if(mountainCm!==null) parts.push("Berg "+mountainCm+" cm");
+      snowEl.textContent=parts.length?parts.join(" · "):"derzeit keine Modellangabe";
+      snowDetail.textContent=(Number.isFinite(fresh)?"Schneefall heute (Modell): "+fresh.toFixed(1).replace(".",",")+" cm. ":"")+"Keine offizielle Pistenmessung.";
+      updatedEl.textContent="Wetter/Schnee abgerufen: "+new Date().toLocaleString("de-AT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+" Uhr. Schneehöhen sind Modellwerte und ersetzen keine offizielle Pistenmeldung.";
+    }catch(e){
+      weatherEl.textContent="Wetter derzeit nicht abrufbar";
+      weatherDetail.textContent="Bitte offizielle Wettercam öffnen.";
+      snowEl.textContent="keine aktuelle Modellangabe";
+      snowDetail.textContent="Schneehöhe bitte über Betreiber/Pisteninfo prüfen.";
+      updatedEl.textContent="Live-Wetter konnte nicht geladen werden. Offizielle Jauerling-Links bleiben verfügbar.";
+    }
+  }
+  jauLoadWinter();
+})();
+</script>
+{% endif %}
 {% if business_mode %}
 <script>
 (function(){
