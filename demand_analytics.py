@@ -403,6 +403,48 @@ def init_demand_analytics(app, db, require_admin):
             "sources": sources,
         }
 
+    @app.get("/api/public/demand-stats")
+    def public_demand_stats():
+        """Privacy-safe aggregated funnel statistics for the local ZAB OS.
+
+        This endpoint intentionally exposes no names, email addresses, phone
+        numbers, messages, raw IP addresses or user agents.
+        """
+        try:
+            days = max(1, min(730, int(request.args.get("days", "30"))))
+        except Exception:
+            days = 30
+        payload = os_summary(days)
+        if payload is None:
+            # Fall back to the local event store summary when Postgres is absent.
+            since = (datetime.now() - timedelta(days=days)).isoformat(timespec="seconds")
+            counts, _dates, _months, _sources = _event_summary(db, since)
+            attempts = int(counts.get("checkout_started", 0))
+            abandoned = int(counts.get("booking_abandoned", 0))
+            payload = {
+                "ok": True,
+                "period_days": days,
+                "generated_at": datetime.now().isoformat(timespec="seconds"),
+                "total_searches": int(counts.get("dates_selected", 0)),
+                "unique_visitors": 0,
+                "search_unique_visitors": 0,
+                "available_searches": int(counts.get("price_quote_loaded", 0)),
+                "available_percent": 0.0,
+                "booking_attempts": attempts,
+                "booking_abandoned": abandoned,
+                "abandonment_rate": round(100.0 * abandoned / attempts, 1) if attempts else 0.0,
+                "by_visitor_country": [],
+                "by_month": [],
+                "by_country": [],
+                "by_weekday": [],
+                "by_hour": [],
+                "by_date": [],
+                "privacy": "Aggregated only; no personal data is exposed.",
+            }
+        response = jsonify(payload)
+        response.headers["Cache-Control"] = "no-store"
+        return response
+
     @app.get("/os/nachfrage.json")
     def demand_json():
         if not require_admin():
