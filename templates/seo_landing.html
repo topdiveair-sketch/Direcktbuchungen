@@ -16,7 +16,7 @@
   <meta property="og:title" content="{{ title }}">
   <meta property="og:description" content="{{ description }}">
   <meta property="og:url" content="{{ canonical }}">
-  <meta property="og:image" content="{{ (_CANONICAL_ORIGIN if _CANONICAL_ORIGIN is defined else 'https://www.zuhauseambach-wachau.at') }}/static/{{ hero_image or 'images/rooms/bachblick.jpg' }}">
+  <meta property="og:image" content="{{ (_CANONICAL_ORIGIN if _CANONICAL_ORIGIN is defined else 'https://www.zuhauseambach-wachau.at') }}/static/{% if hero_image == 'images/jauerling-flutlicht.webp' %}{{ secondary_image }}{% else %}{{ hero_image or 'images/rooms/bachblick.jpg' }}{% endif %}">
   <meta property="og:image:alt" content="{{ hero_image_alt or h1 }}">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260924-seoimg">
@@ -117,10 +117,12 @@
 <main>
   {% if hero_image %}
   <section class="seo-gallery" aria-label="Bilder zur Unterkunft">
+    {% if hero_image != 'images/jauerling-flutlicht.webp' %}
     <figure>
-      <img src="{{ url_for('static', filename=hero_image) }}?v=20261008-1211" alt="{{ hero_image_alt }}" loading="eager" decoding="async">
+      <img src="{{ url_for('static', filename=hero_image) }}" alt="{{ hero_image_alt }}" loading="eager" decoding="async">
       <figcaption>{{ hero_image_caption }}</figcaption>
     </figure>
+    {% endif %}
     {% if secondary_image %}
     <figure>
       <img src="{{ url_for('static', filename=secondary_image) }}" alt="{{ secondary_image_alt }}" loading="lazy" decoding="async">
