@@ -41,6 +41,17 @@ def init_payment_hold(app, db):
     def release_expired() -> int:
         now_iso = datetime.now().isoformat(timespec="seconds")
         with db() as conn:
+            # A no-op UPDATE still acquires SQLite's writer lock. This cleanup
+            # runs before every request, including images and calendar reads.
+            expired = conn.execute(
+                """SELECT 1 FROM bookings
+                   WHERE status='pending' AND COALESCE(paid,0)=0
+                     AND COALESCE(hold_expires_at,'')!=''
+                     AND hold_expires_at<=? LIMIT 1""",
+                (now_iso,),
+            ).fetchone()
+            if not expired:
+                return 0
             cur = conn.execute(
                 """UPDATE bookings
                    SET status='cancelled', released_at=?,
