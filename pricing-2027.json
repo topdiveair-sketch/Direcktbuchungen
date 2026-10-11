@@ -13,8 +13,10 @@
   "notes": [
     "Rates are final direct-booking room rates before optional extras and local taxes.",
     "Do not apply the legacy 3 percent direct-booking discount again to these rates.",
-    "Confirmed special dates and selected high-demand regional event windows use the 149 EUR upper rate.",
-    "Unconfirmed recurring events remain on the watchlist until an official date is published."
+    "Confirmed special dates may retain the 149 EUR upper rate. Selected local north-bank Advent Saturdays use the 129 EUR strong tier; demand and availability must be checked live.",
+    "Unconfirmed recurring events remain on the watchlist until an official date is published.",
+    "For late 2026 the 15 km north-bank event signals use the existing 129 EUR strong tier on selected Saturdays; the 7 December bridge night uses 119 EUR. Other dates follow the seasonal grid unless explicitly overridden in the OS calendar.",
+    "Quiet non-event Sunday-to-Thursday nights through 30 April 2027 use the 99 EUR final direct room rate; dated event overrides keep priority. Older OS calendar prices do not raise these quiet nights."
   ],
   "tiers": {
     "weak": 99,
@@ -27,14 +29,14 @@
     {
       "start": "2026-09-14",
       "end": "2026-10-26",
-      "sun_thu": 119,
+      "sun_thu": 99,
       "fri_sat": 129,
       "reason": "wine_autumn_and_hiking"
     },
     {
       "start": "2026-10-27",
       "end": "2026-10-31",
-      "sun_thu": 109,
+      "sun_thu": 99,
       "fri_sat": 119,
       "reason": "late_october_shoulders"
     },
@@ -48,14 +50,14 @@
     {
       "start": "2026-11-19",
       "end": "2026-12-20",
-      "sun_thu": 109,
+      "sun_thu": 99,
       "fri_sat": 119,
       "reason": "advent_season"
     },
     {
       "start": "2026-12-21",
       "end": "2026-12-31",
-      "sun_thu": 109,
+      "sun_thu": 99,
       "fri_sat": 119,
       "reason": "christmas_new_year_period"
     },
@@ -69,14 +71,14 @@
     {
       "start": "2027-03-20",
       "end": "2027-04-11",
-      "sun_thu": 109,
+      "sun_thu": 99,
       "fri_sat": 119,
       "reason": "easter_and_apricot_blossom_window"
     },
     {
       "start": "2027-04-12",
       "end": "2027-04-30",
-      "sun_thu": 109,
+      "sun_thu": 99,
       "fri_sat": 119,
       "reason": "spring_wachau"
     },
@@ -175,40 +177,34 @@
       "label": "Spitzer Weinherbst finale and Austrian National Day window"
     },
     {
-      "start": "2026-11-12",
-      "end": "2026-11-12",
-      "price_eur": 149,
-      "label": "Martini Einkaufsnacht Krems"
+      "start": "2026-11-21",
+      "end": "2026-11-21",
+      "price_eur": 129,
+      "label": "Nordufer-Advent: Dürnstein, Weißenkirchen und Emmersdorf"
     },
     {
-      "start": "2026-11-19",
-      "end": "2026-11-22",
-      "price_eur": 149,
-      "label": "Kremser Adventzauber opening and Rehberger Adventmarkt"
+      "start": "2026-11-28",
+      "end": "2026-11-28",
+      "price_eur": 129,
+      "label": "Nordufer-Advent: Dürnstein, Schloss Spitz und Emmersdorf"
     },
     {
-      "start": "2026-11-26",
-      "end": "2026-11-29",
-      "price_eur": 149,
-      "label": "Kremser Adventzauber"
+      "start": "2026-12-05",
+      "end": "2026-12-05",
+      "price_eur": 129,
+      "label": "Wachauer Advent Dürnstein"
     },
     {
-      "start": "2026-12-03",
-      "end": "2026-12-06",
-      "price_eur": 149,
-      "label": "Kremser Adventzauber"
+      "start": "2026-12-07",
+      "end": "2026-12-07",
+      "price_eur": 119,
+      "label": "Wachauer Advent Dürnstein und Feiertag am 8. Dezember"
     },
     {
-      "start": "2026-12-10",
-      "end": "2026-12-13",
-      "price_eur": 149,
-      "label": "Kremser Adventzauber and Schallaburg Christkindlmarkt"
-    },
-    {
-      "start": "2026-12-17",
-      "end": "2026-12-20",
-      "price_eur": 149,
-      "label": "Kremser Adventzauber final weekend"
+      "start": "2026-12-12",
+      "end": "2026-12-12",
+      "price_eur": 129,
+      "label": "Wachauer Advent Dürnstein"
     },
     {
       "start": "2027-03-26",
@@ -332,11 +328,12 @@
   "source_status": {
     "pricing_start": "2026-09-14",
     "confirmed_2026_events_used": [
-      "Starnacht aus der Wachau 18-19 September 2026",
-      "Spitzer Weinherbst 4 September-26 October 2026 with selected event weekends",
-      "Martini Einkaufsnacht Krems 12 November 2026",
-      "Kremser Adventzauber 19 November-20 December 2026, Thursday-Sunday",
-      "Schallaburg Christkindlmarkt 11-13 December 2026"
+      "Spitzer Weinherbst bis 26 October 2026; selected October weekends on the north bank",
+      "Wachauer Advent Duernstein 20-22 and 27-29 November, 4-8 and 11-13 December 2026",
+      "Adventmarkt Weissenkirchen 21-22 November 2026",
+      "Spitzer Advent im Schloss 28-29 November 2026",
+      "Adventmarkt der Pfarre Emmersdorf 21-22 November and Adventmarkt im Seegarten 28-29 November 2026",
+      "Austrian National Day 26 October and Immaculate Conception 8 December 2026"
     ],
     "confirmed_2027_events_used": [
       "Wachauer Weinfruehling 1-2 May 2027",
@@ -345,7 +342,17 @@
       "Glatt und Verkehrt 9-25 July 2027 on published festival dates",
       "Schallaburg Christmas market 17-19 December 2027"
     ],
-    "weather_dependent_apricot_blossom": "priced as a broad seasonal window; exact bloom timing must be reviewed in March 2027"
+    "weather_dependent_apricot_blossom": "priced as a broad seasonal window; exact bloom timing must be reviewed in March 2027",
+    "local_2026_scope": "North bank only, approximate 15 km air-distance radius from Aggsbach Markt 82; Dürnstein near the edge. Event dates are demand signals, not proof of bookings or occupancy.",
+    "local_2026_reviewed_at": "2026-10-11",
+    "local_2026_sources": [
+      "https://www.donau.com/veranstaltungen/spitzer-weinherbst-2026",
+      "https://www.donau.com/veranstaltungen/wachauer-advent-duernstein",
+      "https://www.donau.com/veranstaltungen/adventmarkt-weissenkirchen",
+      "https://www.wachaubahn.at/angebote-5/wachauer-advent",
+      "https://www.emmersdorf.gv.at/",
+      "https://www.oesterreich.gv.at/de/themen/bildung_und_ausbildung/schulen/Seite.1100114"
+    ]
   },
   "demand_rules": {
     "lookback_hours": 48,
