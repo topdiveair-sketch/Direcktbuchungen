@@ -12,7 +12,7 @@ from datetime import timedelta
 
 import app as legacy_app
 import paypal_checkout as paypal_checkout_module
-from pricing_2027 import nightly_direct_rate
+from pricing_2027 import nightly_direct_rate, quiet_night_rate
 
 _original_price_breakdown = legacy_app.price_breakdown
 _original_init_paypal_checkout = paypal_checkout_module.init_paypal_checkout
@@ -46,6 +46,9 @@ def price_breakdown_2027(room, arrival, departure, adults, chosen, coupon_code="
             return breakdown
         fallback = float(nightly)
         effective = _calendar_direct_price(room, current, fallback)
+        quiet = quiet_night_rate(current)
+        if quiet is not None:
+            effective = quiet
         if effective != fallback:
             override_used = True
         room_total += effective
