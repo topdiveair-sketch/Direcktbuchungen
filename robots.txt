@@ -1,5 +1,6 @@
 User-agent: *
-Disallow: /
+Allow: /
 
-# Legacy GitHub Pages host is intentionally blocked.
-# The canonical public website is https://www.zuhauseambach-wachau.at/
+# Legacy GitHub Pages host remains crawlable so search engines can see
+# noindex/canonical signals and remove stale URLs from the index.
+# Canonical public website: https://www.zuhauseambach-wachau.at/
