@@ -78,7 +78,8 @@ def event_label(day: date) -> str | None:
 def quiet_night_rate(day: date) -> float | None:
     """Fix non-event Sunday-to-Thursday direct room nights at 99 EUR through April 2027.
 
-    Date overrides keep priority. The fixed rate also prevents an older channel
+    Dates before 11 October 2026 keep their historical rates. Date overrides
+    keep priority. The fixed rate also prevents an older channel
     price override from raising a quiet night after this explicit pricing change.
     Availability and any optional extras are checked separately.
     """
