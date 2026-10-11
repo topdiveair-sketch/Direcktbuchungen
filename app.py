@@ -1974,6 +1974,32 @@ def redirect_jauerling_winter_legacy():
     return redirect("/skifahren-jauerling-unterkunft-wachau", code=301)
 
 
+# Dauerhafte SEO-Weiterleitungen fuer frueher beworbene Winter-URLs.
+# Alte URLs bleiben damit fuer Suchmaschinen, externe Links und Bookmarks nutzbar,
+# waehrend Ranking-Signale auf die aktuellen kanonischen Landingpages fliessen.
+@app.get("/winterangebote-wachau")
+@app.get("/winterangebote-wachau/")
+def redirect_winterangebote_legacy():
+    return redirect("/winterurlaub-wachau", code=301)
+
+
+@app.get("/winter-wachau-jauerling")
+@app.get("/winter-wachau-jauerling/")
+def redirect_winter_jauerling_legacy():
+    return redirect("/unterkunft-jauerling-wachau", code=301)
+
+
+@app.get("/skifahren-jauerling-unterkunft-wachau/")
+def redirect_ski_jauerling_trailing_slash():
+    return redirect("/skifahren-jauerling-unterkunft-wachau", code=301)
+
+
+@app.get("/wachauer-advent-unterkunft")
+@app.get("/wachauer-advent-unterkunft/")
+def redirect_wachauer_advent_legacy():
+    return redirect("/wachauer-advent-duernstein-2026-unterkunft", code=301)
+
+
 @app.get("/skifahren-jauerling-unterkunft-wachau")
 def seo_ski_jauerling():
     return render_template("seo_landing.html", **seo_landing_context("ski"))
