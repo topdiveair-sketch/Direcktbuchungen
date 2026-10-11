@@ -28,6 +28,13 @@
   "season_ranges": [
     {
       "start": "2026-09-14",
+      "end": "2026-10-10",
+      "sun_thu": 119,
+      "fri_sat": 129,
+      "reason": "wine_autumn_and_hiking"
+    },
+    {
+      "start": "2026-10-11",
       "end": "2026-10-26",
       "sun_thu": 99,
       "fri_sat": 129,
