@@ -22,7 +22,7 @@ from flask import request
 # patches the shared pricing and PayPal checkout hooks for the configured
 # 14.09.2026-31.12.2027 pricing window while preserving legacy pricing outside it.
 import pricing_2027_gateway  # noqa: F401,E402
-from pricing_2027 import nightly_direct_rate
+from pricing_2027 import nightly_direct_rate, quiet_night_rate
 
 # projectos_winter_gateway initializes the central live-state gateway on the
 # shared Flask app. Import it once and do not register those routes twice.
@@ -417,6 +417,9 @@ def public_direct_price():
             return {"ok": False, "available": False, "error": "date_outside_pricing_calendar"}, 400, _cors_headers()
         fallback = float(rate)
         rate, overridden = _effective_direct_rate(room, current, fallback)
+        quiet = quiet_night_rate(current)
+        if quiet is not None:
+            rate, overridden = quiet, False
         override_used = override_used or overridden
         nights.append({"date": current.isoformat(), "price_eur": rate, "os_override": overridden})
         total += rate
