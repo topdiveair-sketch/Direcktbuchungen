@@ -73,3 +73,20 @@ def event_label(day: date) -> str | None:
         if _contains(day, row):
             return str(row.get("label") or "") or None
     return None
+
+
+def quiet_night_rate(day: date) -> float | None:
+    """Fix non-event Sunday-to-Thursday direct room nights at 99 EUR through April 2027.
+
+    Date overrides keep priority. The fixed rate also prevents an older channel
+    price override from raising a quiet night after this explicit pricing change.
+    Availability and any optional extras are checked separately.
+    """
+    if not date(2026, 10, 11) <= day <= date(2027, 4, 30):
+        return None
+    if day.weekday() in (4, 5):
+        return None
+    cfg = pricing_config()
+    if any(_contains(day, row) for row in cfg.get("date_overrides", [])):
+        return None
+    return float(cfg["minimum_direct_price_eur"])
