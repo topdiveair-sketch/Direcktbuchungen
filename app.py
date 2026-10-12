@@ -2367,10 +2367,8 @@ def event_sonnenwende_2028():
     return render_template("event_landing.html", **event_landing_context("sonnenwende-wachau-2028"))
 
 
-@app.get("/sitemap.xml")
-def sitemap():
-    today_iso = date.today().isoformat()
-    urls = [
+def public_sitemap_urls():
+    return [
         "https://www.zuhauseambach-wachau.at/",
         "https://www.zuhauseambach-wachau.at/unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/wachau-urlaub-deutschland-schweiz",
@@ -2419,11 +2417,43 @@ def sitemap():
         "https://www.zuhauseambach-wachau.at/bewertung",
         "https://www.zuhauseambach-wachau.at/partner",
     ]
+
+
+@app.get("/sitemap.xml")
+def sitemap():
+    today_iso = date.today().isoformat()
     body = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    for url in urls:
+    for url in public_sitemap_urls():
         body.append(f"<url><loc>{url}</loc><lastmod>{today_iso}</lastmod><changefreq>weekly</changefreq></url>")
     body.append("</urlset>")
     return Response("\n".join(body), mimetype="application/xml")
+
+
+@app.get("/api/indexnow/submit-all-20261012")
+def indexnow_submit_all_20261012():
+    token = request.args.get("token", "")
+    if not hmac.compare_digest(token, "zab-submit-all-20261012"):
+        return jsonify({"ok": False, "error": "forbidden"}), 403
+    payload = {
+        "host": "www.zuhauseambach-wachau.at",
+        "key": INDEXNOW_KEY,
+        "keyLocation": f"https://www.zuhauseambach-wachau.at/{INDEXNOW_KEY}.txt",
+        "urlList": public_sitemap_urls(),
+    }
+    req = urllib.request.Request(
+        "https://api.indexnow.org/indexnow",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type":"application/json; charset=utf-8","User-Agent":"ZuhauseAmBach/1.0"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            status = int(resp.status)
+            return jsonify({"ok": status in {200, 202}, "status": status, "submitted": len(payload["urlList"])})
+    except urllib.error.HTTPError as exc:
+        return jsonify({"ok": False, "status": int(exc.code), "submitted": len(payload["urlList"]), "error": str(exc)}), 502
+    except Exception as exc:
+        return jsonify({"ok": False, "status": 0, "submitted": len(payload["urlList"]), "error": str(exc)}), 502
 
 
 @app.get(f"/{INDEXNOW_KEY}.txt")
