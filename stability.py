@@ -164,15 +164,8 @@ Bei außergewöhnlichen Umständen kann Zuhause am Bach - Wachau im Einzelfall e
             return {r["key"]:r["value"] for r in conn.execute("SELECT key,value FROM system_settings")}
 
     def rotate_backups():
-        settings = get_system_settings()
-        keep_days = int(settings.get("backup_keep_days","30") or 30)
-        cutoff = datetime.now() - timedelta(days=keep_days)
-        removed = 0
-        for file in backup_dir.glob("*.db"):
-            if datetime.fromtimestamp(file.stat().st_mtime) < cutoff:
-                file.unlink()
-                removed += 1
-        return removed
+        from backup_retention import prune_auto_backups
+        return prune_auto_backups(backup_dir)["deleted"]
 
     def create_backup(label="auto"):
         if not Path(DB_PATH).exists():
