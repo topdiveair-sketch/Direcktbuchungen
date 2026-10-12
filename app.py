@@ -93,6 +93,7 @@ PAYPAL_EMAIL = os.environ.get("PAYPAL_EMAIL", "topdiveair@gmail.com")
 GUEST_APP_URL = os.environ.get("GUEST_APP_URL", "https://topdiveair-sketch.github.io/Gaeste/")
 ROOM_RELEASE_DATE = date(2026, 8, 16)
 BREAKFAST_PRICE = 12.0
+INDEXNOW_KEY = "zab-indexnow-20261012-jauerling"
 
 # Ertragsstrategie: starke, offiziell bestätigte Wachau-Termine werden nicht
 # rabattiert, sondern mit einem transparenten Eventfaktor bepreist.
@@ -2423,6 +2424,11 @@ def sitemap():
         body.append(f"<url><loc>{url}</loc><lastmod>{today_iso}</lastmod><changefreq>weekly</changefreq></url>")
     body.append("</urlset>")
     return Response("\n".join(body), mimetype="application/xml")
+
+
+@app.get(f"/{INDEXNOW_KEY}.txt")
+def indexnow_key_file():
+    return Response(INDEXNOW_KEY, mimetype="text/plain")
 
 
 @app.get("/robots.txt")
