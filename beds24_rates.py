@@ -15,6 +15,8 @@ _token_lock = threading.Lock()
 # API response, exception, URL or credential supplied by the remote service.
 ERROR_MESSAGES = {
     "unauthorized": "Beds24 HTTP 401: API-Zugang abgelehnt; Refresh-Token prüfen.",
+    "auth_unauthorized": "Beds24 HTTP 401 bei Token-Erneuerung: Refresh-Token abgelehnt.",
+    "inventory_unauthorized": "Beds24 HTTP 401 bei Preisübertragung: Zugangstoken oder Inventarfreigabe abgelehnt.",
     "forbidden": "Beds24 HTTP 403: Zugriff verweigert; write:inventory und Zimmerfreigabe prüfen.",
     "rate_limited": "Beds24 HTTP 429: API-Limit erreicht; erneuter Versuch folgt.",
     "server_error": "Beds24 Serverfehler; erneuter Versuch folgt.",
@@ -101,7 +103,13 @@ def push_rate(room, day, price):
             "from": day.isoformat(), "to": day.isoformat(),
             f"price{cfg['slot']}": round(float(price), 2),
         }]}]
-        result = _request("/inventory/rooms/calendar", {"token": _token()}, payload)
+        try:
+            token = _token()
+        except urllib.error.HTTPError as auth_exc:
+            if auth_exc.code == 401:
+                return _failure("http_error", "auth_unauthorized")
+            raise
+        result = _request("/inventory/rooms/calendar", {"token": token}, payload)
         # A HTTP 200 can contain a rejected item. Never report that as applied.
         items = result if isinstance(result, list) else result.get("data", []) if isinstance(result, dict) else []
         if not isinstance(items, list) or len(items) != 1 or not isinstance(items[0], dict) or items[0].get("success") is not True:
@@ -113,6 +121,8 @@ def push_rate(room, day, price):
             _token_cache = ("", 0.0)
         code = {401: "unauthorized", 403: "forbidden", 429: "rate_limited"}.get(
             exc.code, "server_error" if 500 <= exc.code <= 599 else "http_error")
+        if code == "unauthorized":
+            code = "inventory_unauthorized"
         return _failure("http_error", code)
     except (urllib.error.URLError, TimeoutError):
         return _failure("error", "network_error")
