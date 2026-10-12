@@ -12,6 +12,17 @@ from zoneinfo import ZoneInfo
 
 from flask import jsonify, request
 
+# Emergency: prune redundant generated backups before app imports and
+# SQLite startup writes. Protect manual backups and the live database.
+try:
+    from pathlib import Path
+    from backup_retention import prune_auto_backups
+    _data_root = Path(os.environ.get("DATA_DIR", "/data")).expanduser()
+    _early_retention = prune_auto_backups(_data_root / "backups")
+    print("ZAB_EARLY_BACKUP_RETENTION " + json.dumps(_early_retention), flush=True)
+except Exception as _early_retention_error:
+    print("ZAB_EARLY_BACKUP_RETENTION_ERROR " + type(_early_retention_error).__name__, flush=True)
+
 import app as core_app
 from volume_diagnostics import volume_diagnostics
 
