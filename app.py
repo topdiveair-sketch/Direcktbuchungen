@@ -2414,7 +2414,6 @@ def public_sitemap_urls():
         "https://www.zuhauseambach-wachau.at/wachauer-sonnenwende-2027-unterkunft",
         "https://www.zuhauseambach-wachau.at/alles-marille-2027-unterkunft",
         "https://www.zuhauseambach-wachau.at/wachauer-sonnenwende-2028-unterkunft",
-        "https://www.zuhauseambach-wachau.at/bewertung",
         "https://www.zuhauseambach-wachau.at/partner",
     ]
 
