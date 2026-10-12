@@ -1,0 +1,16 @@
+name: Beds24 auth phase diagnostics tests
+on:
+  push:
+    branches: [fix/beds24-auth-phase-diagnostics-20261012]
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest -v test_beds24_auth_phase.py
+      - run: python -m py_compile beds24_rates.py
