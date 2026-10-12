@@ -18,6 +18,16 @@ from volume_diagnostics import volume_diagnostics
 # Read-only diagnostics stay unreachable unless separately enabled and authenticated.
 core_app.app.register_blueprint(volume_diagnostics)
 
+# Delete only redundant zab-auto-*.db copies, preserving 24 latest,
+# one daily copy for 30 days, and one monthly copy for 12 months.
+# Unknown/manual files and the live database remain untouched.
+try:
+    from backup_retention import prune_auto_backups
+    _retention = prune_auto_backups(core_app.DATA_DIR / "backups")
+    print("ZAB_BACKUP_RETENTION " + json.dumps(_retention), flush=True)
+except Exception as _retention_error:
+    print("ZAB_BACKUP_RETENTION_ERROR " + type(_retention_error).__name__, flush=True)
+
 # One-shot, metadata-only volume report at boot; stdout is visible only in Railway logs.
 # No file names, contents, credentials or booking records are logged.
 try:
