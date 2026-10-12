@@ -13,6 +13,10 @@ from zoneinfo import ZoneInfo
 from flask import jsonify, request
 
 import app as core_app
+from volume_diagnostics import volume_diagnostics
+
+# Read-only diagnostics stay unreachable unless separately enabled and authenticated.
+core_app.app.register_blueprint(volume_diagnostics)
 from app import (
     app,
     db,
