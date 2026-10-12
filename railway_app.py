@@ -17,6 +17,24 @@ from volume_diagnostics import volume_diagnostics
 
 # Read-only diagnostics stay unreachable unless separately enabled and authenticated.
 core_app.app.register_blueprint(volume_diagnostics)
+
+# One-shot, metadata-only volume report at boot; stdout is visible only in Railway logs.
+# No file names, contents, credentials or booking records are logged.
+try:
+    from volume_diagnostics import scan_volume
+    _disk = scan_volume()
+    print("ZAB_VOLUME_REPORT " + json.dumps({
+        "capacity_bytes": _disk.get("capacity_bytes"),
+        "available_bytes": _disk.get("available_bytes"),
+        "directory_bytes": _disk.get("directory_bytes"),
+        "largest_files": _disk.get("largest_files", [])[:10],
+        "entries_scanned": _disk.get("entries_scanned"),
+        "read_errors": _disk.get("read_errors"),
+        "truncated": _disk.get("truncated"),
+        "error": _disk.get("error"),
+    }), flush=True)
+except Exception as _volume_diag_error:
+    print("ZAB_VOLUME_REPORT_ERROR " + type(_volume_diag_error).__name__, flush=True)
 from app import (
     app,
     db,
