@@ -1,0 +1,17 @@
+name: Safe backup retention tests
+on:
+  push:
+    branches:
+      - fix/safe-backup-retention-20261012
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest -v test_backup_retention.py
+      - run: python -m py_compile backup_retention.py stability.py railway_app.py
