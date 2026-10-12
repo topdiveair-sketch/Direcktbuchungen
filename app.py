@@ -2426,36 +2426,6 @@ def sitemap():
     return Response("\n".join(body), mimetype="application/xml")
 
 
-@app.get("/api/indexnow/submit-jauerling-20261012")
-def submit_indexnow_jauerling():
-    token = request.args.get("token", "")
-    if not hmac.compare_digest(token, "zab-submit-jauerling-20261012"):
-        return jsonify({"ok": False, "error": "forbidden"}), 403
-    pages = [
-        "https://www.zuhauseambach-wachau.at/unterkunft-jauerling-wachau",
-        "https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau",
-    ]
-    key_location = f"https://www.zuhauseambach-wachau.at/{INDEXNOW_KEY}.txt"
-    results = []
-    for page_url in pages:
-        params = urllib.parse.urlencode({
-            "url": page_url,
-            "key": INDEXNOW_KEY,
-            "keyLocation": key_location,
-        })
-        endpoint = "https://api.indexnow.org/indexnow?" + params
-        try:
-            req = urllib.request.Request(endpoint, headers={"User-Agent": "ZuhauseAmBach/1.0"})
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                results.append({"url": page_url, "status": int(resp.status)})
-        except urllib.error.HTTPError as exc:
-            results.append({"url": page_url, "status": int(exc.code), "error": str(exc)})
-        except Exception as exc:
-            results.append({"url": page_url, "status": 0, "error": str(exc)})
-    ok = all(item.get("status") in {200, 202} for item in results)
-    return jsonify({"ok": ok, "results": results})
-
-
 @app.get(f"/{INDEXNOW_KEY}.txt")
 def indexnow_key_file():
     return Response(INDEXNOW_KEY, mimetype="text/plain")
