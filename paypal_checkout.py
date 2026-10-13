@@ -281,6 +281,7 @@ def init_paypal_checkout(
             # Keep the room held after Stripe's 30-minute session expiry:
             # delayed paid webhooks must not allow an accidental resale.
             hold_expires = now + timedelta(hours=24)
+            stripe_session_expires_at = int(now.timestamp()) + 31 * 60
             with db() as conn:
                 conn.execute("BEGIN IMMEDIATE")
                 ok, reason = room_available_in_conn(conn, room, arrival, departure)
@@ -300,7 +301,9 @@ def init_paypal_checkout(
                      customer["message"], "stripe_checkout", float(total),
                      now.isoformat(timespec="seconds"),
                      hold_expires.isoformat(timespec="seconds"),
-                     json.dumps({"extras": chosen, "breakdown": breakdown}, ensure_ascii=False),
+                     json.dumps({"extras": chosen, "breakdown": breakdown,
+                                 "stripe_session_expires_at": stripe_session_expires_at},
+                                ensure_ascii=False),
                      "direct-stripe-sandbox"),
                 )
                 booking_id = cur.lastrowid
@@ -311,6 +314,7 @@ def init_paypal_checkout(
                     guest_email=customer["email"],
                     success_url=f"{base}/stripe/success?booking={booking_id}",
                     cancel_url=f"{base}/stripe/cancel?booking={booking_id}",
+                    expires_at=stripe_session_expires_at,
                 )
                 with db() as conn:
                     conn.execute("BEGIN IMMEDIATE")
