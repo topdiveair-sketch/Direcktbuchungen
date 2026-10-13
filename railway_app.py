@@ -507,6 +507,14 @@ def railway_deploy_health():
         "smtp_configured": smtp_configured,
         "https_mail_configured": bool(os.environ.get("RESEND_API_KEY", "").strip() and os.environ.get("MAIL_SENDER_EMAIL", "").strip()),
         "bank_transfer_configured": bank_transfer_configured,
+        # Configuration is not proof of successful card capture or settlement.
+        "stripe_credentials_configured": bool(
+            os.environ.get("STRIPE_SECRET_KEY", "").strip()
+            and os.environ.get("STRIPE_PUBLISHABLE_KEY", "").strip()
+        ),
+        "stripe_checkout_implemented": False,
+        "card_payment_live_verified": False,
+        "bank_transfer_live_verified": False,
         "ical_configured": ical_configured,
         "official_public_site": public_site in {"https://zuhauseambach-wachau.at","https://www.zuhauseambach-wachau.at"},
         "provider_monitor": bool(app.extensions.get("zab_provider_monitor_initialized")),
