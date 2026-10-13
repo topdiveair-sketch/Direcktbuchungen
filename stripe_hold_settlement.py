@@ -22,7 +22,8 @@ def release_verified_stripe_hold(conn, session: dict, *, now: datetime) -> str:
                 and session.get("livemode") is False
                 and session.get("status") == "expired"
                 and session.get("payment_status") == "unpaid"
-                and not session.get("payment_intent")):
+                and not session.get("payment_intent")
+                and str(session.get("client_reference_id")) == str(booking.get("id"))):
             conn.rollback()
             return "duplicate"
         if not may_release_stripe_hold(session, booking, now=now):
