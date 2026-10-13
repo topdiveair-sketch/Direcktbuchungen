@@ -469,14 +469,55 @@ def _notify_paid_booking(booking_id):
             pass
 
 
+def _notify_uncertain_paypal_booking(booking_id):
+    """Alert the host once when a PayPal capture requires reconciliation."""
+    if not booking_id:
+        return
+    subject = "[WICHTIG] PayPal-Zahlung unklar - Buchung pruefen"
+    try:
+        with db() as conn:
+            booking = conn.execute(
+                "SELECT id,room,arrival,departure,paypal_order_id,payment_error FROM bookings WHERE id=?",
+                (booking_id,),
+            ).fetchone()
+            already_sent = conn.execute(
+                """SELECT 1 FROM email_log WHERE booking_id=? AND recipient=?
+                   AND subject=? AND status='gesendet' LIMIT 1""",
+                (booking_id, ALERT_EMAIL, subject),
+            ).fetchone()
+        if not booking or already_sent or not str(booking["payment_error"] or "").startswith("PayPal-Zahlungsstatus unklar"):
+            return
+        from transactional_email import send_transactional_email
+        with db() as conn:
+            settings = {row["key"]: row["value"] for row in conn.execute("SELECT key,value FROM site_settings")}
+        body = (
+            "ACHTUNG: PayPal-Zahlungsstatus nicht eindeutig.\n"
+            "Buchung nicht manuell freigeben, bevor PayPal geprueft wurde.\n"
+            f"Buchung-ID: {booking['id']}\nZimmer: {booking['room']}\n"
+            f"Anreise: {booking['arrival']}\nAbreise: {booking['departure']}\n"
+            f"PayPal-Auftrag: {booking['paypal_order_id'] or '-'}\n"
+            "Bitte Zahlung bei PayPal pruefen und erst danach bestaetigen oder erstatten."
+        )
+        _, status = send_transactional_email(ALERT_EMAIL, subject, body, settings=settings, important=True)
+        with db() as conn:
+            conn.execute(
+                "INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
+                (booking_id, ALERT_EMAIL, subject, status, datetime.now().isoformat(timespec="seconds")),
+            )
+    except Exception:
+        app.logger.exception("PayPal reconciliation alert failed for booking %s", booking_id)
+
+
 @app.after_request
 def notify_successful_paid_booking(response):
     """Send owner/guest alerts after a genuinely paid PayPal return."""
-    if response.status_code != 200:
-        return response
     if request.path != "/paypal/return":
         return response
-    _notify_paid_booking(request.args.get("booking", type=int))
+    booking_id = request.args.get("booking", type=int)
+    if response.status_code == 200:
+        _notify_paid_booking(booking_id)
+    elif response.status_code == 502:
+        _notify_uncertain_paypal_booking(booking_id)
     return response
 
 
