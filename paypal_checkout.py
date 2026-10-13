@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import base64
+import hashlib
+import hmac
 import json
 import os
 import sqlite3
@@ -36,6 +38,14 @@ def init_paypal_checkout(
     5. After PayPal approval, capture on the server.
     6. Only a COMPLETED capture marks the booking paid + confirmed.
     """
+
+    def cancel_signature(booking_id):
+        secret = app.secret_key
+        if not secret:
+            raise RuntimeError("Sitzungsschluessel fuer PayPal-Abbruch fehlt.")
+        if isinstance(secret, str):
+            secret = secret.encode("utf-8")
+        return hmac.new(secret, f"paypal-cancel:{booking_id}".encode("ascii"), hashlib.sha256).hexdigest()
 
     def ensure_column(conn, table, column, definition):
         cols = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
@@ -361,7 +371,7 @@ def init_paypal_checkout(
                                     "brand_name": "Zuhause am Bach",
                                     "locale": "de-AT",
                                     "return_url": f"{base}/paypal/return?booking={booking_id}",
-                                    "cancel_url": f"{base}/paypal/cancel?booking={booking_id}",
+                                    "cancel_url": f"{base}/paypal/cancel?booking={booking_id}&sig={cancel_signature(booking_id)}",
                                     "landing_page": "GUEST_CHECKOUT",
                                     "user_action": "PAY_NOW",
                                     "shipping_preference": "NO_SHIPPING",
@@ -516,6 +526,12 @@ def init_paypal_checkout(
     @app.get("/paypal/cancel")
     def paypal_cancel():
         booking_id = request.args.get("booking", type=int)
+        supplied_signature = request.args.get("sig", "")
+        if not booking_id or not hmac.compare_digest(supplied_signature, cancel_signature(booking_id)):
+            return render_template_string(
+                ERROR_PAGE,
+                message="Der Abbruchlink ist ungueltig. Die Reservierung wurde nicht veraendert.",
+            ), 403
         if booking_id:
             with db() as conn:
                 conn.execute(
