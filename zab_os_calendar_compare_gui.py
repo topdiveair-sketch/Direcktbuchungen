@@ -4,7 +4,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from datetime import date, timedelta
 from zab_os_compare_exports import compare_files
-from zab_os_snapshot_client import SnapshotError
+from zab_os_snapshot_client import SnapshotError, get_connection_config
+from zab_os_export_snapshot import export_snapshot
 
 
 def format_report(report):
@@ -59,7 +60,30 @@ def main():
         output.insert("1.0", text)
         output.configure(state="disabled")
 
-    ttk.Button(outer, text="Kalender sicher vergleichen", command=run_compare).grid(row=4, column=0, columnspan=3, pady=8)
+    def export_first():
+        server_url, token = get_connection_config()
+        if not server_url or not token:
+            messagebox.showerror("Verbindung fehlt", "ZAB_OS_SNAPSHOT_URL und ZAB_BRIDGE_TOKEN in Windows-Umgebungsvariablen einrichten.")
+            return
+        destination = filedialog.asksaveasfilename(
+            title="Neuen Snapshot-Export speichern",
+            defaultextension=".json",
+            filetypes=[("JSON", "*.json")],
+        )
+        if not destination:
+            return
+        try:
+            export_snapshot(destination, start.get(), end.get(), base_url=server_url, token=token)
+        except (SnapshotError, OSError, ValueError, KeyError, TypeError) as exc:
+            messagebox.showerror("Snapshot-Export fehlgeschlagen", str(exc))
+            return
+        paths[0].set(destination)
+        messagebox.showinfo("Export gespeichert", "Kalenderstand gesichert. Sync-Status NICHT VERIFIZIERT; keine Naechte freigeben.")
+
+    controls = ttk.Frame(outer)
+    controls.grid(row=4, column=0, columnspan=3, pady=8)
+    ttk.Button(controls, text="ZAB-Snapshot abrufen (nur lesen)", command=export_first).pack(side="left", padx=5)
+    ttk.Button(controls, text="Kalender sicher vergleichen", command=run_compare).pack(side="left", padx=5)
     ttk.Label(outer, text="Nur lokaler Vergleich – keine Netzwerkverbindung, keine Freigabe von Naechten.").grid(
         row=6, column=0, columnspan=3, sticky="w", pady=8
     )
