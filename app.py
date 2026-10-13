@@ -2600,8 +2600,17 @@ def stripe_webhook():
     if event_type == "checkout.session.expired":
         session = (event.get("data") or {}).get("object") or {}
         booking_ref = str(session.get("client_reference_id") or "")
-        if not booking_ref.isdecimal():
+        session_id = str(session.get("id") or "")
+        if not booking_ref.isdecimal() or not session_id.startswith("cs_test_"):
             return jsonify(received=False, error="invalid_booking_reference"), 400
+        # Never expire a hold based on a different Checkout session.
+        with db() as conn:
+            hold = conn.execute(
+                "SELECT payment_reference FROM bookings WHERE id=?",
+                (int(booking_ref),),
+            ).fetchone()
+        if not hold or hold["payment_reference"] != session_id:
+            return jsonify(received=False, error="session_booking_mismatch"), 400
         try:
             released = stripe_release_expired_test_hold(int(booking_ref))
         except (urllib.error.URLError, TimeoutError, OSError, ValueError):
@@ -2916,7 +2925,11 @@ def stripe_release_expired_test_hold(booking_id: int) -> bool:
             """SELECT id, status, payment_method, payment_status, payment_reference
                FROM bookings WHERE id=?""", (booking_id,)
         ).fetchone()
-    if not row or row["payment_method"] != "Stripe" or row["status"] != "pending":
+    if not row or row["payment_method"] != "Stripe":
+        return False
+    if row["status"] == "expired" and (row["payment_status"] or "").lower() == "expired":
+        return True
+    if row["status"] != "pending":
         return False
     if (row["payment_status"] or "").lower() in {"paid", "succeeded"}:
         return False
