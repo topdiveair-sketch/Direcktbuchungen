@@ -92,6 +92,18 @@ class ClientTests(unittest.TestCase):
         with patch("urllib.request.OpenerDirector.open", side_effect=URLError("offline")):
             with self.assertRaises(SnapshotError):
                 fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-20")
+    def test_invalid_base_urls_and_header_injection(self):
+        for url, token in (
+            ("https://example.test/other", "secret"),
+            ("https://user:pass@example.test", "secret"),
+            ("https://example.test?next=other", "secret"),
+            ("https://example.test#fragment", "secret"),
+            ("http://example.test", "secret"),
+            ("https://example.test", "secret\\r\\nInjected: yes"),
+        ):
+            with self.subTest(url=url):
+                with self.assertRaises(SnapshotError):
+                    fetch_snapshot(url, token, "2026-10-13", "2026-10-20")
     def test_no_http(self):
         with self.assertRaises(SnapshotError):
             fetch_snapshot("http://example.test","secret","2026-10-13","2026-10-20")
