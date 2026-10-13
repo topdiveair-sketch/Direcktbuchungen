@@ -4,6 +4,8 @@ on:
     paths:
       - 'paypal_checkout.py'
       - 'stripe_webhook_security.py'
+      - 'stripe_checkout_payload.py'
+      - 'tests/test_stripe_checkout_payload.py'
       - 'tests/test_stripe_webhook_security.py'
       - 'booking_notifications.py'
       - 'tests/test_paypal_cancel_signature.py'
@@ -20,4 +22,4 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m pip install pytest flask
-      - run: python -m pytest -q tests/test_paypal_cancel_signature.py tests/test_paypal_cancel_database.py tests/test_paypal_reconciliation_route.py tests/test_stripe_webhook_security.py
+      - run: python -m pytest -q tests/test_paypal_cancel_signature.py tests/test_paypal_cancel_database.py tests/test_paypal_reconciliation_route.py tests/test_stripe_webhook_security.py tests/test_stripe_checkout_payload.py
