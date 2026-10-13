@@ -21,7 +21,7 @@ def test_shared_payment_hold_extension_excludes_stripe_from_select_and_update():
 def test_missing_stripe_session_queue_is_admin_only_and_read_only():
     source = (Path(__file__).resolve().parents[1] / "railway_app.py").read_text(encoding="utf-8")
     start = source.index("def stripe_unresolved_holds():")
-    end = source.index("@app.post(\"/admin/stripe/reconcile\")", start)
+    end = source.index('@app.post("/admin/stripe/recover/<int:booking_id>")', start)
     route = source[start:end]
     assert "if not require_admin():" in route
     assert "COALESCE(stripe_session_id,'')=''" in route
@@ -33,7 +33,7 @@ def test_missing_stripe_session_queue_is_admin_only_and_read_only():
 def test_stripe_recovery_requires_admin_original_expiry_and_pending_booking():
     source = (Path(__file__).resolve().parents[1] / "railway_app.py").read_text(encoding="utf-8")
     start = source.index("def stripe_recover_missing_session(booking_id):")
-    end = source.index('@app.post("/admin/stripe/recover/<int:booking_id>")', start)
+    end = source.index('@app.post("/admin/stripe/reconcile")', start)
     route = source[start:end]
     assert "if not require_admin():" in route
     assert "recovery_requires_manual_review(dict(row))" in route
