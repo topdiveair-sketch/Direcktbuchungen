@@ -26,10 +26,10 @@ def test_settlement_confirms_once_and_preserves_other_bookings():
                  payment_intent="pi_test_one")
     assert settle_verified_stripe_session(conn, event) == "confirmed"
     assert settle_verified_stripe_session(conn, event) == "duplicate"
-    assert conn.execute("SELECT status,paid,hold_expires_at FROM bookings WHERE id=1").fetchone() == (
+    assert tuple(conn.execute("SELECT status,paid,hold_expires_at FROM bookings WHERE id=1").fetchone()) == (
         "confirmed", 1, ""
     )
-    assert conn.execute("SELECT status,paid FROM bookings WHERE id=2").fetchone() == ("pending", 0)
+    assert tuple(conn.execute("SELECT status,paid FROM bookings WHERE id=2").fetchone()) == ("pending", 0)
 
 
 def test_wrong_amount_does_not_mark_paid():
