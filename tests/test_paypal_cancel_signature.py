@@ -44,7 +44,8 @@ def test_cancel_route_rejects_unsigned_requests():
 
 def test_paid_return_rejects_stale_unpaid_reservation():
     assert 'if booking["status"] != "pending" and not booking["paid"]:' in SOURCE
-    assert 'if current["status"] != "pending" and not current["paid"]:' in SOURCE
+    assert 'current["status"] != "pending" or current["paid"]' in SOURCE
+    assert '(current["paypal_order_id"] or "").strip() != order_id' in SOURCE
 
 
 def test_payment_capture_revalidates_reservation():
