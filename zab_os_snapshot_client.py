@@ -6,7 +6,7 @@ import hashlib
 import json
 import os
 import ssl
-from datetime import date
+from datetime import date, timedelta
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -96,3 +96,29 @@ def fetch_snapshot(base_url, token, start, end, timeout=12):
 def get_connection_config():
     """Secrets belong in Windows environment variables, never in code or logs."""
     return os.environ.get("ZAB_OS_SNAPSHOT_URL", ""), os.environ.get("ZAB_BRIDGE_TOKEN", "")
+
+
+def summarize_occupancy(snapshot, start, end):
+    """Read-only occupied-night report; never represents verified availability."""
+    first, last = date.fromisoformat(start), date.fromisoformat(end)
+    if first >= last or (last - first).days > 366:
+        raise SnapshotError("Ungueltiger Kalenderzeitraum")
+    nights = {}
+    for kind, records, a_key, b_key in (
+        ("Buchung", snapshot["bookings"], "arrival", "departure"),
+        ("Sperre", snapshot["blocks"], "start", "end"),
+    ):
+        for record in records:
+            a, b = date.fromisoformat(record[a_key]), date.fromisoformat(record[b_key])
+            if a >= b:
+                raise SnapshotError("Ungueltiger Kalenderdatensatz")
+            current = max(a, first)
+            while current < min(b, last):
+                nights.setdefault(current.isoformat(), []).append(kind)
+                current += timedelta(days=1)
+    return {
+        "occupied_nights": sorted(nights),
+        "overlap_nights": sorted(day for day, entries in nights.items() if len(entries) > 1),
+        "verified_free_nights": [],
+        "channel_sync_verified": False,
+    }
