@@ -211,6 +211,8 @@ def init_paypal_checkout(
             if (sources and (sources["import_url"] or "").strip()) or external_count:
                 return False, "Sandbox enthält externe Kalenderdaten; Checkout gesperrt."
             return True, "Isolierter Testkalender (keine externen Buchungen)."
+        if os.environ.get("ZAB_STRIPE_ISOLATED_TEST") == "1" and request.host.split(":")[0] == "zab-stripe-sandbox-production.up.railway.app":
+            return False, "Sandbox-Kalender gesperrt: Stripe-Testschlüssel oder Checkout-Testfreigabe fehlt. Bitte Railway-Variablen prüfen."
         release_expired()
         count, message = sync_room(room)
         if message != "Synchronisierung erfolgreich.":
