@@ -189,6 +189,24 @@ def init_paypal_checkout(
     def ensure_live_calendar(room):
         if room not in rooms:
             return False, "Unbekanntes Zimmer."
+        # Isolated Stripe sandbox only: no live Booking feed or guest inventory.
+        # Local pending/confirmed reservations remain checked by authoritative_quote
+        # and by the transaction in stripe_create_checkout.
+        sandbox = (os.environ.get("ZAB_STRIPE_ISOLATED_TEST") == "1"
+                   and os.environ.get("STRIPE_SANDBOX_CHECKOUT_ENABLED") == "1"
+                   and os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_")
+                   and request.host.split(":")[0] == "zab-stripe-sandbox-production.up.railway.app")
+        if sandbox:
+            with db() as conn:
+                sources = conn.execute(
+                    "SELECT import_url FROM ical_settings WHERE room=?", (room,)
+                ).fetchone()
+                external_count = conn.execute(
+                    "SELECT COUNT(*) FROM external_blocks WHERE room=?", (room,)
+                ).fetchone()[0]
+            if (sources and (sources["import_url"] or "").strip()) or external_count:
+                return False, "Sandbox enthält externe Kalenderdaten; Checkout gesperrt."
+            return True, "Isolierter Testkalender (keine externen Buchungen)."
         release_expired()
         count, message = sync_room(room)
         if message != "Synchronisierung erfolgreich.":
