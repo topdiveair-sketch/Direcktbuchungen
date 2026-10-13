@@ -429,8 +429,8 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
   } catch (error) {
     track("paypal_checkout_error");
     bookingSubmit.disabled = quoteLoading || !rateQuotes;
-    bookingSubmit.textContent = tx("paypal");
-    if (paymentNotice) paymentNotice.textContent = "⚠️ " + (error?.message || "PayPal konnte nicht gestartet werden.");
+    bookingSubmit.textContent = method === "stripe_checkout" ? "MIT TESTKARTE BEZAHLEN" : tx("paypal");
+    if (paymentNotice) paymentNotice.textContent = "⚠️ " + (error?.message || "Zahlung konnte nicht gestartet werden.");
   }
 });
 window.addEventListener("pagehide", () => {
