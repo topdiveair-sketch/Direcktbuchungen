@@ -40,3 +40,8 @@ def test_cancel_route_rejects_unsigned_requests():
     assert 'hmac.compare_digest(supplied_signature, cancel_signature(booking_id))' in SOURCE
     assert 'sig={cancel_signature(booking_id)}' in SOURCE
     assert 'COALESCE(paid,0)=0' in SOURCE
+
+
+def test_paid_return_rejects_stale_unpaid_reservation():
+    assert 'if booking["status"] != "pending" and not booking["paid"]:' in SOURCE
+    assert 'if current["status"] != "pending" and not current["paid"]:' in SOURCE
