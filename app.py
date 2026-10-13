@@ -2575,16 +2575,36 @@ def stripe_webhook():
     # amount, currency, Checkout session, booking state and idempotency.
     app.logger.info("stripe_test_webhook_received type=%s id=%s",
                     str(event.get("type", ""))[:80], str(event.get("id", ""))[:120])
-    # A 2xx response would permanently acknowledge payment events without
-    # persisting the paid booking. Fail closed until the booking lifecycle
-    # is implemented, so Stripe retries instead of silently dropping events.
-    if event.get("type") in {
-        "checkout.session.completed",
-        "checkout.session.async_payment_succeeded",
-        "checkout.session.expired",
-    }:
-        return jsonify(received=False, booking_updated=False,
-                       error="stripe_booking_lifecycle_not_enabled"), 503
+    event_type = event.get("type")
+    if event_type in {"checkout.session.completed", "checkout.session.async_payment_succeeded"}:
+        session = (event.get("data") or {}).get("object") or {}
+        session_id = str(session.get("id") or "")
+        booking_ref = str(session.get("client_reference_id") or "")
+        if not session_id.startswith("cs_test_") or not booking_ref.isdecimal():
+            return jsonify(received=False, error="invalid_session_reference"), 400
+        # A checkout.session.completed event can precede final settlement.
+        # Only acknowledge after the authoritative paid state was persisted.
+        try:
+            confirmed = stripe_confirm_paid_test_booking(int(booking_ref), session_id)
+        except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+            app.logger.exception("stripe_payment_confirmation_retryable_error")
+            return jsonify(received=False, error="stripe_reconciliation_failed"), 503
+        if not confirmed:
+            return jsonify(received=False, error="booking_not_confirmed"), 503
+        return jsonify(received=True, booking_updated=True)
+    if event_type == "checkout.session.expired":
+        session = (event.get("data") or {}).get("object") or {}
+        booking_ref = str(session.get("client_reference_id") or "")
+        if not booking_ref.isdecimal():
+            return jsonify(received=False, error="invalid_booking_reference"), 400
+        try:
+            released = stripe_release_expired_test_hold(int(booking_ref))
+        except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+            app.logger.exception("stripe_hold_release_retryable_error")
+            return jsonify(received=False, error="stripe_reconciliation_failed"), 503
+        if not released:
+            return jsonify(received=False, error="hold_not_released"), 503
+        return jsonify(received=True, booking_updated=True)
     return jsonify(received=True, booking_updated=False)
 
 
