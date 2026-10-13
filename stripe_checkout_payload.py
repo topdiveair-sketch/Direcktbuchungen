@@ -29,7 +29,6 @@ def checkout_session_fields(*, booking_id: int, total_eur, guest_email: str,
         raise CheckoutValidationError("HTTPS redirect URLs required")
     return {
         "mode": "payment",
-        "payment_method_types[0]": "card",
         "line_items[0][price_data][currency]": "eur",
         "line_items[0][price_data][unit_amount]": str(cents),
         "line_items[0][price_data][product_data][name]": "Zuhause am Bach - Zimmerbuchung",
