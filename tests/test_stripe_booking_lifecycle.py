@@ -229,3 +229,17 @@ def test_cancelled_hold_does_not_accept_paid_or_live_replay_as_duplicate():
     assert release_verified_stripe_hold(conn, session, now=now) == "retained"
     session.update(status="expired", payment_status="unpaid", payment_intent=None, livemode=True)
     assert release_verified_stripe_hold(conn, session, now=now) == "retained"
+
+
+def test_cancelled_hold_replay_requires_matching_booking_reference():
+    from stripe_hold_settlement import release_verified_stripe_hold
+    from datetime import timezone
+    conn, db = setup_db()
+    conn.execute("UPDATE bookings SET status='cancelled' WHERE id=1")
+    conn.commit()
+    session = paid_session()
+    session.update(status="expired", payment_status="unpaid", payment_intent=None,
+                   client_reference_id="999")
+    result = release_verified_stripe_hold(conn, session,
+                                          now=datetime(2026, 10, 13, tzinfo=timezone.utc))
+    assert result == "retained"
