@@ -302,7 +302,8 @@ def init_paypal_checkout(
                      now.isoformat(timespec="seconds"),
                      hold_expires.isoformat(timespec="seconds"),
                      json.dumps({"extras": chosen, "breakdown": breakdown,
-                                 "stripe_session_expires_at": stripe_session_expires_at},
+                                 "stripe_session_expires_at": stripe_session_expires_at,
+                                 "stripe_checkout_base_url": base},
                                 ensure_ascii=False),
                      "direct-stripe-sandbox"),
                 )
