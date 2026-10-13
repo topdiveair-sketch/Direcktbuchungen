@@ -163,6 +163,10 @@ def init_paypal_checkout(
         configured = os.environ.get("PUBLIC_CHECKOUT_BASE_URL", "").strip().rstrip("/")
         if configured:
             return configured
+        if (os.environ.get("ZAB_STRIPE_ISOLATED_TEST") == "1"
+                and request.host.split(":")[0] == "zab-stripe-sandbox-production.up.railway.app"
+                and os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_")):
+            return "https://zab-stripe-sandbox-production.up.railway.app"
         if os.environ.get("APP_ENV", "").lower() == "production" or os.environ.get("RAILWAY_ENVIRONMENT"):
             raise RuntimeError("PUBLIC_CHECKOUT_BASE_URL fehlt in Railway.")
         return request.host_url.rstrip("/")
