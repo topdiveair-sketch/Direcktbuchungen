@@ -20,7 +20,7 @@ def test_settlement_confirms_once_and_preserves_other_bookings():
          (2,"119.90","pending",0,"paypal_checkout","","","2026-10-13T20:00:00")],
     )
     conn.commit()
-    event = dict(id="cs_test_one", mode="payment", status="complete",
+    event = dict(id="cs_test_one", livemode=False, mode="payment", status="complete",
                  payment_status="paid", currency="eur", amount_total=11990,
                  client_reference_id="1", metadata={"booking_id": "1"},
                  payment_intent="pi_test_one")
@@ -43,7 +43,7 @@ def test_wrong_amount_does_not_mark_paid():
     )""")
     conn.execute("INSERT INTO bookings(id,total,status,paid,payment_method,stripe_session_id) VALUES(1,'125.00','pending',0,'stripe_checkout','cs_test_one')")
     conn.commit()
-    event = dict(id="cs_test_one", mode="payment", status="complete",
+    event = dict(id="cs_test_one", livemode=False, mode="payment", status="complete",
                  payment_status="paid", currency="eur", amount_total=100,
                  client_reference_id="1", metadata={"booking_id": "1"},
                  payment_intent="pi_test_one")
