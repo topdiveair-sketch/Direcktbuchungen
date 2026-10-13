@@ -84,3 +84,14 @@ def test_reconciliation_queue_is_admin_only_and_read_only():
     assert 'payment_error LIKE \'PayPal-Zahlungsstatus unklar%\'' in body
     assert 'ORDER BY created_at DESC LIMIT 100' in body
     assert 'UPDATE bookings' not in body and 'DELETE FROM bookings' not in body
+
+
+def test_reconciliation_csv_is_admin_only_and_read_only():
+    railway = Path(__file__).resolve().parents[1].joinpath("railway_app.py").read_text(encoding="utf-8")
+    tree = ast.parse(railway)
+    route = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "paypal_reconciliation_csv")
+    body = ast.get_source_segment(railway, route)
+    assert 'if not require_admin():' in body
+    assert 'Cache-Control": "no-store"' in body
+    assert 'csv.writer(output, delimiter=";")' in body
+    assert 'UPDATE bookings' not in body and 'DELETE FROM bookings' not in body
