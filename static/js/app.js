@@ -131,7 +131,7 @@ function updateBookingSummary() {
   if (summaryDates) summaryDates.textContent = arrival.value && departure.value ? `${arrival.value} – ${departure.value}` : "–";
   if (summaryNights) summaryNights.textContent = nights() ? String(nights()) : "–";
   if (summaryGuests) summaryGuests.textContent = adults.value || "–";
-  if (summaryPayment) summaryPayment.textContent = selectedPayment();
+  if (summaryPayment) summaryPayment.textContent = selectedPayment() === "stripe_checkout" ? "Kredit-/Debitkarte (TEST)" : selectedPayment();
   if (summaryTotal) summaryTotal.textContent = lastQuotedTotal != null ? euro(lastQuotedTotal) : "–";
   if (summaryExtras) {
     const labels = extraInputs.filter(el=>el.checked).map(el=>el.closest("label")?.querySelector("strong")?.textContent?.trim()).filter(Boolean);
@@ -355,6 +355,8 @@ guestArea?.addEventListener("input", () => {
 
 document.getElementById("bookingForm").addEventListener("submit", async (event) => {
   const method = selectedPayment();
+  // Ensure the visible CTA matches the payment option at the moment of submission.
+  updatePaymentUI();
   if (quoteLoading || !rateQuotes) { event.preventDefault(); return; }
   if (method !== "PayPal" && method !== "stripe_checkout") {
     track("booking_submit_nonpaypal");
