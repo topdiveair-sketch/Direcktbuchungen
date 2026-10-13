@@ -4,6 +4,7 @@ Never log the secret key, raw guest payment details or Authorization header.
 This module deliberately does not mutate reservations or activate a payment route.
 """
 import json
+import time
 import urllib.error
 import urllib.request
 from urllib.parse import urlencode
@@ -26,6 +27,8 @@ def create_hosted_checkout_session(*, secret_key: str, booking_id: int,
         booking_id=booking_id, total_eur=total_eur, guest_email=guest_email,
         success_url=success_url, cancel_url=cancel_url,
     )
+    # Stripe sessions expire after 30 minutes; local holds require separate reconciliation.
+    fields["expires_at"] = str(int(time.time()) + 1800)
     request = urllib.request.Request(
         "https://api.stripe.com/v1/checkout/sessions",
         data=urlencode(fields).encode("utf-8"),
