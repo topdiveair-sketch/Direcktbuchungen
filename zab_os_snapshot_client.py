@@ -46,6 +46,12 @@ def fetch_snapshot(base_url, token, start, end, timeout=12):
     expected_revision = hashlib.sha256(json.dumps(signed_fields, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
     if payload["revision"] != expected_revision:
         raise SnapshotError("Snapshot-Pruefsumme stimmt nicht mit den Kalenderdaten ueberein")
+    # The current server deliberately cannot certify OTA sync. Never infer
+    # availability from an otherwise valid snapshot.
+    if payload["sync"]["verified"] is not False:
+        raise SnapshotError("Unzulaessige Synchronisierungsfreigabe")
+    if not isinstance(payload["sync"].get("provider_status"), dict):
+        raise SnapshotError("Kanalstatus fehlt oder ist ungueltig")
     # Validate the requested range locally as well; never trust a partial response.
     try:
         requested_start = date.fromisoformat(start)
