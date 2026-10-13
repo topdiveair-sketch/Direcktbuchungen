@@ -58,6 +58,19 @@ class ClientTests(unittest.TestCase):
                 with patch("urllib.request.urlopen", return_value=Response(payload)):
                     with self.assertRaisesRegex(SnapshotError,"Sperrintervalle"):
                         fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-31")
+    def test_unrelated_calendar_records_rejected(self):
+        payload = {"room_id":"Bachblick","sync":{"verified":False},"bookings":[],
+                   "blocks":[{"start":"2026-09-01","end":"2026-09-02","source":"Airbnb"}]}
+        payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+        with patch("urllib.request.urlopen", return_value=Response(payload)):
+            with self.assertRaisesRegex(SnapshotError,"Sperrintervalle"):
+                fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-31")
+    def test_invalid_requested_range_rejected(self):
+        payload = {"room_id":"Bachblick","sync":{"verified":False},"bookings":[],"blocks":[]}
+        payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+        with patch("urllib.request.urlopen", return_value=Response(payload)):
+            with self.assertRaisesRegex(SnapshotError,"Kalenderzeitraum"):
+                fetch_snapshot("https://example.test","secret","2026-10-31","2026-10-13")
     def test_http_401(self):
         with patch("urllib.request.urlopen", side_effect=HTTPError("url",401,"unauthorized",{},None)):
             with self.assertRaisesRegex(SnapshotError,"HTTP 401"):
