@@ -681,7 +681,7 @@ def stripe_reconcile_manual():
         return jsonify({"error": "Stripe sandbox credentials missing"}), 503
     try:
         from stripe_hold_reconciliation import reconcile_expired_stripe_holds
-        report = reconcile_expired_stripe_holds(db, secret_key=secret, limit=20)
+        report = reconcile_expired_stripe_holds(db, secret_key=secret, limit=20, on_confirmed=app.extensions.get("zab_send_paid_guest_confirmation"))
         response = jsonify({"ok": report["failed"] == 0, "report": report})
         response.headers["Cache-Control"] = "no-store"
         return response, (200 if report["failed"] == 0 else 503)
