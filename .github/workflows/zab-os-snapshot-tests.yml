@@ -1,5 +1,16 @@
 name: ZAB OS snapshot Flask checks
 on:
+  push:
+    branches:
+      - feature/zab-os-production-integration-20261013
+    paths:
+      - "zab_os_snapshot_server.py"
+      - "test_zab_os_snapshot_flask.py"
+      - "zab_os_snapshot_client.py"
+      - "test_zab_os_snapshot_client.py"
+      - "zab_os_compare_exports.py"
+      - "test_zab_os_compare_exports.py"
+      - ".github/workflows/zab-os-snapshot-tests.yml"
   pull_request:
     paths:
       - "zab_os_snapshot_server.py"
