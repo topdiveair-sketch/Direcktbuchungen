@@ -78,3 +78,28 @@ def test_failed_stripe_lookup_never_releases_or_confirms():
         db, secret_key="sk_test_dummy", now=NOW, lookup=fail)
     assert report["failed"] == 1
     assert conn.execute("SELECT status,paid FROM bookings").fetchone()[:] == ("pending", 0)
+
+
+def test_missed_webhook_is_recovered_by_authoritative_stripe_lookup():
+    conn, db = setup_db()
+    report = reconcile_expired_stripe_holds(
+        db, secret_key="sk_test_dummy", now=NOW,
+        lookup=lambda **kwargs: paid_session())
+    assert report["confirmed"] == 1
+    assert tuple(conn.execute("SELECT status,paid,stripe_payment_intent FROM bookings").fetchone()) == (
+        "confirmed", 1, "pi_test_one")
+    again = reconcile_expired_stripe_holds(
+        db, secret_key="sk_test_dummy", now=NOW,
+        lookup=lambda **kwargs: expired_session())
+    assert again["released"] == 0
+
+
+def test_mismatched_paid_session_is_not_confirmed():
+    conn, db = setup_db()
+    invalid = paid_session()
+    invalid["amount_total"] = 100
+    report = reconcile_expired_stripe_holds(
+        db, secret_key="sk_test_dummy", now=NOW,
+        lookup=lambda **kwargs: invalid)
+    assert report["failed"] == 1
+    assert tuple(conn.execute("SELECT status,paid FROM bookings").fetchone()) == ("pending", 0)
