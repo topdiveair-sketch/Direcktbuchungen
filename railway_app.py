@@ -351,6 +351,10 @@ init_provider_monitor(app, db, require_admin)
 init_provider_radar(app, db, require_admin)
 init_host_automation(app, db, require_admin, core_app.DB_PATH)
 
+# Authenticated, read-only Windows OS snapshot. No booking or price writes.
+from zab_os_snapshot_server import init_os_snapshot
+init_os_snapshot(app, db)
+
 
 @app.before_request
 def validate_public_paypal_payload():
