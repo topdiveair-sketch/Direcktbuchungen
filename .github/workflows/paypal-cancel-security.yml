@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'paypal_checkout.py'
+      - 'booking_notifications.py'
       - 'tests/test_paypal_cancel_signature.py'
       - '.github/workflows/paypal-cancel-security.yml'
   workflow_dispatch:
