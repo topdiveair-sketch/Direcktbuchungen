@@ -587,6 +587,27 @@ def paypal_reconciliation_csv():
         return jsonify({"error": "CSV-Export derzeit nicht verfuegbar"}), 503
 
 
+@app.post("/admin/stripe/reconcile")
+def stripe_reconcile_manual():
+    """Explicit admin-triggered sandbox reconciliation; no public scheduler."""
+    if not require_admin():
+        return jsonify({"error": "Nicht autorisiert"}), 403
+    if os.environ.get("STRIPE_SANDBOX_CHECKOUT_ENABLED") != "1":
+        return jsonify({"error": "Stripe sandbox reconciliation disabled"}), 503
+    secret = os.environ.get("STRIPE_SECRET_KEY", "").strip()
+    if not secret.startswith("sk_test_"):
+        return jsonify({"error": "Stripe sandbox credentials missing"}), 503
+    try:
+        from stripe_hold_reconciliation import reconcile_expired_stripe_holds
+        report = reconcile_expired_stripe_holds(db, secret_key=secret, limit=20)
+        response = jsonify({"ok": report["failed"] == 0, "report": report})
+        response.headers["Cache-Control"] = "no-store"
+        return response, (200 if report["failed"] == 0 else 503)
+    except Exception:
+        app.logger.exception("Stripe reconciliation admin request failed")
+        return jsonify({"error": "Stripe reconciliation unavailable"}), 503
+
+
 @app.post("/stripe/webhook")
 def stripe_sandbox_webhook():
     """Confirm only signed Stripe test Checkout payments, transactionally."""
