@@ -521,6 +521,28 @@ def notify_successful_paid_booking(response):
     return response
 
 
+@app.get("/admin/paypal-reconciliation")
+def paypal_reconciliation_queue():
+    """Read-only, authenticated list of payments requiring manual review."""
+    if not require_admin():
+        return jsonify({"error": "Nicht autorisiert"}), 403
+    try:
+        with db() as conn:
+            rows = conn.execute(
+                """SELECT id,room,arrival,departure,status,paid,paypal_order_id,
+                          paypal_capture_id,payment_error,created_at
+                   FROM bookings
+                   WHERE payment_method='paypal_checkout'
+                     AND payment_error LIKE 'PayPal-Zahlungsstatus unklar%'
+                     AND COALESCE(paid,0)=0
+                   ORDER BY created_at DESC LIMIT 100"""
+            ).fetchall()
+        return jsonify({"count": len(rows), "bookings": [dict(row) for row in rows]})
+    except Exception:
+        app.logger.exception("PayPal reconciliation queue failed")
+        return jsonify({"error": "Pruefliste derzeit nicht verfuegbar"}), 503
+
+
 @app.get("/health/deploy")
 def railway_deploy_health():
     """Return a secret-safe production readiness snapshot."""
