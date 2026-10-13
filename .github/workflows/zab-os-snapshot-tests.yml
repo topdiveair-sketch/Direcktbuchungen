@@ -8,6 +8,7 @@ on:
       - "test_zab_os_snapshot_flask.py"
       - "zab_os_snapshot_client.py"
       - "test_zab_os_snapshot_client.py"
+      - "zab_os_calendar_compare_gui.py"
       - "zab_os_compare_exports.py"
       - "test_zab_os_compare_exports.py"
       - ".github/workflows/zab-os-snapshot-tests.yml"
@@ -35,6 +36,6 @@ jobs:
       - name: Install Flask
         run: python -m pip install Flask==3.1.1
       - name: Compile snapshot module
-        run: python -m py_compile zab_os_snapshot_server.py test_zab_os_snapshot_flask.py zab_os_snapshot_client.py test_zab_os_snapshot_client.py zab_os_compare_exports.py test_zab_os_compare_exports.py
+        run: python -m py_compile zab_os_snapshot_server.py test_zab_os_snapshot_flask.py zab_os_snapshot_client.py test_zab_os_snapshot_client.py zab_os_compare_exports.py test_zab_os_compare_exports.py zab_os_calendar_compare_gui.py
       - name: Run Flask HTTP tests
         run: python -m unittest -v test_zab_os_snapshot_flask test_zab_os_snapshot_client test_zab_os_compare_exports
