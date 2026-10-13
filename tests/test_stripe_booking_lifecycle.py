@@ -103,3 +103,31 @@ def test_mismatched_paid_session_is_not_confirmed():
         lookup=lambda **kwargs: invalid)
     assert report["failed"] == 1
     assert tuple(conn.execute("SELECT status,paid FROM bookings").fetchone()) == ("pending", 0)
+
+
+def test_recovered_paid_booking_calls_confirmation_once():
+    conn, db = setup_db()
+    notified = []
+    report = reconcile_expired_stripe_holds(
+        db, secret_key="sk_test_dummy", now=NOW,
+        lookup=lambda **kwargs: paid_session(),
+        on_confirmed=lambda booking_id: notified.append(booking_id))
+    assert report["confirmed"] == 1
+    assert notified == [1]
+    reconcile_expired_stripe_holds(
+        db, secret_key="sk_test_dummy", now=NOW,
+        lookup=lambda **kwargs: paid_session(),
+        on_confirmed=lambda booking_id: notified.append(booking_id))
+    assert notified == [1]
+
+
+def test_confirmation_failure_does_not_undo_paid_booking():
+    conn, db = setup_db()
+    def fail_notification(booking_id):
+        raise RuntimeError("mail unavailable")
+    report = reconcile_expired_stripe_holds(
+        db, secret_key="sk_test_dummy", now=NOW,
+        lookup=lambda **kwargs: paid_session(), on_confirmed=fail_notification)
+    assert report["confirmed"] == 1
+    assert report["failed"] == 1
+    assert tuple(conn.execute("SELECT status,paid FROM bookings").fetchone()) == ("confirmed", 1)
