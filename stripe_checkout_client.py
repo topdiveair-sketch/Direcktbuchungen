@@ -27,8 +27,9 @@ def create_hosted_checkout_session(*, secret_key: str, booking_id: int,
         booking_id=booking_id, total_eur=total_eur, guest_email=guest_email,
         success_url=success_url, cancel_url=cancel_url,
     )
-    # Stripe sessions expire after 30 minutes; local holds require separate reconciliation.
-    fields["expires_at"] = str(int(time.time()) + 1800)
+    # Give Stripe a full 30-minute minimum even after request transit and rounding.
+    # Local inventory release still requires authoritative session reconciliation.
+    fields["expires_at"] = str(int(time.time()) + 31 * 60)
     request = urllib.request.Request(
         "https://api.stripe.com/v1/checkout/sessions",
         data=urlencode(fields).encode("utf-8"),
