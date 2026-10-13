@@ -28,3 +28,16 @@ def test_missing_stripe_session_queue_is_admin_only_and_read_only():
     assert "SELECT id,room,arrival,departure" in route
     assert "UPDATE bookings" not in route
     assert 'Cache-Control' in route
+
+
+def test_stripe_recovery_requires_admin_original_expiry_and_pending_booking():
+    source = (Path(__file__).resolve().parents[1] / "railway_app.py").read_text(encoding="utf-8")
+    start = source.index("def stripe_recover_missing_session(booking_id):")
+    end = source.index('@app.post("/admin/stripe/reconcile")', start)
+    route = source[start:end]
+    assert "if not require_admin():" in route
+    assert "recovery_requires_manual_review(dict(row))" in route
+    assert 'payload.get("stripe_session_expires_at")' in route
+    assert "expires_at=expires_at" in route
+    assert "COALESCE(stripe_session_id,'')=''" in route
+    assert "BEGIN IMMEDIATE" in route
