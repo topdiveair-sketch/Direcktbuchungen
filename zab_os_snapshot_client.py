@@ -96,6 +96,8 @@ def fetch_snapshot(base_url, token, start, end, timeout=12):
 
 def compare_occupancy_snapshots(left, right, start, end):
     """Compare two independent snapshots without treating missing entries as free."""
+    if left is right:
+        raise SnapshotError("Zwei unabhaengige Kalenderquellen erforderlich")
     a = summarize_occupancy(left, start, end)
     b = summarize_occupancy(right, start, end)
     left_nights = set(a["occupied_nights"])
