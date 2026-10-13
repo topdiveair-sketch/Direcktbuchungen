@@ -717,6 +717,13 @@ def stripe_sandbox_webhook():
         with db() as conn:
             outcome = settle_verified_stripe_session(conn, session)
         if outcome in ("confirmed", "duplicate"):
+            # Payment is already committed. Email delivery must not undo settlement.
+            try:
+                send_paid = app.extensions.get("zab_send_paid_guest_confirmation")
+                if callable(send_paid):
+                    send_paid(int(session["client_reference_id"]))
+            except Exception:
+                app.logger.exception("Stripe paid confirmation email failed; payment remains confirmed")
             return jsonify({"received": True, "result": outcome}), 200
         # Never acknowledge an unmatched payment as settled. Keep Stripe retrying
         # while the host investigates a possible refund or reservation mismatch.
