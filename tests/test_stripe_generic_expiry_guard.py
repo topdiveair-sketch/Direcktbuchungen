@@ -53,3 +53,14 @@ def test_stripe_recovery_uses_persisted_checkout_base_not_current_environment():
     assert '"stripe_checkout_base_url": base' in checkout
     assert 'base = payload.get("stripe_checkout_base_url")' in recovery
     assert 'os.environ.get("PUBLIC_CHECKOUT_BASE_URL"' not in recovery
+
+
+def test_stripe_webhook_uses_existing_paid_guest_confirmation_after_settlement():
+    source = (Path(__file__).resolve().parents[1] / "railway_app.py").read_text(encoding="utf-8")
+    start = source.index("def stripe_sandbox_webhook():")
+    end = source.index('@app.get("/health/deploy")', start)
+    route = source[start:end]
+    assert 'if outcome in ("confirmed", "duplicate"):' in route
+    assert 'app.extensions.get("zab_send_paid_guest_confirmation")' in route
+    assert 'send_paid(int(session["client_reference_id"]))' in route
+    assert 'except Exception:' in route
