@@ -36,6 +36,10 @@ def fetch_snapshot(base_url, token, start, end, timeout=12):
         raise SnapshotError("Unbekanntes Zimmer oder ungueltige Antwort")
     if not isinstance(payload.get("bookings"), list) or not isinstance(payload.get("blocks"), list):
         raise SnapshotError("Unvollstaendige Kalenderdaten")
+    if not isinstance(payload.get("sync"), dict) or not isinstance(payload["sync"].get("verified"), bool):
+        raise SnapshotError("Synchronisierungsstatus fehlt oder ist ungueltig")
+    if not isinstance(payload.get("revision"), str) or len(payload["revision"]) != 64 or any(c not in "0123456789abcdef" for c in payload["revision"]):
+        raise SnapshotError("Snapshot-Pruefsumme fehlt oder ist ungueltig")
     return payload
 
 def get_connection_config():
