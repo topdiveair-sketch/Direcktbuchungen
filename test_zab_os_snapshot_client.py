@@ -20,11 +20,21 @@ class Response:
 
 class ClientTests(unittest.TestCase):
     def test_success(self):
-        payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"revision":"abc"}
+        payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"revision":"a"*64,"sync":{"verified":False}}
         with patch("urllib.request.urlopen", return_value=Response(payload)) as mocked:
             self.assertEqual(fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-20"),payload)
             req = mocked.call_args.args[0]
             self.assertEqual(req.get_header("Authorization"),"Bearer secret")
+    def test_missing_sync_status(self):
+        payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"revision":"a"*64}
+        with patch("urllib.request.urlopen", return_value=Response(payload)):
+            with self.assertRaisesRegex(SnapshotError,"Synchronisierungsstatus"):
+                fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-20")
+    def test_malformed_revision(self):
+        payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"revision":"abc","sync":{"verified":False}}
+        with patch("urllib.request.urlopen", return_value=Response(payload)):
+            with self.assertRaisesRegex(SnapshotError,"Pruefsumme"):
+                fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-20")
     def test_http_401(self):
         with patch("urllib.request.urlopen", side_effect=HTTPError("url",401,"unauthorized",{},None)):
             with self.assertRaisesRegex(SnapshotError,"HTTP 401"):
