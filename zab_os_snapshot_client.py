@@ -21,8 +21,12 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
 
 def fetch_snapshot(base_url, token, start, end, timeout=12):
     """Fetch an authenticated snapshot; fail closed on any transport or data error."""
-    if not base_url.startswith("https://") or not token:
-        raise SnapshotError("HTTPS-Adresse oder Zugangsschluessel fehlt")
+    parsed = urllib.parse.urlsplit(base_url)
+    if (parsed.scheme != "https" or not parsed.hostname or parsed.username is not None
+            or parsed.password is not None or parsed.path not in ("", "/")
+            or parsed.query or parsed.fragment or any(ch.isspace() for ch in base_url)
+            or not token or any(ch in token for ch in "\\r\\n")):
+        raise SnapshotError("Ungueltige HTTPS-Serveradresse oder Zugangsschluessel")
     query = urllib.parse.urlencode({"start": start, "end": end})
     url = base_url.rstrip("/") + "/internal/os/v1/snapshot?" + query
     req = urllib.request.Request(url, headers={
