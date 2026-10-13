@@ -516,9 +516,10 @@ def init_paypal_checkout(
                 if not current:
                     conn.rollback()
                     raise RuntimeError("Reservierung wurde zwischenzeitlich entfernt.")
-                if current["status"] != "pending" and not current["paid"]:
+                if ((current["paypal_order_id"] or "").strip() != order_id
+                        or current["status"] != "pending" or current["paid"]):
                     conn.rollback()
-                    raise RuntimeError("Zahlung wurde eingezogen, aber die Reservierung ist nicht mehr offen. Manuelle Klaerung und gegebenenfalls Rueckerstattung erforderlich.")
+                    raise RuntimeError("Zahlung wurde eingezogen, aber die Reservierung ist nicht mehr offen oder der PayPal-Auftrag stimmt nicht. Manuelle Klaerung und gegebenenfalls Rueckerstattung erforderlich.")
                 conn.execute(
                     """UPDATE bookings SET paid=1,paid_at=?,status='confirmed',paypal_capture_id=?,
                        hold_expires_at='',payment_error='',released_at='',release_reason=''
