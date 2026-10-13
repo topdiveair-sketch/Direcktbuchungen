@@ -26,9 +26,13 @@ def main():
     root = tk.Tk()
     root.title("Zuhause am Bach OS – Kalendervergleich")
     root.geometry("850x550")
+    # The standalone tool intentionally does not change booking or pricing data.
     root.minsize(650, 400)
     outer = ttk.Frame(root, padding=16)
     outer.pack(fill="both", expand=True)
+    ttk.Label(outer, text="Quellen: 1 = ZAB-Snapshot, 2 = unabhaengiger Kalenderexport").grid(
+        row=7, column=0, columnspan=3, sticky="w", pady=4
+    )
     paths = [tk.StringVar(), tk.StringVar()]
     for index, caption in enumerate(("Export 1 (JSON)", "Export 2 (JSON)")):
         ttk.Label(outer, text=caption).grid(row=index, column=0, sticky="w", pady=6)
