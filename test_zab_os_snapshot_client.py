@@ -43,6 +43,10 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(report["in_both"], ["2026-10-16"])
         self.assertFalse(report["safe_to_release_nights"])
         self.assertEqual(report["verified_free_nights"], [])
+    def test_cannot_compare_same_snapshot_object(self):
+        snapshot = {"bookings":[],"blocks":[]}
+        with self.assertRaisesRegex(SnapshotError,"unabhaengige"):
+            compare_occupancy_snapshots(snapshot, snapshot, "2026-10-14", "2026-10-19")
     def test_success(self):
         payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"sync":{"verified":False,"provider_status":{}}}
         payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
