@@ -64,3 +64,22 @@ def test_open_session_keeps_room_reserved():
         db, secret_key="sk_test_123", now=NOW, lookup=lambda **kwargs: data)
     assert report["retained"] == 1
     assert conn.execute("SELECT status FROM bookings").fetchone()[0] == "pending"
+
+
+def test_reconciliation_prioritizes_earliest_expiring_hold():
+    conn, db = database()
+    conn.execute("UPDATE bookings SET hold_expires_at='2026-10-20T00:00:00' WHERE id=1")
+    conn.execute("""INSERT INTO bookings(id,stripe_session_id,payment_method,status,paid,
+                 released_at,release_reason,hold_expires_at)
+                 VALUES(2,'cs_test_early','stripe_checkout','pending',0,'','','2026-10-12T00:00:00')""")
+    conn.commit()
+    checked = []
+    def lookup(**kwargs):
+        checked.append(kwargs["session_id"])
+        return {"id": kwargs["session_id"], "livemode": False, "status": "open",
+                "payment_status": "unpaid", "payment_intent": None,
+                "client_reference_id": "2", "expires_at": int(NOW.timestamp())}
+    report = reconcile_expired_stripe_holds(db, secret_key="sk_test_123", now=NOW,
+                                             limit=1, lookup=lookup)
+    assert report["checked"] == 1
+    assert checked == ["cs_test_early"]
