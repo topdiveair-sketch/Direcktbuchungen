@@ -38,6 +38,11 @@ jobs:
         run: python -m unittest -v test_zab_os_compare_exports test_zab_os_ics_import
       - name: Build standalone executable
         run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name ZAB-Kalendervergleich zab_os_calendar_compare_gui.py
+      - name: Prepare installation package
+        shell: pwsh
+        run: |
+          Copy-Item "docs/ZAB_OS_WINDOWS_COMPARE.md" "dist/INSTALLATION.txt"
+          Get-FileHash "dist/ZAB-Kalendervergleich.exe" -Algorithm SHA256 | ForEach-Object { "$($_.Hash)  ZAB-Kalendervergleich.exe" } | Set-Content "dist/SHA256.txt"
       - name: Verify output exists
         shell: pwsh
         run: |
@@ -48,6 +53,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: ZAB-Kalendervergleich-Windows
-          path: dist/ZAB-Kalendervergleich.exe
+          path: |
+            dist/ZAB-Kalendervergleich.exe
+            dist/INSTALLATION.txt
+            dist/SHA256.txt
           if-no-files-found: error
           retention-days: 14
