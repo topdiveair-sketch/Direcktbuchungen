@@ -51,3 +51,10 @@ def test_payment_capture_revalidates_reservation():
     assert 'latest = conn.execute("SELECT status,paid,paypal_order_id FROM bookings WHERE id=?"' in SOURCE
     assert 'latest["status"] != "pending"' in SOURCE
     assert 'latest["paypal_order_id"] or ""' in SOURCE
+
+
+def test_paid_email_recognizes_paypal_checkout_method():
+    notifications = Path(__file__).resolve().parents[1].joinpath("booking_notifications.py").read_text(encoding="utf-8")
+    ast.parse(notifications)
+    assert 'payment_method in {"PayPal", "paypal_checkout"}' in notifications
+    assert 'if capture and payment_method in {"PayPal", "paypal_checkout"}:' in notifications
