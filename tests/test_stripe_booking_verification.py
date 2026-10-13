@@ -8,7 +8,7 @@ def booking():
 
 
 def session():
-    return dict(id="cs_test_abc", mode="payment", status="complete",
+    return dict(id="cs_test_abc", livemode=False, mode="payment", status="complete",
                 payment_status="paid", currency="eur", amount_total=11990,
                 client_reference_id="42", metadata={"booking_id": "42"},
                 payment_intent="pi_test_abc")
