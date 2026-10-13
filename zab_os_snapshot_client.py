@@ -14,6 +14,11 @@ import urllib.request
 class SnapshotError(RuntimeError):
     pass
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Never forward a bearer token to a redirected host."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
 def fetch_snapshot(base_url, token, start, end, timeout=12):
     """Fetch an authenticated snapshot; fail closed on any transport or data error."""
     if not base_url.startswith("https://") or not token:
@@ -26,7 +31,11 @@ def fetch_snapshot(base_url, token, start, end, timeout=12):
         "Cache-Control": "no-store",
     })
     try:
-        with urllib.request.urlopen(req, timeout=timeout, context=ssl.create_default_context()) as response:
+        opener = urllib.request.build_opener(
+            urllib.request.HTTPSHandler(context=ssl.create_default_context()),
+            _NoRedirect(),
+        )
+        with opener.open(req, timeout=timeout) as response:
             if response.status != 200:
                 raise SnapshotError("HTTP " + str(response.status))
             payload = json.load(response)
