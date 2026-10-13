@@ -155,3 +155,32 @@ def test_paid_stripe_booking_blocks_room_availability():
         conn, "Bachblick", datetime(2026, 10, 21).date(),
         datetime(2026, 10, 23).date())
     assert available is False
+
+
+def test_paid_stripe_booking_is_exported_to_ical_feed():
+    import ast
+    from pathlib import Path
+    from flask import Flask, Response
+    from datetime import date
+    source = (Path(__file__).resolve().parents[1] / "app.py").read_text(encoding="utf-8")
+    module = ast.parse(source)
+    fn = next(n for n in module.body if isinstance(n, ast.FunctionDef) and n.name == "export_calendar")
+    conn, db = setup_db()
+    conn.execute("ALTER TABLE bookings ADD COLUMN room TEXT DEFAULT 'Bachblick'")
+    conn.execute("ALTER TABLE bookings ADD COLUMN arrival TEXT DEFAULT '2026-10-20'")
+    conn.execute("ALTER TABLE bookings ADD COLUMN departure TEXT DEFAULT '2026-10-22'")
+    conn.execute("ALTER TABLE bookings ADD COLUMN uid TEXT DEFAULT 'stripe-test-uid'")
+    conn.commit()
+    assert settle_verified_stripe_session(conn, paid_session()) == "confirmed"
+    app = Flask(__name__)
+    scope = {"app": app, "db": db, "ROOMS": ["Bachblick"], "Response": Response,
+             "datetime": datetime, "date": date,
+             "parse_date": lambda value: datetime.strptime(value, "%Y-%m-%d").date()}
+    exec(compile(ast.Module(body=[fn], type_ignores=[]), "<calendar-feed-test>", "exec"), scope)
+    with app.test_client() as client:
+        response = client.get("/calendar/Bachblick.ics")
+    assert response.status_code == 200
+    assert response.mimetype == "text/calendar"
+    assert "UID:stripe-test-uid" in response.get_data(as_text=True)
+    assert "DTSTART;VALUE=DATE:20261020" in response.get_data(as_text=True)
+    assert "DTEND;VALUE=DATE:20261022" in response.get_data(as_text=True)
