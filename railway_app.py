@@ -357,6 +357,14 @@ init_os_snapshot(app, db)
 
 
 @app.before_request
+def zab_staging_private_only():
+    """Disable all public and admin routes on the isolated OS test service."""
+    if os.environ.get("ZAB_OS_STAGING_PRIVATE_ONLY") == "1":
+        if request.path != "/internal/os/v1/snapshot":
+            return jsonify({"error": "staging_private_only"}), 404
+
+
+@app.before_request
 def validate_public_paypal_payload():
     """Enforce critical checkout rules on the server, independent of browser JS."""
     if request.method != "POST" or request.path not in {"/api/paypal/quote", "/api/paypal/create-order"}:
