@@ -131,3 +131,19 @@ def test_confirmation_failure_does_not_undo_paid_booking():
     assert report["confirmed"] == 1
     assert report["failed"] == 1
     assert tuple(conn.execute("SELECT status,paid FROM bookings").fetchone()) == ("confirmed", 1)
+
+
+def test_paid_stripe_booking_blocks_room_availability():
+    from app import room_available_in_conn
+    conn, db = setup_db()
+    conn.execute("ALTER TABLE bookings ADD COLUMN room TEXT DEFAULT 'Bachblick'")
+    conn.execute("ALTER TABLE bookings ADD COLUMN arrival TEXT DEFAULT '2026-10-20'")
+    conn.execute("ALTER TABLE bookings ADD COLUMN departure TEXT DEFAULT '2026-10-22'")
+    conn.execute("CREATE TABLE external_blocks(room TEXT,start_date TEXT,end_date TEXT)")
+    conn.execute("CREATE TABLE central_overrides(room TEXT,day TEXT,available INTEGER)")
+    conn.commit()
+    assert settle_verified_stripe_session(conn, paid_session()) == "confirmed"
+    available, reason = room_available_in_conn(
+        conn, "Bachblick", datetime(2026, 10, 21).date(),
+        datetime(2026, 10, 23).date())
+    assert available is False
