@@ -587,6 +587,32 @@ def paypal_reconciliation_csv():
         return jsonify({"error": "CSV-Export derzeit nicht verfuegbar"}), 503
 
 
+@app.post("/stripe/webhook")
+def stripe_sandbox_webhook():
+    """Verify signed Stripe test events; do not settle until DB migration is live."""
+    from stripe_webhook_security import verify_stripe_signature, StripeSignatureError
+    from flask import Response
+    secret = os.environ.get("STRIPE_TEST_WEBHOOK_SECRET", "").strip()
+    if not secret or not secret.startswith("whsec_"):
+        return jsonify({"error": "Stripe sandbox webhook not configured"}), 503
+    try:
+        raw = request.get_data(cache=False, as_text=False)
+        if len(raw) > 65536:
+            return jsonify({"error": "Payload too large"}), 413
+        verify_stripe_signature(raw, request.headers.get("Stripe-Signature", ""), secret)
+        event = json.loads(raw)
+        if not isinstance(event, dict) or not str(event.get("id", "")).startswith("evt_"):
+            return jsonify({"error": "Invalid Stripe event"}), 400
+        # Explicit fail-closed response: Stripe retries until settlement is implemented.
+        # Returning HTTP 200 before the DB is updated would silently lose payments.
+        app.logger.warning("Stripe sandbox webhook received but settlement is not enabled: %s", event.get("type", "unknown"))
+        return jsonify({"error": "Stripe settlement not enabled"}), 503
+    except StripeSignatureError:
+        return jsonify({"error": "Invalid Stripe signature"}), 400
+    except (ValueError, UnicodeDecodeError):
+        return jsonify({"error": "Invalid Stripe JSON"}), 400
+
+
 @app.get("/health/deploy")
 def railway_deploy_health():
     """Return a secret-safe production readiness snapshot."""
