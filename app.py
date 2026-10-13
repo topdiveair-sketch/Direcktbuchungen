@@ -2773,6 +2773,42 @@ def stripe_session_is_safe_to_release(session: dict, booking_id: int) -> bool:
     )
 
 
+def stripe_release_expired_test_hold(booking_id: int) -> bool:
+    """Release a single Stripe test hold only after authoritative Stripe reconciliation.
+
+    Never releases holds without a recorded Checkout session, and never releases
+    an open, completed or paid Checkout session.
+    """
+    if not os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_"):
+        return False
+    with db() as conn:
+        row = conn.execute(
+            """SELECT id, status, payment_method, payment_status, payment_reference
+               FROM bookings WHERE id=?""", (booking_id,)
+        ).fetchone()
+    if not row or row["payment_method"] != "Stripe" or row["status"] != "pending":
+        return False
+    if (row["payment_status"] or "").lower() in {"paid", "succeeded"}:
+        return False
+    session_id = row["payment_reference"] or ""
+    if not session_id.startswith("cs_test_"):
+        return False
+    session = stripe_fetch_test_session(session_id)
+    if not stripe_session_is_safe_to_release(session, booking_id):
+        return False
+    with db() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        result = conn.execute(
+            """UPDATE bookings SET status='expired', payment_status='expired'
+               WHERE id=? AND payment_method='Stripe' AND status='pending'
+                 AND payment_reference=?
+                 AND COALESCE(payment_status,'') NOT IN ('paid','succeeded')""",
+            (booking_id, session_id),
+        )
+        conn.commit()
+        return result.rowcount == 1
+
+
 def stripe_verify_signature(payload: bytes, header: str) -> dict:
     """Verify a Stripe webhook using raw body, signed timestamp and constant-time comparison."""
     import time
