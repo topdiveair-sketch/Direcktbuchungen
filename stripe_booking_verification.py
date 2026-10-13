@@ -23,6 +23,7 @@ def verify_paid_checkout_session(session: dict, booking: dict) -> str:
         booking.get("payment_method") != "stripe_checkout"
         or booking.get("status") != "pending"
         or int(booking.get("paid") or 0) != 0
+        or session.get("livemode") is not False
         or session.get("mode") != "payment"
         or session.get("status") != "complete"
         or session.get("payment_status") != "paid"
