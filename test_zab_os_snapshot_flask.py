@@ -19,10 +19,15 @@ class SnapshotFlaskTests(unittest.TestCase):
                 CREATE TABLE bookings(uid TEXT,room TEXT,arrival TEXT,departure TEXT,status TEXT,first_name TEXT,email TEXT);
                 CREATE TABLE external_blocks(room TEXT,start_date TEXT,end_date TEXT,source TEXT);
                 CREATE TABLE ical_settings(room TEXT,last_sync TEXT,last_result TEXT);
+                CREATE TABLE central_overrides(room TEXT,day TEXT,availability INTEGER,price REAL);
                 INSERT INTO bookings VALUES('PRIVATE_UID','Bachblick','2026-10-15','2026-10-17','confirmed','PRIVATE_NAME','PRIVATE_EMAIL');
                 INSERT INTO bookings VALUES('other','Weinbergzimmer','2026-10-15','2026-10-17','confirmed','OTHER','OTHER');
                 INSERT INTO external_blocks VALUES('Bachblick','2026-10-20','2026-10-21','Airbnb');
                 INSERT INTO ical_settings VALUES('Bachblick','2026-10-13','OK');
+                INSERT INTO central_overrides VALUES('Bachblick','2026-10-22',0,NULL);
+                INSERT INTO central_overrides VALUES('Bachblick','2026-10-23',1,125);
+                INSERT INTO central_overrides VALUES('Bachblick','2026-10-24',NULL,130);
+                INSERT INTO central_overrides VALUES('Weinbergzimmer','2026-10-25',0,NULL);
             """)
         @contextmanager
         def db():
@@ -52,10 +57,16 @@ class SnapshotFlaskTests(unittest.TestCase):
         payload = response.get_json()
         self.assertEqual(payload["room_name"], "Gartenzimmer")
         self.assertEqual(len(payload["bookings"]), 1)
-        self.assertEqual(len(payload["blocks"]), 1)
+        self.assertEqual(len(payload["blocks"]), 2)
+        self.assertIn({"start":"2026-10-22","end":"2026-10-23","source":"Zentrale Sperre"}, payload["blocks"])
+        self.assertFalse(any(b["start"] in ("2026-10-23","2026-10-24","2026-10-25") for b in payload["blocks"]))
         self.assertFalse(payload["sync"]["verified"])
         self.assertNotIn("PRIVATE_", response.get_data(as_text=True))
         self.assertEqual(response.headers.get("Cache-Control"), "no-store")
+
+    def test_central_override_range(self):
+        payload = self.get(start='2026-10-23',end='2026-10-25').get_json()
+        self.assertEqual(payload['blocks'], [])
 
     def test_bad_token(self):
         self.assertEqual(self.get(token="wrong").status_code, 401)
