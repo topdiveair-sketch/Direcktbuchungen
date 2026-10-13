@@ -36,6 +36,20 @@ class IcsImportTests(unittest.TestCase):
             with self.assertRaises(SnapshotError):
                 convert_ics(src, Path(directory)/"target.json", "booking-export")
 
+    def test_reject_duplicate_calendar(self):
+        with tempfile.TemporaryDirectory() as directory:
+            src = Path(directory) / "source.ics"
+            src.write_text("BEGIN:VCALENDAR\\nBEGIN:VCALENDAR\\nBEGIN:VEVENT\\nDTSTART;VALUE=DATE:20261015\\nDTEND;VALUE=DATE:20261016\\nEND:VEVENT\\nEND:VCALENDAR\\nEND:VCALENDAR\\n")
+            with self.assertRaises(SnapshotError):
+                convert_ics(src, Path(directory)/"target.json", "booking-export")
+
+    def test_reject_unsupported_component(self):
+        with tempfile.TemporaryDirectory() as directory:
+            src = Path(directory) / "source.ics"
+            src.write_text("BEGIN:VCALENDAR\\nBEGIN:VFREEBUSY\\nEND:VFREEBUSY\\nBEGIN:VEVENT\\nDTSTART;VALUE=DATE:20261015\\nDTEND;VALUE=DATE:20261016\\nEND:VEVENT\\nEND:VCALENDAR\\n")
+            with self.assertRaises(SnapshotError):
+                convert_ics(src, Path(directory)/"target.json", "booking-export")
+
     def test_no_overwrite(self):
         with tempfile.TemporaryDirectory() as directory:
             src = Path(directory) / "source.ics"
