@@ -6,6 +6,7 @@ on:
       - 'booking_notifications.py'
       - 'tests/test_paypal_cancel_signature.py'
       - 'tests/test_paypal_cancel_database.py'
+      - 'tests/test_paypal_reconciliation_route.py'
       - '.github/workflows/paypal-cancel-security.yml'
   workflow_dispatch:
 jobs:
@@ -17,4 +18,4 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m pip install pytest
-      - run: python -m pytest -q tests/test_paypal_cancel_signature.py tests/test_paypal_cancel_database.py
+      - run: python -m pytest -q tests/test_paypal_cancel_signature.py tests/test_paypal_cancel_database.py tests/test_paypal_reconciliation_route.py
