@@ -95,3 +95,14 @@ def test_reconciliation_csv_is_admin_only_and_read_only():
     assert 'Cache-Control": "no-store"' in body
     assert 'csv.writer(output, delimiter=";")' in body
     assert 'UPDATE bookings' not in body and 'DELETE FROM bookings' not in body
+
+
+def test_stripe_webhook_fails_closed_before_settlement_migration():
+    railway = Path(__file__).resolve().parents[1].joinpath("railway_app.py").read_text(encoding="utf-8")
+    tree = ast.parse(railway)
+    route = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "stripe_sandbox_webhook")
+    body = ast.get_source_segment(railway, route)
+    assert 'verify_stripe_signature(raw,' in body
+    assert 'Stripe settlement not enabled' in body
+    assert '), 503' in body
+    assert 'settle_verified_stripe_session(' not in body
