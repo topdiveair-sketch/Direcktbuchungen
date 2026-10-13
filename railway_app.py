@@ -587,6 +587,31 @@ def paypal_reconciliation_csv():
         return jsonify({"error": "CSV-Export derzeit nicht verfuegbar"}), 503
 
 
+@app.get("/admin/stripe/unresolved")
+def stripe_unresolved_holds():
+    """Admin-only review of sandbox holds with no recorded Stripe session."""
+    if not require_admin():
+        return jsonify({"error": "Nicht autorisiert"}), 403
+    try:
+        with db() as conn:
+            rows = conn.execute(
+                """SELECT id,room,arrival,departure,created_at,status,
+                          payment_method,COALESCE(payment_error,'') AS payment_error
+                   FROM bookings
+                   WHERE payment_method='stripe_checkout'
+                     AND status='pending' AND COALESCE(paid,0)=0
+                     AND COALESCE(stripe_session_id,'')=''
+                   ORDER BY id DESC LIMIT 50"""
+            ).fetchall()
+        response = jsonify({"count": len(rows), "requires_manual_review": True,
+                            "bookings": [dict(row) for row in rows]})
+        response.headers["Cache-Control"] = "no-store"
+        return response
+    except Exception:
+        app.logger.exception("Stripe unresolved hold list failed")
+        return jsonify({"error": "Pruefliste derzeit nicht verfuegbar"}), 503
+
+
 @app.post("/admin/stripe/reconcile")
 def stripe_reconcile_manual():
     """Explicit admin-triggered sandbox reconciliation; no public scheduler."""
