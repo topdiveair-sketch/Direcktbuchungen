@@ -420,7 +420,7 @@ def init_paypal_checkout(
                         """UPDATE bookings SET status='cancelled',released_at=?,
                            release_reason='PayPal-Auftrag konnte nicht erstellt werden',payment_error=?
                            WHERE id=? AND status='pending' AND payment_method='paypal_checkout'
-                         AND COALESCE(paid,0)=0""",
+                             AND COALESCE(paid,0)=0""",
                         (datetime.now().isoformat(timespec="seconds"), str(exc)[:500], booking_id),
                     )
                 return api_json({"ok": False, "message": f"PayPal konnte nicht gestartet werden: {exc}"}, 503)
@@ -553,7 +553,8 @@ def init_paypal_checkout(
                 conn.execute(
                     """UPDATE bookings SET status='cancelled',released_at=?,
                        release_reason='PayPal-Zahlung vom Gast abgebrochen'
-                       WHERE id=? AND COALESCE(paid,0)=0""",
+                       WHERE id=? AND status='pending' AND payment_method='paypal_checkout'
+                         AND COALESCE(paid,0)=0""",
                     (datetime.now().isoformat(timespec="seconds"), booking_id),
                 )
         return render_template_string(
