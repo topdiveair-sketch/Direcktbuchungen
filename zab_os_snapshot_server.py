@@ -49,6 +49,8 @@ def init_os_snapshot(app, db):
         start, end = request.args.get('start',''), request.args.get('end','')
         try:
             with db() as conn:
+                # Enforce read-only at the SQLite connection level for this request.
+                conn.execute('PRAGMA query_only=ON')
                 result = build_snapshot(conn,start,end)
         except (ValueError, OverflowError):
             return jsonify({'error':'invalid_date_range'}), 400
