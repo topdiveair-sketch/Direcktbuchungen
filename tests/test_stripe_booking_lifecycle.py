@@ -200,3 +200,19 @@ def test_missing_livemode_cannot_confirm_sandbox_booking():
     del session["livemode"]
     assert settle_verified_stripe_session(conn, session) == "rejected"
     assert tuple(conn.execute("SELECT status,paid FROM bookings").fetchone()) == ("pending", 0)
+
+
+def test_duplicate_live_mode_event_is_rejected_after_successful_settlement():
+    conn, db = setup_db()
+    session = paid_session()
+    assert settle_verified_stripe_session(conn, session) == "confirmed"
+    session["livemode"] = True
+    assert settle_verified_stripe_session(conn, session) == "rejected"
+
+
+def test_duplicate_event_without_mode_is_rejected_after_successful_settlement():
+    conn, db = setup_db()
+    session = paid_session()
+    assert settle_verified_stripe_session(conn, session) == "confirmed"
+    del session["livemode"]
+    assert settle_verified_stripe_session(conn, session) == "rejected"
