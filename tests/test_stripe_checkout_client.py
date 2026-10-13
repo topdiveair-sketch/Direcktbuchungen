@@ -34,6 +34,7 @@ def test_session_request_is_server_priced_and_idempotent():
         fields = parse_qs(req.data.decode())
         assert fields["line_items[0][price_data][unit_amount]"] == ["12550"]
         assert fields["client_reference_id"] == ["14"]
+        assert 1800 <= int(fields["expires_at"][0]) - __import__("time").time() <= 1860
         return FakeResponse({"id": "cs_test_123", "url": "https://checkout.stripe.com/c/pay/test",
                              "mode": "payment", "client_reference_id": "14"})
     assert make(fake_open)["id"] == "cs_test_123"
