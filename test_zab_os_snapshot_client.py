@@ -1,4 +1,5 @@
 """Tests for Windows-side read-only OS snapshot client."""
+import hashlib
 import io
 import json
 import unittest
@@ -20,7 +21,8 @@ class Response:
 
 class ClientTests(unittest.TestCase):
     def test_success(self):
-        payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"revision":"a"*64,"sync":{"verified":False}}
+        payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"sync":{"verified":False}}
+        payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
         with patch("urllib.request.urlopen", return_value=Response(payload)) as mocked:
             self.assertEqual(fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-20"),payload)
             req = mocked.call_args.args[0]
@@ -34,6 +36,13 @@ class ClientTests(unittest.TestCase):
         payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"revision":"abc","sync":{"verified":False}}
         with patch("urllib.request.urlopen", return_value=Response(payload)):
             with self.assertRaisesRegex(SnapshotError,"Pruefsumme"):
+                fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-20")
+    def test_tampered_snapshot_is_rejected(self):
+        payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"sync":{"verified":False}}
+        payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+        payload["blocks"].append({"start":"2026-10-14","end":"2026-10-15","source":"altered"})
+        with patch("urllib.request.urlopen", return_value=Response(payload)):
+            with self.assertRaisesRegex(SnapshotError,"stimmt nicht"):
                 fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-20")
     def test_http_401(self):
         with patch("urllib.request.urlopen", side_effect=HTTPError("url",401,"unauthorized",{},None)):
