@@ -51,3 +51,20 @@ def test_mismatched_booking_is_rejected():
             "id": "cs_test_123", "url": "https://checkout.stripe.com/c/pay/test",
             "mode": "payment", "client_reference_id": "15",
         }))
+
+
+def test_explicit_expiry_is_preserved_for_identical_replay():
+    seen = []
+    def fake_open(req, timeout):
+        fields = parse_qs(req.data.decode())
+        seen.append(fields["expires_at"][0])
+        return FakeResponse({"id": "cs_test_123", "url": "https://checkout.stripe.com/c/pay/test",
+                             "mode": "payment", "client_reference_id": "14"})
+    for _ in range(2):
+        create_hosted_checkout_session(
+            secret_key="sk_test_example", booking_id=14, total_eur="125.50",
+            guest_email="guest@example.test",
+            success_url="https://example.test/stripe/success",
+            cancel_url="https://example.test/stripe/cancel",
+            expires_at=1791900000, opener=fake_open)
+    assert seen == ["1791900000", "1791900000"]
