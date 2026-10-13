@@ -2575,6 +2575,16 @@ def stripe_webhook():
     # amount, currency, Checkout session, booking state and idempotency.
     app.logger.info("stripe_test_webhook_received type=%s id=%s",
                     str(event.get("type", ""))[:80], str(event.get("id", ""))[:120])
+    # A 2xx response would permanently acknowledge payment events without
+    # persisting the paid booking. Fail closed until the booking lifecycle
+    # is implemented, so Stripe retries instead of silently dropping events.
+    if event.get("type") in {
+        "checkout.session.completed",
+        "checkout.session.async_payment_succeeded",
+        "checkout.session.expired",
+    }:
+        return jsonify(received=False, booking_updated=False,
+                       error="stripe_booking_lifecycle_not_enabled"), 503
     return jsonify(received=True, booking_updated=False)
 
 
