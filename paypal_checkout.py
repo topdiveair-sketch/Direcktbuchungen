@@ -181,6 +181,7 @@ def init_paypal_checkout(
                 """UPDATE bookings
                    SET status='cancelled', released_at=?, release_reason='Zahlungsfrist abgelaufen'
                    WHERE status='pending' AND COALESCE(paid,0)=0
+                     AND COALESCE(payment_method,'')!='stripe_checkout'
                      AND COALESCE(hold_expires_at,'')!='' AND hold_expires_at<=?""",
                 (now_iso, now_iso),
             )
