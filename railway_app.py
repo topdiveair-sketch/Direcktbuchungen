@@ -543,6 +543,50 @@ def paypal_reconciliation_queue():
         return jsonify({"error": "Pruefliste derzeit nicht verfuegbar"}), 503
 
 
+@app.get("/admin/paypal-reconciliation.csv")
+def paypal_reconciliation_csv():
+    """Authenticated CSV export for importing payment exceptions into ZAB OS."""
+    if not require_admin():
+        return jsonify({"error": "Nicht autorisiert"}), 403
+    import csv
+    import io
+    from flask import Response
+    columns = (
+        "id", "room", "arrival", "departure", "status", "paid",
+        "paypal_order_id", "paypal_capture_id", "payment_error", "created_at",
+    )
+    try:
+        with db() as conn:
+            rows = conn.execute(
+                """SELECT id,room,arrival,departure,status,paid,paypal_order_id,
+                          paypal_capture_id,payment_error,created_at
+                   FROM bookings WHERE payment_method='paypal_checkout'
+                     AND payment_error LIKE 'PayPal-Zahlungsstatus unklar%'
+                     AND COALESCE(paid,0)=0
+                   ORDER BY created_at DESC LIMIT 100"""
+            ).fetchall()
+        output = io.StringIO()
+        writer = csv.writer(output, delimiter=";")
+        writer.writerow(columns)
+        for row in rows:
+            # Prevent spreadsheet formula injection in user-controlled fields.
+            writer.writerow([
+                ("'" + str(row[col])) if isinstance(row[col], str)
+                and row[col].lstrip().startswith(("=", "+", "-", "@"))
+                else (row[col] if row[col] is not None else "")
+                for col in columns
+            ])
+        return Response(
+            "\ufeff" + output.getvalue(),
+            mimetype="text/csv",
+            headers={"Content-Disposition": "attachment; filename=paypal-pruefliste.csv",
+                     "Cache-Control": "no-store"},
+        )
+    except Exception:
+        app.logger.exception("PayPal reconciliation CSV export failed")
+        return jsonify({"error": "CSV-Export derzeit nicht verfuegbar"}), 503
+
+
 @app.get("/health/deploy")
 def railway_deploy_health():
     """Return a secret-safe production readiness snapshot."""
