@@ -28,7 +28,8 @@ def reconcile_expired_stripe_holds(db, *, secret_key: str,
                WHERE payment_method='stripe_checkout' AND status='pending'
                  AND COALESCE(paid,0)=0
                  AND COALESCE(stripe_session_id,'')!=''
-               ORDER BY id LIMIT ?""",
+               ORDER BY CASE WHEN COALESCE(hold_expires_at,'')='' THEN 1 ELSE 0 END,
+                        hold_expires_at ASC, id ASC LIMIT ?""",
             (limit,),
         ).fetchall()
     results = {"checked": 0, "released": 0, "confirmed": 0, "retained": 0,
