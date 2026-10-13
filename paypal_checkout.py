@@ -312,13 +312,14 @@ def init_paypal_checkout(
                 if not ok:
                     conn.rollback()
                     return api_json({"ok": False, "message": reason}, 409)
+                booking_uid = f"ZAB-STRIPE-{uuid4()}@zuhause-am-bach"
                 cur = conn.execute(
                     """INSERT INTO bookings
                     (uid,room,arrival,departure,adults,breakfast,first_name,last_name,
                      email,phone,message,payment_method,total,status,created_at,
                      paid,hold_expires_at,checkout_payload,source)
                     VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',?,0,?,?,?)""",
-                    (f"ZAB-STRIPE-{uuid4()}@zuhause-am-bach", room,
+                    (booking_uid, room,
                      arrival.isoformat(), departure.isoformat(), adults,
                      int(chosen["breakfast"]), customer["first_name"],
                      customer["last_name"], customer["email"], customer["phone"],
@@ -340,6 +341,7 @@ def init_paypal_checkout(
                     success_url=f"{base}/stripe/success?booking={booking_id}",
                     cancel_url=f"{base}/stripe/cancel?booking={booking_id}",
                     expires_at=stripe_session_expires_at,
+                    booking_uid=booking_uid,
                 )
                 with db() as conn:
                     conn.execute("BEGIN IMMEDIATE")
