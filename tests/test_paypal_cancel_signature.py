@@ -115,3 +115,18 @@ def test_stripe_schema_migration_and_unique_session_guard():
     assert '("stripe_payment_intent", "TEXT DEFAULT \'\'")' in source
     assert "CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_stripe_session" in source
     assert "WHERE stripe_session_id <> ''" in source
+
+
+def test_stripe_checkout_is_opt_in_and_holds_inventory():
+    source = Path(__file__).resolve().parents[1].joinpath("paypal_checkout.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    function = next(n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == "stripe_create_checkout")
+    body = ast.get_source_segment(source, function)
+    assert 'STRIPE_SANDBOX_CHECKOUT_ENABLED' in body
+    assert 'startswith("sk_test_")' in body
+    assert 'BEGIN IMMEDIATE' in body
+    assert 'room_available_in_conn(conn, room, arrival, departure)' in body
+    assert 'timedelta(hours=24)' in body
+    assert 'create_hosted_checkout_session(' in body
+    assert 'stripe_session_id=?' in body
+    assert 'Zahlungsstart unklar' in body
