@@ -1,6 +1,13 @@
 name: ZAB OS calendar Windows EXE
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - "zab_os_calendar_compare_gui.py"
+      - "zab_os_compare_exports.py"
+      - "zab_os_snapshot_client.py"
+      - "test_zab_os_compare_exports.py"
+      - ".github/workflows/zab-os-calendar-windows-exe.yml"
   push:
     branches:
       - feature/zab-os-production-integration-20261013
