@@ -134,7 +134,15 @@ def test_confirmation_failure_does_not_undo_paid_booking():
 
 
 def test_paid_stripe_booking_blocks_room_availability():
-    from app import room_available_in_conn
+    import ast
+    from pathlib import Path
+    source = (Path(__file__).resolve().parents[1] / "app.py").read_text(encoding="utf-8")
+    module = ast.parse(source)
+    fn = next(n for n in module.body if isinstance(n, ast.FunctionDef) and n.name == "room_available_in_conn")
+    namespace = {"sqlite3": sqlite3, "parse_date": lambda value: datetime.strptime(value, "%Y-%m-%d").date(),
+                 "overlaps": lambda a, b, c, d: a < d and c < b}
+    exec(compile(ast.Module(body=[fn], type_ignores=[]), "<availability-test>", "exec"), namespace)
+    room_available_in_conn = namespace["room_available_in_conn"]
     conn, db = setup_db()
     conn.execute("ALTER TABLE bookings ADD COLUMN room TEXT DEFAULT 'Bachblick'")
     conn.execute("ALTER TABLE bookings ADD COLUMN arrival TEXT DEFAULT '2026-10-20'")
