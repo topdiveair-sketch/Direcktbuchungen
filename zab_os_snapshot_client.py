@@ -2,6 +2,7 @@
 
 Never uses the staging database as the source of production occupancy.
 """
+import hashlib
 import json
 import os
 import ssl
@@ -40,6 +41,10 @@ def fetch_snapshot(base_url, token, start, end, timeout=12):
         raise SnapshotError("Synchronisierungsstatus fehlt oder ist ungueltig")
     if not isinstance(payload.get("revision"), str) or len(payload["revision"]) != 64 or any(c not in "0123456789abcdef" for c in payload["revision"]):
         raise SnapshotError("Snapshot-Pruefsumme fehlt oder ist ungueltig")
+    signed_fields = {key: value for key, value in payload.items() if key not in ("revision", "generated_at")}
+    expected_revision = hashlib.sha256(json.dumps(signed_fields, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+    if payload["revision"] != expected_revision:
+        raise SnapshotError("Snapshot-Pruefsumme stimmt nicht mit den Kalenderdaten ueberein")
     return payload
 
 def get_connection_config():
