@@ -14,6 +14,7 @@ on:
       - 'stripe_hold_reconciliation.py'
       - 'stripe_reconciliation_worker.py'
       - 'stripe_reconcile_service.py'
+      - 'payment_hold.py'
       - 'tests/test_stripe_reconciliation_worker.py'
       - 'tests/test_stripe_booking_lifecycle.py'
       - 'tests/test_stripe_generic_expiry_guard.py'
