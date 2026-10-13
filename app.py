@@ -2799,6 +2799,36 @@ def stripe_test_session_matches_booking(session: dict, booking: sqlite3.Row) -> 
     )
 
 
+def stripe_confirm_paid_test_booking(booking_id: int, session_id: str) -> bool:
+    """Confirm a held test booking after independently retrieving Stripe payment status.
+
+    Returns True for an already confirmed matching payment (idempotent).
+    Mail sending is deliberately deferred until delivery deduplication exists.
+    """
+    session = stripe_fetch_test_session(session_id)
+    with db() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
+        if not booking or not stripe_test_session_matches_booking(session, booking):
+            conn.rollback()
+            return False
+        if booking["status"] == "confirmed" and booking["payment_status"] == "paid":
+            conn.rollback()
+            return True
+        if booking["status"] != "pending":
+            conn.rollback()
+            return False
+        changed = conn.execute(
+            """UPDATE bookings SET status='confirmed', payment_status='paid'
+               WHERE id=? AND status='pending' AND payment_method='Stripe'
+                 AND payment_reference=?
+                 AND COALESCE(payment_status,'') NOT IN ('paid','succeeded')""",
+            (booking_id, session_id),
+        )
+        conn.commit()
+        return changed.rowcount == 1
+
+
 def stripe_release_expired_test_hold(booking_id: int) -> bool:
     """Release a single Stripe test hold only after authoritative Stripe reconciliation.
 
