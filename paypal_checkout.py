@@ -254,6 +254,90 @@ def init_paypal_checkout(
         breakdown = price_breakdown(room, arrival, departure, adults, chosen)
         return breakdown, sync_message
 
+    @app.route("/api/stripe/create-checkout", methods=["POST", "OPTIONS"])
+    def stripe_create_checkout():
+        """Sandbox-only reservation + hosted card checkout, never live payments."""
+        from stripe_checkout_client import create_hosted_checkout_session
+        if request.method == "OPTIONS":
+            return Response(status=204, headers=cors_headers())
+        if os.environ.get("STRIPE_SANDBOX_CHECKOUT_ENABLED") != "1":
+            return api_json({"ok": False, "message": "Kartenzahlung ist noch nicht freigeschaltet."}, 503)
+        if not os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_"):
+            return api_json({"ok": False, "message": "Stripe-Testzugang fehlt."}, 503)
+        try:
+            data, room, arrival, departure, adults, chosen, customer = parse_payload(True)
+            ok_sync, message = ensure_live_calendar(room)
+            if not ok_sync:
+                return api_json({"ok": False, "message": message}, 409)
+            breakdown = price_breakdown(room, arrival, departure, adults, chosen)
+            total = Decimal(str(breakdown["total"])).quantize(Decimal("0.01"))
+            if total <= 0:
+                return api_json({"ok": False, "message": "Ungueltiger Buchungspreis."}, 400)
+            base = checkout_base_url()
+            if not base.startswith("https://"):
+                return api_json({"ok": False, "message": "HTTPS Checkout URL fehlt."}, 503)
+            now = datetime.now()
+            # Keep the room held after Stripe's 30-minute session expiry:
+            # delayed paid webhooks must not allow an accidental resale.
+            hold_expires = now + timedelta(hours=24)
+            with db() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                ok, reason = room_available_in_conn(conn, room, arrival, departure)
+                if not ok:
+                    conn.rollback()
+                    return api_json({"ok": False, "message": reason}, 409)
+                cur = conn.execute(
+                    """INSERT INTO bookings
+                    (uid,room,arrival,departure,adults,breakfast,first_name,last_name,
+                     email,phone,message,payment_method,total,status,created_at,
+                     paid,hold_expires_at,checkout_payload,source)
+                    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',?,0,?,?,?)""",
+                    (f"ZAB-STRIPE-{uuid4()}@zuhause-am-bach", room,
+                     arrival.isoformat(), departure.isoformat(), adults,
+                     int(chosen["breakfast"]), customer["first_name"],
+                     customer["last_name"], customer["email"], customer["phone"],
+                     customer["message"], "stripe_checkout", float(total),
+                     now.isoformat(timespec="seconds"),
+                     hold_expires.isoformat(timespec="seconds"),
+                     json.dumps({"extras": chosen, "breakdown": breakdown}, ensure_ascii=False),
+                     "direct-stripe-sandbox"),
+                )
+                booking_id = cur.lastrowid
+            try:
+                session = create_hosted_checkout_session(
+                    secret_key=os.environ["STRIPE_SECRET_KEY"],
+                    booking_id=booking_id, total_eur=total,
+                    guest_email=customer["email"],
+                    success_url=f"{base}/stripe/success?booking={booking_id}",
+                    cancel_url=f"{base}/stripe/cancel?booking={booking_id}",
+                )
+                with db() as conn:
+                    conn.execute("BEGIN IMMEDIATE")
+                    result = conn.execute(
+                        """UPDATE bookings SET stripe_session_id=?
+                           WHERE id=? AND status='pending' AND COALESCE(paid,0)=0
+                             AND payment_method='stripe_checkout'
+                             AND COALESCE(stripe_session_id,'')=''""",
+                        (session["id"], booking_id),
+                    )
+                    if result.rowcount != 1:
+                        conn.rollback()
+                        raise RuntimeError("Stripe session could not be assigned")
+                return api_json({"ok": True, "booking_id": booking_id,
+                                 "checkout_url": session["url"], "currency": "EUR",
+                                 "total": float(total)})
+            except Exception:
+                # The API request might have succeeded despite a lost response.
+                # Do not free inventory until reconciliation proves no payment.
+                app.logger.exception("Stripe sandbox checkout requires reconciliation")
+                return api_json({"ok": False, "message": "Zahlungsstart unklar. Bitte Gastgeber kontaktieren; Zimmer bleibt vorlaeufig reserviert."}, 503)
+        except ValueError as exc:
+            return api_json({"ok": False, "message": str(exc)}, 409)
+        except Exception:
+            app.logger.exception("Stripe sandbox checkout initialization failed")
+            return api_json({"ok": False, "message": "Kartenzahlung derzeit nicht verfuegbar."}, 503)
+
+
     @app.route("/api/paypal/quote", methods=["POST", "OPTIONS"])
     def paypal_quote():
         if request.method == "OPTIONS":
