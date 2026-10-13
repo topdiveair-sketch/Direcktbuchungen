@@ -20,10 +20,12 @@ def main():
     if not secret.startswith("sk_test_"):
         raise SystemExit("Only Stripe test keys are permitted")
 
-    from app import db, init_db
+    from app import app, db, init_db
     from stripe_hold_reconciliation import reconcile_expired_stripe_holds
 
     init_db()
+    from booking_notifications import init_booking_notifications
+    init_booking_notifications(app, db)
     interval = int(os.environ.get("STRIPE_RECONCILE_INTERVAL_SECONDS", "300"))
     if interval < 60:
         raise SystemExit("Interval must be at least 60 seconds")
@@ -31,7 +33,7 @@ def main():
     while True:
         time.sleep(interval)
         try:
-            report = reconcile_expired_stripe_holds(db, secret_key=secret, limit=20)
+            report = reconcile_expired_stripe_holds(db, secret_key=secret, limit=20, on_confirmed=app.extensions.get("zab_send_paid_guest_confirmation"))
             log.info("Stripe sandbox reconciliation: %s", report)
         except Exception:
             log.exception("Stripe reconciliation failed; inventory retained")
