@@ -19,7 +19,7 @@ class StripeCheckoutError(RuntimeError):
 def create_hosted_checkout_session(*, secret_key: str, booking_id: int,
                                    total_eur, guest_email: str,
                                    success_url: str, cancel_url: str,
-                                   timeout: int = 20, opener=None) -> dict:
+                                   timeout: int = 20, opener=None, expires_at: int | None = None) -> dict:
     """Request a hosted card-payment session with a server-calculated amount."""
     if not secret_key or not secret_key.startswith("sk_test_"):
         raise StripeCheckoutError("Only Stripe sandbox credentials are allowed")
@@ -29,7 +29,10 @@ def create_hosted_checkout_session(*, secret_key: str, booking_id: int,
     )
     # Give Stripe a full 30-minute minimum even after request transit and rounding.
     # Local inventory release still requires authoritative session reconciliation.
-    fields["expires_at"] = str(int(time.time()) + 31 * 60)
+    expiry = int(time.time()) + 31 * 60 if expires_at is None else expires_at
+    if not isinstance(expiry, int) or isinstance(expiry, bool):
+        raise StripeCheckoutError("Invalid Stripe checkout expiry")
+    fields["expires_at"] = str(expiry)
     request = urllib.request.Request(
         "https://api.stripe.com/v1/checkout/sessions",
         data=urlencode(fields).encode("utf-8"),
