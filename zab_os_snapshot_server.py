@@ -48,12 +48,16 @@ def init_os_snapshot(app, db):
             return jsonify({'error':'unauthorized'}), 401
         start, end = request.args.get('start',''), request.args.get('end','')
         try:
+            a, b = date.fromisoformat(start), date.fromisoformat(end)
+            if not a < b or (b - a).days > 366:
+                raise ValueError('Invalid date interval')
+        except (ValueError, OverflowError):
+            return jsonify({'error':'invalid_date_range'}), 400
+        try:
             with db() as conn:
                 # Enforce read-only at the SQLite connection level for this request.
                 conn.execute('PRAGMA query_only=ON')
                 result = build_snapshot(conn,start,end)
-        except (ValueError, OverflowError):
-            return jsonify({'error':'invalid_date_range'}), 400
         except Exception:
             app.logger.exception('OS snapshot database failure')
             return jsonify({'error':'snapshot_unavailable'}), 503
