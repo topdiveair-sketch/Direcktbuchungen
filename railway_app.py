@@ -612,6 +612,63 @@ def stripe_unresolved_holds():
         return jsonify({"error": "Pruefliste derzeit nicht verfuegbar"}), 503
 
 
+@app.post("/admin/stripe/recover/<int:booking_id>")
+def stripe_recover_missing_session(booking_id):
+    """Explicit sandbox-only recovery of an ambiguous Checkout API response."""
+    if not require_admin():
+        return jsonify({"error": "Nicht autorisiert"}), 403
+    if os.environ.get("STRIPE_SANDBOX_CHECKOUT_ENABLED") != "1":
+        return jsonify({"error": "Stripe sandbox checkout disabled"}), 503
+    secret = os.environ.get("STRIPE_SECRET_KEY", "").strip()
+    if not secret.startswith("sk_test_"):
+        return jsonify({"error": "Stripe test credentials required"}), 503
+    try:
+        from stripe_checkout_client import create_hosted_checkout_session
+        from stripe_checkout_recovery import recovery_requires_manual_review
+        with db() as conn:
+            row = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
+        if row is None or not recovery_requires_manual_review(dict(row)):
+            return jsonify({"error": "No unresolved Stripe hold for booking"}), 409
+        booking = dict(row)
+        payload = json.loads(booking.get("checkout_payload") or "{}")
+        expires_at = payload.get("stripe_session_expires_at")
+        if not isinstance(expires_at, int) or isinstance(expires_at, bool):
+            return jsonify({"error": "Original Stripe request not available"}), 409
+        # Replays are only safe while Stripe's original idempotency window and
+        # Checkout expiry are still valid. Never generate a new expiry here.
+        if expires_at <= int(datetime.now().timestamp()) + 60:
+            return jsonify({"error": "Stripe request expired; manual Stripe review required"}), 409
+        base = os.environ.get("PUBLIC_CHECKOUT_BASE_URL", "").strip().rstrip("/")
+        if not base.startswith("https://"):
+            return jsonify({"error": "HTTPS checkout base URL missing"}), 503
+        session = create_hosted_checkout_session(
+            secret_key=secret, booking_id=booking_id,
+            total_eur=booking["total"], guest_email=booking["email"],
+            success_url=f"{base}/stripe/success?booking={booking_id}",
+            cancel_url=f"{base}/stripe/cancel?booking={booking_id}",
+            expires_at=expires_at,
+        )
+        with db() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            changed = conn.execute(
+                """UPDATE bookings SET stripe_session_id=?
+                   WHERE id=? AND payment_method='stripe_checkout'
+                     AND status='pending' AND COALESCE(paid,0)=0
+                     AND COALESCE(stripe_session_id,'')=''""",
+                (session["id"], booking_id),
+            )
+            if changed.rowcount != 1:
+                conn.rollback()
+                return jsonify({"error": "Booking changed during recovery"}), 409
+        response = jsonify({"ok": True, "booking_id": booking_id,
+                            "checkout_url": session["url"], "recovered": True})
+        response.headers["Cache-Control"] = "no-store"
+        return response
+    except Exception:
+        app.logger.exception("Stripe sandbox session recovery failed")
+        return jsonify({"error": "Stripe session recovery unavailable; hold retained"}), 503
+
+
 @app.post("/admin/stripe/reconcile")
 def stripe_reconcile_manual():
     """Explicit admin-triggered sandbox reconciliation; no public scheduler."""
