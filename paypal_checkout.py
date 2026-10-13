@@ -688,4 +688,31 @@ def init_paypal_checkout(
             message="Die PayPal-Zahlung wurde abgebrochen. Der vorläufig reservierte Termin wurde wieder freigegeben.",
         )
 
+    # Stripe redirects are browser navigation, not proof of successful payment.
+    # Only a previously server-verified payment may produce a confirmation.
+    STRIPE_RETURN_PAGE = """<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Stripe Testzahlung - Zuhause am Bach</title><style>body{font-family:Arial,sans-serif;background:#f4f8f5;color:#17372f;margin:0;padding:32px}.card{max-width:680px;margin:7vh auto;background:#fff;padding:30px;border-radius:16px}a{color:#176b5a}</style></head><body><main class='card'><h1>{{ title }}</h1><p>{{ message }}</p><p>Dies ist ausschliesslich eine Stripe-Sandbox-Testzahlung. Es wurde kein echtes Geld abgebucht.</p><p><a href='/'>Zurueck zur Testbuchung</a></p></main></body></html>"""
+
+    @app.get("/stripe/success")
+    def stripe_sandbox_success():
+        booking_id = request.args.get("booking", type=int)
+        if os.environ.get("ZAB_STRIPE_ISOLATED_TEST") != "1":
+            return "Not Found", 404
+        if not booking_id:
+            return render_template_string(STRIPE_RETURN_PAGE, title="Testzahlung wird geprueft", message="Buchungsreferenz fehlt. Bitte nicht erneut zahlen und den Gastgeber kontaktieren."), 400
+        with db() as conn:
+            booking = conn.execute("SELECT status,paid,payment_method FROM bookings WHERE id=?", (booking_id,)).fetchone()
+        if not booking or booking["payment_method"] != "stripe_checkout":
+            return render_template_string(STRIPE_RETURN_PAGE, title="Testbuchung nicht gefunden", message="Die Buchung kann nicht zugeordnet werden. Bitte nicht erneut bezahlen."), 404
+        if booking["status"] == "confirmed" and booking["paid"]:
+            return render_template_string(STRIPE_RETURN_PAGE, title="Testzahlung bestaetigt", message="Die Testbuchung wurde serverseitig als bezahlt und bestaetigt erfasst.")
+        return render_template_string(STRIPE_RETURN_PAGE, title="Testzahlung wird geprueft", message="Stripe hat zurueckgeleitet. Der Zahlungseingang ist noch nicht serverseitig bestaetigt. Bitte keine erneute Zahlung starten."), 202
+
+    @app.get("/stripe/cancel")
+    def stripe_sandbox_cancel():
+        if os.environ.get("ZAB_STRIPE_ISOLATED_TEST") != "1":
+            return "Not Found", 404
+        # A browser cancel must not release inventory; delayed payment events
+        # and in-flight checkout sessions require authoritative reconciliation.
+        return render_template_string(STRIPE_RETURN_PAGE, title="Stripe-Testzahlung nicht abgeschlossen", message="Die Zahlungsseite wurde verlassen. Die vorlaeufige Buchung bleibt bis zur sicheren Pruefung geschuetzt. Bitte keine neue Zahlung ausloesen.")
+
     app.extensions["zab_paypal_checkout_enabled"] = True
