@@ -533,8 +533,16 @@ def init_paypal_checkout(
                 departure=booking["departure"], total=f"{booking['total']:.2f}", capture=capture_id,
             )
         except Exception as exc:
+            # A PayPal capture may have succeeded even if the local booking
+            # confirmation failed. Keep the reservation blocked for manual
+            # reconciliation instead of allowing an automatic resale.
             with db() as conn:
-                conn.execute("UPDATE bookings SET payment_error=? WHERE id=?", (str(exc)[:500], booking_id))
+                conn.execute(
+                    """UPDATE bookings SET payment_error=?,
+                       hold_expires_at=CASE WHEN status='pending' THEN '' ELSE hold_expires_at END
+                       WHERE id=? AND COALESCE(paid,0)=0""",
+                    (("PayPal-Zahlungsstatus unklar; manuelle Pruefung erforderlich: " + str(exc))[:500], booking_id),
+                )
             return render_template_string(
                 ERROR_PAGE,
                 message="PayPal konnte die Zahlung nicht eindeutig bestätigen. Bitte nicht erneut zahlen; kontaktieren Sie uns, falls PayPal bereits eine Belastung anzeigt.",
