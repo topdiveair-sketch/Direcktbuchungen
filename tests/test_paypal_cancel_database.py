@@ -18,7 +18,7 @@ def test_cancel_releases_only_matching_pending_paypal_booking():
     db = sqlite3.connect(":memory:")
     db.execute("""CREATE TABLE bookings (
         id INTEGER PRIMARY KEY, status TEXT, payment_method TEXT,
-        paid INTEGER, released_at TEXT, release_reason TEXT
+        paid INTEGER, released_at TEXT, release_reason TEXT, payment_error TEXT
     )""")
     db.executemany(
         "INSERT INTO bookings(id,status,payment_method,paid) VALUES(?,?,?,?)",
@@ -26,11 +26,13 @@ def test_cancel_releases_only_matching_pending_paypal_booking():
          (2,"pending","bank_transfer",0),
          (3,"confirmed","paypal_checkout",1),
          (4,"confirmed","paypal_checkout",0),
-         (5,"cancelled","paypal_checkout",0)],
+         (5,"cancelled","paypal_checkout",0),
+         (6,"pending","paypal_checkout",0)],
     )
+    db.execute("UPDATE bookings SET payment_error='PayPal-Zahlungsstatus unklar; manuelle Pruefung erforderlich' WHERE id=6")
     statement = _cancel_statement()
     now = datetime.now().isoformat(timespec="seconds")
-    for booking_id in (1,2,3,4,5):
+    for booking_id in (1,2,3,4,5,6):
         db.execute(statement, (now, booking_id))
     rows = db.execute("SELECT id,status,released_at FROM bookings ORDER BY id").fetchall()
     assert rows[0][1] == "cancelled" and rows[0][2] == now
@@ -38,6 +40,7 @@ def test_cancel_releases_only_matching_pending_paypal_booking():
     assert rows[2][1] == "confirmed" and rows[2][2] is None
     assert rows[3][1] == "confirmed" and rows[3][2] is None
     assert rows[4][1] == "cancelled" and rows[4][2] is None
+    assert rows[5][1] == "pending" and rows[5][2] is None
 
 
 def test_ambiguous_capture_keeps_pending_reservation_blocked():
