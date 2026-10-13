@@ -47,8 +47,27 @@ def create_hosted_checkout_session(*, secret_key: str, booking_id: int,
     try:
         with transport(request, timeout=timeout) as response:
             session = json.loads(response.read().decode("utf-8"))
-    except (urllib.error.HTTPError, urllib.error.URLError, ValueError) as exc:
-        raise StripeCheckoutError("Stripe checkout session creation failed") from exc
+    except urllib.error.HTTPError as exc:
+        # Retain only allowlisted Stripe diagnostics; do not log payment data.
+        stripe_code = "unknown"
+        stripe_param = "unknown"
+        try:
+            payload = json.loads(exc.read(8192).decode("utf-8"))
+            error = payload.get("error", {}) if isinstance(payload, dict) else {}
+            if isinstance(error, dict):
+                code = error.get("code") or error.get("type")
+                param = error.get("param")
+                if isinstance(code, str) and code.replace("_", "").isalnum() and len(code) <= 64:
+                    stripe_code = code
+                if isinstance(param, str) and len(param) <= 120 and all(ch.isalnum() or ch in "_[]" for ch in param):
+                    stripe_param = param
+        except (ValueError, UnicodeError, OSError):
+            pass
+        raise StripeCheckoutError(
+            f"Stripe checkout rejected: HTTP {exc.code}, code={stripe_code}, param={stripe_param}"
+        ) from None
+    except (urllib.error.URLError, ValueError) as exc:
+        raise StripeCheckoutError("Stripe checkout transport or response error") from exc
     if (not isinstance(session, dict)
             or session.get("mode") != "payment"
             or session.get("client_reference_id") != str(booking_id)
