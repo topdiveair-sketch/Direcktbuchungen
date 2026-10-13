@@ -2724,6 +2724,60 @@ def _twilio_verify_post(path: str, data: dict) -> dict:
         return json.loads(response.read().decode("utf-8"))
 
 
+def stripe_verify_signature(payload: bytes, header: str) -> dict:
+    """Verify a Stripe webhook using raw body, signed timestamp and constant-time comparison."""
+    import time
+    secret = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+    if not secret.startswith("whsec_"):
+        raise ValueError("Stripe webhook secret missing")
+    fields = {}
+    for part in header.split(","):
+        key, sep, value = part.partition("=")
+        if sep:
+            fields.setdefault(key, []).append(value)
+    timestamp = int(fields.get("t", ["0"])[0])
+    if abs(time.time() - timestamp) > 300:
+        raise ValueError("Stripe webhook timestamp expired")
+    signed = str(timestamp).encode() + b"." + payload
+    expected = hmac.new(secret.encode(), signed, hashlib.sha256).hexdigest()
+    if not any(hmac.compare_digest(expected, value) for value in fields.get("v1", [])):
+        raise ValueError("Invalid Stripe signature")
+    return json.loads(payload)
+
+
+def stripe_create_test_checkout(*, booking_id: int, total_eur, guest_email: str,
+                                success_url: str, cancel_url: str) -> dict:
+    """Test-only helper. Caller must atomically reserve inventory before use."""
+    key = os.environ.get("STRIPE_SECRET_KEY", "")
+    if not key.startswith("sk_test_"):
+        raise RuntimeError("Only Stripe test keys are allowed")
+    cents = int((Decimal(str(total_eur)) * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+    if cents < 50:
+        raise ValueError("Invalid payment amount")
+    body = urllib.parse.urlencode({
+        "mode": "payment",
+        "payment_method_types[0]": "card",
+        "line_items[0][price_data][currency]": "eur",
+        "line_items[0][price_data][unit_amount]": str(cents),
+        "line_items[0][price_data][product_data][name]": "Zuhause am Bach - Zimmerbuchung",
+        "line_items[0][quantity]": "1",
+        "client_reference_id": str(booking_id),
+        "customer_email": guest_email,
+        "success_url": success_url,
+        "cancel_url": cancel_url,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.stripe.com/v1/checkout/sessions",
+        data=body,
+        headers={"Authorization": "Bearer " + key,
+                 "Content-Type": "application/x-www-form-urlencoded",
+                 "Idempotency-Key": "zab-checkout-" + str(booking_id)},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=20) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
 def _paypal_base_url() -> str:
     return "https://api-m.paypal.com" if env_value("PAYPAL_ENV").lower() == "live" else "https://api-m.sandbox.paypal.com"
 
