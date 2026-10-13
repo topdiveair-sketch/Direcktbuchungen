@@ -13,6 +13,7 @@ on:
       - 'stripe_hold_settlement.py'
       - 'stripe_hold_reconciliation.py'
       - 'stripe_reconciliation_worker.py'
+      - 'stripe_reconcile_service.py'
       - 'tests/test_stripe_reconciliation_worker.py'
       - 'tests/test_stripe_hold_reconciliation.py'
       - 'tests/test_stripe_hold_settlement.py'
