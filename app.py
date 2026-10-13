@@ -2740,6 +2740,26 @@ def _twilio_verify_post(path: str, data: dict) -> dict:
         return json.loads(response.read().decode("utf-8"))
 
 
+def stripe_expire_unpaid_holds(conn: sqlite3.Connection, now: datetime | None = None) -> int:
+    """Release only unpaid Stripe holds older than 30 minutes.
+
+    IMPORTANT: The caller must reconcile Stripe Checkout sessions before using
+    this for real payments. Expiring by age alone can race a delayed webhook.
+    Therefore this helper is disabled unless explicitly enabled for tests.
+    """
+    if not env_flag("STRIPE_TEST_HOLD_EXPIRY_ENABLED"):
+        return 0
+    if not os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_"):
+        return 0
+    cutoff = ((now or datetime.now()) - timedelta(minutes=30)).isoformat(timespec="seconds")
+    cur = conn.execute(
+        """UPDATE bookings SET status='expired'
+           WHERE payment_method='Stripe' AND status='pending'
+             AND COALESCE(payment_status, '') NOT IN ('paid', 'succeeded')
+             AND created_at < ?""", (cutoff,))
+    return cur.rowcount
+
+
 def stripe_verify_signature(payload: bytes, header: str) -> dict:
     """Verify a Stripe webhook using raw body, signed timestamp and constant-time comparison."""
     import time
