@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 from urllib.error import HTTPError, URLError
 
-from zab_os_snapshot_client import SnapshotError, fetch_snapshot
+from zab_os_snapshot_client import SnapshotError, fetch_snapshot, summarize_occupancy
 
 class Response:
     status = 200
@@ -20,6 +20,20 @@ class Response:
         return self.data.read(*args)
 
 class ClientTests(unittest.TestCase):
+    def test_occupied_nights_and_overlap_report(self):
+        snapshot = {
+            "bookings":[{"arrival":"2026-10-15","departure":"2026-10-17"}],
+            "blocks":[{"start":"2026-10-16","end":"2026-10-18"}],
+        }
+        report = summarize_occupancy(snapshot, "2026-10-14", "2026-10-19")
+        self.assertEqual(report["occupied_nights"], ["2026-10-15","2026-10-16","2026-10-17"])
+        self.assertEqual(report["overlap_nights"], ["2026-10-16"])
+        self.assertEqual(report["verified_free_nights"], [])
+        self.assertFalse(report["channel_sync_verified"])
+    def test_occupancy_report_clips_to_requested_range(self):
+        snapshot = {"bookings":[{"arrival":"2026-10-10","departure":"2026-10-20"}],"blocks":[]}
+        report = summarize_occupancy(snapshot, "2026-10-15", "2026-10-17")
+        self.assertEqual(report["occupied_nights"], ["2026-10-15","2026-10-16"])
     def test_success(self):
         payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"sync":{"verified":False,"provider_status":{}}}
         payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
