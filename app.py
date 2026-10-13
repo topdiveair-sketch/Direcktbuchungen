@@ -326,6 +326,10 @@ def init_db() -> None:
             if column not in cols:
                 conn.execute(f"ALTER TABLE bookings ADD COLUMN {column} {definition}")
         conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_stripe_session "
+            "ON bookings(stripe_session_id) WHERE stripe_session_id <> ''"
+        )
+        conn.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_idempotency "
             "ON bookings(idempotency_key) WHERE idempotency_key <> ''"
         )
