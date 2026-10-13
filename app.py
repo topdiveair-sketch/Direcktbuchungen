@@ -2873,7 +2873,9 @@ def stripe_fetch_test_session(session_id: str) -> dict:
 def stripe_session_is_safe_to_release(session: dict, booking_id: int) -> bool:
     """Only an explicitly expired, unpaid session tied to this booking can release inventory."""
     return (
-        session.get("id", "").startswith("cs_test_")
+        isinstance(session.get("id"), str)
+        and session["id"].startswith("cs_test_")
+        and session.get("livemode") is False
         and session.get("status") == "expired"
         and session.get("payment_status") == "unpaid"
         and str(session.get("client_reference_id", "")) == str(booking_id)
