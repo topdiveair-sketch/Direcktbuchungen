@@ -68,6 +68,29 @@ class SnapshotFlaskTests(unittest.TestCase):
         payload = self.get(start='2026-10-23',end='2026-10-25').get_json()
         self.assertEqual(payload['blocks'], [])
 
+    def test_snapshot_enforces_sqlite_read_only(self):
+        @contextmanager
+        def write_attempt_db():
+            conn = sqlite3.connect(self.path)
+            try:
+                yield conn
+                # This write attempt must be rejected after snapshot query_only.
+                conn.execute("INSERT INTO external_blocks VALUES('Bachblick','2026-10-26','2026-10-27','TEST')")
+            finally:
+                conn.close()
+        app = Flask(__name__ + "_readonly")
+        app.testing = True
+        init_os_snapshot(app, write_attempt_db)
+        response = app.test_client().get(
+            "/internal/os/v1/snapshot",
+            query_string={"start":"2026-10-13","end":"2026-11-13"},
+            headers={"Authorization":"Bearer integration-secret"},
+        )
+        self.assertEqual(response.status_code, 503)
+        with sqlite3.connect(self.path) as conn:
+            count = conn.execute("SELECT COUNT(*) FROM external_blocks WHERE source='TEST'").fetchone()[0]
+        self.assertEqual(count, 0)
+
     def test_bad_token(self):
         self.assertEqual(self.get(token="wrong").status_code, 401)
 
