@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from zab_os_compare_exports import compare_files
 from zab_os_snapshot_client import SnapshotError, get_connection_config
 from zab_os_export_snapshot import export_snapshot
+from zab_os_ics_import import convert_ics
 
 
 def format_report(report):
@@ -81,9 +82,40 @@ def main():
         paths[0].set(destination)
         messagebox.showinfo("Export gespeichert", "Kalenderstand gesichert. Sync-Status NICHT VERIFIZIERT; keine Naechte freigeben.")
 
+    def import_second():
+        source = filedialog.askopenfilename(
+            title="Externen iCalendar auswaehlen",
+            filetypes=[("iCalendar", "*.ics"), ("Alle Dateien", "*.*")],
+        )
+        if not source:
+            return
+        destination = filedialog.asksaveasfilename(
+            title="Neuen JSON-Export speichern",
+            defaultextension=".json",
+            filetypes=[("JSON", "*.json")],
+        )
+        if not destination:
+            return
+        from tkinter import simpledialog
+        source_id = simpledialog.askstring(
+            "Kalenderquelle",
+            "Quellenkennung eingeben (z.B. airbnb-export, booking-export, beds24-export):",
+            parent=root,
+        )
+        if source_id is None:
+            return
+        try:
+            count = convert_ics(source, destination, source_id)
+        except (SnapshotError, OSError, ValueError, KeyError, TypeError) as exc:
+            messagebox.showerror("iCalendar-Import fehlgeschlagen", str(exc))
+            return
+        paths[1].set(destination)
+        messagebox.showinfo("iCalendar importiert", str(count) + " Ereignisse importiert. Aktualitaet und Vollstaendigkeit NICHT verifiziert.")
+
     controls = ttk.Frame(outer)
     controls.grid(row=4, column=0, columnspan=3, pady=8)
     ttk.Button(controls, text="ZAB-Snapshot abrufen (nur lesen)", command=export_first).pack(side="left", padx=5)
+    ttk.Button(controls, text="iCalendar (.ics) importieren", command=import_second).pack(side="left", padx=5)
     ttk.Button(controls, text="Kalender sicher vergleichen", command=run_compare).pack(side="left", padx=5)
     ttk.Label(outer, text="Vergleich lokal; Snapshot-Abruf nur per HTTPS. Keine Freigabe von Naechten.").grid(
         row=6, column=0, columnspan=3, sticky="w", pady=8
