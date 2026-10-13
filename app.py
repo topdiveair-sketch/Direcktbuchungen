@@ -1452,6 +1452,11 @@ def index():
         bank_iban=env_value("BANK_IBAN"),
         bank_iban_display=format_iban(env_value("BANK_IBAN")),
         paypal_email=PAYPAL_EMAIL,
+        stripe_checkout_enabled=(
+            env_flag("STRIPE_CHECKOUT_ENABLED")
+            and os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_")
+            and os.environ.get("STRIPE_WEBHOOK_SECRET", "").startswith("whsec_")
+        ),
     ))
     # Preview/Homepage immer frisch ausliefern, damit alte Zimmertexte nicht aus dem Browser-Cache kommen.
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
