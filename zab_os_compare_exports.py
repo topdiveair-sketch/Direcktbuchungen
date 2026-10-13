@@ -14,6 +14,12 @@ def compare_files(first_path, second_path, start, end):
         a = json.load(handle)
     with second.open(encoding="utf-8") as handle:
         b = json.load(handle)
+    # Exports must identify their origin; different files do not prove independence.
+    for snapshot in (a, b):
+        if not isinstance(snapshot, dict) or not isinstance(snapshot.get("source_id"), str) or not snapshot["source_id"].strip():
+            raise SnapshotError("Kalenderexport ohne Quellenkennung")
+    if a["source_id"].strip().casefold() == b["source_id"].strip().casefold():
+        raise SnapshotError("Zwei verschiedene Kalenderquellen erforderlich")
     for snapshot in (a, b):
         if not isinstance(snapshot, dict) or not isinstance(snapshot.get("bookings"), list) or not isinstance(snapshot.get("blocks"), list):
             raise SnapshotError("Ungueltiger Kalenderexport")
