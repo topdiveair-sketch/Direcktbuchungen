@@ -13,7 +13,7 @@ from stripe_booking_settlement import settle_verified_stripe_session
 
 def reconcile_expired_stripe_holds(db, *, secret_key: str,
                                    now: datetime | None = None,
-                                   limit: int = 20, lookup=None) -> dict:
+                                   limit: int = 20, lookup=None, on_confirmed=None) -> dict:
     if not secret_key.startswith("sk_test_"):
         raise ValueError("Stripe sandbox secret required")
     if not 1 <= limit <= 100:
@@ -45,6 +45,13 @@ def reconcile_expired_stripe_holds(db, *, secret_key: str,
                     outcome = settle_verified_stripe_session(conn, session)
                 if outcome == "confirmed":
                     results["confirmed"] += 1
+                    if on_confirmed is not None:
+                        try:
+                            on_confirmed(int(row["id"]))
+                        except Exception:
+                            # Settlement remains committed; delivery is retried
+                            # through the existing paid-confirmation outbox.
+                            results["failed"] += 1
                 elif outcome != "duplicate":
                     results["failed"] += 1
                 continue
