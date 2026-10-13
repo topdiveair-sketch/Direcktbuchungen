@@ -106,3 +106,11 @@ def test_stripe_webhook_fails_closed_before_settlement_migration():
     assert 'Stripe settlement not enabled' in body
     assert '), 503' in body
     assert 'settle_verified_stripe_session(' not in body
+
+
+def test_stripe_schema_migration_and_unique_session_guard():
+    source = Path(__file__).resolve().parents[1].joinpath("app.py").read_text(encoding="utf-8")
+    assert '("stripe_session_id", "TEXT DEFAULT \'\'")' in source
+    assert '("stripe_payment_intent", "TEXT DEFAULT \'\'")' in source
+    assert "CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_stripe_session" in source
+    assert "WHERE stripe_session_id <> ''" in source
