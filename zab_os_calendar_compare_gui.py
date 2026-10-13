@@ -30,9 +30,6 @@ def main():
     root.minsize(650, 400)
     outer = ttk.Frame(root, padding=16)
     outer.pack(fill="both", expand=True)
-    ttk.Label(outer, text="Quellen: 1 = ZAB-Snapshot, 2 = unabhaengiger Kalenderexport").grid(
-        row=7, column=0, columnspan=3, sticky="w", pady=4
-    )
     paths = [tk.StringVar(), tk.StringVar()]
     for index, caption in enumerate(("Export 1 (JSON)", "Export 2 (JSON)")):
         ttk.Label(outer, text=caption).grid(row=index, column=0, sticky="w", pady=6)
@@ -88,8 +85,11 @@ def main():
     controls.grid(row=4, column=0, columnspan=3, pady=8)
     ttk.Button(controls, text="ZAB-Snapshot abrufen (nur lesen)", command=export_first).pack(side="left", padx=5)
     ttk.Button(controls, text="Kalender sicher vergleichen", command=run_compare).pack(side="left", padx=5)
-    ttk.Label(outer, text="Nur lokaler Vergleich – keine Netzwerkverbindung, keine Freigabe von Naechten.").grid(
+    ttk.Label(outer, text="Vergleich lokal; Snapshot-Abruf nur per HTTPS. Keine Freigabe von Naechten.").grid(
         row=6, column=0, columnspan=3, sticky="w", pady=8
+    )
+    ttk.Label(outer, text="Quellen: 1 = ZAB-Snapshot, 2 = unabhaengiger Kalenderexport").grid(
+        row=7, column=0, columnspan=3, sticky="w", pady=4
     )
     root.mainloop()
 
