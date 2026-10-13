@@ -140,7 +140,7 @@ def test_paid_stripe_booking_blocks_room_availability():
     conn.execute("ALTER TABLE bookings ADD COLUMN arrival TEXT DEFAULT '2026-10-20'")
     conn.execute("ALTER TABLE bookings ADD COLUMN departure TEXT DEFAULT '2026-10-22'")
     conn.execute("CREATE TABLE external_blocks(room TEXT,start_date TEXT,end_date TEXT)")
-    conn.execute("CREATE TABLE central_overrides(room TEXT,day TEXT,available INTEGER)")
+    conn.execute("CREATE TABLE central_overrides(room TEXT,day TEXT,availability INTEGER)")
     conn.commit()
     assert settle_verified_stripe_session(conn, paid_session()) == "confirmed"
     available, reason = room_available_in_conn(
