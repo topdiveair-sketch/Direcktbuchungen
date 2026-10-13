@@ -93,6 +93,22 @@ def fetch_snapshot(base_url, token, start, end, timeout=12):
         raise SnapshotError("Ungueltige Buchungs- oder Sperrintervalle") from None
     return payload
 
+
+def compare_occupancy_snapshots(left, right, start, end):
+    """Compare two independent snapshots without treating missing entries as free."""
+    a = summarize_occupancy(left, start, end)
+    b = summarize_occupancy(right, start, end)
+    left_nights = set(a["occupied_nights"])
+    right_nights = set(b["occupied_nights"])
+    return {
+        "only_in_first": sorted(left_nights - right_nights),
+        "only_in_second": sorted(right_nights - left_nights),
+        "in_both": sorted(left_nights & right_nights),
+        "verified_free_nights": [],
+        "safe_to_release_nights": False,
+    }
+
+
 def get_connection_config():
     """Secrets belong in Windows environment variables, never in code or logs."""
     return os.environ.get("ZAB_OS_SNAPSHOT_URL", ""), os.environ.get("ZAB_BRIDGE_TOKEN", "")
