@@ -2750,24 +2750,27 @@ def _twilio_verify_post(path: str, data: dict) -> dict:
         return json.loads(response.read().decode("utf-8"))
 
 
-def stripe_expire_unpaid_holds(conn: sqlite3.Connection, now: datetime | None = None) -> int:
-    """Release only unpaid Stripe holds older than 30 minutes.
+def stripe_fetch_test_session(session_id: str) -> dict:
+    """Fetch authoritative Stripe Checkout status before releasing a hold."""
+    key = os.environ.get("STRIPE_SECRET_KEY", "")
+    if not key.startswith("sk_test_"):
+        raise RuntimeError("Stripe test key required")
+    if not session_id.startswith("cs_test_") or len(session_id) > 255:
+        raise ValueError("Invalid test Checkout session ID")
+    url = "https://api.stripe.com/v1/checkout/sessions/" + urllib.parse.quote(session_id, safe="")
+    req = urllib.request.Request(url, headers={"Authorization": "Bearer " + key})
+    with urllib.request.urlopen(req, timeout=20) as response:
+        return json.loads(response.read().decode("utf-8"))
 
-    IMPORTANT: The caller must reconcile Stripe Checkout sessions before using
-    this for real payments. Expiring by age alone can race a delayed webhook.
-    Therefore this helper is disabled unless explicitly enabled for tests.
-    """
-    if not env_flag("STRIPE_TEST_HOLD_EXPIRY_ENABLED"):
-        return 0
-    if not os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_"):
-        return 0
-    cutoff = ((now or datetime.now()) - timedelta(minutes=30)).isoformat(timespec="seconds")
-    cur = conn.execute(
-        """UPDATE bookings SET status='expired'
-           WHERE payment_method='Stripe' AND status='pending'
-             AND COALESCE(payment_status, '') NOT IN ('paid', 'succeeded')
-             AND created_at < ?""", (cutoff,))
-    return cur.rowcount
+
+def stripe_session_is_safe_to_release(session: dict, booking_id: int) -> bool:
+    """Only an explicitly expired, unpaid session tied to this booking can release inventory."""
+    return (
+        session.get("id", "").startswith("cs_test_")
+        and session.get("status") == "expired"
+        and session.get("payment_status") == "unpaid"
+        and str(session.get("client_reference_id", "")) == str(booking_id)
+    )
 
 
 def stripe_verify_signature(payload: bytes, header: str) -> dict:
