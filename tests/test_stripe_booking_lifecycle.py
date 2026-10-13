@@ -139,7 +139,7 @@ def test_paid_stripe_booking_blocks_room_availability():
     source = (Path(__file__).resolve().parents[1] / "app.py").read_text(encoding="utf-8")
     module = ast.parse(source)
     fn = next(n for n in module.body if isinstance(n, ast.FunctionDef) and n.name == "room_available_in_conn")
-    namespace = {"sqlite3": sqlite3, "date": datetime.date if False else __import__("datetime").date, "parse_date": lambda value: datetime.strptime(value, "%Y-%m-%d").date(),
+    namespace = {"sqlite3": sqlite3, "date": __import__("datetime").date, "parse_date": lambda value: datetime.strptime(value, "%Y-%m-%d").date(),
                  "overlaps": lambda a, b, c, d: a < d and c < b}
     exec(compile(ast.Module(body=[fn], type_ignores=[]), "<availability-test>", "exec"), namespace)
     room_available_in_conn = namespace["room_available_in_conn"]
