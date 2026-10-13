@@ -563,7 +563,8 @@ def init_paypal_checkout(
                     """UPDATE bookings SET status='cancelled',released_at=?,
                        release_reason='PayPal-Zahlung vom Gast abgebrochen'
                        WHERE id=? AND status='pending' AND payment_method='paypal_checkout'
-                         AND COALESCE(paid,0)=0""",
+                         AND COALESCE(paid,0)=0
+                         AND COALESCE(payment_error,'') NOT LIKE 'PayPal-Zahlungsstatus unklar%'""",
                     (datetime.now().isoformat(timespec="seconds"), booking_id),
                 )
         return render_template_string(
