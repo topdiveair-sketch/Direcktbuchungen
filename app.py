@@ -314,6 +314,8 @@ def init_db() -> None:
             ("payment_status", "TEXT DEFAULT ''"),
             ("payment_reference", "TEXT DEFAULT ''"),
             ("paypal_order_id", "TEXT DEFAULT ''"),
+            ("stripe_session_id", "TEXT DEFAULT ''"),
+            ("stripe_payment_intent", "TEXT DEFAULT ''"),
             ("cancelled_at", "TEXT DEFAULT ''"),
             ("source", "TEXT DEFAULT ''"),
             ("utm_medium", "TEXT DEFAULT ''"),
