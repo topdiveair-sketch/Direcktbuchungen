@@ -184,3 +184,19 @@ def test_paid_stripe_booking_is_exported_to_ical_feed():
     assert "UID:stripe-test-uid" in response.get_data(as_text=True)
     assert "DTSTART;VALUE=DATE:20261020" in response.get_data(as_text=True)
     assert "DTEND;VALUE=DATE:20261022" in response.get_data(as_text=True)
+
+
+def test_live_mode_session_cannot_confirm_sandbox_booking():
+    conn, db = setup_db()
+    session = paid_session()
+    session["livemode"] = True
+    assert settle_verified_stripe_session(conn, session) == "rejected"
+    assert tuple(conn.execute("SELECT status,paid FROM bookings").fetchone()) == ("pending", 0)
+
+
+def test_missing_livemode_cannot_confirm_sandbox_booking():
+    conn, db = setup_db()
+    session = paid_session()
+    del session["livemode"]
+    assert settle_verified_stripe_session(conn, session) == "rejected"
+    assert tuple(conn.execute("SELECT status,paid FROM bookings").fetchone()) == ("pending", 0)
