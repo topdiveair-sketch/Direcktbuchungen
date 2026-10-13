@@ -23,8 +23,12 @@ def convert_ics(source, destination, source_id):
             lines[-1] += line[1:]
         else:
             lines.append(line)
-    if "BEGIN:VCALENDAR" not in lines or "END:VCALENDAR" not in lines:
-        raise SnapshotError("Kein vollstaendiger iCalendar")
+    if lines.count("BEGIN:VCALENDAR") != 1 or lines.count("END:VCALENDAR") != 1:
+        raise SnapshotError("Kein eindeutiger vollstaendiger iCalendar")
+    if lines.index("BEGIN:VCALENDAR") >= lines.index("END:VCALENDAR"):
+        raise SnapshotError("Ungueltige Kalenderstruktur")
+    if any(line.startswith(("BEGIN:VTODO", "BEGIN:VFREEBUSY", "BEGIN:VJOURNAL")) for line in lines):
+        raise SnapshotError("Nicht unterstuetzte Kalenderkomponente")
     events = []
     current = None
     for line in lines:
@@ -35,7 +39,7 @@ def convert_ics(source, destination, source_id):
         elif line == "END:VEVENT":
             if current is None:
                 raise SnapshotError("Ereignisende ohne Beginn")
-            if current.get("STATUS") != "CANCELLED":
+            if current.get("STATUS", "").upper() != "CANCELLED":
                 if "RRULE" in current or "RECURRENCE-ID" in current or "RDATE" in current or "EXDATE" in current:
                     raise SnapshotError("Wiederkehrende Ereignisse werden nicht unterstuetzt")
                 if "DTSTART" not in current or "DTEND" not in current:
