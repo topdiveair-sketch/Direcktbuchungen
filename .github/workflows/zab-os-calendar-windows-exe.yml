@@ -1,0 +1,42 @@
+name: ZAB OS calendar Windows EXE
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/zab-os-production-integration-20261013
+    paths:
+      - "zab_os_calendar_compare_gui.py"
+      - "zab_os_compare_exports.py"
+      - "zab_os_snapshot_client.py"
+      - "test_zab_os_compare_exports.py"
+      - ".github/workflows/zab-os-calendar-windows-exe.yml"
+permissions:
+  contents: read
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install build dependency
+        run: python -m pip install pyinstaller==6.16.0
+      - name: Run offline comparison tests
+        run: python -m unittest -v test_zab_os_compare_exports
+      - name: Build standalone executable
+        run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name ZAB-Kalendervergleich zab_os_calendar_compare_gui.py
+      - name: Verify output exists
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "dist/ZAB-Kalendervergleich.exe")) { throw "EXE missing" }
+          $file = Get-Item "dist/ZAB-Kalendervergleich.exe"
+          if ($file.Length -lt 1000000) { throw "EXE unexpectedly small" }
+          Get-FileHash "dist/ZAB-Kalendervergleich.exe" -Algorithm SHA256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZAB-Kalendervergleich-Windows
+          path: dist/ZAB-Kalendervergleich.exe
+          if-no-files-found: error
+          retention-days: 14
