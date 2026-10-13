@@ -638,8 +638,8 @@ def stripe_recover_missing_session(booking_id):
         # Checkout expiry are still valid. Never generate a new expiry here.
         if expires_at <= int(datetime.now().timestamp()) + 60:
             return jsonify({"error": "Stripe request expired; manual Stripe review required"}), 409
-        base = os.environ.get("PUBLIC_CHECKOUT_BASE_URL", "").strip().rstrip("/")
-        if not base.startswith("https://"):
+        base = payload.get("stripe_checkout_base_url")
+        if not isinstance(base, str) or not base.startswith("https://"):
             return jsonify({"error": "HTTPS checkout base URL missing"}), 503
         session = create_hosted_checkout_session(
             secret_key=secret, booking_id=booking_id,
