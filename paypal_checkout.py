@@ -486,6 +486,18 @@ def init_paypal_checkout(
                 departure=booking["departure"], total=f"{booking['total']:.2f}", capture=booking["paypal_capture_id"] or order_id,
             )
 
+        # Check the local hold again before asking PayPal to capture funds.
+        # This narrows the cancellation race; the post-capture check below
+        # remains essential because another request may change the booking.
+        with db() as conn:
+            latest = conn.execute("SELECT status,paid,paypal_order_id FROM bookings WHERE id=?", (booking_id,)).fetchone()
+        if (not latest or latest["status"] != "pending" or latest["paid"]
+                or (latest["paypal_order_id"] or "").strip() != order_id):
+            return render_template_string(
+                ERROR_PAGE,
+                message="Diese Reservierung ist nicht mehr zur Zahlung freigegeben. Es wurde kein neuer Zahlungseinzug gestartet.",
+            ), 409
+
         try:
             token = paypal_token()
             captured = capture_or_read(order_id, token)
