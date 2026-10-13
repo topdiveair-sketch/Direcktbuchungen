@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from datetime import date, timedelta
 from zab_os_compare_exports import compare_files
+from zab_os_snapshot_client import SnapshotError
 
 
 def format_report(report):
@@ -50,7 +51,7 @@ def main():
         try:
             report = compare_files(paths[0].get(), paths[1].get(), start.get(), end.get())
             text = format_report(report)
-        except (ValueError, OSError, KeyError, TypeError) as exc:
+        except (SnapshotError, ValueError, OSError, KeyError, TypeError) as exc:
             messagebox.showerror("Vergleich fehlgeschlagen", str(exc))
             return
         output.configure(state="normal")
