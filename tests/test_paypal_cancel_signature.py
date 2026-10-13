@@ -64,3 +64,12 @@ def test_paid_email_recognizes_paypal_checkout_method():
 def test_cancel_only_releases_pending_paypal_checkout_holds():
     cancel_route = SOURCE.split("def paypal_cancel():", 1)[1].split('app.extensions["zab_paypal_checkout_enabled"]', 1)[0]
     assert "WHERE id=? AND status='pending' AND payment_method='paypal_checkout'" in cancel_route
+
+
+def test_uncertain_payment_triggers_host_alert_not_guest_confirmation():
+    railway = Path(__file__).resolve().parents[1].joinpath("railway_app.py").read_text(encoding="utf-8")
+    ast.parse(railway)
+    assert 'elif response.status_code == 502:' in railway
+    assert '_notify_uncertain_paypal_booking(booking_id)' in railway
+    assert 'already_sent' in railway
+    assert 'PayPal-Zahlungsstatus unklar' in railway
