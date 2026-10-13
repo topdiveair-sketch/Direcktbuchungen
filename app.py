@@ -2636,7 +2636,14 @@ def book():
     if payment_method == "PayPal":
         flash("PayPal-Zahlungen bitte über den sicheren PayPal-Button starten.", "error")
         return redirect(url_for("index") + "#booking")
-    if payment_method not in {"Banküberweisung", "Vor Ort"}:
+    if payment_method == "Stripe" and not (
+        env_flag("STRIPE_CHECKOUT_ENABLED")
+        and os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_")
+        and os.environ.get("STRIPE_WEBHOOK_SECRET", "").startswith("whsec_")
+    ):
+        flash("Kartenzahlung ist derzeit nicht verfügbar.", "error")
+        return redirect(url_for("index") + "#booking")
+    if payment_method not in {"Banküberweisung", "Vor Ort", "Stripe"}:
         flash("Bitte eine gültige Zahlungsart wählen.", "error")
         return redirect(url_for("index") + "#booking")
 
@@ -2651,6 +2658,9 @@ def book():
                 (idempotency_key,),
             ).fetchone()
         if existing:
+            if existing["payment_method"] == "Stripe":
+                flash("Diese Kartenzahlung wurde bereits gestartet. Bitte den Zahlungsstatus prüfen.", "error")
+                return redirect(url_for("index") + "#booking")
             resend_existing_booking_mail(int(existing["id"]))
             return booking_success_response(existing)
 
@@ -2677,6 +2687,9 @@ def book():
                 ).fetchone()
                 if existing:
                     conn.rollback()
+                    if existing["payment_method"] == "Stripe":
+                        flash("Diese Kartenzahlung wurde bereits gestartet.", "error")
+                        return redirect(url_for("index") + "#booking")
                     return booking_success_response(existing)
 
             ok, message = room_available_in_conn(conn, room, arrival, departure)
@@ -2692,12 +2705,13 @@ def book():
                  last_name, email, phone, message, payment_method, total, status,
                  created_at, idempotency_key, price_breakdown_json,
                  source,utm_medium,utm_campaign,landing_page,referrer)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inquiry', ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     uid, room, arrival.isoformat(), departure.isoformat(), adults,
                     1 if breakfast else 0, first_name, last_name, email, phone,
                     request.form.get("message", "").strip(), payment_method, total,
+                    "pending" if payment_method == "Stripe" else "inquiry",
                     datetime.now().isoformat(timespec="seconds"), idempotency_key,
                     json.dumps(breakdown, ensure_ascii=False),
                     booking_source, utm_medium, utm_campaign, landing_page, referrer,
@@ -2712,10 +2726,45 @@ def book():
                     (idempotency_key,),
                 ).fetchone()
             if existing:
+                if existing["payment_method"] == "Stripe":
+                    flash("Diese Kartenzahlung wurde bereits gestartet.", "error")
+                    return redirect(url_for("index") + "#booking")
                 resend_existing_booking_mail(int(existing["id"]))
                 return booking_success_response(existing)
         flash("Die Buchung wurde bereits verarbeitet. Bitte Seite aktualisieren.", "error")
         return redirect(url_for("index") + "#booking")
+
+    if payment_method == "Stripe":
+        try:
+            session_data = stripe_create_test_checkout(
+                booking_id=booking_id, total_eur=total, guest_email=email,
+                success_url=url_for("index", _external=True) + "?stripe=success",
+                cancel_url=url_for("index", _external=True) + "?stripe=cancel#booking",
+            )
+            checkout_id = str(session_data.get("id") or "")
+            checkout_url = str(session_data.get("url") or "")
+            if not checkout_id.startswith("cs_test_") or not checkout_url.startswith("https://checkout.stripe.com/"):
+                raise ValueError("Invalid Stripe Checkout response")
+            with db() as conn:
+                conn.execute(
+                    """UPDATE bookings SET payment_reference=?, payment_status='unpaid'
+                       WHERE id=? AND payment_method='Stripe' AND status='pending'""",
+                    (checkout_id, booking_id),
+                )
+                conn.commit()
+            return redirect(checkout_url, code=303)
+        except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
+            app.logger.exception("stripe_checkout_start_failed booking_id=%s", booking_id)
+            with db() as conn:
+                conn.execute(
+                    """UPDATE bookings SET status='expired', payment_status='failed'
+                       WHERE id=? AND payment_method='Stripe' AND status='pending'
+                         AND COALESCE(payment_reference,'')=''""",
+                    (booking_id,),
+                )
+                conn.commit()
+            flash("Kartenzahlung konnte nicht gestartet werden. Bitte erneut versuchen.", "error")
+            return redirect(url_for("index") + "#booking")
 
     if app.extensions.get("zab_ensure_tokens"):
         app.extensions["zab_ensure_tokens"](booking_id)
