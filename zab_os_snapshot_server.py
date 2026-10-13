@@ -3,7 +3,7 @@ import hashlib
 import hmac
 import json
 import os
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 ROOM_ID = 'Bachblick'  # legacy DB identifier; not an additional room
 ROOM_NAME = 'Gartenzimmer'
@@ -16,6 +16,16 @@ def build_snapshot(conn, start, end):
         "SELECT arrival, departure, status FROM bookings WHERE room=? AND departure>? AND arrival<? AND status IN ('pending','confirmed') ORDER BY arrival,uid", (ROOM_ID,start,end))]
     blocks = [dict(start=row[0], end=row[1], source=row[2]) for row in conn.execute(
         'SELECT start_date,end_date,source FROM external_blocks WHERE room=? AND end_date>? AND start_date<? ORDER BY start_date,source', (ROOM_ID,start,end))]
+    # Explicit closures from the central calendar must never be treated as free.
+    # Price-only overrides (availability NULL/1) are intentionally excluded.
+    for row in conn.execute(
+        "SELECT day FROM central_overrides WHERE room=? AND availability=0 AND day>=? AND day<? ORDER BY day",
+        (ROOM_ID, start, end),
+    ):
+        closed_day = date.fromisoformat(row[0])
+        blocks.append(dict(start=closed_day.isoformat(),
+                           end=(closed_day + timedelta(days=1)).isoformat(),
+                           source='Zentrale Sperre'))
     sync_rows = conn.execute('SELECT last_sync,last_result FROM ical_settings WHERE room=?', (ROOM_ID,)).fetchall()
     sync = {'last_sync': '', 'last_result': 'NICHT VERIFIZIERT',
             'verified': False, 'provider_status': {}}
