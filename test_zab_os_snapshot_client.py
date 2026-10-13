@@ -21,7 +21,7 @@ class Response:
 
 class ClientTests(unittest.TestCase):
     def test_success(self):
-        payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"sync":{"verified":False}}
+        payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"sync":{"verified":False,"provider_status":{}}}
         payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
         with patch("urllib.request.urlopen", return_value=Response(payload)) as mocked:
             self.assertEqual(fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-20"),payload)
@@ -33,12 +33,12 @@ class ClientTests(unittest.TestCase):
             with self.assertRaisesRegex(SnapshotError,"Synchronisierungsstatus"):
                 fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-20")
     def test_malformed_revision(self):
-        payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"revision":"abc","sync":{"verified":False}}
+        payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"revision":"abc","sync":{"verified":False,"provider_status":{}}}
         with patch("urllib.request.urlopen", return_value=Response(payload)):
             with self.assertRaisesRegex(SnapshotError,"Pruefsumme"):
                 fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-20")
     def test_tampered_snapshot_is_rejected(self):
-        payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"sync":{"verified":False}}
+        payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"sync":{"verified":False,"provider_status":{}}}
         payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
         payload["blocks"].append({"start":"2026-10-14","end":"2026-10-15","source":"altered"})
         with patch("urllib.request.urlopen", return_value=Response(payload)):
@@ -53,24 +53,33 @@ class ClientTests(unittest.TestCase):
         ]
         for case in cases:
             with self.subTest(case=case):
-                payload = {"room_id":"Bachblick","sync":{"verified":False},**case}
+                payload = {"room_id":"Bachblick","sync":{"verified":False,"provider_status":{}},**case}
                 payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
                 with patch("urllib.request.urlopen", return_value=Response(payload)):
                     with self.assertRaisesRegex(SnapshotError,"Sperrintervalle"):
                         fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-31")
     def test_unrelated_calendar_records_rejected(self):
-        payload = {"room_id":"Bachblick","sync":{"verified":False},"bookings":[],
+        payload = {"room_id":"Bachblick","sync":{"verified":False,"provider_status":{}},"bookings":[],
                    "blocks":[{"start":"2026-09-01","end":"2026-09-02","source":"Airbnb"}]}
         payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
         with patch("urllib.request.urlopen", return_value=Response(payload)):
             with self.assertRaisesRegex(SnapshotError,"Sperrintervalle"):
                 fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-31")
     def test_invalid_requested_range_rejected(self):
-        payload = {"room_id":"Bachblick","sync":{"verified":False},"bookings":[],"blocks":[]}
+        payload = {"room_id":"Bachblick","sync":{"verified":False,"provider_status":{}},"bookings":[],"blocks":[]}
         payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
         with patch("urllib.request.urlopen", return_value=Response(payload)):
             with self.assertRaisesRegex(SnapshotError,"Kalenderzeitraum"):
                 fetch_snapshot("https://example.test","secret","2026-10-31","2026-10-13")
+    def test_unverified_sync_only(self):
+        for sync in ({"verified":True,"provider_status":{}},
+                     {"verified":False}):
+            with self.subTest(sync=sync):
+                payload = {"room_id":"Bachblick","sync":sync,"bookings":[],"blocks":[]}
+                payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+                with patch("urllib.request.urlopen", return_value=Response(payload)):
+                    with self.assertRaises(SnapshotError):
+                        fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-31")
     def test_http_401(self):
         with patch("urllib.request.urlopen", side_effect=HTTPError("url",401,"unauthorized",{},None)):
             with self.assertRaisesRegex(SnapshotError,"HTTP 401"):
