@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 from urllib.error import HTTPError, URLError
 
-from zab_os_snapshot_client import SnapshotError, fetch_snapshot, summarize_occupancy
+from zab_os_snapshot_client import SnapshotError, fetch_snapshot, summarize_occupancy, compare_occupancy_snapshots
 
 class Response:
     status = 200
@@ -34,6 +34,15 @@ class ClientTests(unittest.TestCase):
         snapshot = {"bookings":[{"arrival":"2026-10-10","departure":"2026-10-20"}],"blocks":[]}
         report = summarize_occupancy(snapshot, "2026-10-15", "2026-10-17")
         self.assertEqual(report["occupied_nights"], ["2026-10-15","2026-10-16"])
+    def test_compare_independent_calendar_snapshots(self):
+        first = {"bookings":[{"arrival":"2026-10-15","departure":"2026-10-17"}],"blocks":[]}
+        second = {"bookings":[],"blocks":[{"start":"2026-10-16","end":"2026-10-18"}]}
+        report = compare_occupancy_snapshots(first, second, "2026-10-14", "2026-10-19")
+        self.assertEqual(report["only_in_first"], ["2026-10-15"])
+        self.assertEqual(report["only_in_second"], ["2026-10-17"])
+        self.assertEqual(report["in_both"], ["2026-10-16"])
+        self.assertFalse(report["safe_to_release_nights"])
+        self.assertEqual(report["verified_free_nights"], [])
     def test_success(self):
         payload = {"room_id":"Bachblick","bookings":[],"blocks":[],"sync":{"verified":False,"provider_status":{}}}
         payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
