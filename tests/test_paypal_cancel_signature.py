@@ -130,3 +130,15 @@ def test_stripe_checkout_is_opt_in_and_holds_inventory():
     assert 'create_hosted_checkout_session(' in body
     assert 'stripe_session_id=?' in body
     assert 'Zahlungsstart unklar' in body
+
+
+def test_stripe_reconciliation_is_admin_only_and_explicitly_enabled():
+    railway = Path(__file__).resolve().parents[1].joinpath("railway_app.py").read_text(encoding="utf-8")
+    tree = ast.parse(railway)
+    route = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "stripe_reconcile_manual")
+    body = ast.get_source_segment(railway, route)
+    assert 'if not require_admin():' in body
+    assert 'STRIPE_SANDBOX_CHECKOUT_ENABLED' in body
+    assert 'startswith("sk_test_")' in body
+    assert 'reconcile_expired_stripe_holds(db,' in body
+    assert 'limit=20' in body
