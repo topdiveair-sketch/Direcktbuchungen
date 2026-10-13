@@ -2562,6 +2562,22 @@ def booking_success_response(booking):
     )
 
 
+@app.post("/stripe/webhook")
+def stripe_webhook():
+    """Signed test webhook; intentionally does not confirm bookings until lifecycle is integrated."""
+    if not os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_"):
+        return Response("Stripe test mode not configured", status=503)
+    try:
+        event = stripe_verify_signature(request.get_data(cache=False), request.headers.get("Stripe-Signature", ""))
+    except (ValueError, TypeError, json.JSONDecodeError):
+        return Response("Invalid Stripe signature", status=400)
+    # Do not acknowledge successful payment as a booking without verifying
+    # amount, currency, Checkout session, booking state and idempotency.
+    app.logger.info("stripe_test_webhook_received type=%s id=%s",
+                    str(event.get("type", ""))[:80], str(event.get("id", ""))[:120])
+    return jsonify(received=True, booking_updated=False)
+
+
 @app.post("/book")
 def book():
     try:
