@@ -44,6 +44,20 @@ class ClientTests(unittest.TestCase):
         with patch("urllib.request.urlopen", return_value=Response(payload)):
             with self.assertRaisesRegex(SnapshotError,"stimmt nicht"):
                 fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-20")
+    def test_invalid_occupancy_intervals_are_rejected(self):
+        cases = [
+            {"bookings":[{"arrival":"2026-10-16","departure":"2026-10-15","status":"confirmed"}],"blocks":[]},
+            {"bookings":[],"blocks":[{"start":"2026-10-20","end":"2026-10-20","source":"Airbnb"}]},
+            {"bookings":[{"arrival":"invalid","departure":"2026-10-17","status":"pending"}],"blocks":[]},
+            {"bookings":[],"blocks":[{"start":"2026-10-20","end":"invalid","source":"Beds24"}]},
+        ]
+        for case in cases:
+            with self.subTest(case=case):
+                payload = {"room_id":"Bachblick","sync":{"verified":False},**case}
+                payload["revision"] = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+                with patch("urllib.request.urlopen", return_value=Response(payload)):
+                    with self.assertRaisesRegex(SnapshotError,"Sperrintervalle"):
+                        fetch_snapshot("https://example.test","secret","2026-10-13","2026-10-31")
     def test_http_401(self):
         with patch("urllib.request.urlopen", side_effect=HTTPError("url",401,"unauthorized",{},None)):
             with self.assertRaisesRegex(SnapshotError,"HTTP 401"):
