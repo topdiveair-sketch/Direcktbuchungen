@@ -589,9 +589,9 @@ def paypal_reconciliation_csv():
 
 @app.post("/stripe/webhook")
 def stripe_sandbox_webhook():
-    """Verify signed Stripe test events; do not settle until DB migration is live."""
+    """Confirm only signed Stripe test Checkout payments, transactionally."""
     from stripe_webhook_security import verify_stripe_signature, StripeSignatureError
-    from flask import Response
+    from stripe_booking_settlement import settle_verified_stripe_session
     secret = os.environ.get("STRIPE_TEST_WEBHOOK_SECRET", "").strip()
     if not secret or not secret.startswith("whsec_"):
         return jsonify({"error": "Stripe sandbox webhook not configured"}), 503
@@ -603,14 +603,29 @@ def stripe_sandbox_webhook():
         event = json.loads(raw)
         if not isinstance(event, dict) or not str(event.get("id", "")).startswith("evt_"):
             return jsonify({"error": "Invalid Stripe event"}), 400
-        # Explicit fail-closed response: Stripe retries until settlement is implemented.
-        # Returning HTTP 200 before the DB is updated would silently lose payments.
-        app.logger.warning("Stripe sandbox webhook received but settlement is not enabled: %s", event.get("type", "unknown"))
-        return jsonify({"error": "Stripe settlement not enabled"}), 503
+        event_type = event.get("type")
+        if event_type not in ("checkout.session.completed", "checkout.session.async_payment_succeeded"):
+            return jsonify({"received": True, "ignored": True}), 200
+        session = (event.get("data") or {}).get("object")
+        if not isinstance(session, dict) or session.get("object") != "checkout.session":
+            return jsonify({"error": "Invalid checkout session"}), 400
+        if event.get("livemode") is not False or session.get("livemode") is not False:
+            return jsonify({"error": "Live Stripe events are not enabled"}), 403
+        with db() as conn:
+            outcome = settle_verified_stripe_session(conn, session)
+        if outcome in ("confirmed", "duplicate"):
+            return jsonify({"received": True, "result": outcome}), 200
+        # Never acknowledge an unmatched payment as settled. Keep Stripe retrying
+        # while the host investigates a possible refund or reservation mismatch.
+        app.logger.error("Stripe sandbox settlement requires review for event %s", event["id"])
+        return jsonify({"error": "Stripe payment requires reconciliation"}), 503
     except StripeSignatureError:
         return jsonify({"error": "Invalid Stripe signature"}), 400
-    except (ValueError, UnicodeDecodeError):
+    except (ValueError, UnicodeDecodeError, TypeError):
         return jsonify({"error": "Invalid Stripe JSON"}), 400
+    except Exception:
+        app.logger.exception("Stripe sandbox settlement database failure")
+        return jsonify({"error": "Stripe settlement temporarily unavailable"}), 503
 
 
 @app.get("/health/deploy")
