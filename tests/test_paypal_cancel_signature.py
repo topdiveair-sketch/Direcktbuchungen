@@ -61,4 +61,5 @@ def test_paid_email_recognizes_paypal_checkout_method():
 
 
 def test_cancel_only_releases_pending_paypal_checkout_holds():
-    assert "WHERE id=? AND status='pending' AND payment_method='paypal_checkout'" in SOURCE
+    cancel_route = SOURCE.split("def paypal_cancel():", 1)[1].split('app.extensions["zab_paypal_checkout_enabled"]', 1)[0]
+    assert "WHERE id=? AND status='pending' AND payment_method='paypal_checkout'" in cancel_route
