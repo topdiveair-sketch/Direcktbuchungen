@@ -17,7 +17,12 @@ def release_verified_stripe_hold(conn, session: dict, *, now: datetime) -> str:
             conn.rollback()
             return "missing"
         booking = dict(row)
-        if booking["status"] == "cancelled":
+        if (booking["status"] == "cancelled"
+                and booking.get("payment_method") == "stripe_checkout"
+                and session.get("livemode") is False
+                and session.get("status") == "expired"
+                and session.get("payment_status") == "unpaid"
+                and not session.get("payment_intent")):
             conn.rollback()
             return "duplicate"
         if not may_release_stripe_hold(session, booking, now=now):
