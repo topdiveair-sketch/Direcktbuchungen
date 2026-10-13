@@ -19,7 +19,8 @@ class StripeCheckoutError(RuntimeError):
 def create_hosted_checkout_session(*, secret_key: str, booking_id: int,
                                    total_eur, guest_email: str,
                                    success_url: str, cancel_url: str,
-                                   timeout: int = 20, opener=None, expires_at: int | None = None) -> dict:
+                                   timeout: int = 20, opener=None, expires_at: int | None = None,
+                                   booking_uid: str | None = None) -> dict:
     """Request a hosted card-payment session with a server-calculated amount."""
     if not secret_key or not secret_key.startswith("sk_test_"):
         raise StripeCheckoutError("Only Stripe sandbox credentials are allowed")
@@ -33,13 +34,15 @@ def create_hosted_checkout_session(*, secret_key: str, booking_id: int,
     if not isinstance(expiry, int) or isinstance(expiry, bool):
         raise StripeCheckoutError("Invalid Stripe checkout expiry")
     fields["expires_at"] = str(expiry)
+    if not booking_uid or not booking_uid.startswith("ZAB-STRIPE-") or len(booking_uid) > 200:
+        raise StripeCheckoutError("Unique booking UID required for Stripe idempotency")
     request = urllib.request.Request(
         "https://api.stripe.com/v1/checkout/sessions",
         data=urlencode(fields).encode("utf-8"),
         headers={
             "Authorization": "Bearer " + secret_key,
             "Content-Type": "application/x-www-form-urlencoded",
-            "Idempotency-Key": "zab-checkout-" + str(booking_id),
+            "Idempotency-Key": "zab-checkout-" + booking_uid,
         },
         method="POST",
     )
