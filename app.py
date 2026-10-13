@@ -2567,6 +2567,30 @@ def booking_success_response(booking):
     )
 
 
+@app.get("/stripe/return")
+def stripe_checkout_return():
+    """Reconcile the paid test Checkout on browser return; never trust URL alone."""
+    session_id = request.args.get("session_id", "").strip()
+    if not session_id.startswith("cs_test_") or len(session_id) > 255:
+        flash("Kartenzahlung konnte nicht zugeordnet werden.", "error")
+        return redirect(url_for("index") + "#booking")
+    try:
+        checkout = stripe_fetch_test_session(session_id)
+        booking_ref = str(checkout.get("client_reference_id") or "")
+        if not booking_ref.isdecimal():
+            raise ValueError("Invalid Checkout booking reference")
+        confirmed = stripe_confirm_paid_test_booking(int(booking_ref), session_id)
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError, RuntimeError):
+        app.logger.exception("stripe_checkout_return_reconciliation_failed")
+        flash("Zahlungsstatus wird noch geprüft. Bitte keine zweite Zahlung auslösen.", "error")
+        return redirect(url_for("index") + "#booking")
+    if confirmed:
+        flash("Testzahlung bestätigt. Die Buchung ist im System vorgemerkt.", "success")
+    else:
+        flash("Zahlung noch nicht bestätigt. Bitte keine zweite Zahlung auslösen.", "error")
+    return redirect(url_for("index") + "#booking")
+
+
 @app.post("/stripe/webhook")
 def stripe_webhook():
     """Signed test webhook; intentionally does not confirm bookings until lifecycle is integrated."""
@@ -2752,7 +2776,7 @@ def book():
         try:
             session_data = stripe_create_test_checkout(
                 booking_id=booking_id, total_eur=total, guest_email=email,
-                success_url=url_for("index", _external=True) + "?stripe=success",
+                success_url=url_for("stripe_checkout_return", _external=True) + "?session_id={CHECKOUT_SESSION_ID}",
                 cancel_url=url_for("index", _external=True) + "?stripe=cancel#booking",
             )
             checkout_id = str(session_data.get("id") or "")
