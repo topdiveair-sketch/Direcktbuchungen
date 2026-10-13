@@ -103,6 +103,14 @@ class SnapshotFlaskTests(unittest.TestCase):
         self.assertEqual(self.get(start="2026-10-13",end="2026-10-13").status_code, 400)
         self.assertEqual(self.get(end="2028-10-13").status_code, 400)
 
+    def test_corrupt_central_closure_is_server_error(self):
+        with sqlite3.connect(self.path) as conn:
+            conn.execute("INSERT INTO central_overrides(room,day,availability,price) VALUES(?,?,?,?)",
+                         ("Bachblick","2026-10-26-invalid",0,None))
+        response = self.get()
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.get_json()["error"], "snapshot_unavailable")
+
     def test_database_failure(self):
         with sqlite3.connect(self.path) as conn:
             conn.execute("DROP TABLE bookings")
