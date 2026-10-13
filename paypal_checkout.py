@@ -474,8 +474,8 @@ def init_paypal_checkout(
             booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
         if not booking:
             return render_template_string(ERROR_PAGE, message="Buchung wurde nicht gefunden."), 404
-        if booking["status"] == "cancelled" and not booking["paid"]:
-            return render_template_string(ERROR_PAGE, message="Die Zahlungsfrist ist bereits abgelaufen."), 409
+        if booking["status"] != "pending" and not booking["paid"]:
+            return render_template_string(ERROR_PAGE, message="Diese Reservierung ist nicht mehr fuer eine Zahlung freigegeben."), 409
         stored_order = (booking["paypal_order_id"] or "").strip()
         if not stored_order or stored_order != order_id:
             return render_template_string(ERROR_PAGE, message="PayPal-Auftrag passt nicht zur Reservierung."), 409
@@ -503,6 +503,9 @@ def init_paypal_checkout(
                 if not current:
                     conn.rollback()
                     raise RuntimeError("Reservierung wurde zwischenzeitlich entfernt.")
+                if current["status"] != "pending" and not current["paid"]:
+                    conn.rollback()
+                    raise RuntimeError("Zahlung wurde eingezogen, aber die Reservierung ist nicht mehr offen. Manuelle Klaerung und gegebenenfalls Rueckerstattung erforderlich.")
                 conn.execute(
                     """UPDATE bookings SET paid=1,paid_at=?,status='confirmed',paypal_capture_id=?,
                        hold_expires_at='',payment_error='',released_at='',release_reason=''
