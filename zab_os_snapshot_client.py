@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import ssl
+from datetime import date
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -45,6 +46,24 @@ def fetch_snapshot(base_url, token, start, end, timeout=12):
     expected_revision = hashlib.sha256(json.dumps(signed_fields, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
     if payload["revision"] != expected_revision:
         raise SnapshotError("Snapshot-Pruefsumme stimmt nicht mit den Kalenderdaten ueberein")
+    # Malformed occupancy intervals must never be interpreted as free nights.
+    try:
+        for booking in payload["bookings"]:
+            if not isinstance(booking, dict):
+                raise ValueError("booking")
+            arrival = date.fromisoformat(booking["arrival"])
+            departure = date.fromisoformat(booking["departure"])
+            if arrival >= departure or booking.get("status") not in ("pending", "confirmed"):
+                raise ValueError("booking interval/status")
+        for block in payload["blocks"]:
+            if not isinstance(block, dict):
+                raise ValueError("block")
+            first = date.fromisoformat(block["start"])
+            last = date.fromisoformat(block["end"])
+            if first >= last:
+                raise ValueError("block interval")
+    except (KeyError, TypeError, ValueError):
+        raise SnapshotError("Ungueltige Buchungs- oder Sperrintervalle") from None
     return payload
 
 def get_connection_config():
