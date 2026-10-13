@@ -38,3 +38,21 @@ def test_cancel_releases_only_matching_pending_paypal_booking():
     assert rows[2][1] == "confirmed" and rows[2][2] is None
     assert rows[3][1] == "confirmed" and rows[3][2] is None
     assert rows[4][1] == "cancelled" and rows[4][2] is None
+
+
+def test_ambiguous_capture_keeps_pending_reservation_blocked():
+    db = sqlite3.connect(":memory:")
+    db.execute("CREATE TABLE bookings (id INTEGER PRIMARY KEY, status TEXT, paid INTEGER, hold_expires_at TEXT, payment_error TEXT)")
+    db.executemany("INSERT INTO bookings VALUES(?,?,?,?,?)", [
+        (1, "pending", 0, "2026-10-13T18:00:00", ""),
+        (2, "confirmed", 1, "", ""),
+    ])
+    statement = """UPDATE bookings SET payment_error=?,
+        hold_expires_at=CASE WHEN status='pending' THEN '' ELSE hold_expires_at END
+        WHERE id=? AND COALESCE(paid,0)=0"""
+    db.execute(statement, ("Manual reconciliation required", 1))
+    assert db.execute("SELECT status,hold_expires_at,payment_error FROM bookings WHERE id=1").fetchone() == (
+        "pending", "", "Manual reconciliation required"
+    )
+    db.execute(statement, ("Must not overwrite", 2))
+    assert db.execute("SELECT payment_error FROM bookings WHERE id=2").fetchone()[0] == ""
