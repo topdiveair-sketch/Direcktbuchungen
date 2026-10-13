@@ -243,3 +243,11 @@ def test_cancelled_hold_replay_requires_matching_booking_reference():
     result = release_verified_stripe_hold(conn, session,
                                           now=datetime(2026, 10, 13, tzinfo=timezone.utc))
     assert result == "retained"
+
+
+def test_duplicate_paid_webhook_rejects_wrong_booking_reference():
+    conn, db = setup_db()
+    session = paid_session()
+    assert settle_verified_stripe_session(conn, session) == "confirmed"
+    session["client_reference_id"] = "999"
+    assert settle_verified_stripe_session(conn, session) == "rejected"
