@@ -2784,12 +2784,15 @@ def book():
             if not checkout_id.startswith("cs_test_") or not checkout_url.startswith("https://checkout.stripe.com/"):
                 raise ValueError("Invalid Stripe Checkout response")
             with db() as conn:
-                conn.execute(
+                updated = conn.execute(
                     """UPDATE bookings SET payment_reference=?, payment_status='unpaid'
-                       WHERE id=? AND payment_method='Stripe' AND status='pending'""",
+                       WHERE id=? AND payment_method='Stripe' AND status='pending'
+                         AND COALESCE(payment_reference,'')=''""",
                     (checkout_id, booking_id),
                 )
                 conn.commit()
+            if updated.rowcount != 1:
+                raise ValueError("Stripe Checkout reservation reference not persisted")
             return redirect(checkout_url, code=303)
         except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
             app.logger.exception("stripe_checkout_start_failed booking_id=%s", booking_id)
