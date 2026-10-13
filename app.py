@@ -2773,6 +2773,32 @@ def stripe_session_is_safe_to_release(session: dict, booking_id: int) -> bool:
     )
 
 
+def stripe_test_session_matches_booking(session: dict, booking: sqlite3.Row) -> bool:
+    """Validate Checkout ownership, currency, exact amount and settled payment."""
+    if not session or not booking:
+        return False
+    if booking["payment_method"] != "Stripe":
+        return False
+    if session.get("id") != booking["payment_reference"]:
+        return False
+    if not str(session.get("id", "")).startswith("cs_test_"):
+        return False
+    if str(session.get("client_reference_id", "")) != str(booking["id"]):
+        return False
+    if session.get("currency") != "eur" or session.get("payment_status") != "paid":
+        return False
+    if session.get("status") != "complete" or session.get("mode") != "payment":
+        return False
+    expected = int((Decimal(str(booking["total"])) * 100).quantize(
+        Decimal("1"), rounding=ROUND_HALF_UP))
+    return (
+        expected > 0
+        and type(session.get("amount_total")) is int
+        and session["amount_total"] == expected
+        and session.get("livemode") is False
+    )
+
+
 def stripe_release_expired_test_hold(booking_id: int) -> bool:
     """Release a single Stripe test hold only after authoritative Stripe reconciliation.
 
