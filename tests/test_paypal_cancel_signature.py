@@ -58,3 +58,7 @@ def test_paid_email_recognizes_paypal_checkout_method():
     ast.parse(notifications)
     assert 'payment_method in {"PayPal", "paypal_checkout"}' in notifications
     assert 'if capture and payment_method in {"PayPal", "paypal_checkout"}:' in notifications
+
+
+def test_cancel_only_releases_pending_paypal_checkout_holds():
+    assert "WHERE id=? AND status='pending' AND payment_method='paypal_checkout'" in SOURCE
