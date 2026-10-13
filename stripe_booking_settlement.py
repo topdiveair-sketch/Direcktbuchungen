@@ -27,6 +27,7 @@ def settle_verified_stripe_session(conn, session: dict) -> str:
         if (session.get("livemode") is False
                 and booking.get("payment_method") == "stripe_checkout"
                 and booking.get("status") == "confirmed" and int(booking.get("paid") or 0) == 1
+                and str(session.get("client_reference_id")) == str(booking.get("id"))
                 and booking.get("stripe_session_id") == session.get("id")
                 and booking.get("stripe_payment_intent") == session.get("payment_intent")):
             conn.commit()
