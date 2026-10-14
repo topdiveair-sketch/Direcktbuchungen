@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import hmac
+import hashlib
 import os
 import sqlite3
 import time
@@ -75,6 +77,11 @@ def init_stripe_checkout(
         for key, value in cors_headers().items():
             response.headers[key] = value
         return response
+
+    def live_ready():
+        return (os.environ.get("ZAB_STRIPE_LIVE_ENABLED") == "1"
+                and os.environ.get("STRIPE_SECRET_KEY", "").startswith("rk_live_")
+                and os.environ.get("STRIPE_WEBHOOK_SECRET", "").startswith("whsec_"))
 
     def secret_key():
         return os.environ.get("STRIPE_SECRET_KEY", "").strip()
@@ -193,12 +200,19 @@ def init_stripe_checkout(
     def finalize_paid_session(session):
         session_id = str(session.get("id", ""))
         metadata = session.get("metadata") or {}
-        booking_id = int(metadata.get("booking_id") or 0)
+        try:
+            booking_id = int(metadata.get("booking_id") or 0)
+        except (TypeError, ValueError):
+            return False, 0
         if not session_id or not booking_id or session.get("payment_status") != "paid":
             return False, booking_id
         with db() as conn:
             booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
-            if not booking or str(booking["stripe_session_id"] or "") != session_id:
+            if not booking or str(booking["stripe_session_id"] or "") != session_id or booking["payment_method"] != "stripe_checkout":
+                return False, booking_id
+            if bool(booking["paid"]):
+                return True, booking_id
+            if booking["status"] != "pending" or session.get("livemode") is not True:
                 return False, booking_id
             expected = int(round(float(booking["total"]) * 100))
             if int(session.get("amount_total") or 0) != expected or str(session.get("currency", "")).lower() != "eur":
@@ -206,6 +220,8 @@ def init_stripe_checkout(
                     "UPDATE bookings SET payment_error=? WHERE id=?",
                     ("Stripe-Betrag oder Währung stimmt nicht überein", booking_id),
                 )
+                return False, booking_id
+            if not str(session.get("payment_intent") or "").startswith("pi_"):
                 return False, booking_id
             paid_at = datetime.now().isoformat(timespec="seconds")
             conn.execute(
@@ -231,7 +247,7 @@ def init_stripe_checkout(
         return api_json(
             {
                 "ok": True,
-                "configured": bool(secret_key()),
+                "configured": live_ready(),
                 "webhook_configured": bool(os.environ.get("STRIPE_WEBHOOK_SECRET", "").strip()),
             }
         )
@@ -240,7 +256,7 @@ def init_stripe_checkout(
     def stripe_create_session():
         if request.method == "OPTIONS":
             return Response(status=204, headers=cors_headers())
-        if not secret_key():
+        if not live_ready():
             return api_json({"ok": False, "message": "Kartenzahlung ist noch nicht aktiviert."}, 503)
         try:
             _, room, arrival, departure, adults, chosen, customer = parse_payload(True)
@@ -339,11 +355,52 @@ def init_stripe_checkout(
         except Exception as exc:
             return api_json({"ok": False, "message": f"Kartenzahlung derzeit nicht verfügbar: {exc}"}, 503)
 
+    @app.post("/stripe/webhook")
+    def stripe_live_webhook():
+        if not live_ready():
+            return jsonify({"error": "Live payments disabled"}), 503
+        raw = request.get_data(cache=False)
+        if len(raw) > 65536:
+            return jsonify({"error": "Payload too large"}), 413
+        signature = request.headers.get("Stripe-Signature", "")
+        parts = {}
+        for item in signature.split(","):
+            k, _, v = item.strip().partition("=")
+            parts.setdefault(k, []).append(v)
+        try:
+            stamp = int((parts.get("t") or [""])[0])
+        except (TypeError, ValueError):
+            return jsonify({"error": "Signature missing"}), 400
+        if abs(time.time() - stamp) > 300:
+            return jsonify({"error": "Signature expired"}), 400
+        signed = str(stamp).encode() + b"." + raw
+        expected = hmac.new(os.environ["STRIPE_WEBHOOK_SECRET"].encode(), signed, hashlib.sha256).hexdigest()
+        if not any(hmac.compare_digest(expected, value) for value in parts.get("v1", [])):
+            return jsonify({"error": "Invalid signature"}), 400
+        try:
+            event = json.loads(raw)
+            if event.get("livemode") is not True:
+                return jsonify({"error": "Wrong mode"}), 403
+            if event.get("type") not in ("checkout.session.completed", "checkout.session.async_payment_succeeded"):
+                return jsonify({"received": True, "ignored": True}), 200
+            session = event["data"]["object"]
+            if session.get("object") != "checkout.session" or session.get("livemode") is not True:
+                return jsonify({"error": "Invalid session"}), 400
+            ok, _ = finalize_paid_session(session)
+            if not ok:
+                return jsonify({"error": "Payment requires reconciliation"}), 503
+            return jsonify({"received": True}), 200
+        except (ValueError, KeyError, TypeError):
+            return jsonify({"error": "Invalid event"}), 400
+        except Exception:
+            app.logger.exception("Stripe live webhook settlement failed")
+            return jsonify({"error": "Temporary failure"}), 503
+
     @app.get("/stripe/success")
     def stripe_success():
         session_id = request.args.get("session_id", "").strip()
         booking_id = request.args.get("booking", type=int)
-        if not session_id or not booking_id or not secret_key():
+        if not session_id or not booking_id or not live_ready():
             return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=error")
         try:
             session = stripe_http("GET", "/checkout/sessions/" + urllib.parse.quote(session_id, safe=""))
@@ -371,5 +428,5 @@ def init_stripe_checkout(
                 )
         return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=cancelled")
 
-    app.extensions["zab_stripe_checkout_enabled"] = bool(secret_key())
-    return {"configured": bool(secret_key())}
+    app.extensions["zab_stripe_checkout_enabled"] = live_ready()
+    return {"configured": live_ready()}
