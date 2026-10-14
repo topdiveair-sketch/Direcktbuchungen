@@ -1636,18 +1636,18 @@ def activity_landing_context(kind: str) -> dict:
         return {
             "kind": "bike",
             "page_title": "Donauradweg Unterkunft Wachau | Radurlaub bei Zuhause am Bach",
-            "meta_description": "Donauradweg-Unterkunft Wachau: sichere Radunterbringung, E-Bike-Laden und kleine Reparaturhilfe mit Werkzeug und Kompressor in Aggsbach Markt.",
+            "meta_description": "Donauradweg-Unterkunft Wachau: sichere Radunterbringung, E-Bike-Laden und auf Anfrage gelegentliche Hilfe mit Werkzeug oder Kompressor, sofern es zeitlich passt.",
             "canonical": "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
             "eyebrow": "Donauradweg Wachau · Aggsbach Markt",
             "headline": "Unterkunft am Donauradweg in der Wachau",
-            "intro": "Zuhause am Bach ist ein ruhiger Etappenstopp in Aggsbach Markt für Radreisende und Radurlauber aus Österreich, Deutschland und der Schweiz. Auch eine einzelne Übernachtung ist grundsätzlich möglich – mit sicherer Fahrradunterbringung, E-Bike-Lademöglichkeit und Hilfe bei kleineren Reparaturen mit Werkzeug und Kompressor. Wir sind kein Fahrradfachbetrieb; der Gast prüft selbst, ob das Rad nach der Hilfe verkehrssicher ist, und entscheidet eigenverantwortlich über die Weiterfahrt.",
+            "intro": "Zuhause am Bach ist ein ruhiger Etappenstopp in Aggsbach Markt für Radreisende und Radurlauber aus Österreich, Deutschland und der Schweiz. Auch eine einzelne Übernachtung ist grundsätzlich möglich – mit sicherer Fahrradunterbringung und E-Bike-Lademöglichkeit. Wenn es zeitlich passt, können wir nach vorheriger Absprache gelegentlich Werkzeug oder Kompressor bereitstellen und bei kleinen Arbeiten unterstützen. Das ist ein freiwilliges, unverbindliches Entgegenkommen ohne Anspruch auf Hilfe. Wir sind kein Fahrradfachbetrieb und sagen weder eine Reparatur noch eine Prüfung der Verkehrssicherheit zu. Gäste beurteilen ihr Rad selbst und entscheiden eigenverantwortlich über die Weiterfahrt. Zwingende gesetzliche Haftung bleibt unberührt.",
             "benefits": [
                 "Sichere Unterbringung für Fahrräder",
                 "E-Bike-Lademöglichkeit",
                 "Frühstück auf Wunsch",
                 "Trocknungsmöglichkeit für Radbekleidung",
                 "Gepäcktransport auf Anfrage",
-                "Hilfe bei kleineren Reparaturen mit Werkzeug und Kompressor",
+                "Kleine Hilfe mit Werkzeug oder Kompressor nach Absprache und Verfügbarkeit",
                 "Persönliche Tipps für die nächste Wachau-Etappe",
             ],
             "planning_title": "Radetappe früh sichern – bis %s planbar" % horizon,
@@ -1770,24 +1770,24 @@ def seo_landing_context(slug: str) -> dict:
             "faq":faq_direct,
         },
         "radfahrer": {
-            "title":"Radfahrer Unterkunft Wachau | Reparaturhilfe am Donauradweg",
-            "description":"Radfahrer-Unterkunft in der Wachau: Fahrradunterbringung, E-Bike-Laden und Hilfe bei kleineren Reparaturen mit Werkzeug und Kompressor in Aggsbach Markt.",
+            "title":"Radfahrer-Unterkunft Wachau | kleine Hilfe nach Absprache",
+            "description":"Radfahrer-Unterkunft in der Wachau: Fahrradunterbringung, E-Bike-Laden und auf Anfrage gelegentliche Hilfe mit Werkzeug oder Kompressor, sofern verfügbar.",
             "canonical":"https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
             "h1":"Radfahrer-Unterkunft in der Wachau",
-            "lead":"Für Radreisende am Donauradweg bietet Zuhause am Bach einen persönlichen Etappenstopp mit sicherer Fahrradunterbringung, E-Bike-Lademöglichkeit und praktischer Hilfe bei kleineren Reparaturen.",
-            "eyebrow":"Für Radreisende · praktische Reparaturhilfe",
-            "subheading":"Fahrrad sicher abstellen, laden und bei kleinen Reparaturen Hilfe bekommen",
+            "lead":"Für Radreisende am Donauradweg: ein persönlicher Etappenstopp mit sicherer Fahrradunterbringung, E-Bike-Lademöglichkeit und möglicher Hilfe bei kleinen Arbeiten – nach Absprache und wenn es zeitlich passt.",
+            "eyebrow":"Für Radreisende · Hilfe auf Anfrage",
+            "subheading":"Fahrrad sicher abstellen, laden und auf Wunsch um kleine Hilfe fragen",
             "paragraphs":[
                 "Fahrräder können geschützt untergebracht werden; für E-Bikes gibt es eine Lademöglichkeit.",
-                "Bei kleineren Reparaturen helfen wir vor Ort mit Werkzeug und Kompressor. Zuhause am Bach ist kein Fahrradfachbetrieb.",
-                "Der Gast prüft nach der Reparatur selbst, ob das Fahrrad verkehrssicher ist, und entscheidet eigenverantwortlich über die Weiterfahrt. Frühstück auf Wunsch, Trocknungsmöglichkeit für Radbekleidung und Gepäcktransport auf Anfrage unterstützen die Etappenreise."
+                "Bei kleinen Arbeiten können wir nach vorheriger Absprache und sofern es zeitlich passt gelegentlich Werkzeug oder Kompressor bereitstellen und unterstützen. Das ist ein freiwilliges, unverbindliches Entgegenkommen ohne Anspruch auf Hilfe. Zuhause am Bach ist kein Fahrradfachbetrieb; eine Reparatur oder Prüfung der Verkehrssicherheit wird nicht zugesagt. Zwingende gesetzliche Haftung bleibt unberührt.",
+                "Gäste beurteilen den Zustand ihres Fahrrads selbst und entscheiden eigenverantwortlich über die Weiterfahrt. Frühstück auf Wunsch, Trocknungsmöglichkeit für Radbekleidung und Gepäcktransport auf Anfrage unterstützen die Etappenreise."
             ],
-            "features":[("🚲","Fahrrad sicher","Geschützte Unterbringung."),("⚡","E-Bike laden","Lademöglichkeit am Haus."),("🛠️","Reparaturhilfe","Werkzeug und Kompressor für kleinere Reparaturen."),("👕","Trocknen","Für nasse Radbekleidung.")],
-            "hero_image":"images/donauradweg-web.jpg","hero_image_alt":"Donauradweg bei Zuhause am Bach in der Wachau","hero_image_caption":"Direkt auf Radreisende ausgerichtet – mit praktischer Hilfe bei kleineren Reparaturen.",
+            "features":[("🚲","Fahrrad sicher","Geschützte Unterbringung."),("⚡","E-Bike laden","Lademöglichkeit am Haus."),("🛠️","Kleine Hilfe","Werkzeug/Kompressor nach Absprache und Verfügbarkeit."),("👕","Trocknen","Für nasse Radbekleidung.")],
+            "hero_image":"images/donauradweg-web.jpg","hero_image_alt":"Donauradweg bei Zuhause am Bach in der Wachau","hero_image_caption":"Kleine mögliche Hilfe mit Werkzeug/Kompressor nach Absprache und Verfügbarkeit.",
             "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer für Radfahrer in der Wachau","secondary_image_caption":"Ruhige Nacht zwischen zwei Etappen.",
             "faq":faq_direct + [
-                {"@type":"Question","name":"Gibt es bei Zuhause am Bach Hilfe bei Fahrradreparaturen?","acceptedAnswer":{"@type":"Answer","text":"Bei kleineren Reparaturen helfen wir vor Ort mit Werkzeug und Kompressor. Zuhause am Bach ist kein Fahrradfachbetrieb."}},
-                {"@type":"Question","name":"Wer prüft das Fahrrad nach der Reparatur?","acceptedAnswer":{"@type":"Answer","text":"Der Gast prüft selbst, ob das Fahrrad verkehrssicher ist, und entscheidet eigenverantwortlich, ob er damit weiterfährt."}}
+                {"@type":"Question","name":"Kann ich bei Fahrradpannen um kleine Hilfe bitten?","acceptedAnswer":{"@type":"Answer","text":"Bei kleinen Arbeiten können wir nach vorheriger Absprache und sofern es zeitlich passt gelegentlich Werkzeug oder Kompressor bereitstellen und unterstützen. Das ist ein freiwilliges, unverbindliches Entgegenkommen ohne Anspruch auf Hilfe. Zuhause am Bach ist kein Fahrradfachbetrieb; eine Reparatur oder Prüfung der Verkehrssicherheit wird nicht zugesagt. Zwingende gesetzliche Haftung bleibt unberührt."}},
+                {"@type":"Question","name":"Wer beurteilt, ob das Rad verkehrssicher ist?","acceptedAnswer":{"@type":"Answer","text":"Gäste beurteilen den Zustand ihres Fahrrads selbst und entscheiden eigenverantwortlich über die Weiterfahrt."}}
             ],
         },
         "wanderer": {
