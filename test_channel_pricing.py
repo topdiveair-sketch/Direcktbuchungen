@@ -42,7 +42,8 @@ class OutboxTests(unittest.TestCase):
         self.assertEqual(portal_price(100), 105)
         self.assertEqual(portal_price(119), 124.95)
         self.assertEqual(portal_price(141.90), 149.00)
-        self.assertEqual(portal_price(149), 156.45)\n        self.assertEqual(portal_price(200), 199)\n        self.assertEqual(portal_price(199), 199)
+        self.assertEqual(portal_price(149), 156.45)
+        self.assertEqual(portal_price(200), 199)\n        self.assertEqual(portal_price(199), 199)
 
     def test_demand_change_refreshes_target_and_success_is_not_resent(self):
         day = date.today()
@@ -53,7 +54,7 @@ class OutboxTests(unittest.TestCase):
         self.assertEqual(self.provider.call_count, 1)
         self.rate = 110
         self.outbox.refresh()
-        self.assertEqual(self.row()['desired_price'], 105.5)
+        self.assertEqual(self.row()['desired_price'], 115.5)
         self.outbox.deliver(now=1001)
         self.assertEqual(self.provider.call_count, 2)
 
@@ -91,7 +92,7 @@ class OutboxTests(unittest.TestCase):
         with self.assertLogs('channel_pricing', level='WARNING') as logs:
             self.outbox.deliver(now=10)
         detail = self.outbox.details()[0]
-        self.assertEqual(detail['desired_price'], 115)
+        self.assertEqual(detail['desired_price'], 105)
         self.assertIsNone(detail['applied_price'])
         self.assertEqual(detail['status'], 'retry')
         self.assertIn('write:inventory', detail['message'])
