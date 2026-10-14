@@ -230,7 +230,33 @@ def init_stripe_checkout(
             if booking["status"] != "pending":
                 conn.rollback()
                 return False, booking_id
-            paid_at = datetime.now().isoformat(timespec="seconds")
+            # A webhook may arrive after the reservation hold has expired.
+            # Reject settlement if that happened or if the room was reallocated.
+            now_iso = datetime.now().isoformat(timespec="seconds")
+            if (not booking["hold_expires_at"] or booking["hold_expires_at"] <= now_iso):
+                conn.rollback()
+                return False, booking_id
+            arrival, departure, room = booking["arrival"], booking["departure"], booking["room"]
+            conflicts = conn.execute(
+                """SELECT COUNT(*) FROM bookings
+                   WHERE room=? AND id<>? AND status IN ('pending','confirmed')
+                     AND arrival<? AND departure>?""",
+                (room, booking_id, departure, arrival),
+            ).fetchone()[0]
+            external = conn.execute(
+                """SELECT COUNT(*) FROM external_blocks
+                   WHERE room=? AND start_date<? AND end_date>?""",
+                (room, departure, arrival),
+            ).fetchone()[0]
+            closed = conn.execute(
+                """SELECT COUNT(*) FROM central_overrides
+                   WHERE room=? AND availability=0 AND day>=? AND day<?""",
+                (room, arrival, departure),
+            ).fetchone()[0]
+            if conflicts or external or closed:
+                conn.rollback()
+                return False, booking_id
+            paid_at = now_iso
             updated = conn.execute(
                 """UPDATE bookings
                    SET status='confirmed', paid=1, paid_at=?, hold_expires_at='',
