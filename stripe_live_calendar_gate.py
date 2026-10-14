@@ -1,33 +1,62 @@
-"""Fail-closed external calendar sync gate for future live card checkout.
+"""Fail-closed calendar gate for future live card checkout.
 
-The current sync_room() intentionally reports success when any provider updates.
-That is useful for cached occupancy, but insufficient for instant, paid bookings.
-Use this gate only after a fresh sync, using the exact configured provider list
-and the summary returned from the same sync attempt. Never accept missing feeds.
+Read-only validation: never mutate the calendar or payment state. A successful
+provider count alone is not proof of fresh inventory; supply the timestamp from
+the SAME sync attempt and the expected provider coverage explicitly.
 """
+from datetime import datetime, timezone
+
+DEFAULT_REQUIRED_SOURCES = frozenset({"booking_ical", "beds24_ical", "airbnb_ical"})
 
 
-def card_checkout_calendar_ready(configured_sources, last_result, sync_success):
-    """Return (ready, reason) without changing any calendar or booking.
+def card_checkout_calendar_ready(
+    configured_sources, last_result, sync_success, *,
+    synced_at=None, now=None, required_sources=DEFAULT_REQUIRED_SOURCES,
+    max_age_seconds=300,
+):
+    """Return (ready, reason), failing closed on incomplete or stale feeds.
 
-    configured_sources: iterable of (source_code, display_label, url), as
-    returned by the host application's _calendar_sources_for_room().
+    synced_at and now must be timezone-aware datetime values. An absent or
+    invalid timestamp is rejected, not treated as a successful sync.
     """
     sources = list(configured_sources)
     if not sources or not sync_success or not isinstance(last_result, str):
         return False, "No verified external calendar sync"
+    if not isinstance(synced_at, datetime) or synced_at.tzinfo is None:
+        return False, "Missing timezone-aware sync timestamp"
+    now = datetime.now(timezone.utc) if now is None else now
+    if not isinstance(now, datetime) or now.tzinfo is None:
+        return False, "Invalid current timestamp"
+    age = (now - synced_at).total_seconds()
+    if not (0 <= age <= max_age_seconds <= 3600):
+        return False, "External calendar sync is stale or invalid"
     if not last_result.strip():
         return False, "Missing external calendar sync report"
+
+    parsed = []
+    for entry in sources:
+        if not isinstance(entry, (tuple, list)) or len(entry) != 3:
+            return False, "Invalid calendar source configuration"
+        code, label, url = entry
+        if not all(isinstance(v, str) and v.strip() for v in (code, label, url)):
+            return False, "Invalid calendar source configuration"
+        parsed.append((code, label))
+
+    codes = [code for code, _ in parsed]
+    if len(set(codes)) != len(codes) or not set(required_sources).issubset(codes):
+        return False, "Required calendar feed missing or duplicated"
+
     reports = last_result.split(" · ")
-    expected_labels = [label for _, label, url in sources if isinstance(url, str) and url.strip()]
-    if len(expected_labels) != len(sources) or len(reports) != len(expected_labels):
+    if len(reports) != len(parsed):
         return False, "External calendar source count mismatch"
-    for label, report in zip(expected_labels, reports):
+    for (_, label), report in zip(parsed, reports):
         prefix = label + ": "
         if not report.startswith(prefix):
             return False, "Missing or reordered provider result"
         remainder = report[len(prefix):]
-        count = remainder.split(" ", 1)[0]
-        if not count.isdecimal():
+        # Only nonnegative integer event counts, optionally followed by the
+        # explicit successful retry suffix, are accepted.
+        number = remainder.removesuffix(" (nach Retry)")
+        if not number.isdecimal() or not number.isascii():
             return False, "External calendar provider failed"
-    return True, "All configured external calendars refreshed"
+    return True, "All required external calendars refreshed"
