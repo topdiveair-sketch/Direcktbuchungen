@@ -59,6 +59,25 @@ class OutboxTests(unittest.TestCase):
         self.outbox.deliver(now=1001)
         self.assertEqual(self.provider.call_count, 2)
 
+    def test_centrally_closed_night_is_not_sent_to_provider(self):
+        day = date.today()
+        self.outbox.manage('Bachblick', day, day)
+        with self.db() as conn:
+            conn.execute("""CREATE TABLE central_overrides (
+                room TEXT, day TEXT, availability INTEGER,
+                PRIMARY KEY (room,day)
+            )""")
+            conn.execute("INSERT INTO central_overrides VALUES(?,?,?)",
+                         ('Bachblick', day.isoformat(), 0))
+        self.outbox.deliver(now=10)
+        self.provider.assert_not_called()
+        self.assertEqual(self.row()['status'], 'pending')
+        with self.db() as conn:
+            conn.execute("UPDATE central_overrides SET availability=1")
+        self.outbox.deliver(now=10)
+        self.provider.assert_called_once()
+        self.assertEqual(self.row()['status'], 'applied')
+
     def test_failure_survives_restart_and_retry_keeps_direct_price(self):
         self.provider.side_effect = [TimeoutError('SECRET token'), {'ok': True}]
         day = date.today()
