@@ -39,10 +39,10 @@ class OutboxTests(unittest.TestCase):
             return dict(conn.execute('SELECT * FROM zab_rate_outbox').fetchone())
 
     def test_current_markup_rounding_and_all_channel_cap(self):
-        self.assertEqual(portal_price(100), 115)
-        self.assertEqual(portal_price(119), 136.85)
-        self.assertEqual(portal_price(141.90), 149)
-        self.assertEqual(portal_price(149), 149)
+        self.assertEqual(portal_price(100), 105)
+        self.assertEqual(portal_price(119), 124.95)
+        self.assertEqual(portal_price(141.90), 148.99)
+        self.assertEqual(portal_price(149), 156.45)\n        self.assertEqual(portal_price(200), 199)\n        self.assertEqual(portal_price(199), 199)
 
     def test_demand_change_refreshes_target_and_success_is_not_resent(self):
         day = date.today()
@@ -53,7 +53,7 @@ class OutboxTests(unittest.TestCase):
         self.assertEqual(self.provider.call_count, 1)
         self.rate = 110
         self.outbox.refresh()
-        self.assertEqual(self.row()['desired_price'], 126.5)
+        self.assertEqual(self.row()['desired_price'], 105.5)
         self.outbox.deliver(now=1001)
         self.assertEqual(self.provider.call_count, 2)
 
@@ -70,7 +70,7 @@ class OutboxTests(unittest.TestCase):
         self.assertEqual(self.provider.call_count, 1)
         restarted.deliver(now=311)
         self.assertEqual(self.row()['status'], 'applied')
-        self.assertEqual(self.row()['applied_price'], 115)
+        self.assertEqual(self.row()['applied_price'], 105)
 
     def test_price_change_during_delivery_cannot_be_marked_applied(self):
         day = date.today()
@@ -82,7 +82,7 @@ class OutboxTests(unittest.TestCase):
         self.provider.side_effect = changed
         self.outbox.deliver(now=10)
         self.assertEqual(self.row()['status'], 'pending')
-        self.assertEqual(self.row()['desired_price'], 138)
+        self.assertEqual(self.row()['desired_price'], 126)
 
     def test_rejection_exposes_safe_cause_and_never_claims_confirmation(self):
         self.provider.return_value = {'ok': False, 'status': 'http_error',
@@ -152,7 +152,7 @@ class Beds24Tests(unittest.TestCase):
 
     def test_invalid_or_over_cap_price_is_never_sent(self):
         with patch.object(beds24_rates, '_request') as call:
-            for price in (float('nan'), float('inf'), -1, 150):
+            for price in (float('nan'), float('inf'), -1, 200):
                 self.assertEqual(beds24_rates.push_rate('Bachblick',date.today(),price)['status'],'invalid_price')
             call.assert_not_called()
 
