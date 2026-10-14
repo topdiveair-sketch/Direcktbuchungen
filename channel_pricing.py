@@ -79,8 +79,20 @@ class RateOutbox:
         try:
             failures = set()
             with self.db() as conn:
+                has_central = conn.execute(
+                    "SELECT 1 FROM sqlite_master WHERE type='table' AND name='central_overrides'"
+                ).fetchone() is not None
+                closed_filter = (
+                    """ AND NOT EXISTS (
+                        SELECT 1 FROM central_overrides AS closed
+                        WHERE closed.room=zab_rate_outbox.room
+                          AND closed.day=zab_rate_outbox.day
+                          AND closed.availability=0
+                    )""" if has_central else ""
+                )
                 rows = conn.execute("""SELECT * FROM zab_rate_outbox WHERE status!='applied'
-                    AND next_attempt<=? AND day>=? ORDER BY next_attempt,day LIMIT ?""",
+                    AND next_attempt<=? AND day>=?""" + closed_filter +
+                    """ ORDER BY next_attempt,day LIMIT ?""",
                     (now, date.today().isoformat(), limit)).fetchall()
             for row in rows:
                 try:
