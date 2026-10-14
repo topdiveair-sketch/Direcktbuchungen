@@ -419,16 +419,9 @@ def init_stripe_checkout(
 
     @app.get("/stripe/cancel")
     def stripe_cancel():
-        booking_id = request.args.get("booking", type=int)
-        if booking_id:
-            with db() as conn:
-                conn.execute(
-                    """UPDATE bookings SET status='cancelled', released_at=?,
-                       release_reason='Kartenzahlung abgebrochen'
-                       WHERE id=? AND COALESCE(paid,0)=0""",
-                    (datetime.now().isoformat(timespec="seconds"), booking_id),
-                )
-        return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=cancelled")
+        # Stripe may complete payment asynchronously after the buyer returns.
+        # A browser redirect must not release or cancel the reserved booking.
+        return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=pending")
 
     app.extensions["zab_stripe_checkout_enabled"] = live_ready()
     return {"configured": live_ready()}
