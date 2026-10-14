@@ -1771,7 +1771,7 @@ def seo_landing_context(slug: str) -> dict:
             "faq":faq_direct,
         },
         "radfahrer": {
-            "title":"Radfahrer-Unterkunft Wachau | kleine Hilfe nach Absprache",
+            "title":"Radfahrer-Unterkunft Wachau | Rad-Service auf Anfrage",
             "description":"Radfahrer-Unterkunft in der Wachau: sichere Fahrradunterbringung, E-Bike-Laden und Extras wie Waschplatz, Ersatzrad, Radbeschaffung oder Fahrradtransport nach Anfrage und Verfügbarkeit.",
             "canonical":"https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
             "h1":"Radfahrer-Unterkunft in der Wachau",
@@ -1781,10 +1781,10 @@ def seo_landing_context(slug: str) -> dict:
             "paragraphs":[
                 "Fahrräder können geschützt untergebracht werden; für E-Bikes gibt es eine Lademöglichkeit.",
                 "Auf Anfrage können wir nach vorheriger Abstimmung und je nach Verfügbarkeit einen Waschplatz mit Öl-, Fett- und Wachsabscheider, einen Kompressor mit bis zu 225 bar Maximalleistung, ein passendes Ersatzrad, die Beschaffung eines geeigneten Rads nach Budgetfreigabe sowie Fahrradtransport organisieren. Für Fahrradreifen wird ausschließlich ein geeigneter, reifenverträglicher Druck verwendet; die 225 bar sind der maximale Gerätedruck und kein Reifendruck. Termin, Kosten und Umfang bestätigen wir vorab; diese Extras sind nicht ständig vor Ort verfügbar. Kleine Werkzeughilfe ist freiwillig und unverbindlich; es besteht kein Anspruch darauf. Zuhause am Bach ist kein Fahrradfachbetrieb und sagt keine Reparatur oder Verkehrssicherheitsprüfung zu. Gäste beurteilen den Zustand ihres Fahrrads selbst und entscheiden eigenverantwortlich über die Weiterfahrt. Zwingende gesetzliche Haftung bleibt unberührt.",
-                "Gäste beurteilen den Zustand ihres Fahrrads selbst und entscheiden eigenverantwortlich über die Weiterfahrt. Frühstück auf Wunsch, Trocknungsmöglichkeit für Radbekleidung und Gepäcktransport auf Anfrage unterstützen die Etappenreise."
+                "Frühstück auf Wunsch, Trocknungsmöglichkeit für Radbekleidung und Gepäcktransport auf Anfrage unterstützen die Etappenreise."
             ],
             "features":[("🚲","Fahrrad sicher","Geschützte Unterbringung."),("⚡","E-Bike laden","Lademöglichkeit am Haus."),("🛠️","Rad-Service auf Anfrage","Waschplatz mit Abscheider, Kompressor bis 225 bar, Ersatzrad, Radbeschaffung oder Fahrradtransport – nach Abstimmung."),("👕","Trocknen","Für nasse Radbekleidung.")],
-            "hero_image":"images/donauradweg-web.jpg","hero_image_alt":"Donauradweg bei Zuhause am Bach in der Wachau","hero_image_caption":"Kleine mögliche Hilfe mit Werkzeug/Kompressor nach Absprache und Verfügbarkeit.",
+            "hero_image":"images/donauradweg-web.jpg","hero_image_alt":"Donauradweg bei Zuhause am Bach in der Wachau","hero_image_caption":"Waschplatz, Kompressor, Ersatzrad oder Transport: Rad-Service nach Anfrage und Verfügbarkeit.",
             "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer für Radfahrer in der Wachau","secondary_image_caption":"Ruhige Nacht zwischen zwei Etappen.",
             "faq":faq_direct + [
                 {"@type":"Question","name":"Welche Fahrrad-Extras kann ich anfragen?","acceptedAnswer":{"@type":"Answer","text":"Auf Anfrage können wir nach vorheriger Abstimmung und je nach Verfügbarkeit einen Waschplatz mit Öl-, Fett- und Wachsabscheider, einen Kompressor mit bis zu 225 bar Maximalleistung, ein passendes Ersatzrad, die Beschaffung eines geeigneten Rads nach Budgetfreigabe sowie Fahrradtransport organisieren. Für Fahrradreifen wird ausschließlich ein geeigneter, reifenverträglicher Druck verwendet; die 225 bar sind der maximale Gerätedruck und kein Reifendruck. Termin, Kosten und Umfang bestätigen wir vorab; diese Extras sind nicht ständig vor Ort verfügbar. Kleine Werkzeughilfe ist freiwillig und unverbindlich; es besteht kein Anspruch darauf. Zuhause am Bach ist kein Fahrradfachbetrieb und sagt keine Reparatur oder Verkehrssicherheitsprüfung zu. Gäste beurteilen den Zustand ihres Fahrrads selbst und entscheiden eigenverantwortlich über die Weiterfahrt. Zwingende gesetzliche Haftung bleibt unberührt."}},
