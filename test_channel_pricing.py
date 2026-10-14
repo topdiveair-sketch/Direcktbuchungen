@@ -43,7 +43,8 @@ class OutboxTests(unittest.TestCase):
         self.assertEqual(portal_price(119), 124.95)
         self.assertEqual(portal_price(141.90), 149.00)
         self.assertEqual(portal_price(149), 156.45)
-        self.assertEqual(portal_price(200), 199)\n        self.assertEqual(portal_price(199), 199)
+        self.assertEqual(portal_price(200), 199)
+        self.assertEqual(portal_price(199), 199)
 
     def test_demand_change_refreshes_target_and_success_is_not_resent(self):
         day = date.today()
