@@ -15,6 +15,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install application dependencies for pricing tests
+        run: python -m pip install -r requirements.txt
+      - name: Verify portal prices and Beds24 limits
+        run: python -m unittest -v test_channel_pricing
       - name: Validate seven-language catalog
         run: python scripts/check_homepage_translations.py
       - name: Require translation update when homepage changes
