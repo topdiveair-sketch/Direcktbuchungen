@@ -78,10 +78,25 @@ def init_stripe_checkout(
             response.headers[key] = value
         return response
 
-    def live_ready():
-        return (os.environ.get("ZAB_STRIPE_LIVE_ENABLED") == "1"
-                and os.environ.get("STRIPE_SECRET_KEY", "").startswith("rk_live_")
+    def stripe_credentials_ready():
+        return (os.environ.get("STRIPE_SECRET_KEY", "").startswith("rk_live_")
                 and os.environ.get("STRIPE_WEBHOOK_SECRET", "").startswith("whsec_"))
+
+    def protected_test():
+        configured = os.environ.get("ZAB_STRIPE_TEST_ACCESS_TOKEN", "")
+        supplied = request.headers.get("X-ZAB-Stripe-Test-Token", "")
+        return (os.environ.get("ZAB_STRIPE_PROTECTED_TEST") == "1"
+                and len(configured) >= 32 and len(supplied) >= 32
+                and hmac.compare_digest(configured, supplied)
+                and stripe_credentials_ready())
+
+    def live_ready():
+        return os.environ.get("ZAB_STRIPE_LIVE_ENABLED") == "1" and stripe_credentials_ready()
+
+    def backend_ready():
+        return live_ready() or (os.environ.get("ZAB_STRIPE_PROTECTED_TEST") == "1"
+                                and len(os.environ.get("ZAB_STRIPE_TEST_ACCESS_TOKEN", "")) >= 32
+                                and stripe_credentials_ready())
 
     def secret_key():
         return os.environ.get("STRIPE_SECRET_KEY", "").strip()
@@ -293,7 +308,7 @@ def init_stripe_checkout(
     def stripe_create_session():
         if request.method == "OPTIONS":
             return Response(status=204, headers=cors_headers())
-        if not live_ready():
+        if not (live_ready() or protected_test()):
             return api_json({"ok": False, "message": "Kartenzahlung ist noch nicht aktiviert."}, 503)
         try:
             _, room, arrival, departure, adults, chosen, customer = parse_payload(True)
@@ -394,7 +409,7 @@ def init_stripe_checkout(
 
     @app.post("/stripe/webhook")
     def stripe_live_webhook():
-        if not live_ready():
+        if not backend_ready():
             return jsonify({"error": "Live payments disabled"}), 503
         raw = request.get_data(cache=False)
         if len(raw) > 65536:
