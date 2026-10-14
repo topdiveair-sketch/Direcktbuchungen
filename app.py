@@ -1769,18 +1769,25 @@ def seo_landing_context(slug: str) -> dict:
             "faq":faq_direct,
         },
         "radfahrer": {
-            "title":"Radfahrer Unterkunft Wachau | Donauradweg Zuhause am Bach",
-            "description":"Radfahrer-Unterkunft in der Wachau: sichere Fahrradunterbringung, E-Bike-Laden, Frühstück, Trocknung und Gepäcktransport in Aggsbach Markt.",
+            "title":"Radfahrer Unterkunft Wachau | Reparaturhilfe am Donauradweg",
+            "description":"Radfahrer-Unterkunft in der Wachau: Fahrradunterbringung, E-Bike-Laden und Hilfe bei kleineren Reparaturen mit Werkzeug und Kompressor in Aggsbach Markt.",
             "canonical":"https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
             "h1":"Radfahrer-Unterkunft in der Wachau",
-            "lead":"Für Radreisende am Donauradweg bietet Zuhause am Bach einen kleinen, persönlichen Etappenstopp mit sicherer Fahrradunterbringung und E-Bike-Lademöglichkeit.",
-            "eyebrow":"Für Radreisende",
-            "subheading":"Fahrrad sicher abstellen, laden und am nächsten Morgen weiter",
-            "paragraphs":["Fahrräder können geschützt untergebracht werden; für E-Bikes gibt es eine Lademöglichkeit.","Frühstück auf Wunsch, Trocknungsmöglichkeit für Radbekleidung und Gepäcktransport auf Anfrage unterstützen die Etappenreise.","Starke Wachau-Wochenenden können früh knapp werden, weil nur ein Gartenzimmer direkt angeboten wird."],
-            "features":[("🚲","Fahrrad sicher","Geschützte Unterbringung."),("⚡","E-Bike laden","Lademöglichkeit am Haus."),("👕","Trocknen","Für nasse Radbekleidung."),("🧳","Gepäcktransport","Auf Anfrage für die nächste Etappe.")],
-            "hero_image":"images/donauradweg-web.jpg","hero_image_alt":"Donauradweg bei Zuhause am Bach in der Wachau","hero_image_caption":"Direkt auf Radreisende ausgerichtet.",
+            "lead":"Für Radreisende am Donauradweg bietet Zuhause am Bach einen persönlichen Etappenstopp mit sicherer Fahrradunterbringung, E-Bike-Lademöglichkeit und praktischer Hilfe bei kleineren Reparaturen.",
+            "eyebrow":"Für Radreisende · praktische Reparaturhilfe",
+            "subheading":"Fahrrad sicher abstellen, laden und bei kleinen Reparaturen Hilfe bekommen",
+            "paragraphs":[
+                "Fahrräder können geschützt untergebracht werden; für E-Bikes gibt es eine Lademöglichkeit.",
+                "Bei kleineren Reparaturen helfen wir vor Ort mit Werkzeug und Kompressor. Zuhause am Bach ist kein Fahrradfachbetrieb.",
+                "Der Gast prüft nach der Reparatur selbst, ob das Fahrrad verkehrssicher ist, und entscheidet eigenverantwortlich über die Weiterfahrt. Frühstück auf Wunsch, Trocknungsmöglichkeit für Radbekleidung und Gepäcktransport auf Anfrage unterstützen die Etappenreise."
+            ],
+            "features":[("🚲","Fahrrad sicher","Geschützte Unterbringung."),("⚡","E-Bike laden","Lademöglichkeit am Haus."),("🛠️","Reparaturhilfe","Werkzeug und Kompressor für kleinere Reparaturen."),("👕","Trocknen","Für nasse Radbekleidung.")],
+            "hero_image":"images/donauradweg-web.jpg","hero_image_alt":"Donauradweg bei Zuhause am Bach in der Wachau","hero_image_caption":"Direkt auf Radreisende ausgerichtet – mit praktischer Hilfe bei kleineren Reparaturen.",
             "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer für Radfahrer in der Wachau","secondary_image_caption":"Ruhige Nacht zwischen zwei Etappen.",
-            "faq":faq_direct,
+            "faq":faq_direct + [
+                {"@type":"Question","name":"Gibt es bei Zuhause am Bach Hilfe bei Fahrradreparaturen?","acceptedAnswer":{"@type":"Answer","text":"Bei kleineren Reparaturen helfen wir vor Ort mit Werkzeug und Kompressor. Zuhause am Bach ist kein Fahrradfachbetrieb."}},
+                {"@type":"Question","name":"Wer prüft das Fahrrad nach der Reparatur?","acceptedAnswer":{"@type":"Answer","text":"Der Gast prüft selbst, ob das Fahrrad verkehrssicher ist, und entscheidet eigenverantwortlich, ob er damit weiterfährt."}}
+            ],
         },
         "wanderer": {
             "title":"Wanderer Unterkunft Wachau | Welterbesteig Zuhause am Bach",
