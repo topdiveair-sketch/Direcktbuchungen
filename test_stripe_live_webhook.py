@@ -108,6 +108,13 @@ class StripeLiveWebhookTests(unittest.TestCase):
         self.assertEqual(self.send_event().status_code, 200)
         self.assertEqual(self.booking()["stripe_payment_intent_id"], "pi_test_payment")
 
+    def test_live_disabled_returns_503_without_settlement(self):
+        with patch.dict(os.environ, {"ZAB_STRIPE_LIVE_ENABLED": "0"}):
+            response = self.send_event()
+            self.assertEqual(response.status_code, 503)
+        self.assertEqual(self.booking()["paid"], 0)
+        self.assertEqual(self.booking()["status"], "pending")
+
     def test_bad_signature_rejected(self):
         self.assertEqual(self.send_event(tamper=True).status_code, 400)
         self.assertEqual(self.booking()["paid"], 0)

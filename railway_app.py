@@ -347,12 +347,13 @@ init_paypal_checkout(
     room_available_in_conn,
     checkout_sync_room,
 )
-# Stripe stays fail-closed unless explicitly enabled and tested.
-if os.environ.get("ZAB_STRIPE_LIVE_ENABLED") == "1":
-    init_stripe_checkout(
-        app, db, ROOMS, parse_date, direct_checkout_price_breakdown,
-        room_available_in_conn, checkout_sync_room,
-    )
+# Register the webhook regardless of payment activation so Stripe receives
+# an explicit 503 instead of a misleading 404 while live checkout is disabled.
+# All Stripe mutation routes enforce live_ready() separately.
+init_stripe_checkout(
+    app, db, ROOMS, parse_date, direct_checkout_price_breakdown,
+    room_available_in_conn, checkout_sync_room,
+)
 init_booking_notifications(app, db)
 init_provider_monitor(app, db, require_admin)
 init_provider_radar(app, db, require_admin)
