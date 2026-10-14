@@ -179,8 +179,36 @@ class StripeLiveWebhookTests(unittest.TestCase):
         with self.db() as conn:
             conn.execute("UPDATE bookings SET hold_expires_at=? WHERE id=1", (
                 (datetime.now() - timedelta(minutes=1)).isoformat(timespec="seconds"),))
+        self.assertEqual(self.send_event().status_code, 200)
+        self.assertEqual(self.booking()["paid"], 1)
+
+    def test_delayed_webhook_can_confirm_expired_hold_if_still_free(self):
+        with self.db() as conn:
+            conn.execute("UPDATE bookings SET hold_expires_at=? WHERE id=1",
+                         ((datetime.now() - timedelta(minutes=10)).isoformat(timespec="seconds"),))
+        self.assertEqual(self.send_event().status_code, 200)
+        self.assertEqual(self.booking()["status"], "confirmed")
+
+    def test_delayed_webhook_can_restore_automatically_released_hold(self):
+        with self.db() as conn:
+            conn.execute("UPDATE bookings SET status='cancelled', release_reason='Zahlungsfrist abgelaufen' WHERE id=1")
+        self.assertEqual(self.send_event().status_code, 200)
+        self.assertEqual(self.booking()["status"], "confirmed")
+
+    def test_manually_cancelled_booking_stays_cancelled(self):
+        with self.db() as conn:
+            conn.execute("UPDATE bookings SET status='cancelled', release_reason='guest_cancelled' WHERE id=1")
         self.assertEqual(self.send_event().status_code, 503)
-        self.assertEqual(self.booking()["paid"], 0)
+        self.assertEqual(self.booking()["status"], "cancelled")
+
+    def test_delayed_webhook_cannot_steal_sold_night(self):
+        with self.db() as conn:
+            conn.execute("UPDATE bookings SET status='cancelled', release_reason='Zahlungsfrist abgelaufen' WHERE id=1")
+            conn.execute("""INSERT INTO bookings
+                (id,room,arrival,departure,total,payment_method,status,paid)
+                VALUES (2,'Bachblick','2026-11-10','2026-11-11',119,'paypal','confirmed',1)""")
+        self.assertEqual(self.send_event().status_code, 503)
+        self.assertEqual(self.booking()["status"], "cancelled")
 
     def test_conflicting_direct_booking_rejected(self):
         with self.db() as conn:
