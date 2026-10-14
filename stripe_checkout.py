@@ -16,7 +16,7 @@ from uuid import uuid4
 from flask import Response, jsonify, redirect, render_template_string, request
 
 
-HOLD_MINUTES = 30
+HOLD_MINUTES = 45
 DEFAULT_DIRECT_ORIGIN = "https://topdiveair-sketch.github.io"
 DEFAULT_RETURN_URL = "https://topdiveair-sketch.github.io/Direcktbuchungen/"
 STRIPE_API_BASE = "https://api.stripe.com/v1"
@@ -242,13 +242,22 @@ def init_stripe_checkout(
                 return (booking["status"] == "confirmed"
                         and str(booking["stripe_payment_intent_id"] or "")
                         == str(session["payment_intent"])), booking_id
-            if booking["status"] != "pending":
+            # A real payment can reach us after the hold expires or after a retry.
+            # Restore an expired, unpaid Stripe-only hold ONLY when the room has
+            # not been sold to anyone else. Manual cancellations stay cancelled.
+            now_iso = datetime.now().isoformat(timespec="seconds")
+            expired_hold = (booking["status"] == "pending"
+                            and bool(booking["hold_expires_at"])
+                            and booking["hold_expires_at"] <= now_iso)
+            released_hold = (booking["status"] == "cancelled"
+                             and not booking["paid"]
+                             and str(booking["release_reason"] or "") in (
+                                 "Zahlungsfrist abgelaufen", "payment_hold_expired",
+                             ))
+            if booking["status"] != "pending" and not released_hold:
                 conn.rollback()
                 return False, booking_id
-            # A webhook may arrive after the reservation hold has expired.
-            # Reject settlement if that happened or if the room was reallocated.
-            now_iso = datetime.now().isoformat(timespec="seconds")
-            if (not booking["hold_expires_at"] or booking["hold_expires_at"] <= now_iso):
+            if (not booking["hold_expires_at"] and not released_hold):
                 conn.rollback()
                 return False, booking_id
             arrival, departure, room = booking["arrival"], booking["departure"], booking["room"]
@@ -277,7 +286,7 @@ def init_stripe_checkout(
                    SET status='confirmed', paid=1, paid_at=?, hold_expires_at='',
                        released_at='', release_reason='', payment_error='',
                        stripe_payment_intent_id=?
-                   WHERE id=? AND status='pending' AND COALESCE(paid,0)=0
+                   WHERE id=? AND status IN ('pending','cancelled') AND COALESCE(paid,0)=0
                      AND stripe_session_id=? AND payment_method='stripe_checkout'""",
                 (paid_at, str(session["payment_intent"]), booking_id, session_id),
             )
@@ -356,7 +365,7 @@ def init_stripe_checkout(
             base = checkout_base_url()
             success_url = f"{base}/stripe/success?session_id={{CHECKOUT_SESSION_ID}}&booking={booking_id}"
             cancel_url = f"{base}/stripe/cancel?booking={booking_id}"
-            expires_at = int(time.time()) + (HOLD_MINUTES * 60)
+            expires_at = int(time.time()) + (40 * 60)
             params = {
                 "mode": "payment",
                 "success_url": success_url,
