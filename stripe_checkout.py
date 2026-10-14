@@ -198,40 +198,51 @@ def init_stripe_checkout(
         return data, room, arrival, departure, adults, chosen, customer
 
     def finalize_paid_session(session):
-        session_id = str(session.get("id", ""))
+        session_id = str(session.get("id") or "")
         metadata = session.get("metadata") or {}
         try:
             booking_id = int(metadata.get("booking_id") or 0)
         except (TypeError, ValueError):
             return False, 0
-        if not session_id or not booking_id or session.get("payment_status") != "paid":
+        if (not session_id.startswith("cs_live_") or booking_id <= 0
+                or session.get("object") != "checkout.session"
+                or session.get("livemode") is not True
+                or session.get("payment_status") != "paid"
+                or str(session.get("currency") or "").lower() != "eur"
+                or not str(session.get("payment_intent") or "").startswith("pi_")):
             return False, booking_id
         with db() as conn:
+            conn.execute("BEGIN IMMEDIATE")
             booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
-            if not booking or str(booking["stripe_session_id"] or "") != session_id or booking["payment_method"] != "stripe_checkout":
-                return False, booking_id
-            if bool(booking["paid"]):
-                return True, booking_id
-            if booking["status"] != "pending" or session.get("livemode") is not True:
+            if (not booking or booking["payment_method"] != "stripe_checkout"
+                    or str(booking["stripe_session_id"] or "") != session_id):
+                conn.rollback()
                 return False, booking_id
             expected = int(round(float(booking["total"]) * 100))
-            if int(session.get("amount_total") or 0) != expected or str(session.get("currency", "")).lower() != "eur":
-                conn.execute(
-                    "UPDATE bookings SET payment_error=? WHERE id=?",
-                    ("Stripe-Betrag oder Währung stimmt nicht überein", booking_id),
-                )
+            if int(session.get("amount_total") or 0) != expected:
+                conn.execute("UPDATE bookings SET payment_error=? WHERE id=?",
+                             ("Stripe-Betrag oder Währung stimmt nicht überein", booking_id))
                 return False, booking_id
-            if not str(session.get("payment_intent") or "").startswith("pi_"):
+            if bool(booking["paid"]):
+                return (booking["status"] == "confirmed"
+                        and str(booking["stripe_payment_intent_id"] or "")
+                        == str(session["payment_intent"])), booking_id
+            if booking["status"] != "pending":
+                conn.rollback()
                 return False, booking_id
             paid_at = datetime.now().isoformat(timespec="seconds")
-            conn.execute(
+            updated = conn.execute(
                 """UPDATE bookings
                    SET status='confirmed', paid=1, paid_at=?, hold_expires_at='',
                        released_at='', release_reason='', payment_error='',
                        stripe_payment_intent_id=?
-                   WHERE id=?""",
-                (paid_at, str(session.get("payment_intent") or ""), booking_id),
+                   WHERE id=? AND status='pending' AND COALESCE(paid,0)=0
+                     AND stripe_session_id=? AND payment_method='stripe_checkout'""",
+                (paid_at, str(session["payment_intent"]), booking_id, session_id),
             )
+            if updated.rowcount != 1:
+                conn.rollback()
+                return False, booking_id
         alert = app.extensions.get("zab_send_priority_alert")
         if alert:
             try:
