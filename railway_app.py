@@ -68,6 +68,7 @@ from app import (
 )
 from payment_hold import ALERT_EMAIL, init_payment_hold
 from paypal_checkout import init_paypal_checkout
+from stripe_checkout import init_stripe_checkout
 from booking_notifications import init_booking_notifications
 from provider_monitor import init_provider_monitor
 from provider_radar import init_provider_radar
@@ -346,6 +347,12 @@ init_paypal_checkout(
     room_available_in_conn,
     checkout_sync_room,
 )
+# Stripe stays fail-closed unless explicitly enabled and tested.
+if os.environ.get("ZAB_STRIPE_LIVE_ENABLED") == "1":
+    init_stripe_checkout(
+        app, db, ROOMS, parse_date, direct_checkout_price_breakdown,
+        room_available_in_conn, checkout_sync_room,
+    )
 init_booking_notifications(app, db)
 init_provider_monitor(app, db, require_admin)
 init_provider_radar(app, db, require_admin)

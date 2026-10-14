@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import hmac
+import hashlib
 import os
 import sqlite3
 import time
@@ -75,6 +77,11 @@ def init_stripe_checkout(
         for key, value in cors_headers().items():
             response.headers[key] = value
         return response
+
+    def live_ready():
+        return (os.environ.get("ZAB_STRIPE_LIVE_ENABLED") == "1"
+                and os.environ.get("STRIPE_SECRET_KEY", "").startswith("rk_live_")
+                and os.environ.get("STRIPE_WEBHOOK_SECRET", "").startswith("whsec_"))
 
     def secret_key():
         return os.environ.get("STRIPE_SECRET_KEY", "").strip()
@@ -191,31 +198,77 @@ def init_stripe_checkout(
         return data, room, arrival, departure, adults, chosen, customer
 
     def finalize_paid_session(session):
-        session_id = str(session.get("id", ""))
+        session_id = str(session.get("id") or "")
         metadata = session.get("metadata") or {}
-        booking_id = int(metadata.get("booking_id") or 0)
-        if not session_id or not booking_id or session.get("payment_status") != "paid":
+        try:
+            booking_id = int(metadata.get("booking_id") or 0)
+        except (TypeError, ValueError):
+            return False, 0
+        if (not session_id.startswith("cs_live_") or booking_id <= 0
+                or session.get("object") != "checkout.session"
+                or session.get("livemode") is not True
+                or session.get("payment_status") != "paid"
+                or str(session.get("currency") or "").lower() != "eur"
+                or not str(session.get("payment_intent") or "").startswith("pi_")):
             return False, booking_id
         with db() as conn:
+            conn.execute("BEGIN IMMEDIATE")
             booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
-            if not booking or str(booking["stripe_session_id"] or "") != session_id:
+            if (not booking or booking["payment_method"] != "stripe_checkout"
+                    or str(booking["stripe_session_id"] or "") != session_id):
+                conn.rollback()
                 return False, booking_id
             expected = int(round(float(booking["total"]) * 100))
-            if int(session.get("amount_total") or 0) != expected or str(session.get("currency", "")).lower() != "eur":
-                conn.execute(
-                    "UPDATE bookings SET payment_error=? WHERE id=?",
-                    ("Stripe-Betrag oder Währung stimmt nicht überein", booking_id),
-                )
+            if int(session.get("amount_total") or 0) != expected:
+                conn.execute("UPDATE bookings SET payment_error=? WHERE id=?",
+                             ("Stripe-Betrag oder Währung stimmt nicht überein", booking_id))
                 return False, booking_id
-            paid_at = datetime.now().isoformat(timespec="seconds")
-            conn.execute(
+            if bool(booking["paid"]):
+                return (booking["status"] == "confirmed"
+                        and str(booking["stripe_payment_intent_id"] or "")
+                        == str(session["payment_intent"])), booking_id
+            if booking["status"] != "pending":
+                conn.rollback()
+                return False, booking_id
+            # A webhook may arrive after the reservation hold has expired.
+            # Reject settlement if that happened or if the room was reallocated.
+            now_iso = datetime.now().isoformat(timespec="seconds")
+            if (not booking["hold_expires_at"] or booking["hold_expires_at"] <= now_iso):
+                conn.rollback()
+                return False, booking_id
+            arrival, departure, room = booking["arrival"], booking["departure"], booking["room"]
+            conflicts = conn.execute(
+                """SELECT COUNT(*) FROM bookings
+                   WHERE room=? AND id<>? AND status IN ('pending','confirmed')
+                     AND arrival<? AND departure>?""",
+                (room, booking_id, departure, arrival),
+            ).fetchone()[0]
+            external = conn.execute(
+                """SELECT COUNT(*) FROM external_blocks
+                   WHERE room=? AND start_date<? AND end_date>?""",
+                (room, departure, arrival),
+            ).fetchone()[0]
+            closed = conn.execute(
+                """SELECT COUNT(*) FROM central_overrides
+                   WHERE room=? AND availability=0 AND day>=? AND day<?""",
+                (room, arrival, departure),
+            ).fetchone()[0]
+            if conflicts or external or closed:
+                conn.rollback()
+                return False, booking_id
+            paid_at = now_iso
+            updated = conn.execute(
                 """UPDATE bookings
                    SET status='confirmed', paid=1, paid_at=?, hold_expires_at='',
                        released_at='', release_reason='', payment_error='',
                        stripe_payment_intent_id=?
-                   WHERE id=?""",
-                (paid_at, str(session.get("payment_intent") or ""), booking_id),
+                   WHERE id=? AND status='pending' AND COALESCE(paid,0)=0
+                     AND stripe_session_id=? AND payment_method='stripe_checkout'""",
+                (paid_at, str(session["payment_intent"]), booking_id, session_id),
             )
+            if updated.rowcount != 1:
+                conn.rollback()
+                return False, booking_id
         alert = app.extensions.get("zab_send_priority_alert")
         if alert:
             try:
@@ -231,7 +284,7 @@ def init_stripe_checkout(
         return api_json(
             {
                 "ok": True,
-                "configured": bool(secret_key()),
+                "configured": live_ready(),
                 "webhook_configured": bool(os.environ.get("STRIPE_WEBHOOK_SECRET", "").strip()),
             }
         )
@@ -240,7 +293,7 @@ def init_stripe_checkout(
     def stripe_create_session():
         if request.method == "OPTIONS":
             return Response(status=204, headers=cors_headers())
-        if not secret_key():
+        if not live_ready():
             return api_json({"ok": False, "message": "Kartenzahlung ist noch nicht aktiviert."}, 503)
         try:
             _, room, arrival, departure, adults, chosen, customer = parse_payload(True)
@@ -339,37 +392,73 @@ def init_stripe_checkout(
         except Exception as exc:
             return api_json({"ok": False, "message": f"Kartenzahlung derzeit nicht verfügbar: {exc}"}, 503)
 
+    @app.post("/stripe/webhook")
+    def stripe_live_webhook():
+        if not live_ready():
+            return jsonify({"error": "Live payments disabled"}), 503
+        raw = request.get_data(cache=False)
+        if len(raw) > 65536:
+            return jsonify({"error": "Payload too large"}), 413
+        signature = request.headers.get("Stripe-Signature", "")
+        parts = {}
+        for item in signature.split(","):
+            k, _, v = item.strip().partition("=")
+            parts.setdefault(k, []).append(v)
+        try:
+            stamp = int((parts.get("t") or [""])[0])
+        except (TypeError, ValueError):
+            return jsonify({"error": "Signature missing"}), 400
+        if abs(time.time() - stamp) > 300:
+            return jsonify({"error": "Signature expired"}), 400
+        signed = str(stamp).encode() + b"." + raw
+        expected = hmac.new(os.environ["STRIPE_WEBHOOK_SECRET"].encode(), signed, hashlib.sha256).hexdigest()
+        if not any(hmac.compare_digest(expected, value) for value in parts.get("v1", [])):
+            return jsonify({"error": "Invalid signature"}), 400
+        try:
+            event = json.loads(raw)
+            if event.get("livemode") is not True:
+                return jsonify({"error": "Wrong mode"}), 403
+            if event.get("type") not in ("checkout.session.completed", "checkout.session.async_payment_succeeded"):
+                return jsonify({"received": True, "ignored": True}), 200
+            session = event["data"]["object"]
+            if session.get("object") != "checkout.session" or session.get("livemode") is not True:
+                return jsonify({"error": "Invalid session"}), 400
+            ok, _ = finalize_paid_session(session)
+            if not ok:
+                return jsonify({"error": "Payment requires reconciliation"}), 503
+            return jsonify({"received": True}), 200
+        except (ValueError, KeyError, TypeError):
+            return jsonify({"error": "Invalid event"}), 400
+        except Exception:
+            app.logger.exception("Stripe live webhook settlement failed")
+            return jsonify({"error": "Temporary failure"}), 503
+
     @app.get("/stripe/success")
     def stripe_success():
-        session_id = request.args.get("session_id", "").strip()
+        # Return URLs are untrusted browser requests: never settle a booking here.
         booking_id = request.args.get("booking", type=int)
-        if not session_id or not booking_id or not secret_key():
-            return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=error")
-        try:
-            session = stripe_http("GET", "/checkout/sessions/" + urllib.parse.quote(session_id, safe=""))
-            ok, verified_booking_id = finalize_paid_session(session)
-            if not ok or verified_booking_id != booking_id:
-                return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=error")
+        session_id = request.args.get("session_id", "").strip()
+        if not booking_id or not session_id or not live_ready():
+            return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=pending")
+        with db() as conn:
+            booking = conn.execute(
+                "SELECT status,paid,stripe_session_id FROM bookings WHERE id=?", (booking_id,)
+            ).fetchone()
+        if (booking and str(booking["stripe_session_id"] or "") == session_id
+                and booking["status"] == "confirmed" and bool(booking["paid"])):
             return render_template_string(
-                """<!doctype html><html lang='de'><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Zahlung bestätigt</title><body style='font-family:Arial,sans-serif;max-width:680px;margin:60px auto;padding:24px'><h1>✅ Kartenzahlung bestätigt</h1><p>Ihre Buchung bei <strong>Zuhause am Bach – Wachau</strong> wurde bezahlt und verbindlich bestätigt.</p><p>Buchungsnummer: {{ booking_id }}</p><p><a href='{{ return_url }}'>Zurück zur Unterkunftsseite</a></p></body></html>""",
-                booking_id=booking_id,
-                return_url=os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL),
+                "<!doctype html><html lang='de'><meta charset='utf-8'>"
+                "<title>Buchung bestätigt</title><body><h1>Buchung bestätigt</h1>"
+                "<p>Ihre Zahlung und Buchung wurden bestätigt.</p></body></html>"
             ), 200
-        except Exception:
-            return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=error")
+        return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=pending")
+
 
     @app.get("/stripe/cancel")
     def stripe_cancel():
-        booking_id = request.args.get("booking", type=int)
-        if booking_id:
-            with db() as conn:
-                conn.execute(
-                    """UPDATE bookings SET status='cancelled', released_at=?,
-                       release_reason='Kartenzahlung abgebrochen'
-                       WHERE id=? AND COALESCE(paid,0)=0""",
-                    (datetime.now().isoformat(timespec="seconds"), booking_id),
-                )
-        return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=cancelled")
+        # Stripe may complete payment asynchronously after the buyer returns.
+        # A browser redirect must not release or cancel the reserved booking.
+        return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=pending")
 
-    app.extensions["zab_stripe_checkout_enabled"] = bool(secret_key())
-    return {"configured": bool(secret_key())}
+    app.extensions["zab_stripe_checkout_enabled"] = live_ready()
+    return {"configured": live_ready()}
