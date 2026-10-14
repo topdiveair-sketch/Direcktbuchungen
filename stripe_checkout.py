@@ -398,22 +398,24 @@ def init_stripe_checkout(
 
     @app.get("/stripe/success")
     def stripe_success():
-        session_id = request.args.get("session_id", "").strip()
+        # Return URLs are untrusted browser requests: never settle a booking here.
         booking_id = request.args.get("booking", type=int)
-        if not session_id or not booking_id or not live_ready():
-            return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=error")
-        try:
-            session = stripe_http("GET", "/checkout/sessions/" + urllib.parse.quote(session_id, safe=""))
-            ok, verified_booking_id = finalize_paid_session(session)
-            if not ok or verified_booking_id != booking_id:
-                return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=error")
+        session_id = request.args.get("session_id", "").strip()
+        if not booking_id or not session_id or not live_ready():
+            return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=pending")
+        with db() as conn:
+            booking = conn.execute(
+                "SELECT status,paid,stripe_session_id FROM bookings WHERE id=?", (booking_id,)
+            ).fetchone()
+        if (booking and str(booking["stripe_session_id"] or "") == session_id
+                and booking["status"] == "confirmed" and bool(booking["paid"])):
             return render_template_string(
-                """<!doctype html><html lang='de'><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Zahlung bestätigt</title><body style='font-family:Arial,sans-serif;max-width:680px;margin:60px auto;padding:24px'><h1>✅ Kartenzahlung bestätigt</h1><p>Ihre Buchung bei <strong>Zuhause am Bach – Wachau</strong> wurde bezahlt und verbindlich bestätigt.</p><p>Buchungsnummer: {{ booking_id }}</p><p><a href='{{ return_url }}'>Zurück zur Unterkunftsseite</a></p></body></html>""",
-                booking_id=booking_id,
-                return_url=os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL),
+                "<!doctype html><html lang='de'><meta charset='utf-8'>"
+                "<title>Buchung bestätigt</title><body><h1>Buchung bestätigt</h1>"
+                "<p>Ihre Zahlung und Buchung wurden bestätigt.</p></body></html>"
             ), 200
-        except Exception:
-            return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=error")
+        return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=pending")
+
 
     @app.get("/stripe/cancel")
     def stripe_cancel():
