@@ -20,6 +20,7 @@ def make_db(live):
         "INSERT INTO bookings(id,total,payment_method,status,paid,stripe_session_id) "
         "VALUES(42,149,'stripe_checkout','pending',0,?)", (sid,)
     )
+    conn.commit()  # Finish fixture insertion before BEGIN IMMEDIATE settlement.
     return conn, sid
 
 
