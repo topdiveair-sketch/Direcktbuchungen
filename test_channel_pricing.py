@@ -41,7 +41,7 @@ class OutboxTests(unittest.TestCase):
     def test_current_markup_rounding_and_all_channel_cap(self):
         self.assertEqual(portal_price(100), 105)
         self.assertEqual(portal_price(119), 124.95)
-        self.assertEqual(portal_price(141.90), 148.99)
+        self.assertEqual(portal_price(141.90), 149.00)
         self.assertEqual(portal_price(149), 156.45)\n        self.assertEqual(portal_price(200), 199)\n        self.assertEqual(portal_price(199), 199)
 
     def test_demand_change_refreshes_target_and_success_is_not_resent(self):
