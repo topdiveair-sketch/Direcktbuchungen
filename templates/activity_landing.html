@@ -91,7 +91,9 @@
         "mainEntity":[
           {"@type":"Question","name":"Kann ich meine Wachau-Etappe schon lange im Voraus anfragen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Über die Direktbuchungsseite können Reisedaten weit im Voraus geprüft und angefragt werden. Aktuell kommuniziert Zuhause am Bach einen Planungshorizont bis {{ booking_horizon_year }}."}},
           {"@type":"Question","name":"Ist Zuhause am Bach für nur eine Etappennacht geeignet?","acceptedAnswer":{"@type":"Answer","text":"Ja. Eine einzelne Etappenübernachtung ist grundsätzlich möglich, sofern der Termin verfügbar ist. An einzelnen stark nachgefragten Veranstaltungsterminen können abweichende Mindestaufenthalte gelten."}},
-          {"@type":"Question","name":"Warum direkt buchen?","acceptedAnswer":{"@type":"Answer","text":"Bei der Direktanfrage sprechen Gäste unmittelbar mit dem Gastgeber, können Extras gleich mitplanen und erhalten eine persönliche Bestätigung."}}
+          {"@type":"Question","name":"Warum direkt buchen?","acceptedAnswer":{"@type":"Answer","text":"Bei der Direktanfrage sprechen Gäste unmittelbar mit dem Gastgeber, können Extras gleich mitplanen und erhalten eine persönliche Bestätigung."}}{% if kind == 'bike' %},
+          {"@type":"Question","name":"Gibt es Hilfe bei kleineren Fahrradreparaturen?","acceptedAnswer":{"@type":"Answer","text":"Bei kleineren Reparaturen helfen wir mit Werkzeug und Kompressor. Zuhause am Bach ist kein Fahrradfachbetrieb. Der Gast prüft selbst, ob das Fahrrad verkehrssicher ist, und entscheidet eigenverantwortlich über die Weiterfahrt."}}
+        {% endif %}
         ]
       }
     ]
@@ -206,6 +208,10 @@
       <summary>Warum direkt buchen?</summary>
       <p>Bei der Direktanfrage sprechen Gäste unmittelbar mit dem Gastgeber, können Extras gleich mitplanen und erhalten eine persönliche Bestätigung.</p>
     </details>
+    {% if kind == "bike" %}<details>
+      <summary>Gibt es Hilfe bei kleineren Fahrradreparaturen?</summary>
+      <p>Bei kleineren Reparaturen helfen wir mit Werkzeug und Kompressor. Zuhause am Bach ist kein Fahrradfachbetrieb. Der Gast prüft selbst, ob das Fahrrad verkehrssicher ist, und entscheidet eigenverantwortlich über die Weiterfahrt.</p>
+    </details>{% endif %}
   </section>
 </main>
 
