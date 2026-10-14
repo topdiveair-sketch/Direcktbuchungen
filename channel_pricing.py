@@ -11,8 +11,8 @@ import beds24_rates
 from booking_connectivity import push_rate as booking_push_rate, connectivity_status
 
 
-PORTAL_MARKUP = Decimal("1.15")
-PORTAL_MAX = Decimal("149")
+PORTAL_MARKUP = Decimal("1.05")
+PORTAL_MAX = Decimal("199")
 
 
 def portal_price(direct):
@@ -79,8 +79,20 @@ class RateOutbox:
         try:
             failures = set()
             with self.db() as conn:
+                has_central = conn.execute(
+                    "SELECT 1 FROM sqlite_master WHERE type='table' AND name='central_overrides'"
+                ).fetchone() is not None
+                closed_filter = (
+                    """ AND NOT EXISTS (
+                        SELECT 1 FROM central_overrides AS closed
+                        WHERE closed.room=zab_rate_outbox.room
+                          AND closed.day=zab_rate_outbox.day
+                          AND closed.availability=0
+                    )""" if has_central else ""
+                )
                 rows = conn.execute("""SELECT * FROM zab_rate_outbox WHERE status!='applied'
-                    AND next_attempt<=? AND day>=? ORDER BY next_attempt,day LIMIT ?""",
+                    AND next_attempt<=? AND day>=?""" + closed_filter +
+                    """ ORDER BY next_attempt,day LIMIT ?""",
                     (now, date.today().isoformat(), limit)).fetchall()
             for row in rows:
                 try:
@@ -142,7 +154,7 @@ def init_channel_pricing(app, db, direct_rate, require_admin):
 
     @app.get('/health/channel-pricing', endpoint='channel_pricing_health')
     def health():
-        return jsonify(ok=True, portal_markup_percent=15, max_room_price=149,
+        return jsonify(ok=True, portal_markup_percent=5, max_room_price=199,
                        beds24_configured=beds24_rates.configuration('Bachblick')['configured'],
                        booking_configured=connectivity_status('Bachblick')['configured'],
                        booking_via_beds24='booking' not in providers)

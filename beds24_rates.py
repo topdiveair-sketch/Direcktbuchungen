@@ -90,7 +90,7 @@ def _token():
 def push_rate(room, day, price):
     try:
         price = float(price)
-        if not math.isfinite(price) or not 5 <= price <= 149:
+        if not math.isfinite(price) or not 5 <= price <= 199:
             raise ValueError
     except (TypeError, ValueError):
         return {"ok": False, "status": "invalid_price", "message": "Ungültiger Portal-Zimmerpreis."}
