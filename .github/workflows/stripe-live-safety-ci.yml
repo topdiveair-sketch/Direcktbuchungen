@@ -28,8 +28,6 @@ jobs:
         env:
           PYTHONPATH: .
         run: |
-          python -m unittest -v \
-            tests.test_stripe_live_calendar_gate \
-            tests.test_stripe_live_configuration \
-            tests.test_stripe_payment_mode_isolation \
-            tests.test_stripe_settlement_modes
+          for name in test_stripe_live_calendar_gate.py test_stripe_live_configuration.py test_stripe_payment_mode_isolation.py test_stripe_settlement_modes.py; do
+            python -m unittest discover -s tests -p "$name" -v
+          done
