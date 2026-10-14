@@ -1640,14 +1640,15 @@ def activity_landing_context(kind: str) -> dict:
             "canonical": "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
             "eyebrow": "Donauradweg Wachau · Aggsbach Markt",
             "headline": "Unterkunft am Donauradweg in der Wachau",
-            "intro": "Zuhause am Bach ist ein ruhiger Etappenstopp in Aggsbach Markt für Radreisende und Radurlauber aus Österreich, Deutschland und der Schweiz. Auch eine einzelne Übernachtung ist grundsätzlich möglich – mit sicherer Fahrradunterbringung und E-Bike-Lademöglichkeit. Wenn es zeitlich passt, können wir nach vorheriger Absprache gelegentlich Werkzeug oder Kompressor bereitstellen und bei kleinen Arbeiten unterstützen. Das ist ein freiwilliges, unverbindliches Entgegenkommen ohne Anspruch auf Hilfe. Wir sind kein Fahrradfachbetrieb und sagen weder eine Reparatur noch eine Prüfung der Verkehrssicherheit zu. Gäste beurteilen ihr Rad selbst und entscheiden eigenverantwortlich über die Weiterfahrt. Zwingende gesetzliche Haftung bleibt unberührt.",
+            "intro": "Zuhause am Bach ist ein ruhiger Etappenstopp in Aggsbach Markt für Radreisende und Radurlauber aus Österreich, Deutschland und der Schweiz. Auch eine einzelne Übernachtung ist grundsätzlich möglich – mit sicherer Fahrradunterbringung und E-Bike-Lademöglichkeit. Auf Anfrage können wir nach Abstimmung und je nach Verfügbarkeit einen Waschplatz, ein passendes Ersatzrad, die Beschaffung eines geeigneten Rads nach Budgetfreigabe sowie Fahrradtransport organisieren. Termin, Umfang und Kosten bestätigen wir vorab; diese Extras stehen nicht ständig vor Ort bereit. Kleine Werkzeughilfe ist freiwillig und unverbindlich. Wir sind kein Fahrradfachbetrieb und sagen weder eine Reparatur noch eine Prüfung der Verkehrssicherheit zu. Gäste beurteilen ihr Rad selbst und entscheiden eigenverantwortlich über die Weiterfahrt. Zwingende gesetzliche Haftung bleibt unberührt.",
             "benefits": [
                 "Sichere Unterbringung für Fahrräder",
                 "E-Bike-Lademöglichkeit",
                 "Frühstück auf Wunsch",
                 "Trocknungsmöglichkeit für Radbekleidung",
                 "Gepäcktransport auf Anfrage",
-                "Kleine Hilfe mit Werkzeug oder Kompressor nach Absprache und Verfügbarkeit",
+                "Waschplatz, passendes Ersatzrad, Radbeschaffung oder Fahrradtransport auf Anfrage, nach Verfügbarkeit und vorheriger Kostenbestätigung",
+                "Kleine Werkzeughilfe nach Absprache und wenn es zeitlich passt",
                 "Persönliche Tipps für die nächste Wachau-Etappe",
             ],
             "planning_title": "Radetappe früh sichern – bis %s planbar" % horizon,
@@ -1771,7 +1772,7 @@ def seo_landing_context(slug: str) -> dict:
         },
         "radfahrer": {
             "title":"Radfahrer-Unterkunft Wachau | kleine Hilfe nach Absprache",
-            "description":"Radfahrer-Unterkunft in der Wachau: Fahrradunterbringung, E-Bike-Laden und auf Anfrage gelegentliche Hilfe mit Werkzeug oder Kompressor, sofern verfügbar.",
+            "description":"Radfahrer-Unterkunft in der Wachau: sichere Fahrradunterbringung, E-Bike-Laden und Extras wie Waschplatz, Ersatzrad, Radbeschaffung oder Fahrradtransport nach Anfrage und Verfügbarkeit.",
             "canonical":"https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
             "h1":"Radfahrer-Unterkunft in der Wachau",
             "lead":"Für Radreisende am Donauradweg: ein persönlicher Etappenstopp mit sicherer Fahrradunterbringung, E-Bike-Lademöglichkeit und möglicher Hilfe bei kleinen Arbeiten – nach Absprache und wenn es zeitlich passt.",
@@ -1779,14 +1780,14 @@ def seo_landing_context(slug: str) -> dict:
             "subheading":"Fahrrad sicher abstellen, laden und auf Wunsch um kleine Hilfe fragen",
             "paragraphs":[
                 "Fahrräder können geschützt untergebracht werden; für E-Bikes gibt es eine Lademöglichkeit.",
-                "Bei kleinen Arbeiten können wir nach vorheriger Absprache und sofern es zeitlich passt gelegentlich Werkzeug oder Kompressor bereitstellen und unterstützen. Das ist ein freiwilliges, unverbindliches Entgegenkommen ohne Anspruch auf Hilfe. Zuhause am Bach ist kein Fahrradfachbetrieb; eine Reparatur oder Prüfung der Verkehrssicherheit wird nicht zugesagt. Zwingende gesetzliche Haftung bleibt unberührt.",
+                "Auf Anfrage können wir nach vorheriger Abstimmung und je nach Verfügbarkeit einen Waschplatz, ein passendes Ersatzrad, die Beschaffung eines geeigneten Rads nach Budgetfreigabe sowie Fahrradtransport organisieren. Termin, Kosten und Umfang bestätigen wir vorab; diese Extras sind nicht ständig vor Ort verfügbar. Kleine Werkzeughilfe ist freiwillig und unverbindlich. Zuhause am Bach ist kein Fahrradfachbetrieb; eine Reparatur oder Prüfung der Verkehrssicherheit wird nicht zugesagt. Gäste beurteilen den Zustand ihres Fahrrads selbst und entscheiden eigenverantwortlich über die Weiterfahrt. Zwingende gesetzliche Haftung bleibt unberührt.",
                 "Gäste beurteilen den Zustand ihres Fahrrads selbst und entscheiden eigenverantwortlich über die Weiterfahrt. Frühstück auf Wunsch, Trocknungsmöglichkeit für Radbekleidung und Gepäcktransport auf Anfrage unterstützen die Etappenreise."
             ],
-            "features":[("🚲","Fahrrad sicher","Geschützte Unterbringung."),("⚡","E-Bike laden","Lademöglichkeit am Haus."),("🛠️","Kleine Hilfe","Werkzeug/Kompressor nach Absprache und Verfügbarkeit."),("👕","Trocknen","Für nasse Radbekleidung.")],
+            "features":[("🚲","Fahrrad sicher","Geschützte Unterbringung."),("⚡","E-Bike laden","Lademöglichkeit am Haus."),("🛠️","Rad-Service auf Anfrage","Waschplatz, Ersatzrad, Radbeschaffung oder Fahrradtransport nach Abstimmung."),("👕","Trocknen","Für nasse Radbekleidung.")],
             "hero_image":"images/donauradweg-web.jpg","hero_image_alt":"Donauradweg bei Zuhause am Bach in der Wachau","hero_image_caption":"Kleine mögliche Hilfe mit Werkzeug/Kompressor nach Absprache und Verfügbarkeit.",
             "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer für Radfahrer in der Wachau","secondary_image_caption":"Ruhige Nacht zwischen zwei Etappen.",
             "faq":faq_direct + [
-                {"@type":"Question","name":"Kann ich bei Fahrradpannen um kleine Hilfe bitten?","acceptedAnswer":{"@type":"Answer","text":"Bei kleinen Arbeiten können wir nach vorheriger Absprache und sofern es zeitlich passt gelegentlich Werkzeug oder Kompressor bereitstellen und unterstützen. Das ist ein freiwilliges, unverbindliches Entgegenkommen ohne Anspruch auf Hilfe. Zuhause am Bach ist kein Fahrradfachbetrieb; eine Reparatur oder Prüfung der Verkehrssicherheit wird nicht zugesagt. Zwingende gesetzliche Haftung bleibt unberührt."}},
+                {"@type":"Question","name":"Welche Fahrrad-Extras kann ich anfragen?","acceptedAnswer":{"@type":"Answer","text":"Auf Anfrage können wir nach vorheriger Abstimmung und je nach Verfügbarkeit einen Waschplatz, ein passendes Ersatzrad, die Beschaffung eines geeigneten Rads nach Budgetfreigabe sowie Fahrradtransport organisieren. Termin, Kosten und Umfang bestätigen wir vorab; diese Extras sind nicht ständig vor Ort verfügbar. Kleine Werkzeughilfe ist freiwillig und unverbindlich. Zuhause am Bach ist kein Fahrradfachbetrieb und sagt keine Reparatur oder Verkehrssicherheitsprüfung zu. Gäste beurteilen den Zustand ihres Fahrrads selbst und entscheiden eigenverantwortlich über die Weiterfahrt. Zwingende gesetzliche Haftung bleibt unberührt."}},
                 {"@type":"Question","name":"Wer beurteilt, ob das Rad verkehrssicher ist?","acceptedAnswer":{"@type":"Answer","text":"Gäste beurteilen den Zustand ihres Fahrrads selbst und entscheiden eigenverantwortlich über die Weiterfahrt."}}
             ],
         },
