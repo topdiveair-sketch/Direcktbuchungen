@@ -785,6 +785,39 @@ def room_available_in_conn(conn: sqlite3.Connection, room: str, arrival: date, d
     return True, "Das Zimmer ist verfügbar."
 
 
+@app.get("/api/os/bookings-detail")
+def os_full_booking_details():
+    """Read-only authoritative web-booking and payment feed for ZAB Windows OS."""
+    expected = env_value("OS_SYNC_TOKEN")
+    supplied = (request.headers.get("X-OS-Sync-Token") or "").strip()
+    if not expected or not supplied or not hmac.compare_digest(expected, supplied):
+        return jsonify(ok=False, error="unauthorized"), 401
+    with db() as conn:
+        bookings = []
+        for row in conn.execute("SELECT * FROM bookings ORDER BY id"):
+            item = dict(row)
+            status = str(item.get("status") or "")
+            paid = bool(item.get("paid"))
+            total = float(item.get("total") or 0)
+            method = str(item.get("payment_method") or "")
+            refunded = (method == "stripe_checkout" and status == "cancelled"
+                        and str(item.get("release_reason") or "") == "stripe_full_refund")
+            item["amount_paid"] = 0.0 if refunded else (total if paid else 0.0)
+            item["payment_status"] = ("refunded" if refunded else
+                                      "paid" if paid else "unpaid")
+            item["payment_reference"] = (item.get("stripe_payment_intent_id")
+                                           or item.get("stripe_session_id") or "")
+            item["price_breakdown_json"] = str(item.get("checkout_payload") or "{}")
+            item["refunded"] = refunded
+            item.pop("checkout_payload", None)
+            bookings.append(item)
+    response = jsonify(ok=True, source="homepage-preview", count=len(bookings),
+                       bookings=bookings,
+                       synced_at=datetime.now().isoformat(timespec="seconds"))
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @app.post("/api/os/control")
 def os_central_control():
     expected = env_value("OS_SYNC_TOKEN")
