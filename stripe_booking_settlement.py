@@ -8,8 +8,10 @@ from datetime import datetime
 from stripe_booking_verification import verify_paid_checkout_session
 
 
-def settle_verified_stripe_session(conn, session: dict) -> str:
+def settle_verified_stripe_session(conn, session: dict, *, expected_livemode: bool = False) -> str:
     """Return confirmed, duplicate or rejected; transaction is caller-managed."""
+    if not isinstance(expected_livemode, bool):
+        return "rejected"
     booking_ref = session.get("client_reference_id")
     try:
         booking_id = int(booking_ref)
@@ -24,7 +26,7 @@ def settle_verified_stripe_session(conn, session: dict) -> str:
             conn.rollback()
             return "rejected"
         booking = dict(row)
-        if (session.get("livemode") is False
+        if (session.get("livemode") is expected_livemode
                 and booking.get("payment_method") == "stripe_checkout"
                 and booking.get("status") == "confirmed" and int(booking.get("paid") or 0) == 1
                 and str(session.get("client_reference_id")) == str(booking.get("id"))
@@ -33,7 +35,7 @@ def settle_verified_stripe_session(conn, session: dict) -> str:
             conn.commit()
             return "duplicate"
         try:
-            payment_intent = verify_paid_checkout_session(session, booking)
+            payment_intent = verify_paid_checkout_session(session, booking, expected_livemode=expected_livemode)
         except (ValueError, TypeError):
             conn.rollback()
             return "rejected"
