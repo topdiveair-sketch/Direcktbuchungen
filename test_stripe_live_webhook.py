@@ -115,6 +115,27 @@ class StripeLiveWebhookTests(unittest.TestCase):
         self.assertEqual(self.booking()["paid"], 0)
         self.assertEqual(self.booking()["status"], "pending")
 
+    def test_protected_test_webhook_works_without_public_checkout(self):
+        with patch.dict(os.environ, {
+            "ZAB_STRIPE_LIVE_ENABLED": "0",
+            "ZAB_STRIPE_PROTECTED_TEST": "1",
+            "ZAB_STRIPE_TEST_ACCESS_TOKEN": "A" * 48,
+        }):
+            status = self.client.get("/api/stripe/status").get_json()
+            self.assertFalse(status["configured"])
+            self.assertEqual(self.send_event().status_code, 200)
+
+    def test_protected_test_checkout_requires_secret_header(self):
+        with patch.dict(os.environ, {
+            "ZAB_STRIPE_LIVE_ENABLED": "0",
+            "ZAB_STRIPE_PROTECTED_TEST": "1",
+            "ZAB_STRIPE_TEST_ACCESS_TOKEN": "A" * 48,
+        }):
+            response = self.client.post("/api/stripe/create-checkout-session", json={})
+            self.assertEqual(response.status_code, 503)
+            status = self.client.get("/api/stripe/status").get_json()
+            self.assertFalse(status["configured"])
+
     def test_bad_signature_rejected(self):
         self.assertEqual(self.send_event(tamper=True).status_code, 400)
         self.assertEqual(self.booking()["paid"], 0)
