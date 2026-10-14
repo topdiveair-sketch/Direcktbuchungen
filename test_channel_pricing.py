@@ -115,7 +115,7 @@ class Beds24Tests(unittest.TestCase):
     @patch.dict(os.environ, {'BEDS24_REFRESH_TOKEN': 'SECRET', 'BEDS24_ROOM_ID_BACHBLICK': '123',
                              'BEDS24_PORTAL_PRICE_SLOT_BACHBLICK': '1'})
     def test_http_failures_are_classified_without_exposing_credentials(self):
-        for status, code in ((401, 'unauthorized'), (403, 'forbidden'),
+        for status, code in ((401, 'inventory_unauthorized'), (403, 'forbidden'),
                              (429, 'rate_limited'), (503, 'server_error')):
             error = urllib.error.HTTPError('https://example.test/SECRET', status, 'SECRET', {}, None)
             with self.subTest(status=status), patch.object(beds24_rates, '_token', return_value='SECRET'), \
