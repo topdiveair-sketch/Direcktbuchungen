@@ -136,6 +136,41 @@ class StripeLiveWebhookTests(unittest.TestCase):
             status = self.client.get("/api/stripe/status").get_json()
             self.assertFalse(status["configured"])
 
+    def refund_event(self, amount_refunded=11900, payment_intent="pi_test_payment", tamper=False):
+        event = {"id": "evt_refund_test", "livemode": True, "type": "charge.refunded",
+                 "data": {"object": {"object": "charge", "livemode": True,
+                                     "payment_intent": payment_intent,
+                                     "amount": 11900, "amount_refunded": amount_refunded}}}
+        raw = json.dumps(event, separators=(",", ":")).encode()
+        ts = str(int(time.time()))
+        sig = hmac.new(b"whsec_offline_test_only", ts.encode() + b"." + raw, hashlib.sha256).hexdigest()
+        if tamper:
+            sig = "0" * 64
+        return self.client.post("/stripe/webhook", data=raw, content_type="application/json",
+                                headers={"Stripe-Signature": "t=" + ts + ",v1=" + sig})
+
+    def test_full_refund_releases_booking_and_is_idempotent(self):
+        self.assertEqual(self.send_event().status_code, 200)
+        self.assertEqual(self.refund_event().status_code, 200)
+        self.assertEqual(self.booking()["status"], "cancelled")
+        self.assertEqual(self.booking()["release_reason"], "stripe_full_refund")
+        self.assertEqual(self.refund_event().status_code, 200)
+
+    def test_partial_refund_keeps_booking(self):
+        self.send_event()
+        self.assertEqual(self.refund_event(amount_refunded=100).status_code, 200)
+        self.assertEqual(self.booking()["status"], "confirmed")
+
+    def test_wrong_payment_intent_never_cancels(self):
+        self.send_event()
+        self.assertEqual(self.refund_event(payment_intent="pi_unrelated").status_code, 503)
+        self.assertEqual(self.booking()["status"], "confirmed")
+
+    def test_unsigned_refund_cannot_cancel(self):
+        self.send_event()
+        self.assertEqual(self.refund_event(tamper=True).status_code, 400)
+        self.assertEqual(self.booking()["status"], "confirmed")
+
     def test_bad_signature_rejected(self):
         self.assertEqual(self.send_event(tamper=True).status_code, 400)
         self.assertEqual(self.booking()["paid"], 0)

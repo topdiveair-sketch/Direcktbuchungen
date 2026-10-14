@@ -407,6 +407,46 @@ def init_stripe_checkout(
         except Exception as exc:
             return api_json({"ok": False, "message": f"Kartenzahlung derzeit nicht verfügbar: {exc}"}, 503)
 
+    def handle_refunded_charge(charge):
+        """Release only the matching, fully refunded live Stripe reservation."""
+        if charge.get("object") != "charge" or charge.get("livemode") is not True:
+            return False
+        payment_intent = str(charge.get("payment_intent") or "")
+        try:
+            amount = int(charge.get("amount") or 0)
+            refunded = int(charge.get("amount_refunded") or 0)
+        except (TypeError, ValueError):
+            return False
+        if not payment_intent.startswith("pi_") or amount <= 0 or refunded < amount:
+            return True
+        with db() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            booking = conn.execute(
+                """SELECT id,status,paid,total FROM bookings
+                   WHERE stripe_payment_intent_id=? AND payment_method='stripe_checkout'""",
+                (payment_intent,),
+            ).fetchone()
+            if not booking:
+                conn.rollback()
+                return False
+            if int(round(float(booking["total"]) * 100)) != amount:
+                conn.rollback()
+                return False
+            if booking["status"] == "cancelled":
+                return True
+            if booking["status"] != "confirmed" or not booking["paid"]:
+                conn.rollback()
+                return False
+            conn.execute(
+                """UPDATE bookings SET status='cancelled', released_at=?,
+                   release_reason='stripe_full_refund',
+                   payment_error='Vollständige Stripe-Rückerstattung; Zimmer freigegeben'
+                   WHERE id=? AND status='confirmed'""",
+                (datetime.now().isoformat(timespec="seconds"), booking["id"]),
+            )
+        app.logger.info("Stripe full refund released booking id=%s", booking["id"])
+        return True
+
     @app.post("/stripe/webhook")
     def stripe_live_webhook():
         if not backend_ready():
@@ -433,6 +473,10 @@ def init_stripe_checkout(
             event = json.loads(raw)
             if event.get("livemode") is not True:
                 return jsonify({"error": "Wrong mode"}), 403
+            if event.get("type") == "charge.refunded":
+                if not handle_refunded_charge(event["data"]["object"]):
+                    return jsonify({"error": "Refund requires reconciliation"}), 503
+                return jsonify({"received": True}), 200
             if event.get("type") not in ("checkout.session.completed", "checkout.session.async_payment_succeeded"):
                 return jsonify({"received": True, "ignored": True}), 200
             session = event["data"]["object"]
