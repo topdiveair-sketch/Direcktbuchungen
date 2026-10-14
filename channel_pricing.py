@@ -11,8 +11,8 @@ import beds24_rates
 from booking_connectivity import push_rate as booking_push_rate, connectivity_status
 
 
-PORTAL_MARKUP = Decimal("1.15")
-PORTAL_MAX = Decimal("149")
+PORTAL_MARKUP = Decimal("1.05")
+PORTAL_MAX = Decimal("199")
 
 
 def portal_price(direct):
@@ -142,7 +142,7 @@ def init_channel_pricing(app, db, direct_rate, require_admin):
 
     @app.get('/health/channel-pricing', endpoint='channel_pricing_health')
     def health():
-        return jsonify(ok=True, portal_markup_percent=15, max_room_price=149,
+        return jsonify(ok=True, portal_markup_percent=5, max_room_price=199,
                        beds24_configured=beds24_rates.configuration('Bachblick')['configured'],
                        booking_configured=connectivity_status('Bachblick')['configured'],
                        booking_via_beds24='booking' not in providers)
