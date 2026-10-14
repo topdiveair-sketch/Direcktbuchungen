@@ -10,7 +10,7 @@ class StripeBookingMismatch(ValueError):
     pass
 
 
-def verify_paid_checkout_session(session: dict, booking: dict) -> str:
+def verify_paid_checkout_session(session: dict, booking: dict, *, expected_livemode: bool = False) -> str:
     """Return the PaymentIntent ID only when the exact booking was paid in EUR."""
     try:
         expected_cents = int((Decimal(str(booking["total"])) * 100).to_integral_exact())
@@ -18,12 +18,15 @@ def verify_paid_checkout_session(session: dict, booking: dict) -> str:
         booking_id = str(booking["id"])
     except (KeyError, ValueError, TypeError, InvalidOperation, ArithmeticError) as exc:
         raise StripeBookingMismatch("Invalid amount or booking reference") from exc
+    if not isinstance(expected_livemode, bool):
+        raise StripeBookingMismatch("Explicit Stripe mode required")
+    expected_session_prefix = "cs_live_" if expected_livemode else "cs_test_"
     payment_intent = str(session.get("payment_intent") or "")
     if (
         booking.get("payment_method") != "stripe_checkout"
         or booking.get("status") != "pending"
         or int(booking.get("paid") or 0) != 0
-        or session.get("livemode") is not False
+        or session.get("livemode") is not expected_livemode
         or session.get("mode") != "payment"
         or session.get("status") != "complete"
         or session.get("payment_status") != "paid"
@@ -33,7 +36,7 @@ def verify_paid_checkout_session(session: dict, booking: dict) -> str:
         or actual_cents != expected_cents
         or expected_cents <= 0
         or not payment_intent.startswith("pi_")
-        or not str(session.get("id") or "").startswith("cs_test_")
+        or not str(session.get("id") or "").startswith(expected_session_prefix)
         or str(booking.get("stripe_session_id") or "") != str(session.get("id"))
     ):
         raise StripeBookingMismatch("Stripe payment does not match the pending booking")
