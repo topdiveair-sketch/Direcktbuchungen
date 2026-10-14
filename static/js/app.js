@@ -503,3 +503,6 @@ updateTotals();
 updatePaymentUI();
 updateBookingSummary();
 renderCalendar();
+
+// Load card option only if Stripe server-side readiness check passes.
+(function(){const script=document.createElement('script');script.src='/static/js/zab-card-checkout.js?v=20261014-live-gate';script.defer=true;document.body.appendChild(script);})();
