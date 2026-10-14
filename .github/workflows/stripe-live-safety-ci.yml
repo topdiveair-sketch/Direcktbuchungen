@@ -1,0 +1,35 @@
+name: Stripe live safety checks
+on:
+  push:
+    branches:
+      - fix/stripe-live-integration-review-20261014
+    paths:
+      - 'stripe_live_calendar_gate.py'
+      - 'stripe_live_configuration.py'
+      - 'stripe_booking_verification.py'
+      - 'stripe_booking_settlement.py'
+      - 'tests/test_stripe_live_calendar_gate.py'
+      - 'tests/test_stripe_live_configuration.py'
+      - 'tests/test_stripe_payment_mode_isolation.py'
+      - 'tests/test_stripe_settlement_modes.py'
+      - '.github/workflows/stripe-live-safety-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stripe-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run offline Stripe safety tests
+        env:
+          PYTHONPATH: .
+        run: |
+          python -m unittest -v \
+            tests.test_stripe_live_calendar_gate \
+            tests.test_stripe_live_configuration \
+            tests.test_stripe_payment_mode_isolation \
+            tests.test_stripe_settlement_modes
