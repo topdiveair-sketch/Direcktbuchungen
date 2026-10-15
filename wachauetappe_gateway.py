@@ -132,6 +132,9 @@ def _effective_direct_rate(room: str, day: date, fallback: float) -> tuple[float
         return fallback, False
     if value is None:
         return fallback, False
+    if isinstance(value, tuple) and len(value) == 2:
+        amount, is_manual = value
+        return float(amount), bool(is_manual)
     value = float(value)
     return value, value != fallback
 
