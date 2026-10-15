@@ -857,6 +857,24 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
         )
         return jsonify(payload), 200
 
+    def _public_channel_price_for_day(room: str, channel: str, day: date, fallback: float):
+        """Read persisted per-day channel overrides for public quotes.
+
+        Do not expose any private booking data. Failure leaves the existing
+        configured base rate in place instead of inventing an OS override.
+        """
+        if room not in active_rooms or channel not in CHANNELS:
+            return fallback
+        try:
+            with db() as conn:
+                row = _day_row(conn, room, channel, day)
+                if row is not None and row["price"] is not None:
+                    return float(row["price"])
+        except Exception:
+            return fallback
+        return fallback
+
+    app.extensions["zab_channel_price_for_day"] = _public_channel_price_for_day
     app.extensions["zab_control_center_channels"] = CHANNELS
     app.extensions["zab_control_center_snapshot"] = _calendar_snapshot
     app.extensions["zab_control_center_v3"] = True
