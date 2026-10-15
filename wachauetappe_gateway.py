@@ -132,6 +132,9 @@ def _effective_direct_rate(room: str, day: date, fallback: float) -> tuple[float
         return fallback, False
     if value is None:
         return fallback, False
+    if isinstance(value, tuple) and len(value) == 2:
+        amount, is_manual = value
+        return float(amount), bool(is_manual)
     value = float(value)
     return value, value != fallback
 
@@ -418,7 +421,9 @@ def public_direct_price():
         fallback = float(rate)
         rate, overridden = _effective_direct_rate(room, current, fallback)
         quiet = quiet_night_rate(current)
-        if quiet is not None:
+        # Quiet-night automation is a fallback, never an override of an
+        # explicitly changed price received from the ZAB OS calendar.
+        if quiet is not None and not overridden:
             rate, overridden = quiet, False
         override_used = override_used or overridden
         nights.append({"date": current.isoformat(), "price_eur": rate, "os_override": overridden})
