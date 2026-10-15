@@ -2462,10 +2462,11 @@ def public_sitemap_urls():
 
 @app.get("/sitemap.xml")
 def sitemap():
-    today_iso = date.today().isoformat()
+    # Do not claim every page changed today: Google expects truthful lastmod dates.
+    # Omit lastmod until per-page content modification times are available.
     body = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for url in public_sitemap_urls():
-        body.append(f"<url><loc>{url}</loc><lastmod>{today_iso}</lastmod><changefreq>weekly</changefreq></url>")
+        body.append(f"<url><loc>{url}</loc></url>")
     body.append("</urlset>")
     return Response("\n".join(body), mimetype="application/xml")
 
