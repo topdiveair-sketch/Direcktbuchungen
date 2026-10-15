@@ -1,25 +1,18 @@
-"""Serve Bing ownership proof before legacy canonical-path redirects."""
+"""Bing ownership proof at WSGI boundary, ahead of URL canonicalization."""
 from pathlib import Path
-from flask import Response, request
+from flask import Response
 from wachauetappe_gateway import app
 
-
-def _bing_xml_response():
-    content = (Path(__file__).resolve().parent / "BingSiteAuth.xml").read_bytes()
-    return Response(content, mimetype="application/xml")
+_BING_PATHS = {"/BingSiteAuth.xml", "/BingSiteAuth.xml/"}
+_original_wsgi_app = app.wsgi_app
 
 
-@app.get("/BingSiteAuth.xml", strict_slashes=False)
-@app.get("/BingSiteAuth.xml/", strict_slashes=False)
-def bing_site_auth_xml():
-    return _bing_xml_response()
+def _bing_ownership_wsgi(environ, start_response):
+    if environ.get("PATH_INFO") in _BING_PATHS:
+        data = (Path(__file__).resolve().parent / "BingSiteAuth.xml").read_bytes()
+        response = Response(data, status=200, mimetype="application/xml")
+        return response(environ, start_response)
+    return _original_wsgi_app(environ, start_response)
 
 
-def _bing_verification_preflight():
-    if request.path.rstrip("/") == "/BingSiteAuth.xml":
-        return _bing_xml_response()
-    return None
-
-
-# Handle ownership proof before any existing canonical-path redirect hooks.
-app.before_request_funcs.setdefault(None, []).insert(0, _bing_verification_preflight)
+app.wsgi_app = _bing_ownership_wsgi
