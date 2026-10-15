@@ -869,10 +869,10 @@ def init_zab_control_center_v3(app, db, rooms, authorize, direct_rate_fn=None):
             with db() as conn:
                 row = _day_row(conn, room, channel, day)
                 if row is not None and row["price"] is not None:
-                    return float(row["price"])
+                    return (float(row["price"]), True)
         except Exception:
-            return fallback
-        return fallback
+            return (fallback, False)
+        return (fallback, False)
 
     app.extensions["zab_channel_price_for_day"] = _public_channel_price_for_day
     app.extensions["zab_control_center_channels"] = CHANNELS
