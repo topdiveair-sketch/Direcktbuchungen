@@ -10,7 +10,9 @@ import xml.etree.ElementTree as ET
 
 BASE = "https://www.zuhauseambach-wachau.at"
 PAGES = [
-    "/", "/en/", "/unterkunft-donauradweg-wachau",
+    "/", "/en/", "/nl/", "/cs/", "/sk/", "/hu/", "/pl/",
+    "/it/", "/fr/", "/es/", "/ch/",
+    "/unterkunft-donauradweg-wachau",
     "/unterkunft-welterbesteig-wachau", "/robots.txt",
     "/sitemap.xml", "/llms.txt",
 ]
@@ -40,9 +42,9 @@ def main():
                 print("  Sitemap-URLs:", len(urls))
                 if not urls or BASE + "/" not in urls:
                     problems.append("Startseite fehlt in Sitemap")
-            if path in ("/", "/en/") and "<title>" not in body.lower():
+            if path in ("/", "/en/", "/nl/", "/cs/", "/sk/", "/hu/", "/pl/", "/it/", "/fr/", "/es/", "/ch/") and "<title>" not in body.lower():
                 problems.append("HTML-Titel fehlt")
-            if path in ("/", "/en/") and "canonical" not in body.lower():
+            if path in ("/", "/en/", "/nl/", "/cs/", "/sk/", "/hu/", "/pl/", "/it/", "/fr/", "/es/", "/ch/") and "canonical" not in body.lower():
                 problems.append("Canonical-Hinweis fehlt")
             print(("FEHLER" if problems else "OK"), status, path, " | ".join(problems))
             errors.extend(path + ": " + p for p in problems)
