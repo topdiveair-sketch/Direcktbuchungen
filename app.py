@@ -567,8 +567,20 @@ def _demand_percent_for_day(room: str, day: date) -> tuple[float, int]:
 
 
 def direct_nightly_price_for_day(room: str, day: date) -> float:
-    """OS base price plus aggregate date demand, with hard floor/cap protection."""
+    """Explicit OS direct price wins over all automated base and demand rules."""
     base = _base_direct_nightly_price_for_day(room, day)
+    getter = app.extensions.get("zab_channel_price_for_day")
+    if callable(getter):
+        try:
+            result = getter(room, "direct", day, base)
+            if isinstance(result, tuple) and len(result) == 2:
+                manual_price, is_manual = result
+                if is_manual and manual_price is not None:
+                    return round(float(manual_price), 2)
+        except (TypeError, ValueError, OverflowError):
+            pass
+        except Exception:
+            app.logger.exception("Failed to read OS direct-price override")
     if room != "Bachblick":
         return base
     percent, _checks = _demand_percent_for_day(room, day)
