@@ -435,8 +435,7 @@ def init_db() -> None:
         conn.execute("UPDATE room_prices SET standard=99, weekend=109, high=119 WHERE room='Bachblick' AND standard<99")
         for row in [("last_minute",1,10,0,3),("early_bird",0,5,0,60),("three_nights",1,5,3,0),("five_nights",1,8,5,0),("seven_nights",1,12,7,0),("direct_booking",0,0,0,0)]: conn.execute("INSERT OR IGNORE INTO discounts VALUES(?,?,?,?,?)",row)
         # Einmalige Umstellung auf Knappheits-/Ertragsstrategie:
-        # keine Last-Minute-, Frühbucher- oder Aufenthaltsrabatte; nur der
-        # wirtschaftlich sinnvolle Direktbuchungsvorteil bleibt aktiv.
+        # keine Last-Minute-, Frühbucher- oder Aufenthaltsrabatte.
         scarcity_done = conn.execute(
             "SELECT value FROM site_settings WHERE key='scarcity_revenue_v1_applied'"
         ).fetchone()
