@@ -46,6 +46,7 @@ def init_payment_hold(app, db):
             expired = conn.execute(
                 """SELECT 1 FROM bookings
                    WHERE status='pending' AND COALESCE(paid,0)=0
+                     AND COALESCE(payment_method,'')!='stripe_checkout'
                      AND COALESCE(hold_expires_at,'')!=''
                      AND hold_expires_at<=? LIMIT 1""",
                 (now_iso,),
@@ -58,6 +59,7 @@ def init_payment_hold(app, db):
                        release_reason='Zahlungsfrist von 10 Minuten abgelaufen'
                    WHERE status='pending'
                      AND COALESCE(paid,0)=0
+                     AND COALESCE(payment_method,'')!='stripe_checkout'
                      AND COALESCE(hold_expires_at,'')!=''
                      AND hold_expires_at<=?""",
                 (now_iso, now_iso),

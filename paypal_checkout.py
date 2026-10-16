@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import base64
+import hashlib
+import hmac
 import json
 import os
 import sqlite3
@@ -36,6 +38,14 @@ def init_paypal_checkout(
     5. After PayPal approval, capture on the server.
     6. Only a COMPLETED capture marks the booking paid + confirmed.
     """
+
+    def cancel_signature(booking_id):
+        secret = app.secret_key
+        if not secret:
+            raise RuntimeError("Sitzungsschluessel fuer PayPal-Abbruch fehlt.")
+        if isinstance(secret, str):
+            secret = secret.encode("utf-8")
+        return hmac.new(secret, f"paypal-cancel:{booking_id}".encode("ascii"), hashlib.sha256).hexdigest()
 
     def ensure_column(conn, table, column, definition):
         cols = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
@@ -153,6 +163,10 @@ def init_paypal_checkout(
         configured = os.environ.get("PUBLIC_CHECKOUT_BASE_URL", "").strip().rstrip("/")
         if configured:
             return configured
+        if (os.environ.get("ZAB_STRIPE_ISOLATED_TEST") == "1"
+                and request.host.split(":")[0] == "zab-stripe-sandbox-production.up.railway.app"
+                and os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_")):
+            return "https://zab-stripe-sandbox-production.up.railway.app"
         if os.environ.get("APP_ENV", "").lower() == "production" or os.environ.get("RAILWAY_ENVIRONMENT"):
             raise RuntimeError("PUBLIC_CHECKOUT_BASE_URL fehlt in Railway.")
         return request.host_url.rstrip("/")
@@ -171,6 +185,7 @@ def init_paypal_checkout(
                 """UPDATE bookings
                    SET status='cancelled', released_at=?, release_reason='Zahlungsfrist abgelaufen'
                    WHERE status='pending' AND COALESCE(paid,0)=0
+                     AND COALESCE(payment_method,'')!='stripe_checkout'
                      AND COALESCE(hold_expires_at,'')!='' AND hold_expires_at<=?""",
                 (now_iso, now_iso),
             )
@@ -178,6 +193,26 @@ def init_paypal_checkout(
     def ensure_live_calendar(room):
         if room not in rooms:
             return False, "Unbekanntes Zimmer."
+        # Isolated Stripe sandbox only: no live Booking feed or guest inventory.
+        # Local pending/confirmed reservations remain checked by authoritative_quote
+        # and by the transaction in stripe_create_checkout.
+        sandbox = (os.environ.get("ZAB_STRIPE_ISOLATED_TEST") == "1"
+                   and os.environ.get("STRIPE_SANDBOX_CHECKOUT_ENABLED") == "1"
+                   and os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_")
+                   and request.host.split(":")[0] == "zab-stripe-sandbox-production.up.railway.app")
+        if sandbox:
+            with db() as conn:
+                sources = conn.execute(
+                    "SELECT import_url FROM ical_settings WHERE room=?", (room,)
+                ).fetchone()
+                external_count = conn.execute(
+                    "SELECT COUNT(*) FROM external_blocks WHERE room=?", (room,)
+                ).fetchone()[0]
+            if (sources and (sources["import_url"] or "").strip()) or external_count:
+                return False, "Sandbox enthält externe Kalenderdaten; Checkout gesperrt."
+            return True, "Isolierter Testkalender (keine externen Buchungen)."
+        if os.environ.get("ZAB_STRIPE_ISOLATED_TEST") == "1" and request.host.split(":")[0] == "zab-stripe-sandbox-production.up.railway.app":
+            return False, "Sandbox-Kalender gesperrt: Stripe-Testschlüssel oder Checkout-Testfreigabe fehlt. Bitte Railway-Variablen prüfen."
         release_expired()
         count, message = sync_room(room)
         if message != "Synchronisierung erfolgreich.":
@@ -243,6 +278,97 @@ def init_paypal_checkout(
             raise ValueError(availability_message)
         breakdown = price_breakdown(room, arrival, departure, adults, chosen)
         return breakdown, sync_message
+
+    @app.route("/api/stripe/create-checkout", methods=["POST", "OPTIONS"])
+    def stripe_create_checkout():
+        """Sandbox-only reservation + hosted card checkout, never live payments."""
+        from stripe_checkout_client import create_hosted_checkout_session
+        if request.method == "OPTIONS":
+            return Response(status=204, headers=cors_headers())
+        if os.environ.get("STRIPE_SANDBOX_CHECKOUT_ENABLED") != "1":
+            return api_json({"ok": False, "message": "Kartenzahlung ist noch nicht freigeschaltet."}, 503)
+        if not os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_"):
+            return api_json({"ok": False, "message": "Stripe-Testzugang fehlt."}, 503)
+        try:
+            data, room, arrival, departure, adults, chosen, customer = parse_payload(True)
+            ok_sync, message = ensure_live_calendar(room)
+            if not ok_sync:
+                return api_json({"ok": False, "message": message}, 409)
+            breakdown = price_breakdown(room, arrival, departure, adults, chosen)
+            total = Decimal(str(breakdown["total"])).quantize(Decimal("0.01"))
+            if total <= 0:
+                return api_json({"ok": False, "message": "Ungueltiger Buchungspreis."}, 400)
+            base = checkout_base_url()
+            if not base.startswith("https://"):
+                return api_json({"ok": False, "message": "HTTPS Checkout URL fehlt."}, 503)
+            now = datetime.now()
+            # Keep the room held after Stripe's 30-minute session expiry:
+            # delayed paid webhooks must not allow an accidental resale.
+            hold_expires = now + timedelta(hours=24)
+            stripe_session_expires_at = int(now.timestamp()) + 31 * 60
+            with db() as conn:
+                conn.execute("BEGIN IMMEDIATE")
+                ok, reason = room_available_in_conn(conn, room, arrival, departure)
+                if not ok:
+                    conn.rollback()
+                    return api_json({"ok": False, "message": reason}, 409)
+                booking_uid = f"ZAB-STRIPE-{uuid4()}@zuhause-am-bach"
+                cur = conn.execute(
+                    """INSERT INTO bookings
+                    (uid,room,arrival,departure,adults,breakfast,first_name,last_name,
+                     email,phone,message,payment_method,total,status,created_at,
+                     paid,hold_expires_at,checkout_payload,source)
+                    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',?,0,?,?,?)""",
+                    (booking_uid, room,
+                     arrival.isoformat(), departure.isoformat(), adults,
+                     int(chosen["breakfast"]), customer["first_name"],
+                     customer["last_name"], customer["email"], customer["phone"],
+                     customer["message"], "stripe_checkout", float(total),
+                     now.isoformat(timespec="seconds"),
+                     hold_expires.isoformat(timespec="seconds"),
+                     json.dumps({"extras": chosen, "breakdown": breakdown,
+                                 "stripe_session_expires_at": stripe_session_expires_at,
+                                 "stripe_checkout_base_url": base},
+                                ensure_ascii=False),
+                     "direct-stripe-sandbox"),
+                )
+                booking_id = cur.lastrowid
+            try:
+                session = create_hosted_checkout_session(
+                    secret_key=os.environ["STRIPE_SECRET_KEY"],
+                    booking_id=booking_id, total_eur=total,
+                    guest_email=customer["email"],
+                    success_url=f"{base}/stripe/success?booking={booking_id}",
+                    cancel_url=f"{base}/stripe/cancel?booking={booking_id}",
+                    expires_at=stripe_session_expires_at,
+                    booking_uid=booking_uid,
+                )
+                with db() as conn:
+                    conn.execute("BEGIN IMMEDIATE")
+                    result = conn.execute(
+                        """UPDATE bookings SET stripe_session_id=?
+                           WHERE id=? AND status='pending' AND COALESCE(paid,0)=0
+                             AND payment_method='stripe_checkout'
+                             AND COALESCE(stripe_session_id,'')=''""",
+                        (session["id"], booking_id),
+                    )
+                    if result.rowcount != 1:
+                        conn.rollback()
+                        raise RuntimeError("Stripe session could not be assigned")
+                return api_json({"ok": True, "booking_id": booking_id,
+                                 "checkout_url": session["url"], "currency": "EUR",
+                                 "total": float(total)})
+            except Exception:
+                # The API request might have succeeded despite a lost response.
+                # Do not free inventory until reconciliation proves no payment.
+                app.logger.exception("Stripe sandbox checkout requires reconciliation")
+                return api_json({"ok": False, "message": "Zahlungsstart unklar. Bitte Gastgeber kontaktieren; Zimmer bleibt vorlaeufig reserviert."}, 503)
+        except ValueError as exc:
+            return api_json({"ok": False, "message": str(exc)}, 409)
+        except Exception:
+            app.logger.exception("Stripe sandbox checkout initialization failed")
+            return api_json({"ok": False, "message": "Kartenzahlung derzeit nicht verfuegbar."}, 503)
+
 
     @app.route("/api/paypal/quote", methods=["POST", "OPTIONS"])
     def paypal_quote():
@@ -361,7 +487,7 @@ def init_paypal_checkout(
                                     "brand_name": "Zuhause am Bach",
                                     "locale": "de-AT",
                                     "return_url": f"{base}/paypal/return?booking={booking_id}",
-                                    "cancel_url": f"{base}/paypal/cancel?booking={booking_id}",
+                                    "cancel_url": f"{base}/paypal/cancel?booking={booking_id}&sig={cancel_signature(booking_id)}",
                                     "landing_page": "GUEST_CHECKOUT",
                                     "user_action": "PAY_NOW",
                                     "shipping_preference": "NO_SHIPPING",
@@ -409,7 +535,8 @@ def init_paypal_checkout(
                     conn.execute(
                         """UPDATE bookings SET status='cancelled',released_at=?,
                            release_reason='PayPal-Auftrag konnte nicht erstellt werden',payment_error=?
-                           WHERE id=? AND COALESCE(paid,0)=0""",
+                           WHERE id=? AND status='pending' AND payment_method='paypal_checkout'
+                             AND COALESCE(paid,0)=0""",
                         (datetime.now().isoformat(timespec="seconds"), str(exc)[:500], booking_id),
                     )
                 return api_json({"ok": False, "message": f"PayPal konnte nicht gestartet werden: {exc}"}, 503)
@@ -464,8 +591,8 @@ def init_paypal_checkout(
             booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
         if not booking:
             return render_template_string(ERROR_PAGE, message="Buchung wurde nicht gefunden."), 404
-        if booking["status"] == "cancelled" and not booking["paid"]:
-            return render_template_string(ERROR_PAGE, message="Die Zahlungsfrist ist bereits abgelaufen."), 409
+        if booking["status"] != "pending" and not booking["paid"]:
+            return render_template_string(ERROR_PAGE, message="Diese Reservierung ist nicht mehr fuer eine Zahlung freigegeben."), 409
         stored_order = (booking["paypal_order_id"] or "").strip()
         if not stored_order or stored_order != order_id:
             return render_template_string(ERROR_PAGE, message="PayPal-Auftrag passt nicht zur Reservierung."), 409
@@ -475,6 +602,18 @@ def init_paypal_checkout(
                 name=booking["first_name"], room=booking["room"], arrival=booking["arrival"],
                 departure=booking["departure"], total=f"{booking['total']:.2f}", capture=booking["paypal_capture_id"] or order_id,
             )
+
+        # Check the local hold again before asking PayPal to capture funds.
+        # This narrows the cancellation race; the post-capture check below
+        # remains essential because another request may change the booking.
+        with db() as conn:
+            latest = conn.execute("SELECT status,paid,paypal_order_id FROM bookings WHERE id=?", (booking_id,)).fetchone()
+        if (not latest or latest["status"] != "pending" or latest["paid"]
+                or (latest["paypal_order_id"] or "").strip() != order_id):
+            return render_template_string(
+                ERROR_PAGE,
+                message="Diese Reservierung ist nicht mehr zur Zahlung freigegeben. Es wurde kein neuer Zahlungseinzug gestartet.",
+            ), 409
 
         try:
             token = paypal_token()
@@ -493,6 +632,10 @@ def init_paypal_checkout(
                 if not current:
                     conn.rollback()
                     raise RuntimeError("Reservierung wurde zwischenzeitlich entfernt.")
+                if ((current["paypal_order_id"] or "").strip() != order_id
+                        or current["status"] != "pending" or current["paid"]):
+                    conn.rollback()
+                    raise RuntimeError("Zahlung wurde eingezogen, aber die Reservierung ist nicht mehr offen oder der PayPal-Auftrag stimmt nicht. Manuelle Klaerung und gegebenenfalls Rueckerstattung erforderlich.")
                 conn.execute(
                     """UPDATE bookings SET paid=1,paid_at=?,status='confirmed',paypal_capture_id=?,
                        hold_expires_at='',payment_error='',released_at='',release_reason=''
@@ -506,8 +649,16 @@ def init_paypal_checkout(
                 departure=booking["departure"], total=f"{booking['total']:.2f}", capture=capture_id,
             )
         except Exception as exc:
+            # A PayPal capture may have succeeded even if the local booking
+            # confirmation failed. Keep the reservation blocked for manual
+            # reconciliation instead of allowing an automatic resale.
             with db() as conn:
-                conn.execute("UPDATE bookings SET payment_error=? WHERE id=?", (str(exc)[:500], booking_id))
+                conn.execute(
+                    """UPDATE bookings SET payment_error=?,
+                       hold_expires_at=CASE WHEN status='pending' THEN '' ELSE hold_expires_at END
+                       WHERE id=? AND COALESCE(paid,0)=0""",
+                    (("PayPal-Zahlungsstatus unklar; manuelle Pruefung erforderlich: " + str(exc))[:500], booking_id),
+                )
             return render_template_string(
                 ERROR_PAGE,
                 message="PayPal konnte die Zahlung nicht eindeutig bestätigen. Bitte nicht erneut zahlen; kontaktieren Sie uns, falls PayPal bereits eine Belastung anzeigt.",
@@ -516,17 +667,52 @@ def init_paypal_checkout(
     @app.get("/paypal/cancel")
     def paypal_cancel():
         booking_id = request.args.get("booking", type=int)
+        supplied_signature = request.args.get("sig", "")
+        if not booking_id or not hmac.compare_digest(supplied_signature, cancel_signature(booking_id)):
+            return render_template_string(
+                ERROR_PAGE,
+                message="Der Abbruchlink ist ungueltig. Die Reservierung wurde nicht veraendert.",
+            ), 403
         if booking_id:
             with db() as conn:
                 conn.execute(
                     """UPDATE bookings SET status='cancelled',released_at=?,
                        release_reason='PayPal-Zahlung vom Gast abgebrochen'
-                       WHERE id=? AND COALESCE(paid,0)=0""",
+                       WHERE id=? AND status='pending' AND payment_method='paypal_checkout'
+                         AND COALESCE(paid,0)=0
+                         AND COALESCE(payment_error,'') NOT LIKE 'PayPal-Zahlungsstatus unklar%'""",
                     (datetime.now().isoformat(timespec="seconds"), booking_id),
                 )
         return render_template_string(
             ERROR_PAGE,
             message="Die PayPal-Zahlung wurde abgebrochen. Der vorläufig reservierte Termin wurde wieder freigegeben.",
         )
+
+    # Stripe redirects are browser navigation, not proof of successful payment.
+    # Only a previously server-verified payment may produce a confirmation.
+    STRIPE_RETURN_PAGE = """<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Stripe Testzahlung - Zuhause am Bach</title><style>body{font-family:Arial,sans-serif;background:#f4f8f5;color:#17372f;margin:0;padding:32px}.card{max-width:680px;margin:7vh auto;background:#fff;padding:30px;border-radius:16px}a{color:#176b5a}</style></head><body><main class='card'><h1>{{ title }}</h1><p>{{ message }}</p><p>Dies ist ausschliesslich eine Stripe-Sandbox-Testzahlung. Es wurde kein echtes Geld abgebucht.</p><p><a href='/'>Zurueck zur Testbuchung</a></p></main></body></html>"""
+
+    @app.get("/stripe/success")
+    def stripe_sandbox_success():
+        booking_id = request.args.get("booking", type=int)
+        if os.environ.get("ZAB_STRIPE_ISOLATED_TEST") != "1":
+            return "Not Found", 404
+        if not booking_id:
+            return render_template_string(STRIPE_RETURN_PAGE, title="Testzahlung wird geprueft", message="Buchungsreferenz fehlt. Bitte nicht erneut zahlen und den Gastgeber kontaktieren."), 400
+        with db() as conn:
+            booking = conn.execute("SELECT status,paid,payment_method FROM bookings WHERE id=?", (booking_id,)).fetchone()
+        if not booking or booking["payment_method"] != "stripe_checkout":
+            return render_template_string(STRIPE_RETURN_PAGE, title="Testbuchung nicht gefunden", message="Die Buchung kann nicht zugeordnet werden. Bitte nicht erneut bezahlen."), 404
+        if booking["status"] == "confirmed" and booking["paid"]:
+            return render_template_string(STRIPE_RETURN_PAGE, title="Testzahlung bestaetigt", message="Die Testbuchung wurde serverseitig als bezahlt und bestaetigt erfasst.")
+        return render_template_string(STRIPE_RETURN_PAGE, title="Testzahlung wird geprueft", message="Stripe hat zurueckgeleitet. Der Zahlungseingang ist noch nicht serverseitig bestaetigt. Bitte keine erneute Zahlung starten."), 202
+
+    @app.get("/stripe/cancel")
+    def stripe_sandbox_cancel():
+        if os.environ.get("ZAB_STRIPE_ISOLATED_TEST") != "1":
+            return "Not Found", 404
+        # A browser cancel must not release inventory; delayed payment events
+        # and in-flight checkout sessions require authoritative reconciliation.
+        return render_template_string(STRIPE_RETURN_PAGE, title="Stripe-Testzahlung nicht abgeschlossen", message="Die Zahlungsseite wurde verlassen. Die vorlaeufige Buchung bleibt bis zur sicheren Pruefung geschuetzt. Bitte keine neue Zahlung ausloesen.")
 
     app.extensions["zab_paypal_checkout_enabled"] = True

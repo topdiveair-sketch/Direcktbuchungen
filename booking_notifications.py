@@ -89,7 +89,7 @@ def init_booking_notifications(app, db):
             or "Kostenfreie Stornierung bis 7 Tage vor Anreise."
         )
 
-        if payment_method == "PayPal":
+        if payment_method in {"PayPal", "paypal_checkout"}:
             payment_status = "PayPal-Zahlung bestätigt"
         elif payment_method == "Banküberweisung":
             payment_status = "Banküberweisung eingegangen"
@@ -112,7 +112,7 @@ def init_booking_notifications(app, db):
             f"Zahlungsart: {payment_method or 'bezahlt'}\n"
             f"Status: {payment_status}\n"
         )
-        if capture and payment_method == "PayPal":
+        if capture and payment_method in {"PayPal", "paypal_checkout"}:
             body += f"PayPal-Transaktion: {capture}\n"
 
         body += (

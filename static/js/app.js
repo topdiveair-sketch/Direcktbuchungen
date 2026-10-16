@@ -31,6 +31,15 @@ const roomRadios = [...document.querySelectorAll('input[name="room"]')];
 const bookingSubmit = document.getElementById("bookingSubmit");
 const stickyLabel = document.getElementById("stickyLabel");
 const stickyCta = document.getElementById("stickyCta");
+const stripeSandboxHost = window.location.hostname === "zab-stripe-sandbox-production.up.railway.app";
+if (stripeSandboxHost) {
+  const grid = document.querySelector(".payment-grid");
+  if (grid) {
+    const label = document.createElement("label");
+    label.innerHTML = '<input type="radio" name="payment_method" value="stripe_checkout"><span><strong>Kredit-/Debitkarte (TEST)</strong><small>Stripe-Sandbox – keine echte Zahlung</small></span>';
+    grid.appendChild(label);
+  }
+}
 const paymentRadios = [...document.querySelectorAll('input[name="payment_method"]')];
 const paymentNotice = document.getElementById("paymentNotice");
 const bankTransferDetails = document.getElementById("bankTransferDetails");
@@ -122,7 +131,7 @@ function updateBookingSummary() {
   if (summaryDates) summaryDates.textContent = arrival.value && departure.value ? `${arrival.value} – ${departure.value}` : "–";
   if (summaryNights) summaryNights.textContent = nights() ? String(nights()) : "–";
   if (summaryGuests) summaryGuests.textContent = adults.value || "–";
-  if (summaryPayment) summaryPayment.textContent = selectedPayment();
+  if (summaryPayment) summaryPayment.textContent = selectedPayment() === "stripe_checkout" ? "Kredit-/Debitkarte (TEST)" : selectedPayment();
   if (summaryTotal) summaryTotal.textContent = lastQuotedTotal != null ? euro(lastQuotedTotal) : "–";
   if (summaryExtras) {
     const labels = extraInputs.filter(el=>el.checked).map(el=>el.closest("label")?.querySelector("strong")?.textContent?.trim()).filter(Boolean);
@@ -186,6 +195,9 @@ function updatePaymentUI() {
   if (method === "PayPal") {
     bookingSubmit.textContent = tx("paypal");
     if (paymentNotice) paymentNotice.textContent = tx("paypalNote");
+  } else if (method === "stripe_checkout") {
+    bookingSubmit.textContent = "MIT TESTKARTE BEZAHLEN";
+    if (paymentNotice) paymentNotice.textContent = "Stripe-Sandbox: Es wird kein echtes Geld abgebucht.";
   } else if (method === "Banküberweisung") {
     bookingSubmit.textContent = tx("bank");
     if (paymentNotice) paymentNotice.textContent = tx("bankNote");
@@ -343,8 +355,10 @@ guestArea?.addEventListener("input", () => {
 
 document.getElementById("bookingForm").addEventListener("submit", async (event) => {
   const method = selectedPayment();
+  // Ensure the visible CTA matches the payment option at the moment of submission.
+  updatePaymentUI();
   if (quoteLoading || !rateQuotes) { event.preventDefault(); return; }
-  if (method !== "PayPal") {
+  if (method !== "PayPal" && method !== "stripe_checkout") {
     track("booking_submit_nonpaypal");
     bookingSubmitted = true;
     bookingSubmit.disabled = true;
@@ -382,7 +396,7 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
   };
 
   bookingSubmit.disabled = true;
-  bookingSubmit.textContent = tx("paypalPrep");
+  bookingSubmit.textContent = method === "stripe_checkout" ? "STRIPE-TEST WIRD VORBEREITET" : tx("paypalPrep");
   if (paymentNotice) paymentNotice.textContent = tx("finalCheck");
 
   try {
@@ -398,26 +412,27 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
     }
     track("paypal_quote_success");
 
-    const orderResponse = await fetch("/api/paypal/create-order", {
+    const orderResponse = await fetch(method === "stripe_checkout" ? "/api/stripe/create-checkout" : "/api/paypal/create-order", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
       cache: "no-store",
       body: JSON.stringify(payload)
     });
     const order = await orderResponse.json();
-    if (!orderResponse.ok || !order.ok || !order.approval_url) {
+    const redirectUrl = method === "stripe_checkout" ? order.checkout_url : order.approval_url;
+    if (!orderResponse.ok || !order.ok || !redirectUrl) {
       throw new Error(order.message || "PayPal konnte nicht gestartet werden.");
     }
     track("paypal_order_created");
 
     bookingSubmitted = true;
     bookingSubmit.textContent = tx("paypalOpen");
-    window.location.assign(order.approval_url);
+    window.location.assign(redirectUrl);
   } catch (error) {
     track("paypal_checkout_error");
     bookingSubmit.disabled = quoteLoading || !rateQuotes;
-    bookingSubmit.textContent = tx("paypal");
-    if (paymentNotice) paymentNotice.textContent = "⚠️ " + (error?.message || "PayPal konnte nicht gestartet werden.");
+    bookingSubmit.textContent = method === "stripe_checkout" ? "MIT TESTKARTE BEZAHLEN" : tx("paypal");
+    if (paymentNotice) paymentNotice.textContent = "⚠️ " + (error?.message || "Zahlung konnte nicht gestartet werden.");
   }
 });
 window.addEventListener("pagehide", () => {

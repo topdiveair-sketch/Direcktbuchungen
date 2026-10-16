@@ -477,15 +477,277 @@ def _notify_paid_booking(booking_id):
             pass
 
 
+def _notify_uncertain_paypal_booking(booking_id):
+    """Alert the host once when a PayPal capture requires reconciliation."""
+    if not booking_id:
+        return
+    subject = "[WICHTIG] PayPal-Zahlung unklar - Buchung pruefen"
+    try:
+        with db() as conn:
+            booking = conn.execute(
+                "SELECT id,room,arrival,departure,paypal_order_id,payment_error FROM bookings WHERE id=?",
+                (booking_id,),
+            ).fetchone()
+            already_sent = conn.execute(
+                """SELECT 1 FROM email_log WHERE booking_id=? AND recipient=?
+                   AND subject=? AND status='gesendet' LIMIT 1""",
+                (booking_id, ALERT_EMAIL, subject),
+            ).fetchone()
+        if not booking or already_sent or not str(booking["payment_error"] or "").startswith("PayPal-Zahlungsstatus unklar"):
+            return
+        from transactional_email import send_transactional_email
+        with db() as conn:
+            settings = {row["key"]: row["value"] for row in conn.execute("SELECT key,value FROM site_settings")}
+        body = (
+            "ACHTUNG: PayPal-Zahlungsstatus nicht eindeutig.\n"
+            "Buchung nicht manuell freigeben, bevor PayPal geprueft wurde.\n"
+            f"Buchung-ID: {booking['id']}\nZimmer: {booking['room']}\n"
+            f"Anreise: {booking['arrival']}\nAbreise: {booking['departure']}\n"
+            f"PayPal-Auftrag: {booking['paypal_order_id'] or '-'}\n"
+            "Bitte Zahlung bei PayPal pruefen und erst danach bestaetigen oder erstatten."
+        )
+        _, status = send_transactional_email(ALERT_EMAIL, subject, body, settings=settings, important=True)
+        with db() as conn:
+            conn.execute(
+                "INSERT INTO email_log(booking_id,recipient,subject,status,created_at) VALUES(?,?,?,?,?)",
+                (booking_id, ALERT_EMAIL, subject, status, datetime.now().isoformat(timespec="seconds")),
+            )
+    except Exception:
+        app.logger.exception("PayPal reconciliation alert failed for booking %s", booking_id)
+
+
 @app.after_request
 def notify_successful_paid_booking(response):
     """Send owner/guest alerts after a genuinely paid PayPal return."""
-    if response.status_code != 200:
-        return response
     if request.path != "/paypal/return":
         return response
-    _notify_paid_booking(request.args.get("booking", type=int))
+    booking_id = request.args.get("booking", type=int)
+    if response.status_code == 200:
+        _notify_paid_booking(booking_id)
+    elif response.status_code == 502:
+        _notify_uncertain_paypal_booking(booking_id)
     return response
+
+
+@app.get("/admin/paypal-reconciliation")
+def paypal_reconciliation_queue():
+    """Read-only, authenticated list of payments requiring manual review."""
+    if not require_admin():
+        return jsonify({"error": "Nicht autorisiert"}), 403
+    try:
+        with db() as conn:
+            rows = conn.execute(
+                """SELECT id,room,arrival,departure,status,paid,paypal_order_id,
+                          paypal_capture_id,payment_error,created_at
+                   FROM bookings
+                   WHERE payment_method='paypal_checkout'
+                     AND payment_error LIKE 'PayPal-Zahlungsstatus unklar%'
+                     AND COALESCE(paid,0)=0
+                   ORDER BY created_at DESC LIMIT 100"""
+            ).fetchall()
+        return jsonify({"count": len(rows), "bookings": [dict(row) for row in rows]})
+    except Exception:
+        app.logger.exception("PayPal reconciliation queue failed")
+        return jsonify({"error": "Pruefliste derzeit nicht verfuegbar"}), 503
+
+
+@app.get("/admin/paypal-reconciliation.csv")
+def paypal_reconciliation_csv():
+    """Authenticated CSV export for importing payment exceptions into ZAB OS."""
+    if not require_admin():
+        return jsonify({"error": "Nicht autorisiert"}), 403
+    import csv
+    import io
+    from flask import Response
+    columns = (
+        "id", "room", "arrival", "departure", "status", "paid",
+        "paypal_order_id", "paypal_capture_id", "payment_error", "created_at",
+    )
+    try:
+        with db() as conn:
+            rows = conn.execute(
+                """SELECT id,room,arrival,departure,status,paid,paypal_order_id,
+                          paypal_capture_id,payment_error,created_at
+                   FROM bookings WHERE payment_method='paypal_checkout'
+                     AND payment_error LIKE 'PayPal-Zahlungsstatus unklar%'
+                     AND COALESCE(paid,0)=0
+                   ORDER BY created_at DESC LIMIT 100"""
+            ).fetchall()
+        output = io.StringIO()
+        writer = csv.writer(output, delimiter=";")
+        writer.writerow(columns)
+        for row in rows:
+            # Prevent spreadsheet formula injection in user-controlled fields.
+            writer.writerow([
+                ("'" + str(row[col])) if isinstance(row[col], str)
+                and row[col].lstrip().startswith(("=", "+", "-", "@"))
+                else (row[col] if row[col] is not None else "")
+                for col in columns
+            ])
+        return Response(
+            "\ufeff" + output.getvalue(),
+            mimetype="text/csv",
+            headers={"Content-Disposition": "attachment; filename=paypal-pruefliste.csv",
+                     "Cache-Control": "no-store"},
+        )
+    except Exception:
+        app.logger.exception("PayPal reconciliation CSV export failed")
+        return jsonify({"error": "CSV-Export derzeit nicht verfuegbar"}), 503
+
+
+@app.get("/admin/stripe/unresolved")
+def stripe_unresolved_holds():
+    """Admin-only review of sandbox holds with no recorded Stripe session."""
+    if not require_admin():
+        return jsonify({"error": "Nicht autorisiert"}), 403
+    try:
+        with db() as conn:
+            rows = conn.execute(
+                """SELECT id,room,arrival,departure,created_at,status,
+                          payment_method,COALESCE(payment_error,'') AS payment_error
+                   FROM bookings
+                   WHERE payment_method='stripe_checkout'
+                     AND status='pending' AND COALESCE(paid,0)=0
+                     AND COALESCE(stripe_session_id,'')=''
+                   ORDER BY id DESC LIMIT 50"""
+            ).fetchall()
+        response = jsonify({"count": len(rows), "requires_manual_review": True,
+                            "bookings": [dict(row) for row in rows]})
+        response.headers["Cache-Control"] = "no-store"
+        return response
+    except Exception:
+        app.logger.exception("Stripe unresolved hold list failed")
+        return jsonify({"error": "Pruefliste derzeit nicht verfuegbar"}), 503
+
+
+@app.post("/admin/stripe/recover/<int:booking_id>")
+def stripe_recover_missing_session(booking_id):
+    """Explicit sandbox-only recovery of an ambiguous Checkout API response."""
+    if not require_admin():
+        return jsonify({"error": "Nicht autorisiert"}), 403
+    if os.environ.get("STRIPE_SANDBOX_CHECKOUT_ENABLED") != "1":
+        return jsonify({"error": "Stripe sandbox checkout disabled"}), 503
+    secret = os.environ.get("STRIPE_SECRET_KEY", "").strip()
+    if not secret.startswith("sk_test_"):
+        return jsonify({"error": "Stripe test credentials required"}), 503
+    try:
+        from stripe_checkout_client import create_hosted_checkout_session
+        from stripe_checkout_recovery import recovery_requires_manual_review
+        with db() as conn:
+            row = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
+        if row is None or not recovery_requires_manual_review(dict(row)):
+            return jsonify({"error": "No unresolved Stripe hold for booking"}), 409
+        booking = dict(row)
+        payload = json.loads(booking.get("checkout_payload") or "{}")
+        expires_at = payload.get("stripe_session_expires_at")
+        if not isinstance(expires_at, int) or isinstance(expires_at, bool):
+            return jsonify({"error": "Original Stripe request not available"}), 409
+        # Replays are only safe while Stripe's original idempotency window and
+        # Checkout expiry are still valid. Never generate a new expiry here.
+        if expires_at <= int(datetime.now().timestamp()) + 60:
+            return jsonify({"error": "Stripe request expired; manual Stripe review required"}), 409
+        base = payload.get("stripe_checkout_base_url")
+        if not isinstance(base, str) or not base.startswith("https://"):
+            return jsonify({"error": "HTTPS checkout base URL missing"}), 503
+        session = create_hosted_checkout_session(
+            secret_key=secret, booking_id=booking_id,
+            total_eur=booking["total"], guest_email=booking["email"],
+            success_url=f"{base}/stripe/success?booking={booking_id}",
+            cancel_url=f"{base}/stripe/cancel?booking={booking_id}",
+            expires_at=expires_at,
+        )
+        with db() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            changed = conn.execute(
+                """UPDATE bookings SET stripe_session_id=?
+                   WHERE id=? AND payment_method='stripe_checkout'
+                     AND status='pending' AND COALESCE(paid,0)=0
+                     AND COALESCE(stripe_session_id,'')=''""",
+                (session["id"], booking_id),
+            )
+            if changed.rowcount != 1:
+                conn.rollback()
+                return jsonify({"error": "Booking changed during recovery"}), 409
+        response = jsonify({"ok": True, "booking_id": booking_id,
+                            "checkout_url": session["url"], "recovered": True})
+        response.headers["Cache-Control"] = "no-store"
+        return response
+    except Exception:
+        app.logger.exception("Stripe sandbox session recovery failed")
+        return jsonify({"error": "Stripe session recovery unavailable; hold retained"}), 503
+
+
+@app.post("/admin/stripe/reconcile")
+def stripe_reconcile_manual():
+    """Explicit admin-triggered sandbox reconciliation; no public scheduler."""
+    if not require_admin():
+        return jsonify({"error": "Nicht autorisiert"}), 403
+    if os.environ.get("STRIPE_SANDBOX_CHECKOUT_ENABLED") != "1":
+        return jsonify({"error": "Stripe sandbox reconciliation disabled"}), 503
+    secret = os.environ.get("STRIPE_SECRET_KEY", "").strip()
+    if not secret.startswith("sk_test_"):
+        return jsonify({"error": "Stripe sandbox credentials missing"}), 503
+    try:
+        from stripe_hold_reconciliation import reconcile_expired_stripe_holds
+        report = reconcile_expired_stripe_holds(db, secret_key=secret, limit=20, on_confirmed=app.extensions.get("zab_send_paid_guest_confirmation"))
+        response = jsonify({"ok": report["failed"] == 0, "report": report})
+        response.headers["Cache-Control"] = "no-store"
+        return response, (200 if report["failed"] == 0 else 503)
+    except Exception:
+        app.logger.exception("Stripe reconciliation admin request failed")
+        return jsonify({"error": "Stripe reconciliation unavailable"}), 503
+
+
+@app.post("/stripe/webhook")
+def stripe_sandbox_webhook():
+    """Confirm only signed Stripe test Checkout payments, transactionally."""
+    from stripe_webhook_security import verify_stripe_signature, StripeSignatureError
+    from stripe_booking_settlement import settle_verified_stripe_session
+    secret = os.environ.get("STRIPE_TEST_WEBHOOK_SECRET", "").strip()
+    if not secret or not secret.startswith("whsec_"):
+        return jsonify({"error": "Stripe sandbox webhook not configured"}), 503
+    try:
+        raw = request.get_data(cache=False, as_text=False)
+        if len(raw) > 65536:
+            return jsonify({"error": "Payload too large"}), 413
+        verify_stripe_signature(raw, request.headers.get("Stripe-Signature", ""), secret)
+        event = json.loads(raw)
+        if not isinstance(event, dict) or not str(event.get("id", "")).startswith("evt_"):
+            return jsonify({"error": "Invalid Stripe event"}), 400
+        event_type = event.get("type")
+        if event_type not in ("checkout.session.completed", "checkout.session.async_payment_succeeded"):
+            return jsonify({"received": True, "ignored": True}), 200
+        session = (event.get("data") or {}).get("object")
+        if not isinstance(session, dict) or session.get("object") != "checkout.session":
+            return jsonify({"error": "Invalid checkout session"}), 400
+        if event.get("livemode") is not False or session.get("livemode") is not False:
+            return jsonify({"error": "Live Stripe events are not enabled"}), 403
+        with db() as conn:
+            outcome = settle_verified_stripe_session(conn, session)
+        if outcome in ("confirmed", "duplicate"):
+            # Stripe may redeliver the same event. A repeated event must not
+            # send a second confirmation email for an already paid booking.
+            app.logger.info("stripe_sandbox_settlement outcome=%s event_type=%s", outcome, event_type)
+            if outcome == "confirmed":
+                # Payment is already committed. Email delivery must not undo settlement.
+                try:
+                    send_paid = app.extensions.get("zab_send_paid_guest_confirmation")
+                    if callable(send_paid):
+                        send_paid(int(session["client_reference_id"]))
+                except Exception:
+                    app.logger.exception("Stripe paid confirmation email failed; payment remains confirmed")
+            return jsonify({"received": True, "result": outcome}), 200
+        # Never acknowledge an unmatched payment as settled. Keep Stripe retrying
+        # while the host investigates a possible refund or reservation mismatch.
+        app.logger.error("Stripe sandbox settlement requires review for event %s", event["id"])
+        return jsonify({"error": "Stripe payment requires reconciliation"}), 503
+    except StripeSignatureError:
+        return jsonify({"error": "Invalid Stripe signature"}), 400
+    except (ValueError, UnicodeDecodeError, TypeError):
+        return jsonify({"error": "Invalid Stripe JSON"}), 400
+    except Exception:
+        app.logger.exception("Stripe sandbox settlement database failure")
+        return jsonify({"error": "Stripe settlement temporarily unavailable"}), 503
 
 
 @app.get("/health/deploy")
@@ -515,6 +777,14 @@ def railway_deploy_health():
         "smtp_configured": smtp_configured,
         "https_mail_configured": bool(os.environ.get("RESEND_API_KEY", "").strip() and os.environ.get("MAIL_SENDER_EMAIL", "").strip()),
         "bank_transfer_configured": bank_transfer_configured,
+        # Configuration is not proof of successful card capture or settlement.
+        "stripe_credentials_configured": bool(
+            os.environ.get("STRIPE_SECRET_KEY", "").strip()
+            and os.environ.get("STRIPE_PUBLISHABLE_KEY", "").strip()
+        ),
+        "stripe_checkout_implemented": False,
+        "card_payment_live_verified": False,
+        "bank_transfer_live_verified": False,
         "ical_configured": ical_configured,
         "official_public_site": public_site in {"https://zuhauseambach-wachau.at","https://www.zuhauseambach-wachau.at"},
         "provider_monitor": bool(app.extensions.get("zab_provider_monitor_initialized")),

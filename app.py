@@ -314,6 +314,15 @@ def init_db() -> None:
             ("payment_status", "TEXT DEFAULT ''"),
             ("payment_reference", "TEXT DEFAULT ''"),
             ("paypal_order_id", "TEXT DEFAULT ''"),
+            ("paid", "INTEGER NOT NULL DEFAULT 0"),
+            ("paid_at", "TEXT DEFAULT ''"),
+            ("hold_expires_at", "TEXT DEFAULT ''"),
+            ("released_at", "TEXT DEFAULT ''"),
+            ("release_reason", "TEXT DEFAULT ''"),
+            ("payment_error", "TEXT DEFAULT ''"),
+            ("checkout_payload", "TEXT DEFAULT ''"),
+            ("stripe_session_id", "TEXT DEFAULT ''"),
+            ("stripe_payment_intent", "TEXT DEFAULT ''"),
             ("cancelled_at", "TEXT DEFAULT ''"),
             ("source", "TEXT DEFAULT ''"),
             ("utm_medium", "TEXT DEFAULT ''"),
@@ -323,6 +332,10 @@ def init_db() -> None:
         ):
             if column not in cols:
                 conn.execute(f"ALTER TABLE bookings ADD COLUMN {column} {definition}")
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_stripe_session "
+            "ON bookings(stripe_session_id) WHERE stripe_session_id <> ''"
+        )
         conn.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_idempotency "
             "ON bookings(idempotency_key) WHERE idempotency_key <> ''"
