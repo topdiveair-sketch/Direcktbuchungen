@@ -1,4 +1,4 @@
-"""Regression checks for final direct-price parity with Beds24."""
+"""Regressions for the final direct price and central calendar precedence."""
 import os
 import sqlite3
 import unittest
@@ -6,30 +6,46 @@ from datetime import date
 from unittest.mock import patch
 
 import app as app_module
+import pricing_2027_gateway as pricing_gateway
 from pricing_2027 import pricing_config
 
 
 class FinalDirectRatePolicyTests(unittest.TestCase):
     def test_checkout_does_not_apply_legacy_direct_discount(self):
-        discounts = {
-            "last_minute": {"enabled": False, "percent": 10, "days_before": 3},
-            "early_bird": {"enabled": False, "percent": 5, "days_before": 60},
-            "three_nights": {"enabled": False, "percent": 5, "min_nights": 3},
-            "five_nights": {"enabled": False, "percent": 8, "min_nights": 5},
-            "seven_nights": {"enabled": False, "percent": 12, "min_nights": 7},
-            # Simulate a legacy database that still has the 3% discount enabled.
-            "direct_booking": {"enabled": True, "percent": 3},
+        legacy_breakdown = {
+            "room_total": 134.83,
+            "extras": [],
+            "discounts": [{"label": "Direct Booking", "percent": 3, "amount": 4.17}],
+            "total": 134.83,
         }
-        with patch.object(app_module, "pricing_data", return_value=({}, discounts, {}, {})), \
+        with patch.object(pricing_gateway, "_original_price_breakdown", return_value=legacy_breakdown), \
+             patch.object(pricing_gateway, "nightly_direct_rate", return_value=139.0), \
              patch.object(app_module, "direct_nightly_price_for_day", return_value=139.0), \
-             patch.object(app_module, "_demand_percent_for_day", return_value=(0.0, 0)):
-            result = app_module.price_breakdown(
+             patch.object(app_module, "central_override_for_day", return_value={}), \
+             patch.object(pricing_gateway, "effective_direct_rate", return_value=(139.0, False)), \
+             patch.object(pricing_gateway, "quiet_night_rate", return_value=None):
+            result = pricing_gateway.price_breakdown_2027(
                 "Bachblick", date(2026, 10, 16), date(2026, 10, 17),
                 2, {"breakfast": False}
             )
         self.assertEqual(result["room_total"], 139.0)
         self.assertEqual(result["total"], 139.0)
         self.assertEqual(result["discounts"], [])
+
+    def test_manual_calendar_price_beats_quiet_night_automation(self):
+        legacy_breakdown = {"room_total": 96.03, "extras": [], "discounts": [], "total": 96.03}
+        with patch.object(pricing_gateway, "_original_price_breakdown", return_value=legacy_breakdown), \
+             patch.object(pricing_gateway, "nightly_direct_rate", return_value=119.0), \
+             patch.object(app_module, "direct_nightly_price_for_day", return_value=109.0), \
+             patch.object(app_module, "central_override_for_day", return_value={"price": 109.0}), \
+             patch.object(pricing_gateway, "effective_direct_rate", return_value=(109.0, True)), \
+             patch.object(pricing_gateway, "quiet_night_rate", return_value=99.0):
+            result = pricing_gateway.price_breakdown_2027(
+                "Bachblick", date(2026, 10, 19), date(2026, 10, 20),
+                2, {"breakfast": False}
+            )
+        self.assertEqual(result["room_total"], 109.0)
+        self.assertEqual(result["total"], 109.0)
 
     def test_os_price_feed_checkout_equals_final_display_price(self):
         conn = sqlite3.connect(":memory:")
