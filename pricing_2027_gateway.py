@@ -18,15 +18,29 @@ _original_price_breakdown = legacy_app.price_breakdown
 _original_init_paypal_checkout = paypal_checkout_module.init_paypal_checkout
 
 
-def _calendar_direct_price(room, day, fallback):
+def effective_direct_rate(room, day, fallback):
+    """Resolve the final direct rate, preserving explicit OS calendar prices."""
+    try:
+        central = legacy_app.central_override_for_day(room, day)
+        if central.get("price") not in (None, ""):
+            return round(float(central["price"]), 2), True
+    except Exception:
+        pass
+
     getter = legacy_app.app.extensions.get("zab_channel_price_for_day")
     if not callable(getter):
-        return fallback
+        return float(fallback), False
     try:
         value = getter(room, "direct", day, fallback)
     except Exception:
-        return fallback
-    return fallback if value is None else float(value)
+        return float(fallback), False
+    if value is None:
+        return float(fallback), False
+    if isinstance(value, tuple) and len(value) == 2:
+        amount, is_manual = value
+        return round(float(amount), 2), bool(is_manual)
+    amount = round(float(value), 2)
+    return amount, amount != round(float(fallback), 2)
 
 
 def price_breakdown_2027(room, arrival, departure, adults, chosen, coupon_code=""):
@@ -44,13 +58,14 @@ def price_breakdown_2027(room, arrival, departure, adults, chosen, coupon_code="
         nightly = nightly_direct_rate(current)
         if nightly is None:
             return breakdown
-        fallback = float(nightly)
-        effective = _calendar_direct_price(room, current, fallback)
+        # Match the public quote and OS feed: central calendar prices win,
+        # then explicit channel overrides, then the configured revenue rate.
+        fallback = float(legacy_app.direct_nightly_price_for_day(room, current))
+        effective, manual_override = effective_direct_rate(room, current, fallback)
         quiet = quiet_night_rate(current)
-        if quiet is not None:
+        if quiet is not None and not manual_override:
             effective = quiet
-        if effective != fallback:
-            override_used = True
+        override_used = override_used or manual_override
         room_total += effective
         current += timedelta(days=1)
 

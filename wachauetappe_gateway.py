@@ -123,20 +123,8 @@ init_booking_guest_sync(app, legacy_app.db, _desktop_admin_ok)
 
 
 def _effective_direct_rate(room: str, day: date, fallback: float) -> tuple[float, bool]:
-    getter = app.extensions.get("zab_channel_price_for_day")
-    if not callable(getter):
-        return fallback, False
-    try:
-        value = getter(room, "direct", day, fallback)
-    except Exception:
-        return fallback, False
-    if value is None:
-        return fallback, False
-    if isinstance(value, tuple) and len(value) == 2:
-        amount, is_manual = value
-        return float(amount), bool(is_manual)
-    value = float(value)
-    return value, value != fallback
+    # Keep the public quote endpoint and checkout on the same rate resolver.
+    return pricing_2027_gateway.effective_direct_rate(room, day, fallback)
 
 
 def _dates_overlap(a_start: date, a_end: date, b_start: date, b_end: date) -> bool:
