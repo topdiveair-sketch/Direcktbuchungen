@@ -714,76 +714,69 @@ def init_host_automation(app, db, require_admin, db_path):
             name = f"{row['first_name']} {row['last_name']}".strip()
             return name or "Gastname nicht hinterlegt"
 
-        gaps = _gap_nights()
-        lines = [
-            f"Zuhause am Bach – Tagesübersicht {day.isoformat()}",
-            "",
-            f"Bestätigte Buchungen mit Aufenthalt heute: {len(active_guests)}",
-            f"Personen laut diesen Buchungen: {sum(int(row['adults'] or 0) for row in active_guests)}",
-        ]
-        for row in active_guests:
-            lines.append(
-                f"  • {row['room']} · {_guest_name(row)} · {int(row['adults'] or 0)} Pers. · "
-                f"{row['arrival']} bis {row['departure']} · Status {row['status']}"
+        # Important: the tables below are local snapshots.  No successful
+        # Booking/Airbnb/Beds24 synchronisation is established by this query.
+        # Never present an empty snapshot as verified cross-channel vacancy.
+        issues = []
+        if alerts:
+            for alert in alerts:
+                issues.append(f"[{alert['severity']}] {alert['message']}")
+        if pending_mail:
+            issues.append(f"Nicht versandte E-Mails: {int(pending_mail)}")
+        if int(open_payments['c'] or 0):
+            issues.append(
+                f"Offene Zahlungen laut lokaler Datenbank: "
+                f"{int(open_payments['c'])} / {float(open_payments['total'] or 0):.2f} EUR"
             )
-        lines.append(f"Zimmer mit iCal-Sperre heute: {len({row['room'] for row in calendar_blocks})}")
-        for row in calendar_blocks:
-            sources = sorted(row["sources"], key=lambda source: (source != "beds24_ical", source))
-            lines.append(
-                f"  • {row['room']} · {row['start_date']} bis {row['end_date']} · "
-                f"Quellen {', '.join(sources)}"
-            )
-        lines.append("iCal-Sperren können Buchungen oder manuelle Sperren sein; "
-                     "Gästezahl und An-/Abreisen sind daraus nicht verlässlich bestimmbar.")
 
-        lines.append("")
-        lines.append(f"Bestätigte Anreisen heute: {len(arrivals)}")
-        for row in arrivals:
-            lines.append(
-                f"  • {row['room']} · {_guest_name(row)} · {int(row['adults'] or 0)} Pers. · "
-                f"Ankunft {row['arrival_time'] or 'noch offen'} · Status {row['status']}"
-            )
-        lines.append(f"Bestätigte Abreisen heute: {len(departures)}")
-        for row in departures:
-            lines.append(
-                f"  • {row['room']} · {_guest_name(row)} · {int(row['adults'] or 0)} Pers. · Status {row['status']}"
-            )
-        lines.append(f"Bestätigte Anreisen morgen: {len(tomorrow_rows)}")
-        for row in tomorrow_rows:
-            lines.append(
-                f"  • {row['room']} · {_guest_name(row)} · {int(row['adults'] or 0)} Pers. · "
-                f"Ankunft {row['arrival_time'] or 'noch offen'} · Status {row['status']}"
-            )
+        # This warning is intentional until a separate, verified per-provider
+        # sync health check is wired in.  Lack of an automation alert != OK.
+        lines = [
+            f"Zuhause am Bach – Tageskontrolle {day.isoformat()}",
+            "",
+            "DATENSTATUS: NICHT VOLLSTAENDIG VERIFIZIERT",
+            "Die folgenden Werte stammen ausschliesslich aus der lokalen",
+            "Buchungsdatenbank und gespeicherten iCal-Sperren.",
+            "Ein erfolgreicher Live-Abgleich mit Booking.com, Airbnb,",
+            "Beds24 und Direktbuchung ist hier NICHT nachgewiesen.",
+            "",
+        ]
+        if issues:
+            lines.extend(["HANDLUNGSBEDARF:", *[f"  - {item}" for item in issues], ""])
+        else:
+            lines.extend([
+                "Keine aktiven lokalen Warnungen oder offenen Mailauftraege.",
+                "Das ist KEINE Bestaetigung funktionierender Kanal-Synchronisation.",
+                "",
+            ])
+        lines.extend([
+            "LOKALER DATENBANKSTAND (keine kanalweite Belegungsbestaetigung):",
+            f"  Bestaetigte Aufenthalte heute: {len(active_guests)}",
+            f"  Anreisen heute: {len(arrivals)}",
+            f"  Abreisen heute: {len(departures)}",
+            f"  Anreisen morgen: {len(tomorrow_rows)}",
+            f"  Zimmer mit gespeicherter iCal-Sperre heute: "
+            f"{len({row['room'] for row in calendar_blocks})}",
+            "  Hinweis: Fehlende iCal-Sperren beweisen keine Verfuegbarkeit.",
+        ])
+        if active_guests:
+            for row in active_guests:
+                lines.append(
+                    f"  Aufenthalt: {row['room']} / {_guest_name(row)} "
+                    f"({row['arrival']} bis {row['departure']})"
+                )
+        if arrivals:
+            for row in arrivals:
+                lines.append(f"  Anreise: {row['room']} / {_guest_name(row)}")
+        if departures:
+            for row in departures:
+                lines.append(f"  Abreise: {row['room']} / {_guest_name(row)}")
         lines.extend([
             "",
-            f"Offene Zahlungen: {int(open_payments['c'] or 0)} · {float(open_payments['total'] or 0):.2f} EUR",
-            f"Nicht versandte Outbox-Mails: {int(pending_mail or 0)}",
-            f"Einzelne freie Lückennächte: {', '.join(gaps[:6]) if gaps else 'keine'}",
+            "PREISABGLEICH: Nicht geprueft (keine Live-Preise abgerufen).",
+            "KANALSTATUS: Nicht geprueft (keine Sync-Zeitstempel validiert).",
+            "Keine Aussagen zur tatsaechlichen freien Belegung ableiten.",
         ])
-        if metrics:
-            lines.extend([
-                "",
-                "Direktbuchungs-Funnel heute:",
-                f"  Verfügbarkeitsprüfungen: {metrics['availability_checks']}",
-                f"  Buchungsbereich angesehen: {metrics['booking_section_views']}",
-                f"  Gästedaten begonnen: {metrics['guest_details_started']}",
-                f"  Formular-Absendungen: {metrics['booking_submits']}",
-                f"  abgebrochene Buchungssitzungen: {metrics['booking_abandoned']}",
-                f"  PayPal-Bestellungen: {metrics['paypal_orders']}",
-                f"  bestätigte Buchungen: {metrics['confirmed_bookings']}",
-            ])
-        if source_rows:
-            lines.append("")
-            lines.append("Buchungsquellen heute:")
-            for row in source_rows:
-                lines.append(f"  • {row['source']}: {row['c']}")
-        if alerts:
-            lines.append("")
-            lines.append("Aktive Warnungen:")
-            for alert in alerts:
-                lines.append(f"  • [{alert['severity']}] {alert['message']}")
-        else:
-            lines.extend(["", "Systemstatus: keine aktiven Automatik-Warnungen."])
 
         body = "\n".join(lines)
         recipients = [correction_to] if correction else _owner_recipients()

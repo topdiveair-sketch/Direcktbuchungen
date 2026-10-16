@@ -73,23 +73,30 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(len(queued), 1)
         body = queued[0][-1]
         for expected in (
-            'Bestätigte Buchungen mit Aufenthalt heute: 1',
-            'Personen laut diesen Buchungen: 2', 'Zimmer mit iCal-Sperre heute: 1',
-            'Quellen beds24_ical, airbnb_ical', 'Bestätigte Anreisen heute: 1',
-            'Bestätigte Abreisen heute: 1', 'Bestätigte Anreisen morgen: 0',
-            'Offene Zahlungen: 1 · 150.00 EUR'):
+            'DATENSTATUS: NICHT VOLLSTAENDIG VERIFIZIERT',
+            'Bestaetigte Aufenthalte heute: 1',
+            'Anreisen heute: 1',
+            'Abreisen heute: 1',
+            'Anreisen morgen: 0',
+            'Zimmer mit gespeicherter iCal-Sperre heute: 1',
+            'Offene Zahlungen laut lokaler Datenbank: 1 / 150.00 EUR',
+            'KANALSTATUS: Nicht geprueft',
+            'PREISABGLEICH: Nicht geprueft',
+        ):
             self.assertIn(expected, body)
-        for unexpected in ('Externe Anreisen', 'Gäste aktuell im Haus', 'Test inquiry'):
+        for unexpected in ('Systemstatus: keine aktiven Automatik-Warnungen',
+                           'Direktbuchungs-Funnel', 'Test inquiry',
+                           'Gäste aktuell im Haus'):
             self.assertNotIn(unexpected, body)
         namespace['_now'] = lambda: datetime(2026, 10, 4, 7, tzinfo=ZoneInfo('Europe/Vienna'))
         namespace['_daily_report']()
         checkout_body = queued[-1][-1]
-        self.assertIn('Bestätigte Buchungen mit Aufenthalt heute: 0', checkout_body)
-        self.assertIn('Zimmer mit iCal-Sperre heute: 0', checkout_body)
-        self.assertIn('Bestätigte Abreisen heute: 1', checkout_body)
+        self.assertIn('Bestaetigte Aufenthalte heute: 0', checkout_body)
+        self.assertIn('Zimmer mit gespeicherter iCal-Sperre heute: 0', checkout_body)
+        self.assertIn('Abreisen heute: 1', checkout_body)
         namespace['_now'] = lambda: datetime(2026, 10, 2, 7, tzinfo=ZoneInfo('Europe/Vienna'))
         namespace['_daily_report']()
-        self.assertIn('Bestätigte Anreisen morgen: 1', queued[-1][-1])
+        self.assertIn('Anreisen morgen: 1', queued[-1][-1])
         namespace['_now'] = lambda: datetime(2026, 10, 3, 7, tzinfo=ZoneInfo('Europe/Vienna'))
         run_keys = set()
         def run_once(key, details):
