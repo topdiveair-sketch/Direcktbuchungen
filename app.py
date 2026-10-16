@@ -433,7 +433,7 @@ def init_db() -> None:
         price_defaults={"Bachblick":(99,109,119),"Marillenzimmer":(90,100,110),"Weinbergzimmer":(90,100,110),"Donauzimmer":(90,100,110)}
         for r,p in price_defaults.items(): conn.execute("INSERT OR IGNORE INTO room_prices VALUES(?,?,?,?)",(r,*p))
         conn.execute("UPDATE room_prices SET standard=99, weekend=109, high=119 WHERE room='Bachblick' AND standard<99")
-        for row in [("last_minute",1,10,0,3),("early_bird",0,5,0,60),("three_nights",1,5,3,0),("five_nights",1,8,5,0),("seven_nights",1,12,7,0),("direct_booking",1,3,0,0)]: conn.execute("INSERT OR IGNORE INTO discounts VALUES(?,?,?,?,?)",row)
+        for row in [("last_minute",1,10,0,3),("early_bird",0,5,0,60),("three_nights",1,5,3,0),("five_nights",1,8,5,0),("seven_nights",1,12,7,0),("direct_booking",0,0,0,0)]: conn.execute("INSERT OR IGNORE INTO discounts VALUES(?,?,?,?,?)",row)
         # Einmalige Umstellung auf Knappheits-/Ertragsstrategie:
         # keine Last-Minute-, Frühbucher- oder Aufenthaltsrabatte; nur der
         # wirtschaftlich sinnvolle Direktbuchungsvorteil bleibt aktiv.
@@ -446,12 +446,12 @@ def init_db() -> None:
                 "('last_minute','early_bird','three_nights','five_nights','seven_nights')"
             )
             conn.execute(
-                "UPDATE discounts SET enabled=1, percent=3 WHERE key='direct_booking'"
-            )
-            conn.execute(
                 "INSERT OR REPLACE INTO site_settings(key,value) VALUES "
                 "('scarcity_revenue_v1_applied','1')"
             )
+        # Direct and Beds24 price1 use the same final room rate. Remove the
+        # legacy percentage discount from databases created by earlier versions.
+        conn.execute("UPDATE discounts SET enabled=0, percent=0 WHERE key='direct_booking'")
         for row in [("breakfast","Frühstück",12,"person_night",1),("jause","Wachauer Jause",29.9,"booking",1),("luggage","Gepäcktransport",15,"booking",1),("dog","Hund",10,"night",1),("baby_bed","Babybett",8,"booking",1)]: conn.execute("INSERT OR IGNORE INTO extras VALUES(?,?,?,?,?)",row)
         conn.execute("UPDATE extras SET price=15 WHERE key='luggage' AND ABS(price - 25) < 0.001")
         conn.execute("INSERT OR IGNORE INTO seasons(id,name,start_date,end_date) VALUES(1,'Hauptsaison Sommer','2026-06-01','2026-09-30')")
@@ -676,7 +676,7 @@ def price_breakdown(room,arrival,departure,adults,chosen,coupon_code=""):
     days=(arrival-date.today()).days
     if discounts["last_minute"]["enabled"] and 0<=days<=discounts["last_minute"]["days_before"]: keys.append("last_minute")
     if discounts["early_bird"]["enabled"] and days>=discounts["early_bird"]["days_before"]: keys.append("early_bird")
-    if discounts["direct_booking"]["enabled"]: keys.append("direct_booking")
+    # Direct rate is final and must equal the Beds24 base rate.
     for k in keys:
         d=discounts[k]; amt=subtotal*float(d["percent"])/100; subtotal-=amt; applied.append({"label":k.replace("_"," ").title(),"percent":d["percent"],"amount":round(amt,2)})
     coupon_code=(coupon_code or "").strip().upper()
@@ -1076,20 +1076,15 @@ def os_direct_prices():
     if (end - start).days > 370:
         return jsonify(ok=False, error="range_too_large"), 400
 
-    _prices, discounts, _extras, _seasons = pricing_data()
+    # Published calendar prices are final direct rates. Never discount them
+    # again at checkout; Beds24 price1 uses this same base.
     direct_discount = 0.0
-    direct = discounts.get("direct_booking") or {}
-    if direct.get("enabled"):
-        try:
-            direct_discount = float(direct.get("percent") or 0.0)
-        except Exception:
-            direct_discount = 0.0
 
     days = []
     current = start
     while current <= end:
         display_price = direct_nightly_price_for_day(room, current)
-        checkout_price = round(display_price * (1.0 - direct_discount / 100.0), 2)
+        checkout_price = round(display_price, 2)
         demand_percent, unique_checks = _demand_percent_for_day(room, current)
         try:
             with db() as conn:
@@ -3207,7 +3202,11 @@ def admin_discounts():
     if not require_admin(): return redirect(url_for("admin_login"))
     _,ds,_,_=pricing_data()
     with db() as c:
-        for k,d in ds.items(): c.execute("UPDATE discounts SET enabled=?,percent=?,min_nights=?,days_before=? WHERE key=?",(1 if request.form.get(k+"_enabled") else 0,float(request.form.get(k+"_percent",d["percent"])),int(request.form.get(k+"_min_nights",d["min_nights"])),int(request.form.get(k+"_days_before",d["days_before"])),k))
+        for k,d in ds.items():
+            if k == "direct_booking":
+                continue
+            c.execute("UPDATE discounts SET enabled=?,percent=?,min_nights=?,days_before=? WHERE key=?",(1 if request.form.get(k+"_enabled") else 0,float(request.form.get(k+"_percent",d["percent"])),int(request.form.get(k+"_min_nights",d["min_nights"])),int(request.form.get(k+"_days_before",d["days_before"])),k))
+        c.execute("UPDATE discounts SET enabled=0,percent=0 WHERE key='direct_booking'")
     flash("Rabatte gespeichert.","success"); return redirect(url_for("admin"))
 
 @app.post("/admin/extras")
