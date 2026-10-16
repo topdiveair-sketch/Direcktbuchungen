@@ -359,6 +359,18 @@ init_provider_monitor(app, db, require_admin)
 init_provider_radar(app, db, require_admin)
 init_host_automation(app, db, require_admin, core_app.DB_PATH)
 
+# Read-only OS endpoint; unavailable without a configured bridge token.
+from zab_os_snapshot_server import init_os_snapshot
+init_os_snapshot(app, db)
+
+
+@app.before_request
+def zab_staging_private_only():
+    """Disable all public and admin routes on the isolated OS test service."""
+    if os.environ.get("ZAB_OS_STAGING_PRIVATE_ONLY") == "1":
+        if request.path != "/internal/os/v1/snapshot":
+            return jsonify({"error": "staging_private_only"}), 404
+
 
 @app.before_request
 def validate_public_paypal_payload():
