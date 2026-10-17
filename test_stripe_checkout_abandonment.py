@@ -18,6 +18,11 @@ from stripe_checkout import init_stripe_checkout
 
 class StripeCancelRouteTests(unittest.TestCase):
     def setUp(self):
+        self.env = patch.dict(os.environ, {
+            "SECRET_KEY": "test-secret",
+            "STRIPE_SECRET_KEY": "rk_live_test",
+        })
+        self.env.start()
         self.temp = tempfile.TemporaryDirectory()
         self.path = str(Path(self.temp.name) / "bookings.db")
         with self.db() as conn:
@@ -71,6 +76,32 @@ class StripeCancelRouteTests(unittest.TestCase):
 
     def tearDown(self):
         self.temp.cleanup()
+        self.env.stop()
+
+    def test_six_hour_limit_rejects_another_checkout_from_same_ip(self):
+        ip = "198.51.100.28"
+        ip_hash = hmac.new(b"test-secret", ip.encode(), hashlib.sha256).hexdigest()
+        now = datetime.now()
+        with self.db() as conn:
+            conn.execute(
+                "INSERT INTO ical_settings(room,import_url,last_sync) VALUES(?,?,?)",
+                ("Bachblick", "https://example.test/calendar.ics", now.isoformat()),
+            )
+            conn.execute(
+                "INSERT INTO stripe_checkout_attempts(ip_hash,created_at) VALUES(?,?)",
+                (ip_hash, now.isoformat(timespec="seconds")),
+            )
+        payload = {
+            "room": "Bachblick", "arrival": "2026-12-20", "departure": "2026-12-22",
+            "adults": 2, "first_name": "Test", "last_name": "Gast",
+            "email": "test@example.test", "phone": "+430000000", "extras": {},
+        }
+        response = self.client.post(
+            "/api/stripe/create-checkout-session", json=payload,
+            headers={"X-Forwarded-For": ip},
+        )
+        self.assertEqual(response.status_code, 429)
+        self.assertIn("sechs Stunden", response.get_json()["message"])
 
     def test_cancel_requires_unpredictable_token_and_sends_owner_alert(self):
         self.client.get("/stripe/cancel?booking=1&token=wrong")
