@@ -775,14 +775,14 @@ def room_available_in_conn(conn: sqlite3.Connection, room: str, arrival: date, d
 
     for row in local:
         if overlaps(arrival, departure, parse_date(row["arrival"]), parse_date(row["departure"])):
-            return False, "Das Zimmer ist durch eine Direktbuchung belegt."
+            return False, "Unser Gartenzimmer ist an diesem Termin leider schon vergeben."
 
     for row in external:
         if overlaps(arrival, departure, parse_date(row["start_date"]), parse_date(row["end_date"])):
-            return False, "Das Zimmer ist über einen externen Buchungskanal belegt."
+            return False, "Unser Gartenzimmer ist an diesem Termin leider schon vergeben."
 
     if central_closed:
-        return False, "Das Zimmer wurde im Zuhause-am-Bach Zentralkalender gesperrt."
+        return False, "Unser Gartenzimmer ist an diesem Termin nicht buchbar."
 
     return True, "Das Zimmer ist verfügbar."
 
@@ -1240,17 +1240,17 @@ def live_master_availability(arrival: date, departure: date) -> tuple[bool | Non
             payload = json.loads(response.read().decode("utf-8"))
         events = payload.get("events")
         if payload.get("ok") is not True or not isinstance(events, list):
-            return None, "Live-Kalender konnte nicht bestätigt werden."
+            return None, "Die Verfügbarkeit kann gerade nicht bestätigt werden. Bitte versuche es später erneut oder kontaktiere uns direkt."
         for event in events:
             if not event.get("start") or not event.get("end"):
                 continue
             start_d = parse_date(str(event["start"])[:10])
             end_d = parse_date(str(event["end"])[:10])
             if overlaps(arrival, departure, start_d, end_d):
-                return False, "Das Gartenzimmer ist in diesem Zeitraum bereits belegt."
+                return False, "Unser Gartenzimmer ist an diesem Termin leider schon vergeben."
         return True, "Das Gartenzimmer ist laut Live-Kalender verfügbar."
     except Exception:
-        return None, "Live-Kalender derzeit nicht erreichbar. Bitte Termin später erneut prüfen oder direkt anfragen."
+        return None, "Die Verfügbarkeit kann gerade nicht bestätigt werden. Bitte versuche es später erneut oder kontaktiere uns direkt."
 
 
 def room_available(room: str, arrival: date, departure: date) -> tuple[bool, str]:
@@ -1268,14 +1268,14 @@ def room_available(room: str, arrival: date, departure: date) -> tuple[bool, str
     if app.extensions.get("v6_maintenance_conflict"):
         conflict, reason = app.extensions["v6_maintenance_conflict"](room, arrival, departure)
         if conflict:
-            return False, f"Das Gartenzimmer ist wegen {reason} gesperrt."
+            return False, f"Unser Gartenzimmer ist an diesem Termin nicht buchbar."
 
     # Booking/iCal ist die unabhängige Sicherheitsquelle. Vor jeder
     # Verfügbarkeitsprüfung frisch synchronisieren, damit eine neue
     # Booking-Sperre nie durch einen leeren/stalen Masterkalender als frei gilt.
     _, sync_status = sync_room(room)
     if sync_status != "Synchronisierung erfolgreich.":
-        return False, "Kalenderabgleich unvollständig. Bitte direkt anfragen."
+        return False, "Die Verfügbarkeit kann gerade nicht bestätigt werden. Bitte versuche es später erneut oder kontaktiere uns direkt."
 
     live_ok, live_message = live_master_availability(arrival, departure)
     if live_ok is None:
