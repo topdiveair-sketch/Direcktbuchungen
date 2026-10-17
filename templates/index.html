@@ -336,10 +336,15 @@
       <a href="#zimmer">Zimmer</a>
       <a href="/unterkunft-donauradweg-wachau">Donauradweg</a>
       <a href="/unterkunft-welterbesteig-wachau">Welterbesteig</a>
-      <a href="/1-nacht-wachau">1 Nacht</a>
-      <a href="#kontakt">Kontakt</a>
     </div>
-    <div class="language-switcher" aria-label="Sprachen"><a href="/" aria-current="page">DE</a> · <a href="/en/">EN</a> · <a href="/cs/">CZ</a> · <a href="/sk/">SK</a> · <a href="/hu/">HU</a> · <a href="/nl/">NL</a> · <a href="/pl/">PL</a> · <a href="/it/">IT</a> · <a href="/es/">ES</a> · <a href="/fr/">FR</a> · <a href="/ch/">CH</a> · <a href="/ar/">AR</a></div>
+    <div class="language-switcher" aria-label="Sprachauswahl">
+      <a href="/" aria-current="page">DE</a><a href="/en/">EN</a>
+      <details class="language-more"><summary>Weitere Sprachen</summary>
+        <div class="language-more-panel">
+          <a href="/cs/">CZ</a><a href="/sk/">SK</a><a href="/hu/">HU</a><a href="/nl/">NL</a><a href="/pl/">PL</a><a href="/it/">IT</a><a href="/es/">ES</a><a href="/fr/">FR</a><a href="/ch/" aria-label="Schweizerdeutsch">CH</a><a href="/ar/">AR</a>
+        </div>
+      </details>
+    </div>
     <a href="#booking" class="btn top-btn">Jetzt buchen</a>
   </nav>
 
@@ -445,8 +450,8 @@
               <label class="extra-option featured-extra">
                 <input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}">
                 <span>
-                  <strong>{{ item.label }}</strong>
-                  <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} € {% if item.unit=='person_night' %}pro Person/Nacht{% elif item.unit=='night' %}pro Nacht{% else %}einmalig{% endif %}</small>
+                  <strong>{% if key=='luggage' %}Gepäcktransport{% elif key=='breakfast' %}Frühstück auf Vorbestellung{% else %}{{ item.label }}{% endif %}</strong>
+                  <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} € {% if key=='luggage' %}pro Strecke{% elif item.unit=='person_night' %}pro Person/Nacht{% elif item.unit=='night' %}pro Nacht{% else %}einmalig{% endif %}{% if key=='breakfast' %} · für 1–2 Gäste, nur auf Vorbestellung{% endif %}</small>
                 </span>
               </label>
               {% endif %}
@@ -553,7 +558,7 @@
               <div class="booking-summary-row"><span>Zahlungsart</span><strong id="summaryPayment">PayPal</strong></div>
             </div>
             <div class="booking-summary-total"><span>Gesamtpreis</span><strong id="summaryTotal">–</strong></div>
-            <div class="booking-summary-note">✓ Flexible Rate · kostenfrei stornierbar bis 7 Tage vor Anreise</div>
+            <div class="booking-summary-note">Der Gesamtpreis enthält das Zimmer und alle ausgewählten Extras. Frühstück wird je ausgewählter Person und Nacht berechnet; Gepäcktransport einmal je gewählter Strecke. · Flexible Rate · kostenfrei stornierbar bis 7 Tage vor Anreise</div>
           </div>
 
           <div class="checkout-step-note">Schritt 3 von 3</div>
@@ -591,7 +596,7 @@
   <section class="active-service" id="oktober-direkt" aria-labelledby="oktober-direkt-title">
     <div class="active-service-head">
       <span class="eyebrow">Kurzfristig in die Wachau</span>
-      <h2 id="oktober-direkt-title">Oktober-Termine jetzt direkt prüfen</h2>
+      <h2 id="oktober-direkt-title">Direkt buchen für Donauradweg &amp; Welterbesteig</h2>
       <p>Nur ein Gartenzimmer, persönliche Betreuung und auch 1 Nacht grundsätzlich möglich. Ideal für eine Etappe am Donauradweg, den Welterbesteig oder eine spontane Auszeit zwischen Melk und Krems.</p>
     </div>
     <div class="active-service-grid">
@@ -599,15 +604,15 @@
       <article class="active-service-card"><div><h3>🥾 Welterbesteig</h3><p>Ruhige Etappenübernachtung in Aggsbach Markt, Frühstück und Gepäcktransport auf Wunsch.</p></div></article>
       <article class="active-service-card"><div><h3>🌙 1 Nacht möglich</h3><p>Für Durchreisende und Kurzentschlossene: einzelne Nächte direkt im Live-Kalender prüfen.</p></div></article>
     </div>
-    <div class="active-service-cta"><strong>Freie Termine werden live geprüft – nur 1 Gartenzimmer verfügbar.</strong><a class="btn" href="#booking">Oktober-Termin prüfen</a></div>
+    <div class="active-service-cta"><strong>Freie Termine werden live geprüft – nur 1 Gartenzimmer verfügbar.</strong><a class="btn" href="#booking">Termin prüfen</a></div>
   </section>
 
 
   <section class="active-service" id="winter" aria-labelledby="winter-title">
     <div class="active-service-head">
-      <span class="eyebrow">Wintersaison 2026/27</span>
+      <span class="eyebrow">Aktuelle Veranstaltungen &amp; Winterangebote</span>
       <h2 id="winter-title">Winter, Advent &amp; Jauerling in der Wachau</h2>
-      <p>Advent am Nordufer: Spitz, Weißenkirchen, Dürnstein und Emmersdorf liegen im Umkreis von etwa 15 km Luftlinie. Prüft euren Wunschtermin direkt für das Gartenzimmer in Aggsbach Markt; Preise und freie Nächte werden erst nach der Terminwahl angezeigt.</p>
+      <p>Veranstaltungen, Advent und Winterausflüge am Nordufer lassen sich mit einer Übernachtung in Aggsbach Markt verbinden. Prüft euren Wunschtermin direkt; freie Nächte und Gesamtpreis erscheinen nach der Terminwahl.</p>
     </div>
     <div class="active-service-grid winter-grid">
       <article class="active-service-card windis-book-card">
@@ -623,41 +628,51 @@
         </div>
       </article>
 
-      <article class="active-service-card">
+      {% if today_iso < '2026-12-14' %}
+<article class="active-service-card">
         <div>
           <h3>✨ Wachauer Advent in Dürnstein</h3>
           <p>20.–22. und 27.–29. November sowie 4.–8. und 11.–13. Dezember 2026. Der Markt am Nordufer ist von unserem Haus rund 15 km Luftlinie entfernt.</p>
           <a class="btn" href="/wachauer-advent-duernstein-2026-unterkunft">Termine in Dürnstein ansehen</a>
         </div>
       </article>
-      <article class="active-service-card">
+{% endif %}
+      {% if today_iso < '2026-11-30' %}
+<article class="active-service-card">
         <div>
           <h3>🎄 Advent in Weißenkirchen &amp; Emmersdorf</h3>
           <p>Am 21./22. November: Adventmarkt im Teisenhoferhof und Pfarradvent in Emmersdorf. Am 28./29. November folgt der Adventmarkt im Haus Seegarten in Emmersdorf.</p>
           <a class="btn" href="/?checkin=2026-11-21&amp;checkout=2026-11-23&amp;adults=2#booking">21. November prüfen</a>
         </div>
       </article>
-      <article class="active-service-card">
+{% endif %}
+      {% if today_iso < '2026-11-30' %}
+<article class="active-service-card">
         <div>
           <h3>✨ Spitzer Advent</h3>
           <p>28./29. November 2026 im Schloss Spitz; gut mit dem Wachauer Advent in Dürnstein kombinierbar.</p>
           <a class="btn" href="/?checkin=2026-11-28&amp;checkout=2026-11-30&amp;adults=2#booking">28. November prüfen</a>
         </div>
       </article>
-      <article class="active-service-card">
+{% endif %}
+      {% if today_iso < '2026-10-27' %}
+<article class="active-service-card">
         <div>
           <h3>🍷 Weinherbst in Spitz</h3>
           <p>Bis 26. Oktober 2026; Winzer in den Weinterrassen am 17. und 24. Oktober bei Schönwetter. Der 26. Oktober ist österreichischer Feiertag.</p>
           <a class="btn" href="/?checkin=2026-10-24&amp;checkout=2026-10-25&amp;adults=2#booking">24. Oktober prüfen</a>
         </div>
       </article>
-      <article class="active-service-card">
+{% endif %}
+      {% if today_iso < '2026-11-22' %}
+<article class="active-service-card">
         <div>
           <h3>🏔️ Maria Laach &amp; Jauerling</h3>
           <p>Adventkranzbinden am 21. November 2026. Ein kleiner Ausflugstermin; Verfügbarkeit und Preis des Gartenzimmers werden individuell geprüft.</p>
           <a class="btn" href="#booking">Aufenthalt prüfen</a>
         </div>
       </article>
+{% endif %}
       <article class="active-service-card">
         <div>
           <h3>❄ Winterurlaub Wachau</h3>
@@ -1277,6 +1292,20 @@
       link.href="/?arrival="+encodeURIComponent(day)+"&departure="+encodeURIComponent(depIso)+"&source=gap-night#booking";
       section.classList.remove("hidden");
     }).catch(()=>{});
+})();
+</script>
+<script id="remove-internal-image-note">
+(function(){
+  const internalNote=/bachblick.*bild.*adminbereich.*ersetzen/i;
+  function removeInternalNote(){
+    document.querySelectorAll("body *").forEach(function(el){
+      if(el.children.length || !internalNote.test((el.textContent||"").trim())) return;
+      const note=el.closest("figcaption,small,.image-credit,.hero-image-note")||el;
+      note.remove();
+    });
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",removeInternalNote,{once:true});
+  else removeInternalNote();
 })();
 </script>
 </body>
