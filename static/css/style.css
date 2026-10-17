@@ -6,7 +6,7 @@
 }
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--cream);line-height:1.45}
-a{color:inherit}.hero{height:66vh;min-height:560px;position:relative;color:white}.hero:not(.hero-room){background:linear-gradient(to bottom,rgba(0,0,0,.12),rgba(0,0,0,.50)),url("/static/images/aggsbach-markt-luftbild.png") center/cover}.hero.hero-room{background:linear-gradient(to bottom,rgba(0,0,0,.18),rgba(0,0,0,.58)),url("/static/images/rooms/bachblick.jpg") center 48%/cover no-repeat}
+a{color:inherit}.hero{height:66vh;min-height:560px;background:linear-gradient(to bottom,rgba(0,0,0,.12),rgba(0,0,0,.50)),url("/static/images/aggsbach-markt-luftbild.png") center/cover;position:relative;color:white}
 .topbar{height:76px;padding:0 4vw;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(0,0,0,.55),transparent)}
 .brand{display:flex;gap:12px;align-items:center;text-decoration:none;font-size:1.35rem;font-weight:800}.brand small{display:block;text-transform:uppercase;letter-spacing:.12em;font-size:.64rem}.logo-mark{font-size:2rem}
 .nav-links{display:flex;gap:28px}.nav-links a{text-decoration:none;font-weight:700;font-size:.95rem}.top-btn{padding:11px 18px}
@@ -153,18 +153,8 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
   .language-switcher{order:3;width:100%;justify-content:center}
   .feature-strip.feature-strip-i18n{grid-template-columns:1fr}
 }
-
-/* Booking extras with their matching guest service photos */
-.featured-extras{grid-template-columns:repeat(2,minmax(0,1fr))}
-.featured-extra{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:start;gap:8px 10px;padding:10px}
-.featured-extra-image{grid-column:1/-1;display:block;width:100%;height:170px;aspect-ratio:3/2;object-fit:cover;border-radius:7px;background:#f4f2ed}
-.featured-extra-image--jause{object-fit:contain}
-.featured-extra input{grid-column:1;grid-row:2;margin:3px 0 0}
-.featured-extra>span{grid-column:2;grid-row:2}
-.featured-extra strong{line-height:1.35}
-@media(max-width:800px){.featured-extras{grid-template-columns:1fr}.featured-extra-image{height:auto;max-height:240px;aspect-ratio:3/2}}
 \n
-.hero-room{background:linear-gradient(to bottom,rgba(0,0,0,.18),rgba(0,0,0,.58)),url("/static/images/rooms/bachblick.jpg") center 48%/cover no-repeat}
+.hero-room{background-image:linear-gradient(to bottom,rgba(0,0,0,.18),rgba(0,0,0,.58)),url("/static/images/rooms/bachblick.jpg");background-position:center 48%}
 .identity-section{margin:26px 0 46px;padding:36px;background:#fff;border-radius:18px;box-shadow:var(--shadow)}
 .identity-intro{max-width:880px;margin:0 auto 26px;text-align:center}
 .identity-intro h2{font:clamp(2rem,4vw,3.5rem)/1.05 Georgia,serif;margin:.45rem 0 1rem}
@@ -584,42 +574,6 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
     line-height:1.03;
   }
 }
-
-/* Keep the public booking flow within narrow and enlarged viewports. */
-@media (max-width:1000px){
-  .booking-shell{grid-template-columns:minmax(0,1fr)}
-  .booking-card,.benefit-column,.section-heading>div,
-  .booking-grid>*,.guest-grid>*,.room-copy{min-width:0}
-}
-@media (max-width:700px){
-  .booking-grid,.guest-grid,.payment-grid{grid-template-columns:minmax(0,1fr)}
-  .booking-grid input,.booking-grid select,.guest-grid input,
-  .guest-grid textarea{min-width:0;max-width:100%}
-  .section-heading h2,.section-heading p,.room-copy,
-  .booking-review-link,.booking-summary-row{overflow-wrap:anywhere}
-  .booking-review-link a{white-space:normal}
-  .zab-gallery-actions .btn{min-width:0;max-width:100%}
-  .live-calendar{grid-template-columns:repeat(7,minmax(0,1fr))}
-  .mobile-conversion-bar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
-  .mobile-conversion-bar span,.mobile-conversion-bar a{min-width:0;overflow-wrap:anywhere;font-size:.85rem;line-height:1.25}
-  .mobile-conversion-bar a{display:flex;align-items:center;justify-content:center;text-align:center;min-height:48px;padding:10px}
-  body:has(#bookingForm){padding-bottom:calc(96px + env(safe-area-inset-bottom))}
-}
-
-/* Nested room/gallery grids must shrink with the booking card as well. */
-@media (max-width:1000px){
-  .room-list{grid-template-columns:minmax(0,1fr);min-width:0}
-  .room-list>*,.zab-room-gallery,.zab-gallery-head,
-  .zab-gallery-thumbs,.zab-gallery-actions{min-width:0;max-width:100%}
-}
-@media (max-width:700px){
-  .total-row{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;justify-content:stretch;text-align:left}
-  .total-row>*{min-width:0;overflow-wrap:anywhere}
-  .total-row strong{font-size:clamp(1.3rem,5vw,1.65rem)}
-  .price-breakdown div{flex-wrap:wrap;gap:4px 12px;overflow-wrap:anywhere}
-}
-
-.rate-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:12px 0}.rate-choice{display:flex;flex-direction:column;gap:10px;align-items:flex-start;padding:20px;border:2px solid #dce2d0;border-radius:14px;background:white;color:#27351b;cursor:pointer;text-align:left;font:inherit}.rate-choice span{font-size:1.5rem;font-weight:800}.rate-choice.selected{border-color:#60742d;background:#f2f6e8}.rate-choice:focus-visible{outline:3px solid #60742d;outline-offset:3px}.rate-choice small{line-height:1.5}.rate-choice:disabled{opacity:.7;cursor:wait}@media(max-width:600px){.rate-choice-grid{grid-template-columns:1fr}}
 
 
 /* Compact, keyboard-accessible homepage language menu */
