@@ -366,8 +366,15 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
     const response = await fetch("/api/availability", {method:"POST", body:fd});
     const data = await response.json();
     const status = data.status || (data.available === true ? "free" : data.available === false ? "blocked" : "unknown");
+    const guestAvailabilityMessage = status === "free"
+      ? (data.message || tx("free"))
+      : status === "unknown"
+        ? "Die Verfügbarkeit kann gerade nicht bestätigt werden. Bitte versuche es später erneut oder kontaktiere uns direkt."
+        : /gesperrt|nicht buchbar|geschlossen|stillgelegt/i.test(data.message || "")
+          ? "Unser Gartenzimmer ist an diesem Termin nicht buchbar."
+          : "Unser Gartenzimmer ist an diesem Termin leider schon vergeben.";
     result.textContent = checkoutLang === "de"
-      ? data.message
+      ? guestAvailabilityMessage
       : (status === "free" ? tx("free") : status === "unknown" ? tx("unknown") : tx("blocked"));
     result.className = status === "free" ? "availability-result ok" : status === "unknown" ? "availability-result unknown" : "availability-result bad";
     track(`availability_result_${status}`);
