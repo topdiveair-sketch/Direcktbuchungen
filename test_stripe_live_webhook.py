@@ -29,7 +29,10 @@ class StripeLiveWebhookTests(unittest.TestCase):
         with self.db() as conn:
             conn.executescript("""
                 CREATE TABLE bookings (
-                    id INTEGER PRIMARY KEY, room TEXT, arrival TEXT, departure TEXT,
+                    id INTEGER PRIMARY KEY, uid TEXT UNIQUE, room TEXT, arrival TEXT, departure TEXT,
+                    adults INTEGER DEFAULT 2, breakfast INTEGER DEFAULT 0,
+                    first_name TEXT DEFAULT '', last_name TEXT DEFAULT '',
+                    email TEXT DEFAULT '', phone TEXT DEFAULT '', message TEXT DEFAULT '',
                     total REAL, payment_method TEXT, status TEXT, paid INTEGER DEFAULT 0,
                     stripe_session_id TEXT, stripe_payment_intent_id TEXT,
                     hold_expires_at TEXT
@@ -40,11 +43,15 @@ class StripeLiveWebhookTests(unittest.TestCase):
                 CREATE TABLE central_overrides (
                     room TEXT, day TEXT, availability INTEGER
                 );
+                CREATE TABLE ical_settings (
+                    room TEXT PRIMARY KEY, import_url TEXT, last_sync TEXT
+                );
             """)
         self.app = Flask(__name__)
         init_stripe_checkout(
             self.app, self.db, {"Bachblick": {}}, lambda s: s,
-            lambda *args: {}, lambda *args: (True, ""), lambda room: (0, "Synchronisierung erfolgreich."),
+            lambda *args: {"total": 119.0}, lambda *args: (True, ""),
+            lambda room: (0, "Synchronisierung erfolgreich."),
         )
         self.client = self.app.test_client()
         self.insert_booking()
@@ -135,6 +142,38 @@ class StripeLiveWebhookTests(unittest.TestCase):
             self.assertEqual(response.status_code, 503)
             status = self.client.get("/api/stripe/status").get_json()
             self.assertFalse(status["configured"])
+
+    def test_checkout_rejects_second_active_hold_from_same_ip(self):
+        class FakeResponse:
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                return False
+            def read(self):
+                return b'{"id":"cs_live_fake","url":"https://checkout.stripe.com/test"}'
+
+        with self.db() as conn:
+            conn.execute("INSERT INTO ical_settings(room,import_url,last_sync) VALUES(?,?,?)",
+                         ("Bachblick", "https://example.test/calendar.ics", datetime.now().isoformat()))
+        payload = {
+            "room": "Bachblick", "arrival": "2026-12-10", "departure": "2026-12-12",
+            "adults": 2,
+            "first_name": "Test", "last_name": "Gast", "email": "test@example.test",
+            "phone": "+430000000", "extras": {},
+        }
+        with patch("stripe_checkout.urllib.request.urlopen", return_value=FakeResponse()):
+            with patch.dict(os.environ, {"STRIPE_SECRET_KEY": "rk_live_offline_test_only"}):
+                first = self.client.post(
+                    "/api/stripe/create-checkout-session", json=payload,
+                    headers={"X-Forwarded-For": "198.51.100.27"},
+                )
+                second = self.client.post(
+                    "/api/stripe/create-checkout-session", json=payload,
+                    headers={"X-Forwarded-For": "198.51.100.27"},
+                )
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 429)
+        self.assertIn("bereits ein Karten-Checkout", second.get_json()["message"])
 
     def refund_event(self, amount_refunded=11900, payment_intent="pi_test_payment", tamper=False):
         event = {"id": "evt_refund_test", "livemode": True, "type": "charge.refunded",
