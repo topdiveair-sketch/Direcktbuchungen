@@ -324,6 +324,16 @@
   }
 </style>
 
+  <style id="zab-windis-booking-style">
+    .zab-windis-intro{max-width:1150px;margin:22px auto 18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;background:#f5f8f3;border:1px solid #dce8df;border-radius:18px;overflow:hidden;box-shadow:0 8px 26px rgba(18,55,37,.07)}
+    .zab-windis-intro img{width:100%;height:100%;min-height:310px;object-fit:cover;display:block}
+    .zab-windis-copy{padding:clamp(20px,3vw,38px);color:#17392b}
+    .zab-windis-copy h2{font-size:clamp(1.45rem,2.8vw,2.25rem);line-height:1.15;margin:12px 0}
+    .zab-windis-copy p{line-height:1.6}.zab-windis-copy ul{padding-left:20px;line-height:1.85;margin:12px 0 20px}
+    .zab-windis-intro .btn{display:inline-block;background:#176b5a;color:white;text-decoration:none}
+    .zab-windis-reassure{padding:14px 18px;margin:12px 0;background:#f1f8f3;color:#17392b;border-left:4px solid #176b5a;border-radius:8px;line-height:1.65}
+    @media(max-width:760px){.zab-windis-intro{grid-template-columns:1fr;margin:14px 12px}.zab-windis-intro img{max-height:250px;min-height:0}.zab-windis-copy{padding:20px}}
+  </style>
 </head>
 <body>
 <header class="hero hero-room hero-mobile-clean" id="start">
@@ -380,6 +390,16 @@
     </div>
   </section>
 
+  <section class="zab-windis-intro" aria-label="Deine Auszeit in der Wachau">
+    <img src="{{ url_for('static', filename='images/gartenzimmer-04-web.jpg') }}" alt="Unser echtes Gartenzimmer bei Zuhause am Bach" loading="lazy" width="580" height="380">
+    <div class="zab-windis-copy">
+      <span class="eyebrow">Zuhause am Bach · Wachau</span>
+      <h2>Ein Zimmer. Zwei Gäste. Ganz viel Wachau.</h2>
+      <p>Deine kleine Auszeit in der Wachau wartet. Persönlich, ruhig und direkt am Donauradweg und Welterbesteig.</p>
+      <ul><li>Ein einziges Gartenzimmer für zwei Gäste</li><li>Abschließbarer Fahrradraum und E-Bike-Laden</li><li>Frühstück und Wachauer Jause auf Wunsch</li></ul>
+      <a class="btn" href="#booking">Mein Gartenzimmer entdecken</a>
+    </div>
+  </section>
   <section id="booking" class="booking-shell">
     <div class="booking-card">
       <div class="section-heading">
@@ -518,6 +538,7 @@
           ✓ Kostenfrei stornierbar bis 7 Tage vor Anreise
         </div>
 
+        <div class="zab-windis-reassure"><strong>Dein Gartenzimmer – dein Termin – dein Direktpreis.</strong> Du siehst vor dem Buchen den Gesamtpreis einschließlich deiner gewählten Extras. Und bei Fragen sind wir persönlich für dich da.</div>
         <div class="booking-trust-strip" aria-label="Vorteile der Direktbuchung">
           <div><strong>✓ Direkt beim Gastgeber</strong><small>Ohne Buchungsportal dazwischen.</small></div>
           <div><strong>✓ Klarer Preis</strong><small>Gesamtpreis nach Terminprüfung sichtbar.</small></div>
@@ -532,6 +553,7 @@
         {% endif %}
 
         <div id="guestArea" class="guest-area hidden">
+          <p class="zab-windis-reassure"><strong>Wie schön, dass du die Wachau bei uns erleben möchtest!</strong> Fidel, Gloria und Pia freuen sich mit dir auf deinen Besuch und haben jede Menge Wachau-Tipps vorbereitet.</p>
           <div class="checkout-step-note">Schritt 2 von 3</div>
           <h3>Gästedaten</h3>
           <div class="guest-grid">
