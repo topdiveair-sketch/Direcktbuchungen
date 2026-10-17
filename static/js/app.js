@@ -247,15 +247,17 @@ async function showAlternativeDates() {
   alternativePanel.hidden = false;
   alternativePanel.replaceChildren();
   const headline = document.createElement("strong");
-  headline.textContent = "Dieser Wunschtermin ist leider schon vergeben.";
+  headline.textContent = "Schade, unser Gartenzimmer ist an deinem Wunschtermin schon vergeben.";
   const explanation = document.createElement("p");
-  explanation.textContent = "Weil wir nur ein Gartenzimmer haben, können wir an diesem Tag keine weitere Reservierung annehmen.";
+  explanation.textContent = "Bei uns gibt es nur ein einziges Gartenzimmer für zwei Gäste. Deshalb ist jeder Aufenthalt etwas Besonderes.";
   const prompt = document.createElement("p");
-  prompt.textContent = "Aber diese Termine könntest du noch bekommen:";
+  prompt.textContent = "Vielleicht klappt es ja an einem dieser Termine?";
   const candidatesEl = document.createElement("div");
   candidatesEl.style.cssText = "display:flex;flex-wrap:wrap;gap:8px";
   candidatesEl.textContent = "Wir prüfen die nächsten freien Termine …";
-  alternativePanel.append(headline, explanation, prompt, candidatesEl);
+  const farewell = document.createElement("p");
+  farewell.textContent = "Wir würden uns freuen, dich bei uns in der Wachau begrüßen zu dürfen!";
+  alternativePanel.append(headline, explanation, prompt, candidatesEl, farewell);
   const requestedArrival = arrival.value;
   const stayDays = nights();
   if (!requestedArrival || !Number.isInteger(stayDays) || stayDays < 1 || stayDays > 30) {
