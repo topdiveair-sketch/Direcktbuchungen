@@ -468,7 +468,7 @@
               {% set item = extras.get(key) %}
               {% if item and item.enabled %}
               <label class="extra-option featured-extra pictured-extra">
-                <img class="extra-feature-image" src="{{ url_for('static', filename='images/regionale-genussmomente-final.jpg' if key == 'jause' else 'images/transportservice-final.jpg') }}" alt="{{ 'Wachauer Jause als Abendessen' if key == 'jause' else 'Gepäcktransport für Gäste in der Wachau' }}" loading="lazy" decoding="async">
+                <img class="extra-feature-image" src="{{ url_for('static', filename='images/wachauer-jause-original.webp' if key == 'jause' else 'images/transportservice-final.jpg') }}" alt="{{ 'Wachauer Jause als Abendessen' if key == 'jause' else 'Gepäcktransport für Gäste in der Wachau' }}" loading="lazy" decoding="async">
                 <span class="extra-feature-description">
                   <span class="extra-feature-name"><input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}"><strong>{{ 'Wachauer Jause zum Abendessen' if key == 'jause' else 'Gepäcktransport' }}</strong></span>
                   <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} € {{ 'einmalig' if key == 'jause' else 'pro Strecke für bis zu 2 Gäste' }}</small>
