@@ -17,6 +17,7 @@ from flask import Response, jsonify, redirect, render_template_string, request
 
 
 HOLD_MINUTES = 45
+CHECKOUT_ATTEMPTS_PER_HOUR = 3
 DEFAULT_DIRECT_ORIGIN = "https://topdiveair-sketch.github.io"
 DEFAULT_RETURN_URL = "https://topdiveair-sketch.github.io/Direcktbuchungen/"
 STRIPE_API_BASE = "https://api.stripe.com/v1"
@@ -53,8 +54,22 @@ def init_stripe_checkout(
         ensure_column(conn, "bookings", "checkout_payload", "TEXT DEFAULT ''")
         ensure_column(conn, "bookings", "stripe_session_id", "TEXT DEFAULT ''")
         ensure_column(conn, "bookings", "stripe_payment_intent_id", "TEXT DEFAULT ''")
+        ensure_column(conn, "bookings", "checkout_ip_hash", "TEXT DEFAULT ''")
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_bookings_stripe_session ON bookings(stripe_session_id)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_bookings_checkout_ip_hash ON bookings(checkout_ip_hash, status, hold_expires_at)"
+        )
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS stripe_checkout_attempts (
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   ip_hash TEXT NOT NULL,
+                   created_at TEXT NOT NULL
+               )"""
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_stripe_checkout_attempts_ip_time ON stripe_checkout_attempts(ip_hash, created_at)"
         )
 
     def cors_headers():
@@ -100,6 +115,14 @@ def init_stripe_checkout(
 
     def secret_key():
         return os.environ.get("STRIPE_SECRET_KEY", "").strip()
+
+    def checkout_ip_hash():
+        """Hash the apparent client IP; never persist the raw address."""
+        forwarded = request.headers.get("X-Forwarded-For", "")
+        client_ip = (forwarded.split(",", 1)[0].strip() if forwarded
+                     else (request.remote_addr or "unknown"))
+        salt = os.environ.get("STRIPE_WEBHOOK_SECRET", "") or secret_key()
+        return hmac.new(salt.encode("utf-8"), client_ip.encode("utf-8"), hashlib.sha256).hexdigest()
 
     def checkout_base_url():
         configured = os.environ.get("PUBLIC_CHECKOUT_BASE_URL", "").strip().rstrip("/")
@@ -197,6 +220,10 @@ def init_stripe_checkout(
             "dog": False,
             "baby_bed": False,
         }
+        if chosen["luggage"]:
+            raise ValueError(
+                "Gepäcktransport hat einen streckenabhängigen Preis und kann nicht automatisch per Karte bezahlt werden."
+            )
         customer = {
             "first_name": str(data.get("first_name", "")).strip(),
             "last_name": str(data.get("last_name", "")).strip(),
@@ -328,6 +355,7 @@ def init_stripe_checkout(
             uid = f"ZAB-CARD-{uuid4()}@zuhause-am-bach"
             now = datetime.now()
             hold_expires = now + timedelta(minutes=HOLD_MINUTES)
+            ip_hash = checkout_ip_hash()
             payload_store = json.dumps(
                 {"extras": chosen, "breakdown": breakdown, "source": "github-pages-stripe"},
                 ensure_ascii=False,
@@ -335,23 +363,57 @@ def init_stripe_checkout(
             try:
                 with db() as conn:
                     conn.execute("BEGIN IMMEDIATE")
+                    now_iso = now.isoformat(timespec="seconds")
+                    conn.execute(
+                        "DELETE FROM stripe_checkout_attempts WHERE created_at<?",
+                        ((now - timedelta(days=1)).isoformat(timespec="seconds"),),
+                    )
+                    active_hold = conn.execute(
+                        """SELECT hold_expires_at FROM bookings
+                           WHERE checkout_ip_hash=? AND payment_method='stripe_checkout'
+                             AND status='pending' AND COALESCE(paid,0)=0
+                             AND COALESCE(hold_expires_at,'')>? LIMIT 1""",
+                        (ip_hash, now_iso),
+                    ).fetchone()
+                    if active_hold:
+                        conn.rollback()
+                        return api_json({
+                            "ok": False,
+                            "message": "Für diesen Internetanschluss läuft bereits ein Karten-Checkout. Bitte schließen Sie die Zahlung ab oder versuchen Sie es nach Ablauf der Reservierung erneut.",
+                            "retry_after": active_hold["hold_expires_at"],
+                        }, 429)
+                    cutoff = (now - timedelta(hours=1)).isoformat(timespec="seconds")
+                    attempt_count = conn.execute(
+                        "SELECT COUNT(*) FROM stripe_checkout_attempts WHERE ip_hash=? AND created_at>=?",
+                        (ip_hash, cutoff),
+                    ).fetchone()[0]
+                    if attempt_count >= CHECKOUT_ATTEMPTS_PER_HOUR:
+                        conn.rollback()
+                        return api_json({
+                            "ok": False,
+                            "message": "Zu viele Karten-Checkout-Versuche von diesem Internetanschluss. Bitte versuchen Sie es in einer Stunde erneut.",
+                        }, 429)
                     ok, message = room_available_in_conn(conn, room, arrival, departure)
                     if not ok:
                         conn.rollback()
                         return api_json({"ok": False, "message": message}, 409)
+                    conn.execute(
+                        "INSERT INTO stripe_checkout_attempts(ip_hash,created_at) VALUES(?,?)",
+                        (ip_hash, now_iso),
+                    )
                     cur = conn.execute(
                         """INSERT INTO bookings
                            (uid,room,arrival,departure,adults,breakfast,first_name,last_name,
                             email,phone,message,payment_method,total,status,created_at,
-                            paid,hold_expires_at,checkout_payload)
-                           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',?,0,?,?)""",
+                            paid,hold_expires_at,checkout_payload,checkout_ip_hash)
+                           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',?,0,?,?,?)""",
                         (
                             uid, room, arrival.isoformat(), departure.isoformat(), adults,
                             1 if chosen["breakfast"] else 0,
                             customer["first_name"], customer["last_name"], customer["email"],
                             customer["phone"], customer["message"], "stripe_checkout",
                             float(total), now.isoformat(timespec="seconds"),
-                            hold_expires.isoformat(timespec="seconds"), payload_store,
+                            hold_expires.isoformat(timespec="seconds"), payload_store, ip_hash,
                         ),
                     )
                     booking_id = int(cur.lastrowid)
