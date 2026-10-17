@@ -588,3 +588,16 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
 .language-more-panel a:hover,.language-more-panel a:focus{background:#eef5e8}
 @media(max-width:900px){.language-switcher{order:3;width:auto;justify-content:flex-start}.language-more-panel{left:0;right:auto}}
 @media(max-width:560px){.language-switcher{order:3;width:100%;justify-content:center}.language-more-panel{left:50%;right:auto;transform:translateX(-50%)}}
+
+
+/* Illustrated booking extras: two readable cards, responsive on mobile. */
+.booking-services .pictured-extras{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.booking-services .pictured-extra{display:flex;flex-direction:column;gap:9px;min-width:0;cursor:pointer}
+.booking-services .extra-feature-image{display:block;width:100%;height:170px;object-fit:cover;border-radius:9px}
+.booking-services .extra-feature-description{display:flex;flex-direction:column;gap:5px}
+.booking-services .extra-feature-name{display:flex;flex-direction:row;align-items:flex-start;gap:10px}
+.booking-services .extra-feature-name input{width:17px;height:17px;min-width:17px;margin:3px 0 0;accent-color:var(--green)}
+.booking-services .extra-feature-name strong{font-weight:800;line-height:1.35}
+.booking-services .extra-feature-description small{line-height:1.45}
+.booking-services .breakfast-extra{margin-top:10px}
+@media (max-width:640px){.booking-services .pictured-extras{grid-template-columns:1fr}.booking-services .extra-feature-image{height:190px}}
