@@ -461,22 +461,30 @@
         <section class="booking-services" aria-label="Zusatzleistungen">
           <div class="service-heading">
             <span>Auf Wunsch gleich dazu</span>
-            <strong>Frühstück, Wachauer Jause und Gepäcktransport</strong>
+            <strong>Abendjause und Gepäcktransport</strong>
           </div>
-          <div class="extras-grid featured-extras">
-            {% for key in ['breakfast', 'jause', 'luggage'] %}
+          <div class="extras-grid featured-extras pictured-extras">
+            {% for key in ['jause', 'luggage'] %}
               {% set item = extras.get(key) %}
               {% if item and item.enabled %}
-              <label class="extra-option featured-extra">
-                <input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}">
-                <span>
-                  <strong>{% if key=='luggage' %}Gepäcktransport{% elif key=='breakfast' %}Frühstück auf Vorbestellung{% else %}{{ item.label }}{% endif %}</strong>
-                  <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} € {% if key=='luggage' %}pro Strecke{% elif item.unit=='person_night' %}pro Person/Nacht{% elif item.unit=='night' %}pro Nacht{% else %}einmalig{% endif %}{% if key=='breakfast' %} · für 1–2 Gäste, nur auf Vorbestellung{% endif %}</small>
+              <label class="extra-option featured-extra pictured-extra">
+                <img class="extra-feature-image" src="{{ url_for('static', filename='images/regionale-genussmomente-final.jpg' if key == 'jause' else 'images/transportservice-final.jpg') }}" alt="{{ 'Wachauer Jause als Abendessen' if key == 'jause' else 'Gepäcktransport für Gäste in der Wachau' }}" loading="lazy" decoding="async">
+                <span class="extra-feature-description">
+                  <span class="extra-feature-name"><input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}"><strong>{{ 'Wachauer Jause zum Abendessen' if key == 'jause' else 'Gepäcktransport' }}</strong></span>
+                  <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} € {{ 'einmalig' if key == 'jause' else 'pro Strecke für bis zu 2 Gäste' }}</small>
+                  {% if key == 'jause' %}<small>Unsere Wachauer Jause kannst du als Abendessen dazubuchen.</small>{% endif %}
                 </span>
               </label>
               {% endif %}
             {% endfor %}
           </div>
+          {% set breakfast_item = extras.get('breakfast') %}
+          {% if breakfast_item and breakfast_item.enabled %}
+          <label class="extra-option breakfast-extra">
+            <input type="checkbox" id="breakfast" name="breakfast" data-price="{{ breakfast_item.price }}" data-unit="{{ breakfast_item.unit }}">
+            <span><strong>Frühstück auf Vorbestellung</strong><small>{{ '%.2f'|format(breakfast_item.price)|replace('.', ',') }} € pro Person · für 1–2 Gäste</small></span>
+          </label>
+          {% endif %}
         </section>
 
         <h3 class="subheading">Gartenzimmer</h3>
