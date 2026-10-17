@@ -171,8 +171,8 @@ class StripeLiveWebhookTests(unittest.TestCase):
                     "/api/stripe/create-checkout-session", json=payload,
                     headers={"X-Forwarded-For": "198.51.100.27"},
                 )
-        self.assertEqual(first.status_code, 200)
-        self.assertEqual(second.status_code, 429)
+        self.assertEqual(first.status_code, 200, first.get_json())
+        self.assertEqual(second.status_code, 429, second.get_json())
         self.assertIn("bereits ein Karten-Checkout", second.get_json()["message"])
 
     def test_checkout_rate_limit_stops_repeated_holds_after_expiry(self):
