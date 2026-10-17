@@ -195,6 +195,8 @@ function updatePaymentUI() {
   updateBookingSummary();
 }
 function resetAvailability() {
+  ++alternativeSearchId;
+  alternativePanel.hidden = true;
   result.classList.add("hidden");
   guestArea.classList.add("hidden");
   if (directBookStep) directBookStep.classList.add("hidden");
@@ -225,6 +227,14 @@ arrival.addEventListener("change", () => {
   });
 });
 
+const ALT_I18N = {
+  de: ["Schade, unser Gartenzimmer ist an deinem Wunschtermin schon vergeben.","Bei uns gibt es nur ein einziges Gartenzimmer für zwei Gäste. Deshalb ist jeder Aufenthalt etwas Besonderes.","Vielleicht klappt es ja an einem dieser Termine?","Wir prüfen die nächsten freien Termine …","Bitte gültige Reisedaten auswählen.","Zurzeit können wir keine freien Alternativen zuverlässig bestätigen.","Wir würden uns freuen, dich bei uns in der Wachau begrüßen zu dürfen!","Die Verfügbarkeit wird vor der Buchung nochmals geprüft.","Freie Alternativen können momentan nicht zuverlässig geprüft werden."],
+  en: ["Sorry, our garden room is already booked for your preferred dates.","We have just one garden room for two guests. That makes every stay special.","Perhaps one of these dates will work for you?","Checking the next available dates …","Please choose valid dates.","We cannot reliably confirm any alternative dates right now.","We would love to welcome you to the Wachau!","Availability is checked again before booking.","Alternative dates cannot be verified at the moment."],
+  cs: ["Škoda, náš zahradní pokoj je ve vámi vybraném termínu již obsazen.","Máme pouze jeden zahradní pokoj pro dva hosty. Každý pobyt je proto výjimečný.","Možná vám bude vyhovovat některý z těchto termínů?","Ověřujeme další volné termíny …","Vyberte prosím platné termíny.","Momentálně nemůžeme spolehlivě potvrdit žádný náhradní termín.","Rádi vás přivítáme ve Wachau!","Dostupnost znovu ověříme před rezervací.","Náhradní termíny nyní nelze spolehlivě ověřit."],
+  sk: ["Škoda, naša záhradná izba je vo vašom termíne už obsadená.","Máme len jednu záhradnú izbu pre dvoch hostí. Preto je každý pobyt výnimočný.","Možno vám bude vyhovovať niektorý z týchto termínov?","Overujeme ďalšie voľné termíny …","Vyberte, prosím, platné termíny.","Momentálne nevieme spoľahlivo potvrdiť náhradné termíny.","Radi vás privítame vo Wachau!","Dostupnosť pred rezerváciou znova overíme.","Náhradné termíny teraz nemožno spoľahlivo overiť."]
+};
+function altText(i) { return (ALT_I18N[checkoutLang] || ALT_I18N.en)[i]; }
+
 // Only offer alternative dates verified as free in the authoritative calendar.
 let alternativeSearchId = 0;
 const alternativePanel = document.createElement("section");
@@ -245,23 +255,24 @@ function moveDays(iso, days) {
 async function showAlternativeDates() {
   const requestId = ++alternativeSearchId;
   alternativePanel.hidden = false;
+  track("alternate_dates_shown");
   alternativePanel.replaceChildren();
   const headline = document.createElement("strong");
-  headline.textContent = "Schade, unser Gartenzimmer ist an deinem Wunschtermin schon vergeben.";
+  headline.textContent = altText(0);
   const explanation = document.createElement("p");
-  explanation.textContent = "Bei uns gibt es nur ein einziges Gartenzimmer für zwei Gäste. Deshalb ist jeder Aufenthalt etwas Besonderes.";
+  explanation.textContent = altText(1);
   const prompt = document.createElement("p");
-  prompt.textContent = "Vielleicht klappt es ja an einem dieser Termine?";
+  prompt.textContent = altText(2);
   const candidatesEl = document.createElement("div");
   candidatesEl.style.cssText = "display:flex;flex-wrap:wrap;gap:8px";
-  candidatesEl.textContent = "Wir prüfen die nächsten freien Termine …";
+  candidatesEl.textContent = altText(3);
   const farewell = document.createElement("p");
-  farewell.textContent = "Wir würden uns freuen, dich bei uns in der Wachau begrüßen zu dürfen!";
+  farewell.textContent = altText(6);
   alternativePanel.append(headline, explanation, prompt, candidatesEl, farewell);
   const requestedArrival = arrival.value;
   const stayDays = nights();
   if (!requestedArrival || !Number.isInteger(stayDays) || stayDays < 1 || stayDays > 30) {
-    candidatesEl.textContent = "Bitte gültige Reisedaten auswählen.";
+    candidatesEl.textContent = altText(4);
     return;
   }
   const start = moveDays(requestedArrival, 1);
@@ -293,16 +304,19 @@ async function showAlternativeDates() {
       if (allFree) candidates.push(candidate);
     }
     candidatesEl.replaceChildren();
+    track("alternate_dates_results_" + (candidates.length ? "available" : "none"));
     if (!candidates.length) {
-      candidatesEl.textContent = "Zurzeit können wir keine freien Alternativen zuverlässig bestätigen.";
+      candidatesEl.textContent = altText(5);
       return;
     }
     for (const candidate of candidates) {
       const button = document.createElement("button");
       button.type = "button";
-      button.textContent = new Date(candidate + "T12:00:00").toLocaleDateString("de-AT", {day:"2-digit",month:"long",year:"numeric"});
+      button.textContent = new Date(candidate + "T12:00:00").toLocaleDateString(({de:"de-AT",en:"en-GB",cs:"cs-CZ",sk:"sk-SK"})[checkoutLang] || "en-GB", {day:"2-digit",month:"long",year:"numeric"});
       button.style.cssText = "background:#176b5a;color:#fff;border:0;border-radius:9px;padding:11px 14px;cursor:pointer;font-weight:600";
       button.addEventListener("click", () => {
+        track("alternate_date_selected");
+        trackDemand("alternate_date_selected", {nights:stayDays});
         ++alternativeSearchId;
         alternativePanel.hidden = true;
         arrival.value = candidate;
@@ -316,10 +330,10 @@ async function showAlternativeDates() {
       candidatesEl.append(button);
     }
     const warning=document.createElement("small");
-    warning.textContent="Die Verfügbarkeit wird vor der Buchung nochmals geprüft.";
+    warning.textContent=altText(7);
     alternativePanel.append(warning);
   } catch(e) {
-    if (requestId === alternativeSearchId) candidatesEl.textContent="Freie Alternativen können momentan nicht zuverlässig geprüft werden.";
+    if (requestId === alternativeSearchId) candidatesEl.textContent=altText(8);
   }
 }
 
