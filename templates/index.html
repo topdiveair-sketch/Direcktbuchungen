@@ -5,17 +5,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Unterkunft & Privatzimmer Wachau | Zuhause am Bach</title>
-  <meta name="description" content="Kleine Unterkunft in der Wachau in Aggsbach Markt, auch für 1 Nacht. Für Radgäste: Fahrradunterbringung, E-Bike-Laden sowie auf Anfrage Waschplatz, Ersatzrad, Radbeschaffung oder Fahrradtransport nach Verfügbarkeit.">
+  <meta name="description" content="Kleine persönliche Unterkunft und Privatzimmer in der Wachau: Gartenzimmer in Aggsbach Markt ab 99 € pro Nacht, auch 1 Nacht möglich. Für Österreich, Deutschland und Schweiz direkt buchen.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <link rel="canonical" href="https://www.zuhauseambach-wachau.at/">
-  <link rel="preload" as="image" href="{{ url_for('static', filename='images/rooms/bachblick.jpg') }}" fetchpriority="high">
   <link rel="alternate" hreflang="de" href="https://www.zuhauseambach-wachau.at/">
   <link rel="alternate" hreflang="de-AT" href="https://www.zuhauseambach-wachau.at/">
   <link rel="alternate" hreflang="de-DE" href="https://www.zuhauseambach-wachau.at/">
-  <link rel="alternate" hreflang="en-GB" href="https://www.zuhauseambach-wachau.at/en/">
-  <link rel="alternate" hreflang="en-US" href="https://www.zuhauseambach-wachau.at/en/">
-  <link rel="alternate" hreflang="nl-NL" href="https://www.zuhauseambach-wachau.at/nl/">
-  <link rel="alternate" hreflang="nl-BE" href="https://www.zuhauseambach-wachau.at/nl/">
   <link rel="alternate" hreflang="en" href="https://www.zuhauseambach-wachau.at/en/">
   <link rel="alternate" hreflang="cs" href="https://www.zuhauseambach-wachau.at/cs/">
   <link rel="alternate" hreflang="sk" href="https://www.zuhauseambach-wachau.at/sk/">
@@ -44,15 +39,14 @@
     "name":"Zuhause am Bach – Wachau",
     "alternateName":["Zuhause am Bach","Zu Hause am Bach","Zuhause am Bach Wachau"],
     "url":"https://www.zuhauseambach-wachau.at/",
-    "description":"Private Zimmervermietung in Aggsbach Markt an der nördlichen Wachau: ein Gartenzimmer für maximal zwei Personen, Übernachtung ab einer Nacht, abschließbarer kameraüberwachter Fahrradraum, E-Bike-Laden und Direktbuchung. Für Donauradweg, Welterbesteig und Wachau-Gäste aus Österreich, Deutschland und der Schweiz.",
+    "description":"Persönliche Unterkunft in Aggsbach Markt in der Wachau zwischen Melk und Krems – für Donauradweg, Welterbesteig, Jauerling und Wachau-Gäste.",
     "image":"https://www.zuhauseambach-wachau.at/static/images/gartenzimmer-04-web.jpg",
     "geo":{"@type":"GeoCoordinates","latitude":48.293669,"longitude":15.396011},
     "hasMap":"https://www.google.com/maps/search/?api=1&query=Zuhause%20am%20Bach%20Aggsbach%20Markt%2082",
     "identifier":[
       {"@type":"PropertyValue","propertyID":"Booking.com hotel ID","value":"10657485"}
     ],
-    "numberOfRooms":1,
-    "priceRange":"ab 99 € pro Nacht",
+    "numberOfRooms":1,\n    "priceRange":"ab 99 € pro Nacht",
     "petsAllowed":false,
     "smokingAllowed":false,
     "address":{"@type":"PostalAddress","streetAddress":"Aggsbach Markt 82","postalCode":"3641","addressLocality":"Aggsbach Markt","addressRegion":"Niederösterreich","addressCountry":"AT"},
@@ -73,11 +67,11 @@
         "@type":"HotelRoom",
         "@id":"https://www.zuhauseambach-wachau.at/#gartenzimmer",
         "name":"Gartenzimmer",
-        "description":"Ruhiges Doppelzimmer mit exklusivem Privatbad außerhalb des Zimmers, direkt gegenüber, und WLAN bei Zuhause am Bach in Aggsbach Markt.",
+        "description":"Ruhiges Doppelzimmer mit eigenem Bad und WLAN bei Zuhause am Bach in Aggsbach Markt.",
         "occupancy":{"@type":"QuantitativeValue","maxValue":2},
         "bed":{"@type":"BedDetails","numberOfBeds":1,"typeOfBed":"Double"},
         "amenityFeature":[
-          {"@type":"LocationFeatureSpecification","name":"Exklusives Privatbad direkt gegenüber dem Zimmer","value":true},
+          {"@type":"LocationFeatureSpecification","name":"Eigenes Badezimmer","value":true},
           {"@type":"LocationFeatureSpecification","name":"WLAN","value":true},
           {"@type":"LocationFeatureSpecification","name":"Nichtraucherzimmer","value":true}
         ]
@@ -86,8 +80,6 @@
     "amenityFeature":[
       {"@type":"LocationFeatureSpecification","name":"WLAN","value":true},
       {"@type":"LocationFeatureSpecification","name":"Fahrradunterbringung","value":true},
-      {"@type":"LocationFeatureSpecification","name":"Abschließbarer Fahrradraum mit Kameraüberwachung","value":true},
-      {"@type":"LocationFeatureSpecification","name":"Kostenloser Parkplatz","value":true},
       {"@type":"LocationFeatureSpecification","name":"E-Bike-Lademöglichkeit","value":true},
       {"@type":"LocationFeatureSpecification","name":"Frühstück auf Wunsch","value":true},
       {"@type":"LocationFeatureSpecification","name":"Etappenübernachtung ab 1 Nacht grundsätzlich möglich","value":true}
@@ -131,6 +123,11 @@
       border-color:var(--green-dark)!important;
       color:#fff!important;
     }
+
+    .local-event-shortcuts { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0 0 18px; padding:12px 14px; border-radius:12px; background:#eef5f0; }
+    .local-event-shortcuts strong { margin-right:4px; }
+    .local-event-shortcuts a { display:inline-block; padding:5px 9px; border:1px solid #b7d3c4; border-radius:999px; color:#14533c; text-decoration:none; background:#fff; }
+    .local-event-shortcuts small { flex-basis:100%; }
 
     /* Winter section: featured story first, then a balanced 3-column event grid */
     #winter .winter-grid {
@@ -250,18 +247,48 @@
     .booking-summary-note{margin-top:8px;font-size:.8rem;color:#526823}
     @media(max-width:560px){.booking-summary-grid{grid-template-columns:1fr}}
 
-    /* Conversion flow: one clear action after availability and rate selection */
+    /* Conversion flow: availability -> explicit booking CTA -> guest data -> payment */
+    .direct-book-step{
+      margin:16px 0 20px;
+      padding:18px;
+      border:2px solid #1f7a4d;
+      border-radius:14px;
+      background:linear-gradient(135deg,#f0fbf5 0%,#ffffff 100%);
+      box-shadow:0 10px 28px rgba(31,122,77,.12);
+      text-align:center;
+    }
+    .direct-book-copy{display:grid;gap:4px;margin-bottom:14px}
+    .direct-book-kicker{
+      font-size:.78rem;
+      font-weight:800;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      color:#1f7a4d;
+    }
+    .direct-book-copy strong{font-size:1.2rem;color:#123d2a}
+    .direct-book-copy span:last-child{font-size:.95rem;color:#4b6357}
     .direct-book-cta{
-      width:100%;min-height:60px;margin-top:10px;
-      background:#18864b!important;border-color:#18864b!important;color:#fff!important;
-      font-size:1.1rem;font-weight:900;letter-spacing:.01em;
-      box-shadow:0 8px 18px rgba(24,134,75,.22)
+      width:100%;
+      min-height:58px;
+      background:#18864b!important;
+      border-color:#18864b!important;
+      color:#fff!important;
+      font-size:1.08rem;
+      font-weight:900;
+      letter-spacing:.01em;
+      box-shadow:0 8px 18px rgba(24,134,75,.22);
     }
     .direct-book-cta:hover{background:#116b3b!important;border-color:#116b3b!important}
-    .direct-book-helper{display:block;margin-top:9px;text-align:center;color:#52635a}
+    .direct-book-step small{display:block;margin-top:10px;color:#52635a}
     .checkout-step-note{
-      display:inline-block;margin:8px 0 2px;padding:5px 9px;border-radius:999px;
-      background:#eef6f0;color:#1f6c46;font-size:.78rem;font-weight:800
+      display:inline-block;
+      margin:4px 0 6px;
+      padding:5px 9px;
+      border-radius:999px;
+      background:#eef6f0;
+      color:#1f6c46;
+      font-size:.78rem;
+      font-weight:800;
     }
 </style>  <!-- seo-identity-deploy-marker: 2026-09-29 -->
   <!-- railway-force-deploy: 2026-09-29T14:20Z -->
@@ -297,6 +324,16 @@
   }
 </style>
 
+  <style id="zab-windis-booking-style">
+    .zab-windis-intro{max-width:1150px;margin:22px auto 18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;background:#f5f8f3;border:1px solid #dce8df;border-radius:18px;overflow:hidden;box-shadow:0 8px 26px rgba(18,55,37,.07)}
+    .zab-windis-intro img{width:100%;height:100%;min-height:310px;object-fit:cover;display:block}
+    .zab-windis-copy{padding:clamp(20px,3vw,38px);color:#17392b}
+    .zab-windis-copy h2{font-size:clamp(1.45rem,2.8vw,2.25rem);line-height:1.15;margin:12px 0}
+    .zab-windis-copy p{line-height:1.6}.zab-windis-copy ul{padding-left:20px;line-height:1.85;margin:12px 0 20px}
+    .zab-windis-intro .btn{display:inline-block;background:#176b5a;color:white;text-decoration:none}
+    .zab-windis-reassure{padding:14px 18px;margin:12px 0;background:#f1f8f3;color:#17392b;border-left:4px solid #176b5a;border-radius:8px;line-height:1.65}
+    @media(max-width:760px){.zab-windis-intro{grid-template-columns:1fr;margin:14px 12px}.zab-windis-intro img{max-height:250px;min-height:0}.zab-windis-copy{padding:20px}}
+  </style>
 </head>
 <body>
 <header class="hero hero-room hero-mobile-clean" id="start">
@@ -322,9 +359,9 @@
   </nav>
 
   <div class="hero-content">
-    <h1>Unterkunft & Privatzimmer in der Wachau zwischen Melk und Krems</h1>
-    <p>Ruhiges Gartenzimmer in Aggsbach Markt · für Gäste aus Österreich, Deutschland und der Schweiz · ab 99 € pro Nacht · auch 1 Nacht grundsätzlich möglich · Preis und Verfügbarkeit direkt prüfen</p>
-    {% if google_landing %}<div class="google-trust">🚴 Fahrradunterbringung · ⚡ E-Bike laden · 🛠️ Kleine Hilfe auf Anfrage &amp; nach Verfügbarkeit · 🥾 Welterbesteig · 🍳 Frühstück auf Wunsch</div>{% endif %}
+    <h1>Unterkunft in der Wachau zwischen Melk und Krems</h1>
+    <p>Ruhiges Gartenzimmer in Aggsbach Markt · ab 99 € pro Nacht · auch 1 Nacht grundsätzlich möglich · Preis und Verfügbarkeit direkt prüfen</p>
+    {% if google_landing %}<div class="google-trust">🚴 Fahrradunterbringung · ⚡ E-Bike laden · 🥾 Welterbesteig · 🍳 Frühstück auf Wunsch</div>{% endif %}
     <div class="hero-actions"><a class="btn" href="#booking">Verfügbarkeit &amp; Preis prüfen</a><a class="hero-secondary" href="/1-nacht-wachau">Nur 1 Nacht?</a></div>
     <div class="hero-proof"><strong>Gartenzimmer ab 99 € / Nacht</strong> · 1 Nacht grundsätzlich möglich · Flexible Rate · kostenfrei stornierbar bis 7 Tage vor Anreise</div>
     <div class="hero-proof"><strong>★ 4,9 Google · 9 Rezensionen</strong> · <strong>8,8/10 Booking · 50 Bewertungen</strong> · Gastgeber 9,8/10</div>
@@ -339,7 +376,7 @@
     {% endfor %}
   {% endwith %}
 
-
+  
   <section id="gapNightOffer" class="booking-shell hidden" aria-live="polite">
     <div class="booking-card">
       <div class="section-heading">
@@ -353,15 +390,35 @@
     </div>
   </section>
 
+  <section class="zab-windis-intro" aria-label="Deine Auszeit in der Wachau">
+    <img src="{{ url_for('static', filename='images/gartenzimmer-04-web.jpg') }}" alt="Unser echtes Gartenzimmer bei Zuhause am Bach" loading="lazy" width="580" height="380">
+    <div class="zab-windis-copy">
+      <span class="eyebrow">Zuhause am Bach · Wachau</span>
+      <h2>Ein Zimmer. Zwei Gäste. Ganz viel Wachau.</h2>
+      <p>Deine kleine Auszeit in der Wachau wartet. Persönlich, ruhig und direkt am Donauradweg und Welterbesteig.</p>
+      <ul><li>Ein einziges Gartenzimmer für zwei Gäste</li><li>Abschließbarer Fahrradraum und E-Bike-Laden</li><li>Frühstück und Wachauer Jause auf Wunsch</li></ul>
+      <a class="btn" href="#booking">Mein Gartenzimmer entdecken</a>
+    </div>
+  </section>
   <section id="booking" class="booking-shell">
     <div class="booking-card">
       <div class="section-heading">
         <span class="section-icon">▣</span>
         <div>
           <h2>Verfügbarkeit &amp; Preis</h2>
-          <p>Auch lange im Voraus planen: Reisedaten bis {{ booking_horizon_year }} prüfen und direkt buchen.</p>
+          <p>Auch lange im Voraus planen: Reisedaten bis {{ booking_horizon_year }} prüfen und direkt anfragen.</p>
         </div>
       </div>
+
+      <nav class="local-event-shortcuts" aria-label="Adventtermine am Nordufer direkt prüfen">
+        <strong>Adventtermine am Nordufer:</strong>
+        <a href="/?checkin=2026-11-21&amp;checkout=2026-11-23&amp;adults=2#booking">21.11. Weißenkirchen</a>
+        <a href="/?checkin=2026-11-28&amp;checkout=2026-11-30&amp;adults=2#booking">28.11. Spitz</a>
+        <a href="/?checkin=2026-12-05&amp;checkout=2026-12-07&amp;adults=2#booking">5.12. Dürnstein</a>
+        <a href="/?checkin=2026-12-07&amp;checkout=2026-12-08&amp;adults=2#booking">7.12. Feiertagsfenster</a>
+        <a href="/?checkin=2026-12-12&amp;checkout=2026-12-14&amp;adults=2#booking">12.12. Dürnstein</a>
+        <small>Ruhige So–Do-Nächte bis 30.04.2027: 99 € Zimmerpreis. Adventwochenenden prüfen zwei Nächte, der 7.12. eine Nacht für zwei Erwachsene; Verfügbarkeit und Endpreis erscheinen nach der Prüfung.</small>
+      </nav>
 
       <form id="bookingForm" action="{{ url_for('book') }}" method="post">
         <input type="hidden" name="idempotency_key" id="idempotencyKey">
@@ -370,86 +427,6 @@
         <input type="hidden" name="utm_campaign" id="bookingUtmCampaign">
         <input type="hidden" name="landing_page" id="bookingLandingPage">
         <input type="hidden" name="referrer" id="bookingReferrer">
-        <h3 class="subheading">Gartenzimmer</h3>
-        <div id="zimmer" class="room-list">
-          {% set info = rooms['Bachblick'] %}
-          <label class="room-option">
-            <input type="radio" name="room" value="Bachblick" data-price="{{ info.price }}"
-                   data-from="{{ info.available_from.isoformat() }}" checked>
-            <img src="{{ url_for('static', filename='images/gartenzimmer-04-web.jpg') }}?v=20260925-final3"
-                  alt="Gartenzimmer mit Doppelbett bei Zuhause am Bach in Aggsbach Markt, Wachau" loading="lazy" decoding="async" fetchpriority="low" width="1600" height="1200">
-            <span class="room-copy">
-              <strong>Gartenzimmer</strong>
-              <small>Ruhiges Doppelzimmer für bis zu 2 Personen. Das Privatbad liegt außerhalb des Zimmers direkt gegenüber und ist ausschließlich für euch reserviert.</small>
-              <span class="room-features">Doppelbett · exklusives Privatbad direkt gegenüber · WLAN · ruhige Lage</span>
-            </span>
-            <span class="room-price">
-              <strong>ab 99 €</strong>
-              <small>pro Nacht</small>
-            </span>
-            <span class="room-check">✓</span>
-          </label>
-
-          <div class="zab-room-gallery" aria-label="Bildergalerie Gartenzimmer">
-            <div class="zab-gallery-head">
-              <strong>Gartenzimmer ansehen</strong>
-              <span>5 Fotos · Bad · Fahrradschuppen · Küche</span>
-            </div>
-            <div class="zab-gallery-thumbs">
-              <button type="button" class="zab-gallery-thumb is-active" data-gallery-index="0" aria-label="Gartenzimmer groß ansehen">
-                <img src="{{ url_for('static', filename='images/gartenzimmer-04-web.jpg') }}" alt="Gartenzimmer mit Doppelbett bei Zuhause am Bach in Aggsbach Markt" loading="lazy">
-              </button>
-              <button type="button" class="zab-gallery-thumb" data-gallery-index="1" aria-label="Badezimmer groß ansehen">
-                <img src="{{ url_for('static', filename='images/bad-zuhause-am-bach-v2.webp') }}" alt="Exklusives Privatbad direkt gegenüber dem Gartenzimmer bei Zuhause am Bach in der Wachau" loading="lazy">
-              </button>
-              <button type="button" class="zab-gallery-thumb" data-gallery-index="2" aria-label="Fahrradschuppen groß ansehen">
-                <img src="{{ url_for('static', filename='images/fahrradschuppen-wachau.webp') }}?v=20261017" alt="Abschließbarer Fahrradschuppen und E-Bike-Ladestation bei Zuhause am Bach in Aggsbach Markt" loading="lazy">
-              </button>
-              <button type="button" class="zab-gallery-thumb" data-gallery-index="3" aria-label="Gästeküche groß ansehen">
-                <img src="{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-v2.webp') }}" alt="Gästeküche für Gäste von Zuhause am Bach in Aggsbach Markt" loading="lazy">
-              </button>
-              <button type="button" class="zab-gallery-thumb" data-gallery-index="4" aria-label="Bach hinter dem Haus groß ansehen">
-                <img src="{{ url_for('static', filename='images/bach-hinterm-haus-v11.webp') }}" alt="Bach und ruhiger Außenbereich hinter Zuhause am Bach in Aggsbach Markt" loading="lazy">
-              </button>
-            </div>
-            <div class="zab-gallery-actions">
-              <button type="button" class="btn secondary" id="openGallery">📷 Bilder ansehen</button>
-              <button type="button" class="btn secondary" id="openPanorama">↻ 360° Zimmer ansehen</button>
-            </div>
-          </div>
-        </div>
-
-        {% set breakfast_item = extras.get('breakfast') %}
-        {% if breakfast_item and breakfast_item.enabled %}
-        <label hidden><input type="checkbox" id="breakfast" name="breakfast" data-price="{{ breakfast_item.price }}" data-unit="{{ breakfast_item.unit }}"><strong>Frühstück</strong></label>
-        {% endif %}
-        <section class="booking-services" aria-label="Zusatzleistungen">
-          <div class="service-heading">
-            <span>Auf Wunsch gleich dazu</span>
-            <strong>Abendjause und Gepäcktransport</strong>
-          </div>
-          <div class="extras-grid featured-extras">
-            {% for key in ['jause', 'luggage'] %}
-              {% set item = extras.get(key) %}
-              {% if item and item.enabled %}
-              <label class="extra-option featured-extra featured-extra--{{ key }}">
-                {% if key == 'jause' %}
-                  <img class="featured-extra-image featured-extra-image--jause" src="{{ url_for('static', filename='images/wachauer-jause-2980.webp') }}?v=20261017" alt="Wachauer Jause für zwei Personen, 29,80 Euro" loading="lazy" decoding="async" width="1448" height="1086">
-                {% elif key == 'luggage' %}
-                  <img class="featured-extra-image" src="{{ url_for('static', filename='images/transportservice-wachau.webp') }}?v=20261017" alt="Gepäckübergabe für Wanderer am Welterbesteig Wachau" loading="lazy" decoding="async" width="900" height="600">
-                {% endif %}
-                <input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}">
-                <span>
-                  <strong>{% if key == 'jause' %}Wachauer Jause zum Abendessen{% elif key == 'luggage' %}Gepäcktransport{% else %}{{ item.label }}{% endif %}</strong>
-                  <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} € {% if key == 'luggage' %}pro Strecke für bis zu 2 Gäste{% elif item.unit=='person_night' %}pro Person/Nacht{% elif item.unit=='night' %}pro Nacht{% else %}einmalig{% endif %}</small>
-                  {% if key == 'jause' %}<small>Die Gastronomie in Aggsbach Markt hat dienstags und mittwochs geschlossen. Unsere Wachauer Jause kannst du als Abendessen dazubuchen.</small>{% endif %}
-                </span>
-              </label>
-              {% endif %}
-            {% endfor %}
-          </div>
-        </section>
-
         <div class="booking-grid">
           <label>Anreise
             <input type="date" id="arrival" name="arrival" aria-label="Anreisedatum" title="Anreisedatum" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
@@ -471,19 +448,93 @@
 
         <div id="availabilityResult" class="availability-result hidden"></div>
 
-        <section id="rateChoices" class="hidden" aria-label="Übernachtung auswählen">
-          <h3>Wählt euren Aufenthalt</h3>
-          <div class="rate-choice-grid">
-            <button type="button" class="rate-choice selected" id="rateWithoutBreakfast" aria-pressed="true"><strong>Ohne Frühstück</strong><span id="rateWithoutPrice">–</span><small>Gesamtpreis für alle Gäste und Nächte</small></button>
-            {% if breakfast_item and breakfast_item.enabled %}
-            <button type="button" class="rate-choice" id="rateWithBreakfast" aria-pressed="false"><strong>Mit Frühstück</strong><span id="rateWithPrice">–</span><small id="rateBreakfastDetail">Frühstück für alle Gäste und Nächte</small></button>
-            {% endif %}
+        <div id="directBookStep" class="direct-book-step hidden" aria-live="polite">
+          <div class="direct-book-copy">
+            <span class="direct-book-kicker">Schritt 1 abgeschlossen</span>
+            <strong id="directBookHeadline">Termin frei – jetzt direkt buchen</strong>
+            <span id="directBookPrice">Gesamtpreis wird angezeigt</span>
           </div>
-          <p>✓ Flexible Rate · kostenfrei stornierbar bis 7 Tage vor Anreise</p>
-          <div class="checkout-step-note">Schritt 1 von 3 abgeschlossen</div>
-          <button type="button" class="btn full direct-book-cta" id="continueBooking">JETZT DIREKT BUCHEN</button>
-          <small class="direct-book-helper">Danach nur noch Gästedaten eingeben, Zahlungsart wählen und Buchung bestätigen.</small>
+          <button type="button" class="btn direct-book-cta" id="continueBooking">JETZT DIREKT BUCHEN</button>
+          <small>Danach nur noch Gästedaten eingeben, Zahlungsart wählen und Buchung bestätigen.</small>
+        </div>
+
+        <section class="booking-services" aria-label="Zusatzleistungen">
+          <div class="service-heading">
+            <span>Auf Wunsch gleich dazu</span>
+            <strong>Abendjause und Gepäcktransport</strong>
+          </div>
+          <div class="extras-grid featured-extras pictured-extras">
+            {% for key in ['jause', 'luggage'] %}
+              {% set item = extras.get(key) %}
+              {% if item and item.enabled %}
+              <label class="extra-option featured-extra pictured-extra">
+                <img class="extra-feature-image" src="{{ url_for('static', filename='images/regionale-genussmomente-final.jpg' if key == 'jause' else 'images/transportservice-final.jpg') }}" alt="{{ 'Wachauer Jause als Abendessen' if key == 'jause' else 'Gepäcktransport für Gäste in der Wachau' }}" loading="lazy" decoding="async">
+                <span class="extra-feature-description">
+                  <span class="extra-feature-name"><input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}"><strong>{{ 'Wachauer Jause zum Abendessen' if key == 'jause' else 'Gepäcktransport' }}</strong></span>
+                  <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} € {{ 'einmalig' if key == 'jause' else 'pro Strecke für bis zu 2 Gäste' }}</small>
+                  {% if key == 'jause' %}<small>Unsere Wachauer Jause kannst du als Abendessen dazubuchen.</small>{% endif %}
+                </span>
+              </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% set breakfast_item = extras.get('breakfast') %}
+          {% if breakfast_item and breakfast_item.enabled %}
+          <label class="extra-option breakfast-extra">
+            <input type="checkbox" id="breakfast" name="breakfast" data-price="{{ breakfast_item.price }}" data-unit="{{ breakfast_item.unit }}">
+            <span><strong>Frühstück auf Vorbestellung</strong><small>{{ '%.2f'|format(breakfast_item.price)|replace('.', ',') }} € pro Person · für 1–2 Gäste</small></span>
+          </label>
+          {% endif %}
         </section>
+
+        <h3 class="subheading">Gartenzimmer</h3>
+        <div id="zimmer" class="room-list">
+          {% set info = rooms['Bachblick'] %}
+          <label class="room-option">
+            <input type="radio" name="room" value="Bachblick" data-price="{{ info.price }}"
+                   data-from="{{ info.available_from.isoformat() }}" checked>
+            <img src="{{ url_for('static', filename='images/gartenzimmer-04-web.jpg') }}?v=20260925-final3"
+                  alt="Gartenzimmer mit Doppelbett bei Zuhause am Bach in Aggsbach Markt, Wachau" loading="eager" decoding="async" width="1600" height="1200">
+            <span class="room-copy">
+              <strong>Gartenzimmer</strong>
+              <small>Ruhiges Doppelzimmer mit persönlicher Atmosphäre – gemütlich und zum Wohlfühlen.</small>
+              <span class="room-features">Doppelbett · eigenes Bad · WLAN · ruhige Lage</span>
+            </span>
+            <span class="room-price">
+              <strong>ab 99 €</strong>
+              <small>pro Nacht</small>
+            </span>
+            <span class="room-check">✓</span>
+          </label>
+
+          <div class="zab-room-gallery" aria-label="Bildergalerie Gartenzimmer">
+            <div class="zab-gallery-head">
+              <strong>Gartenzimmer ansehen</strong>
+              <span>5 Fotos · Bad · Küche · Umgebung</span>
+            </div>
+            <div class="zab-gallery-thumbs">
+              <button type="button" class="zab-gallery-thumb is-active" data-gallery-index="0" aria-label="Gartenzimmer groß ansehen">
+                <img src="{{ url_for('static', filename='images/gartenzimmer-04-web.jpg') }}" alt="Gartenzimmer mit Doppelbett bei Zuhause am Bach in Aggsbach Markt" loading="lazy">
+              </button>
+              <button type="button" class="zab-gallery-thumb" data-gallery-index="1" aria-label="Badezimmer groß ansehen">
+                <img src="{{ url_for('static', filename='images/bad-zuhause-am-bach-v2.webp') }}" alt="Eigenes Badezimmer des Gartenzimmers bei Zuhause am Bach in der Wachau" loading="lazy">
+              </button>
+              <button type="button" class="zab-gallery-thumb" data-gallery-index="2" aria-label="Zweites Zimmerbild groß ansehen">
+                <img src="{{ url_for('static', filename='images/gartenzimmer-direktbuchung-v2.webp') }}?v=20260930-restored" alt="Weiterer Blick auf Doppelbett und Ausstattung im Gartenzimmer in Aggsbach Markt" loading="lazy">
+              </button>
+              <button type="button" class="zab-gallery-thumb" data-gallery-index="3" aria-label="Gästeküche groß ansehen">
+                <img src="{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-v2.webp') }}" alt="Gästeküche für Gäste von Zuhause am Bach in Aggsbach Markt" loading="lazy">
+              </button>
+              <button type="button" class="zab-gallery-thumb" data-gallery-index="4" aria-label="Bach hinter dem Haus groß ansehen">
+                <img src="{{ url_for('static', filename='images/bach-hinterm-haus-v11.webp') }}" alt="Bach und ruhiger Außenbereich hinter Zuhause am Bach in Aggsbach Markt" loading="lazy">
+              </button>
+            </div>
+            <div class="zab-gallery-actions">
+              <button type="button" class="btn secondary" id="openGallery">📷 Bilder ansehen</button>
+              <button type="button" class="btn secondary" id="openPanorama">↻ 360° Zimmer ansehen</button>
+            </div>
+          </div>
+        </div>
 
         <div id="priceBreakdown" class="price-breakdown"></div>
 
@@ -495,10 +546,11 @@
           ✓ Kostenfrei stornierbar bis 7 Tage vor Anreise
         </div>
 
+        <div class="zab-windis-reassure"><strong>Dein Gartenzimmer – dein Termin – dein Direktpreis.</strong> Du siehst vor dem Buchen den Gesamtpreis einschließlich deiner gewählten Extras. Und bei Fragen sind wir persönlich für dich da.</div>
         <div class="booking-trust-strip" aria-label="Vorteile der Direktbuchung">
           <div><strong>✓ Direkt beim Gastgeber</strong><small>Ohne Buchungsportal dazwischen.</small></div>
           <div><strong>✓ Klarer Preis</strong><small>Gesamtpreis nach Terminprüfung sichtbar.</small></div>
-          <div><strong>✓ Direkter Kontakt</strong><small>Fragen persönlich mit dem Gastgeber klären.</small></div>
+          <div><strong>✓ Persönliche Bestätigung</strong><small>Direkter Kontakt statt anonymer Abwicklung.</small></div>
           <div><strong>✓ Flexible Rate</strong><small>Kostenfrei stornierbar bis 7 Tage vor Anreise.</small></div>
         </div>
         {% if settings.google_review_url %}
@@ -509,6 +561,7 @@
         {% endif %}
 
         <div id="guestArea" class="guest-area hidden">
+          <p class="zab-windis-reassure"><strong>Wie schön, dass du die Wachau bei uns erleben möchtest!</strong> Fidel, Gloria und Pia freuen sich mit dir auf deinen Besuch und haben jede Menge Wachau-Tipps vorbereitet.</p>
           <div class="checkout-step-note">Schritt 2 von 3</div>
           <h3>Gästedaten</h3>
           <div class="guest-grid">
@@ -516,15 +569,6 @@
             <label>Nachname<input type="text" name="last_name" required></label>
             <label>E-Mail<input type="email" name="email" required></label>
             <label>Telefon<input type="tel" name="phone" required></label>
-          </div>
-          <div id="businessFields" class="guest-grid hidden" aria-label="Firmendaten">
-            <label>Firma / Auftraggeber<input type="text" name="company" placeholder="optional"></label>
-            <label>Rechnungsadresse<input type="text" name="invoice_address" placeholder="optional"></label>
-            <label>UID / Steuerangabe<input type="text" name="company_tax_id" placeholder="optional"></label>
-            <label>Kostenstelle / Bestellnummer<input type="text" name="company_reference" placeholder="optional"></label>
-            <label>Ansprechpartner Firma<input type="text" name="company_contact" placeholder="optional"></label>
-            <label>Firmen-E-Mail<input type="email" name="company_email" placeholder="optional"></label>
-            <label style="grid-column:1/-1"><input type="checkbox" name="recurring_business" value="on"> Wiederkehrende Arbeits- oder Projektaufenthalte gewünscht</label>
           </div>
           <label>Wünsche oder Nachricht
             <textarea name="message" rows="4" placeholder="z. B. vegetarisches Frühstück, Fahrräder oder spätere Anreise"></textarea>
@@ -544,34 +588,355 @@
               <div class="booking-summary-row"><span>Zahlungsart</span><strong id="summaryPayment">PayPal</strong></div>
             </div>
             <div class="booking-summary-total"><span>Gesamtpreis</span><strong id="summaryTotal">–</strong></div>
-            <div class="booking-summary-note">Der Gesamtpreis enthält das Zimmer und alle gewählten Extras. Frühstück: 12 € je Gast und Nacht (maximal 2 Gäste). Gepäcktransport: 15 € pro Strecke für bis zu 2 Gäste; eine weitere Strecke bitte anfragen. Flexible Rate · kostenfrei stornierbar bis 7 Tage vor Anreise.</div>
+            <div class="booking-summary-note">Der Gesamtpreis enthält Zimmer und gewählte Extras. Frühstück: 12 € je Gast und Nacht (maximal 2 Gäste). Gepäcktransport: 15 € für eine Strecke für bis zu 2 Gäste; eine weitere Strecke bitte anfragen. · Flexible Rate · kostenfrei stornierbar bis 7 Tage vor Anreise</div>
           </div>
 
           <div class="checkout-step-note">Schritt 3 von 3</div>
           <h3>Zahlung &amp; Bestätigung</h3>
           <div class="payment-grid">
-            <label><input type="radio" name="payment_method" value="PayPal" checked><span><strong>PayPal</strong><small>Direkt beim Gastgeber</small></span></label>
-            <label><input type="radio" name="payment_method" value="Banküberweisung"><span><strong>Banküberweisung</strong><small>Zahlungseingang innerhalb von 48 Stunden</small></span></label>
+            <label><input type="radio" name="payment_method" value="PayPal" checked><span><strong>PayPal</strong><small>{{ paypal_email }}</small></span></label>
+            <label><input type="radio" name="payment_method" value="Banküberweisung"><span><strong>Banküberweisung</strong><small>IBAN wird sofort angezeigt</small></span></label>
+            <label><input type="radio" name="payment_method" value="Vor Ort"><span><strong>Zahlung vor Ort</strong><small>E-Mail-Bestätigung innerhalb von 2 Stunden · nicht bei Anreise in unter 3 Tagen</small></span></label>
           </div>
           <div id="paymentNotice" class="legal-note" style="display:block;margin:10px 0 12px"></div>
           <div id="bankTransferDetails" class="paypal-note hidden" style="margin:10px 0 12px">
             <strong>Banküberweisung</strong><br>
-            Das Zimmer wird beim Abschluss verbindlich reserviert. Bankdaten, Betrag, Verwendungszweck und Zahlungsfrist erhältst du auf der Bestätigungsseite und in der Buchungsmail. Zahlungseingang innerhalb von 48 Stunden; sonst wird die Reservierung aufgehoben.
+            Kontoinhaber: <strong>{{ bank_account_holder }}</strong><br>
+            IBAN: <strong>{{ bank_iban_display or bank_iban }}</strong><br>
+            Der genaue Betrag und Verwendungszweck werden angezeigt. Bitte erst nach unserer persönlichen Buchungsbestätigung überweisen.
           </div>
 
           <button class="btn full" id="bookingSubmit" type="submit">JETZT DIREKT BUCHEN</button>
-          <small class="legal-note" id="bookingConfirmationHint">Der Hinweis zur gewählten Zahlungsart erklärt, wann eure Buchung bestätigt ist.</small>
+          <small class="legal-note">Die Anfrage wird sofort im Direktbuchungskalender vorgemerkt. Die persönliche Bestätigung folgt anschließend.</small>
         </div>
       </form>
     </div>
 
     <aside class="benefit-column">
-      <article><span>⌾</span><div><strong>Direkt buchen</strong><small>Ohne Umweg über ein Buchungsportal.</small></div></article>
+      <article><span>⌾</span><div><strong>Direkt anfragen</strong><small>Ohne Umweg über ein Buchungsportal.</small></div></article>
       <article><span>♡</span><div><strong>Persönlich & herzlich</strong><small>Wir sind vor, während und nach dem Aufenthalt da.</small></div></article>
       <article><span>🐾</span><div><strong>Windis inklusive</strong><small>Fidel, Gloria und Pia freuen sich auf Besuch.</small></div></article>
       <article><span>⌖</span><div><strong>Top-Lage</strong><small>Am Welterbesteig und nur wenige Minuten vom Donauradweg.</small></div></article>
       <article><span>🚲</span><div><strong>Sicher radeln</strong><small>Innenhof, Unterstand und E-Bike-Laden.</small></div></article>
     </aside>
+  </section>
+
+
+
+  <section class="active-service" id="oktober-direkt" aria-labelledby="oktober-direkt-title">
+    <div class="active-service-head">
+      <span class="eyebrow">Kurzfristig in die Wachau</span>
+      <h2 id="oktober-direkt-title">Direkt buchen für Donauradweg &amp; Welterbesteig</h2>
+      <p>Nur ein Gartenzimmer, persönliche Betreuung und auch 1 Nacht grundsätzlich möglich. Ideal für eine Etappe am Donauradweg, den Welterbesteig oder eine spontane Auszeit zwischen Melk und Krems.</p>
+    </div>
+    <div class="active-service-grid">
+      <article class="active-service-card"><div><h3>🚴 Donauradweg</h3><p>Sichere Fahrradunterbringung, E-Bike-Laden und kleine Fahrrad-Hilfe vor Ort.</p></div></article>
+      <article class="active-service-card"><div><h3>🥾 Welterbesteig</h3><p>Ruhige Etappenübernachtung in Aggsbach Markt, Frühstück und Gepäcktransport auf Wunsch.</p></div></article>
+      <article class="active-service-card"><div><h3>🌙 1 Nacht möglich</h3><p>Für Durchreisende und Kurzentschlossene: einzelne Nächte direkt im Live-Kalender prüfen.</p></div></article>
+    </div>
+    <div class="active-service-cta"><strong>Freie Termine werden live geprüft – nur 1 Gartenzimmer verfügbar.</strong><a class="btn" href="#booking">Termin prüfen</a></div>
+  </section>
+
+
+  <section class="active-service" id="winter" aria-labelledby="winter-title">
+    <div class="active-service-head">
+      <span class="eyebrow">Aktuelle Veranstaltungen &amp; Winterangebote</span>
+      <h2 id="winter-title">Winter, Advent &amp; Jauerling in der Wachau</h2>
+      <p>Veranstaltungen, Advent und Winterausflüge am Nordufer lassen sich mit einer Übernachtung in Aggsbach Markt verbinden. Prüft euren Wunschtermin direkt; freie Nächte und Gesamtpreis erscheinen nach der Terminwahl.</p>
+    </div>
+    <div class="active-service-grid winter-grid">
+      <article class="active-service-card windis-book-card">
+        <div class="windis-book-layout">
+          <img class="windis-book-cover" src="/media/windis-band15.jpg?v=20260929-cover2" alt="Buchcover Band 15: Die wilden Wachauer Windis auf dem Dürnsteiner Weihnachtsmarkt" loading="eager" decoding="async">
+          <div>
+            <span class="eyebrow">Buchtipp zum Wachauer Advent</span>
+            <h3>📚 Die wilden Windis auf dem Dürnsteiner Weihnachtsmarkt</h3>
+            <p><strong>Band 15 der „Wilden Wachauer Windis“</strong> macht den Dürnsteiner Weihnachtsmarkt selbst zum Schauplatz: Fidel, Gloria und Pia erleben zwischen Adventlichtern, Marillen-Puderzucker-Keksen, Schneegestöber und Wachauer Legenden ihr Weihnachtsabenteuer.</p>
+            <p>Unser Tipp für Familien: erst die Geschichte kennenlernen, dann den echten Dürnsteiner Advent besuchen – und den Wachau-Aufenthalt bei Zuhause am Bach mit den echten Windis verbinden.</p>
+            <a class="btn" href="#booking">Windis-Weihnachtsmarkt-Wochenende buchen</a>
+          </div>
+        </div>
+      </article>
+
+      {% if today_iso < '2026-12-14' %}
+<article class="active-service-card">
+        <div>
+          <h3>✨ Wachauer Advent in Dürnstein</h3>
+          <p>20.–22. und 27.–29. November sowie 4.–8. und 11.–13. Dezember 2026. Der Markt am Nordufer ist von unserem Haus rund 15 km Luftlinie entfernt.</p>
+          <a class="btn" href="/wachauer-advent-duernstein-2026-unterkunft">Termine in Dürnstein ansehen</a>
+        </div>
+      </article>
+{% endif %}
+      {% if today_iso < '2026-11-30' %}
+<article class="active-service-card">
+        <div>
+          <h3>🎄 Advent in Weißenkirchen &amp; Emmersdorf</h3>
+          <p>Am 21./22. November: Adventmarkt im Teisenhoferhof und Pfarradvent in Emmersdorf. Am 28./29. November folgt der Adventmarkt im Haus Seegarten in Emmersdorf.</p>
+          <a class="btn" href="/?checkin=2026-11-21&amp;checkout=2026-11-23&amp;adults=2#booking">21. November prüfen</a>
+        </div>
+      </article>
+{% endif %}
+      {% if today_iso < '2026-11-30' %}
+<article class="active-service-card">
+        <div>
+          <h3>✨ Spitzer Advent</h3>
+          <p>28./29. November 2026 im Schloss Spitz; gut mit dem Wachauer Advent in Dürnstein kombinierbar.</p>
+          <a class="btn" href="/?checkin=2026-11-28&amp;checkout=2026-11-30&amp;adults=2#booking">28. November prüfen</a>
+        </div>
+      </article>
+{% endif %}
+      {% if today_iso < '2026-10-27' %}
+<article class="active-service-card">
+        <div>
+          <h3>🍷 Weinherbst in Spitz</h3>
+          <p>Bis 26. Oktober 2026; Winzer in den Weinterrassen am 17. und 24. Oktober bei Schönwetter. Der 26. Oktober ist österreichischer Feiertag.</p>
+          <a class="btn" href="/?checkin=2026-10-24&amp;checkout=2026-10-25&amp;adults=2#booking">24. Oktober prüfen</a>
+        </div>
+      </article>
+{% endif %}
+      {% if today_iso < '2026-11-22' %}
+<article class="active-service-card">
+        <div>
+          <h3>🏔️ Maria Laach &amp; Jauerling</h3>
+          <p>Adventkranzbinden am 21. November 2026. Ein kleiner Ausflugstermin; Verfügbarkeit und Preis des Gartenzimmers werden individuell geprüft.</p>
+          <a class="btn" href="#booking">Aufenthalt prüfen</a>
+        </div>
+      </article>
+{% endif %}
+      <article class="active-service-card">
+        <div>
+          <h3>❄ Winterurlaub Wachau</h3>
+          <p>Ruhige Tage an der Donau, Winterspaziergänge und Advent in der Wachau mit persönlicher Übernachtung verbinden.</p>
+          <a class="btn" href="/winterurlaub-wachau">Winterurlaub ansehen</a>
+        </div>
+      </article>
+      <article class="active-service-card">
+        <div>
+          <h3>🏔️ Jauerling im Winter</h3>
+          <p>Winterausflug Richtung Jauerling planen. Schnee-, Lift- und Betriebsstatus bitte aktuell beim Betreiber prüfen.</p>
+          <a class="btn" href="/skifahren-jauerling-unterkunft-wachau">Jauerling-Unterkunft ansehen</a>
+        </div>
+      </article>
+    </div>
+    <div class="identity-cta">
+      <strong>🐾 Winter mit den Wilden Wachauer Windis</strong>
+      <span>Fidel, Gloria und Pia gehören zu Zuhause am Bach. Auch im Advent und Winter sind sie Teil der persönlichen Atmosphäre im Haus – ideal für Gäste, die Hunde mögen und keine anonyme Unterkunft suchen.</span>
+      <a class="hero-secondary" href="#basislager">Die Windis kennenlernen</a>
+    </div>
+    <div class="identity-cta">
+      <strong>Wintertermin schon bekannt?</strong>
+      <span>Freie Nächte und aktuellen Direktpreis sofort prüfen.</span>
+      <a class="btn" href="#booking">Wintertermin prüfen</a>
+    </div>
+  </section>
+
+  <section class="active-service" id="eine-nacht" aria-labelledby="eine-nacht-title">
+    <div class="active-service-head">
+      <span class="eyebrow">Für Etappengäste</span>
+      <h2 id="eine-nacht-title">Nur 1 Nacht in der Wachau? Grundsätzlich möglich.</h2>
+      <p>Viele Radfahrer am Donauradweg und Wanderer am Welterbesteig benötigen genau eine Etappenübernachtung. Bei Zuhause am Bach kann auch nur eine Nacht gebucht werden, sofern der Termin verfügbar ist. An einzelnen stark nachgefragten Veranstaltungsterminen können abweichende Mindestaufenthalte gelten.</p>
+      <a class="btn" href="{{ url_for('seo_eine_nacht_wachau') }}">1 Nacht in der Wachau ansehen</a>
+    </div>
+  </section>
+
+  <section class="active-service" id="fruehplaner" aria-labelledby="fruehplaner-title">
+    <div class="active-service-head">
+      <span class="eyebrow">Für aktive Wachau-Gäste</span>
+      <h2 id="fruehplaner-title">Donauradweg oder Welterbesteig schon für {{ booking_horizon_year }} planen</h2>
+      <p>Gute Wachau-Termine sollen nicht erst kurz vor der Reise gesucht werden. Wer seine Rad- oder Wanderetappe bereits kennt, kann den Wunschtermin bei Zuhause am Bach frühzeitig direkt anfragen.</p>
+    </div>
+    <div class="active-service-grid">
+      <article class="active-service-card">
+        <div>
+          <h3>🚴 Donauradweg Wachau</h3>
+          <p>Sichere Fahrradunterbringung, E-Bike-Laden, Frühstück und Gepäcktransport für deine Etappe.</p>
+          <a class="btn" href="{{ url_for('activity_donauradweg') }}">Donauradweg-Unterkunft ansehen</a>
+        </div>
+      </article>
+      <article class="active-service-card">
+        <div>
+          <h3>🥾 Welterbesteig Wachau</h3>
+          <p>Ruhig schlafen, Frühstück auf Wunsch, Gepäcktransport und persönliche Etappentipps.</p>
+          <a class="btn" href="{{ url_for('activity_welterbesteig') }}">Welterbesteig-Unterkunft ansehen</a>
+        </div>
+      </article>
+    </div>
+    <div class="identity-cta">
+      <strong>2027 schon planen?</strong>
+      <span>Unsere Frühplaner-Seite bündelt Rad- und Wandertermine für die kommenden Saisonen.</span>
+      <a class="btn" href="{{ url_for('future_planning') }}">Wachau 2027 planen</a>
+      <a class="hero-secondary" href="{{ url_for('wachau_events') }}">Starke Wachau-Termine 2027</a>
+    </div>
+  </section>
+
+  <section class="active-service" id="wachau-planen" aria-labelledby="wachau-planen-title">
+    <div class="active-service-head">
+      <span class="eyebrow">Wachau gezielt planen</span>
+      <h2 id="wachau-planen-title">Unterkunft, Ort, Radreise, Jauerling &amp; starke Termine</h2>
+      <p>Je genauer die Reiseidee, desto schneller zum passenden Termin. Diese Seiten bündeln die wichtigsten Gründe, warum Gäste nach Aggsbach Markt kommen.</p>
+    </div>
+    <div class="active-service-grid active-service-grid--four">
+      <article class="active-service-card"><div><h3>⌂ Unterkunft Wachau</h3><p>Ruhig und persönlich in Aggsbach Markt übernachten.</p><a href="{{ url_for('seo_unterkunft_wachau') }}">Unterkunft Wachau</a></div></article>
+      <article class="active-service-card"><div><h3>📍 Aggsbach Markt</h3><p>Direkt im Ort schlafen und die Wachau weiterziehen.</p><a href="{{ url_for('seo_aggsbach_markt') }}">Übernachten in Aggsbach Markt</a></div></article>
+      <article class="active-service-card"><div><h3>🚲 Radfahrer</h3><p>Fahrrad sicher abstellen, E-Bike laden und weiterfahren.</p><a href="{{ url_for('seo_radfahrer_wachau') }}">Radfahrer-Unterkunft</a></div></article>
+      <article class="active-service-card"><div><h3>⛰ Jauerling</h3><p>Naturpark, Wandern und Wachau als Reise kombinieren.</p><a href="{{ url_for('seo_jauerling') }}">Unterkunft Jauerling</a></div></article>
+      <article class="active-service-card"><div><h3>🌸 Marillenblüte</h3><p>Frühlingsblüte flexibel planen und ruhig in Aggsbach Markt übernachten.</p><a href="{{ url_for('seo_marillenbluete_wachau') }}">Marillenblüte Wachau</a></div></article>
+      <article class="active-service-card"><div><h3>🍑 Marillenernte</h3><p>Marillenzeit, Genuss, Rad und Wandern mit einer Wachau-Nacht verbinden.</p><a href="{{ url_for('seo_marillenernte_wachau') }}">Marillenzeit Wachau</a></div></article>
+      <article class="active-service-card"><div><h3>🗓 Wachau nach Jahreszeit</h3><p>Marillenblüte, Rad, Wandern, Marillenzeit, Advent und Winter auf einer Seite planen.</p><a href="/wachau-jahreszeiten-urlaub">Wachau nach Jahreszeit</a></div></article>
+      <article class="active-service-card"><div><h3>❄ Winter Wachau</h3><p>Wintertage, Advent und Jauerling mit einer ruhigen Übernachtung verbinden.</p><a href="{{ url_for('seo_winterurlaub_wachau') }}">Winterurlaub Wachau</a></div></article>
+      <article class="active-service-card"><div><h3>💼 Business, Monteure &amp; Projekt</h3><p>Ruhige Business-Unterkunft und Monteurzimmer für 1–2 Personen, Techniker und Projekte zwischen Melk und Krems.</p><a href="{{ url_for('seo_business_unterkunft') }}">Business-/Monteurzimmer ansehen</a></div></article>
+    </div>
+    <div class="identity-cta">
+      <strong>Eventtermin schon bekannt?</strong>
+      <span>Advent, Marillenblüte, Sonnenwende und Marillenzeit haben eigene Frühplaner-Seiten.</span>
+      <a class="btn" href="{{ url_for('wachau_events') }}">Wachau-Events ansehen</a>
+    </div>
+  </section>
+
+
+  <section class="direct-value" aria-labelledby="direct-value-title">
+    <div>
+      <span class="eyebrow">Direkt buchen</span>
+      <h2 id="direct-value-title">Kurzer Weg vom Wunsch zur Buchung</h2>
+      <p>Bei uns prüfst du freie Termine und Preis direkt auf der offiziellen Website. Fragen, Sonderwünsche und Extras landen ohne Portal-Umweg direkt bei uns.</p>
+    </div>
+    <div class="direct-value-grid">
+      <article><strong>✓ Live-Verfügbarkeit</strong><small>Kalender und Terminprüfung direkt auf der Website.</small></article>
+      <article><strong>✓ Persönlicher Kontakt</strong><small>Fragen und Wünsche gehen direkt an Zuhause am Bach.</small></article>
+      <article><strong>✓ Extras im selben Ablauf</strong><small>Frühstück, Jause und Gepäcktransport gleich mit auswählen.</small></article>
+      <article><strong>✓ Klarer Gesamtpreis</strong><small>Nach der Verfügbarkeitsprüfung siehst du den Preis inklusive gewählter Extras.</small></article>
+    </div>
+  </section>
+
+  <section id="ausstattung" class="feature-strip">
+    <article><span>♨</span><strong>Frühstück mit Liebe</strong><small>Regional, vegetarisch oder vegan.</small></article>
+    <article><span>🚲</span><strong>E-Bike willkommen</strong><small>Laden, Werkzeug, Luft und Unterstand.</small></article>
+    <article><span>🥾</span><strong>Wanderer & Radfahrer</strong><small>Gepäcktransport auf Anfrage.</small></article>
+    <article><span>💬</span><strong>Ausflugstipps</strong><small>Karten und Geheimtipps in der Gäste-App.</small></article>
+    <article><span>📱</span><strong>Gäste-App</strong><small>Alle Informationen auf dem Smartphone.</small></article>
+    <a class="qr-block" href="{{ guest_app_url }}" target="_blank" rel="noopener">
+      <img src="{{ url_for('static', filename='images/gaesteapp-qr.png') }}" alt="QR-Code zur Gäste-App" loading="lazy" decoding="async">
+      <span>Zur Gäste-App</span>
+    </a>
+  </section>
+
+
+  <section id="vier-einblicke" class="active-service" aria-labelledby="vier-einblicke-title">
+    <div class="active-service-head">
+      <span class="eyebrow">Vier Einblicke</span>
+      <h2 id="vier-einblicke-title">Gartenzimmer, Donauradweg, Genuss &amp; Welterbesteig</h2>
+      <p>Vier Originalmotive – klar zugeordnet und in hoher Webqualität.</p>
+    </div>
+    <div class="active-service-grid active-service-grid--four">
+      <article class="active-service-card active-service-card--gartenzimmer">
+        <img src="{{ url_for('static', filename='images/gartenzimmer-04-web.jpg') }}?v=20260925-final3"
+             alt="Gartenzimmer mit Doppelbett bei Zuhause am Bach in Aggsbach Markt, Wachau"
+             loading="eager" decoding="async" width="1600" height="1200">
+        <div class="active-service-card-body">
+          <h3>Gartenzimmer</h3>
+          <p>Das direkt buchbare Doppelzimmer für zwei Gäste – ruhig und persönlich.</p>
+        </div>
+      </article>
+      <article class="active-service-card active-service-card--flyer">
+        <img src="{{ url_for('static', filename='images/donauradweg-final.jpg') }}?v=20260925-final3"
+             alt="Donauradweg Flyer von Zuhause am Bach"
+             loading="eager" decoding="async">
+        <div class="active-service-card-body">
+          <h3>Donauradweg</h3>
+          <p>Fahrradunterbringung, E-Bike-Laden und persönliche Unterstützung für Radreisende.</p>
+        </div>
+      </article>
+      <article class="active-service-card active-service-card--flyer">
+        <img src="{{ url_for('static', filename='images/regionale-genussmomente-final.jpg') }}?v=20260925-final3"
+             alt="Windi-Jausenpackerl Flyer von Zuhause am Bach"
+             loading="eager" decoding="async">
+        <div class="active-service-card-body">
+          <h3>Regionale Genussmomente</h3>
+          <p>Wachauer Jause, regionale Spezialitäten und kleine Genussmomente für den Aufenthalt und die nächste Etappe.</p>
+        </div>
+      </article>
+      <article class="active-service-card active-service-card--welterbesteig">
+        <img src="{{ url_for('static', filename='images/welterbesteig-original.jpg') }}?v=20260925-final3"
+             alt="Welterbesteig Wachau"
+             loading="eager" decoding="async">
+        <div class="active-service-card-body">
+          <h3>Welterbesteig</h3>
+          <p>Direkter Ausgangspunkt für Wanderungen am Welterbesteig Wachau.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="basislager" class="identity-section" aria-labelledby="basislager-title">
+    <div class="identity-intro">
+      <span class="eyebrow">Mehr als nur übernachten</span>
+      <h2 id="basislager-title">Das persönliche Basislager mit den Wilden Wachauer Windis</h2>
+      <p>Bei Zuhause am Bach buchst du nicht nur ein Zimmer. Du bekommst einen persönlichen Ausgangspunkt für die Wachau – mit kleinen Extras, Erinnerungen und Geschichten, die den Aufenthalt unverwechselbar machen.</p>
+    </div>
+    <div class="identity-grid">
+      <article class="identity-card">
+        <div class="identity-icon">🥾🚲</div>
+        <h3>Basislager für Welterbesteig &amp; Donauradweg</h3>
+        <p>Fahrradunterbringung, E-Bike-Laden, Werkzeug, Gepäcktransport auf Anfrage und persönliche Tipps für die nächste Etappe.</p>
+        <a href="/unterkunft-welterbesteig-wachau">Für Wanderer</a> · <a href="/unterkunft-donauradweg-wachau">Für Radfahrer</a>
+      </article>
+      <article class="identity-card identity-card-media">
+        <img src="{{ url_for('static', filename='images/wachau-etappenstempel-zuhause-am-bach.jpg') }}" alt="Zuhause-am-Bach Etappenstempel für Welterbesteig und Donauradweg in Aggsbach Markt" loading="lazy" decoding="async">
+        <div><h3>Unser eigener Etappenstempel</h3><p>Wer am Welterbesteig oder Donauradweg unterwegs ist, kann sich bei uns eine persönliche Erinnerung an die Wachau-Etappe holen.</p></div>
+      </article>
+      <article class="identity-card identity-card-media">
+        <img src="{{ url_for('static', filename='images/windi-jausenpackerl-v2.webp') }}?v=20260925-final3" alt="Windi-Jausenpackerl von Zuhause am Bach für Wanderer und Radfahrer in der Wachau" loading="lazy" decoding="async">
+        <div><h3>Windi-Jausenpackerl</h3><p>Praktische Jausenpakete für Wanderer und Radfahrer – für die nächste Etappe, den Aussichtspunkt oder eine Pause an der Donau.</p><a href="#booking">Bei der Buchung Extras wählen</a></div>
+      </article>
+      <article class="identity-card identity-card-media">
+        <img src="{{ url_for('static', filename='images/windi-chronik-hq.webp') }}?v=20260925-final3" alt="Die Wilden Wachauer Windis von Zuhause am Bach" loading="lazy" decoding="async">
+        <div><h3>Windi-Chronik &amp; Gäste-App</h3><p>Fotos, Erlebnisse und Geschichten dürfen weiterleben. Unsere Gäste-App begleitet den Aufenthalt und die Windi-Chronik sammelt Erinnerungen aus der Wachau.</p><a href="{{ guest_app_url }}" target="_blank" rel="noopener">Gäste-App öffnen</a></div>
+      </article>
+      <article class="identity-card identity-card-media">
+        <img src="{{ url_for('static', filename='images/geschichten-am-bach-final.jpg') }}?v=20260925-final3" alt="Persönliche Buchlesung und Gesprächsrunde mit Gästen bei Zuhause am Bach in der Wachau" loading="lazy" decoding="async">
+        <div><h3>Geschichten am Bach</h3><p>Persönliche Buchlesungen und kleine Gesprächsrunden schaffen Raum für neue Geschichten – manchmal entstehen daraus sogar Ideen für weitere Bücher.</p></div>
+      </article>
+      <article class="identity-card identity-card-media">
+        <img src="{{ url_for('static', filename='images/windis-fidel-gloria-pia-v2.webp') }}?v=20260925-final3" alt="Die Wilden Wachauer Windis Fidel, Gloria und Pia" loading="lazy" decoding="async">
+        <div><h3>Fidel, Gloria &amp; Pia</h3><p>Die Wilden Wachauer Windis sind Teil unserer Marke und unseres Hauses. Sie machen Zuhause am Bach persönlich, wiedererkennbar und ein bisschen anders.</p></div>
+      </article>
+    </div>
+    <div class="identity-cta">
+      <strong>Ankommen. Durchatmen. Wohlfühlen.</strong>
+      <span>Zimmer prüfen, Wachau planen und direkt beim Gastgeber buchen.</span>
+      <a class="btn" href="#booking">Direkt Verfügbarkeit prüfen</a>
+    </div>
+  </section>
+
+
+  <section id="erlebnisse-bilder" class="active-service" aria-labelledby="erlebnisse-bilder-title">
+    <div class="active-service-head">
+      <span class="eyebrow">Echte Einblicke</span>
+      <h2 id="erlebnisse-bilder-title">So fühlt sich Zuhause am Bach an</h2>
+      <p>Nicht nur Zimmer zeigen: persönliche Begegnungen, der Bach, Welterbesteig, Donauradweg und die Wilden Wachauer Windis machen den Aufenthalt besonders.</p>
+    </div>
+    <div class="active-service-grid">
+      <article class="active-service-card active-service-card--kuechentisch"><img src="{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-v2.webp') }}?v=20260925-final4" alt="Gemütliche Runde mit Gästen in der Küche bei Zuhause am Bach" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Gemeinsam am Küchentisch</h3><p>Persönliche Begegnungen und gemütliche Abende gehören zur Atmosphäre des Hauses.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/bach-hinterm-haus-v11.webp') }}?v=20260925-final3" alt="Bach und Wanderweg direkt hinter Zuhause am Bach in Aggsbach Markt" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Der Bach hinterm Haus</h3><p>Nur wenige Schritte hinter Zuhause am Bach beginnt der ruhige Weg am Wasser.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/welterbesteig-original.jpg') }}?v=20260925-final3" alt="Wanderer am Welterbesteig Wachau mit den Wilden Wachauer Windis" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Welterbesteig &amp; Windis</h3><p>Wanderer treffen rund um ihr Wachau-Basislager auf Fidel, Gloria und Pia.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/donauradweg-final.jpg') }}?v=20260925-final3" alt="Radfahrer am Donauradweg Wachau mit den Wilden Wachauer Windis" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Donauradweg &amp; Windis</h3><p>Auch Radfahrer erleben die persönliche Seite von Zuhause am Bach.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/windi-chronik-v12.webp') }}?v=20260925-final3" alt="Die Windi-Chronik von Zuhause am Bach für Erinnerungen und Geschichten der Gäste" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Windi-Chronik</h3><p>Erlebnisse, Fotos und Geschichten bleiben Teil der gemeinsamen Wachau-Erinnerungen.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/windis-fidel-gloria-pia-v2.webp') }}?v=20260925-final3" alt="Die Wilden Wachauer Windis Fidel Gloria und Pia in der Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Die Wilden Wachauer Windis</h3><p>Fidel, Gloria &amp; Pia machen Zuhause am Bach persönlich und unverwechselbar.</p></div></article>
+    </div>
+    <div class="active-service-cta"><strong>Wachau erleben und direkt buchen.</strong><a class="btn" href="#booking">Verfügbarkeit &amp; Preis prüfen</a></div>
+  </section>
+
+  <section id="filmgeschichte" class="film-history">
+    <div class="film-history-media">
+      <img src="{{ url_for('static', filename='images/mariandl-aggsbach-markt-1961.jpg') }}" alt="Historische Filmszene aus Mariandl von 1961 in Aggsbach Markt" loading="lazy" decoding="async">
+    </div>
+    <div class="film-history-copy">
+      <span class="eyebrow">Vergessene Filmgeschichte · 1961</span>
+      <h2>Mariandl und das ehemalige Hotel Post in Aggsbach Markt</h2>
+      <p>Der österreichische Filmklassiker <em>Mariandl</em> aus dem Jahr 1961 ist Teil der Wachauer Filmgeschichte. Nach lokaler Überlieferung und unserer Dokumentation wurden die Unfallszene sowie Aufnahmen beim damaligen Hotel Post in Aggsbach Markt gedreht.</p>
+      <p>Das Hotel Post besteht heute nicht mehr. Mit historischen Bildern und Erinnerungen möchten wir diesen fast vergessenen Teil der Ortsgeschichte bewahren und für Wachau-Gäste wieder sichtbar machen.</p>
+      <small>Hinweis: Der konkrete Aggsbach-Drehort wird hier als lokal überlieferte und von uns dokumentierte Ortsgeschichte wiedergegeben.</small>
+    </div>
   </section>
 
   <section id="kalender" class="calendar-section">
@@ -599,204 +964,39 @@
     <div id="liveCalendar" class="live-calendar"></div>
   </section>
 
+
   <section class="sales-faq" aria-labelledby="sales-faq-title">
     <span class="eyebrow">Gut zu wissen</span>
     <h2 id="sales-faq-title">Häufige Fragen vor der Buchung</h2>
-    <details><summary>Wo befindet sich das Privatbad?</summary><p>Das Bad liegt außerhalb des Gartenzimmers direkt gegenüber. Es steht ausschließlich den Gästen dieses Zimmers zur Verfügung.</p></details>
-    <details><summary>Wann ist meine Buchung bestätigt?</summary><p>Bei PayPal ist die Buchung nach erfolgreicher Zahlung bestätigt. Bei Überweisung ist das Zimmer nach dem Buchungsabschluss verbindlich reserviert. Die Zahlung muss innerhalb von 48 Stunden eingehen; sonst wird die Reservierung aufgehoben. Bei Anreise in weniger als 3 Tagen ist nur PayPal verfügbar.</p></details>
-    <details><summary>Kann ich direkt bei Zuhause am Bach buchen?</summary><p>Ja. Reisedaten wählen, Verfügbarkeit prüfen und anschließend direkt über die offizielle Website buchen.</p></details>
-    <details><summary>Ist die Unterkunft für Radfahrer am Donauradweg geeignet?</summary><p>Auf Anfrage können wir nach vorheriger Abstimmung und je nach Verfügbarkeit einen Waschplatz mit Öl-, Fett- und Wachsabscheider, einen Kompressor mit bis zu 225 bar Maximalleistung, ein passendes Ersatzrad, die Beschaffung eines geeigneten Rads nach Budgetfreigabe sowie Fahrradtransport organisieren. Für Fahrradreifen wird ausschließlich ein geeigneter, reifenverträglicher Druck verwendet; die 225 bar sind der maximale Gerätedruck und kein Reifendruck. Termin, Kosten und Umfang bestätigen wir vorab; diese Extras sind nicht ständig vor Ort verfügbar. Kleine Werkzeughilfe bleibt freiwillig und unverbindlich. Zuhause am Bach ist kein Fahrradfachbetrieb und sagt keine Reparatur oder Verkehrssicherheitsprüfung zu. Gäste beurteilen den Zustand ihres Fahrrads selbst und entscheiden eigenverantwortlich über die Weiterfahrt. Zwingende gesetzliche Haftung bleibt unberührt.</p></details>
+    <details><summary>Kann ich direkt bei Zuhause am Bach buchen?</summary><p>Ja. Reisedaten wählen, Verfügbarkeit prüfen und anschließend direkt über die offizielle Website buchen oder anfragen.</p></details>
+    <details><summary>Ist die Unterkunft für Radfahrer am Donauradweg geeignet?</summary><p>Ja. In Aggsbach Markt am Wachauer Nordufer bieten wir einen abschließbaren Fahrradschuppen, kostenlose E-Bike-Lademöglichkeit und nach Absprache Werkzeug aus unserer privaten Werkstatt.</p></details>
+    <details><summary>Kann ich am Donauradweg nur eine Nacht übernachten?</summary><p>Ja, eine Etappenübernachtung für eine Nacht ist grundsätzlich möglich, sofern das Gartenzimmer verfügbar ist. An einzelnen Terminen können abweichende Mindestaufenthalte gelten. Bitte die Verfügbarkeit direkt im Buchungskalender prüfen.</p></details>
+    <details><summary>Gibt es Fahrradwerkzeug oder Hilfe bei einer Panne?</summary><p>Nach Absprache steht Werkzeug aus unserer gut ausgestatteten privaten Werkstatt zur Verfügung. Wir helfen gerne im Rahmen unserer Möglichkeiten. Wir sind kein Fahrradfachbetrieb und führen keine gewerblichen Fahrradreparaturen durch.</p></details>
+    <details><summary>Ist Zuhause am Bach eine Alternative zu Bett+Bike-Unterkünften in der Wachau?</summary><p>Wir sind eine unabhängig geführte, radfahrerfreundliche Privatzimmervermietung in Aggsbach Markt. Wir bieten sichere Fahrradunterbringung, kostenlose E-Bike-Ladung und Werkzeug nach Absprache, sind jedoch nicht Bett+Bike-zertifiziert.</p></details>
     <details><summary>Ist Zuhause am Bach für Wanderer am Welterbesteig geeignet?</summary><p>Ja. Aggsbach Markt ist ein guter Ausgangs- und Zwischenpunkt für Wachau-Wanderungen; zusätzlich gibt es persönliche Tipps und unseren Etappenstempel.</p></details>
     <details><summary>Kann ich Frühstück oder eine Jause dazubuchen?</summary><p>Verfügbare Zusatzleistungen werden direkt im Buchungsbereich angezeigt und können dort ausgewählt werden.</p></details>
     <details><summary>Was macht Zuhause am Bach anders?</summary><p>Neben der persönlichen Unterkunft verbinden wir Wachau-Erlebnis, Windis, Gäste-App, Windi-Chronik, Etappenstempel, Jausenangebote und lokale Geschichten zu einem sehr persönlichen Aufenthalt.</p></details>
   </section>
 
 
-
-  <section class="active-service" id="oktober-direkt" aria-labelledby="oktober-direkt-title">
+  <section id="aktiv-service" class="active-service" aria-labelledby="aktiv-service-title">
     <div class="active-service-head">
-      <span class="eyebrow">Kurzfristig in die Wachau</span>
-      <h2 id="oktober-direkt-title">Direkt buchen für Donauradweg &amp; Welterbesteig</h2>
-      <p>Nur ein Gartenzimmer, persönliche Betreuung und auch 1 Nacht grundsätzlich möglich. Ideal für eine Etappe am Donauradweg, den Welterbesteig oder eine spontane Auszeit zwischen Melk und Krems.</p>
+      <span class="eyebrow">Für aktive Wachau-Gäste</span>
+      <h2 id="aktiv-service-title">Radfahrerfreundliche Unterkunft am Donauradweg: Werkstatt, E-Bike-Laden und sichere Fahrradunterbringung</h2>
+      <p>In Aggsbach Markt zwischen Emmersdorf und Spitz am nördlichen Donauradweg verbinden wir persönliche Etappenübernachtung mit abschließbarem Fahrradschuppen, kostenloser E-Bike-Ladung und Werkzeug aus unserer privaten Werkstatt nach Absprache. Eine Nacht ist bei Verfügbarkeit grundsätzlich möglich.</p>
     </div>
     <div class="active-service-grid">
-      <article class="active-service-card"><div><h3>🚴 Donauradweg</h3><p>Sichere Fahrradunterbringung und E-Bike-Laden. Kleine Hilfe mit Werkzeug oder Kompressor können wir nach Absprache anbieten, sofern es zeitlich passt. Kein Fahrradfachbetrieb und kein Anspruch auf Reparaturhilfe.</p></div></article>
-      <article class="active-service-card"><div><h3>🥾 Welterbesteig</h3><p>Ruhige Etappenübernachtung in Aggsbach Markt, Frühstück und Gepäcktransport auf Wunsch.</p></div></article>
-      <article class="active-service-card"><div><h3>🌙 1 Nacht möglich</h3><p>Für Durchreisende und Kurzentschlossene: einzelne Nächte direkt im Live-Kalender prüfen.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/transportservice-final.jpg') }}?v=20260925-final3" alt="Transportservice für Wanderer am Welterbesteig Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Transportservice auf Anfrage</h3><p>Für Gepäck und abgestimmte Transfers – besonders praktisch bei Etappen am Welterbesteig oder Donauradweg.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/fahrradservice-donauradweg-wachau.webp') }}?v=20260925-final3" alt="Fahrradservice mit Werkzeug, Luftpumpe und E-Bike-Lademöglichkeit am Donauradweg Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Fahrradservice für unsere Gäste</h3><p>Für kleinere Pannen steht nach Absprache Werkzeug aus unserer gut ausgestatteten privaten Werkstatt zur Verfügung. Wir helfen gerne im Rahmen unserer Möglichkeiten.</p><p>Wir sind kein Fahrradfachbetrieb und führen keine gewerblichen Fahrradreparaturen durch.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/welterbesteig-original.jpg') }}?v=20260925-final3" alt="Wanderer am Welterbesteig Wachau oberhalb der Donau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Welterbesteig</h3><p>Etappenstempel, persönliche Tipps und passende Extras für unterwegs.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/donauradweg-final.jpg') }}?v=20260925-final3" alt="Radfahrer am Donauradweg in der Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Donauradweg</h3><p>Fahrradunterbringung, E-Bike-Lademöglichkeit und praktische Unterstützung.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-v2.webp') }}?v=20260925-final3" alt="Gemütliche Gästeküche bei Zuhause am Bach in der Wachau mit Kaffee, Tee und Getränkebereich" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Gästeküche</h3><p>Kaffee, Tee, Getränke und ein gemütlicher Platz für eine Pause.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/bad-zuhause-am-bach-v2.webp') }}?v=20260925-final3" alt="Helles gepflegtes Badezimmer bei Zuhause am Bach in Aggsbach Markt in der Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Bad &amp; Sauberkeit</h3><p>Gepflegte Ausstattung und ein klarer Standard, den Gäste vor der Buchung sehen können.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/regionale-genussmomente-final.jpg') }}?v=20260925-final3" alt="Wachauer Jause und regionale Genussmomente" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Regionale Genussmomente</h3><p>Wachauer Wein, Marillenprodukte und regionale Spezialitäten bringen ein Stück Region direkt in den Aufenthalt.</p></div></article>
+      <article class="active-service-card"><img src="{{ url_for('static', filename='images/geschichten-am-bach-final.jpg') }}?v=20260925-final3" alt="Persönliche Buchlesung und Geschichten am Bach bei Zuhause am Bach in der Wachau" loading="lazy" decoding="async"><div class="active-service-card-body"><h3>Geschichten am Bach</h3><p>Persönliche Buchlesungen, Gespräche und Begegnungen machen den Aufenthalt noch persönlicher.</p></div></article>
     </div>
-    <div class="active-service-cta"><strong>Freie Termine werden live geprüft – nur 1 Gartenzimmer verfügbar.</strong><a class="btn" href="#booking">Termin prüfen</a></div>
+    <div class="active-service-cta"><strong>Etappe planen, Zimmer prüfen, direkt buchen.</strong><a class="btn" href="#booking">Verfügbarkeit &amp; Preis prüfen</a></div>
   </section>
-
-
-  <section class="active-service" id="winter" aria-labelledby="winter-title">
-    <div class="active-service-head">
-      <span class="eyebrow">Aktuelle Veranstaltungen &amp; Winterangebote</span>
-      <h2 id="winter-title">Winter, Advent &amp; Jauerling in der Wachau</h2>
-      <p>Die ruhige Jahreszeit eignet sich für kurze Auszeiten, Adventbesuche und Wintertage zwischen Melk und Krems. Zuhause am Bach ist die persönliche Basis in Aggsbach Markt – mit Frühstück auf Wunsch und direkter Terminprüfung.</p>
-    </div>
-    <div class="active-service-grid winter-grid">
-
-
-      {% if today_iso < '2026-12-14' %}
-      <article class="active-service-card">
-        <div>
-          <h3>✨ Advent-Wochenende Dürnstein</h3>
-          <p>20.–22.11., 27.–29.11., 4.–8.12. und 11.–13.12.2026: Wachauer Advent mit Schiff, Stiftshof, Schloss Dürnstein und Weihnachtsweg – ideal für 2 Nächte bei Zuhause am Bach.</p>
-          <a class="btn" href="/wachauer-advent-duernstein-2026-unterkunft">Dürnstein-Advent ansehen</a>
-        </div>
-      </article>
-      {% endif %}
-      {% if today_iso < '2026-11-23' %}
-      <article class="active-service-card">
-        <div>
-          <h3>🏰 Aggsteiner Burgadvent</h3>
-          <p>30.10.–1.11., 6.–8.11., 13.–15.11. und 20.–22.11.2026 auf der Burgruine Aggstein – ideal für ein frühes Wachau-Winterwochenende.</p>
-          <a class="btn" href="/burgadvent-aggstein-2026-unterkunft">Burgadvent ansehen</a>
-        </div>
-      </article>
-      {% endif %}
-      {% if today_iso < '2026-12-21' %}
-      <article class="active-service-card">
-        <div>
-          <h3>🎄 Melker Advent</h3>
-          <p>27.–29.11., 4.–6.12., 11.–13.12. und 18.–20.12.2026 in der Melker Altstadt – ein starker Anlass für ein Wachau-Wochenende.</p>
-          <a class="btn" href="/melker-advent-2026-unterkunft">Melker Advent ansehen</a>
-        </div>
-      </article>
-      {% endif %}
-      {% if today_iso < '2026-11-30' %}
-      <article class="active-service-card">
-        <div>
-          <h3>✨ Spitz &amp; Maria Laach</h3>
-          <p>Spitzer Advent am 28.–29.11.2026 sowie Adventkranzbinden in Maria Laach am 21.11.2026 – gut kombinierbar mit einem Aufenthalt in Aggsbach Markt.</p>
-          <a class="btn" href="#booking">Advent-Aufenthalt prüfen</a>
-        </div>
-      </article>
-      {% endif %}
-      <article class="active-service-card">
-        <div>
-          <h3>❄ Winterurlaub Wachau</h3>
-          <p>Ruhige Tage an der Donau, Winterspaziergänge und Advent in der Wachau mit persönlicher Übernachtung verbinden.</p>
-          <a class="btn" href="/winterurlaub-wachau">Winterurlaub ansehen</a>
-        </div>
-      </article>
-      <article class="active-service-card">
-        <div>
-          <h3>🏔️ Jauerling im Winter</h3>
-          <p>Winterausflug Richtung Jauerling planen. Schnee-, Lift- und Betriebsstatus bitte aktuell beim Betreiber prüfen.</p>
-          <a class="btn" href="/skifahren-jauerling-unterkunft-wachau">Jauerling-Unterkunft ansehen</a>
-        </div>
-      </article>
-    </div>
-    <details class="windis-reading"><summary>Buchtipp: Die wilden Wachauer Windis im Advent</summary>
-      <article class="active-service-card windis-book-card">
-        <div class="windis-book-layout">
-          <img class="windis-book-cover" src="/media/windis-band15.jpg?v=20260929-cover2" alt="Buchcover Band 15: Die wilden Wachauer Windis auf dem Dürnsteiner Weihnachtsmarkt" loading="lazy" decoding="async">
-          <div>
-            <span class="eyebrow">Buchtipp zum Wachauer Advent</span>
-            <h3>📚 Die wilden Windis auf dem Dürnsteiner Weihnachtsmarkt</h3>
-            <p><strong>Band 15 der „Wilden Wachauer Windis“</strong> macht den Dürnsteiner Weihnachtsmarkt selbst zum Schauplatz: Fidel, Gloria und Pia erleben zwischen Adventlichtern, Marillen-Puderzucker-Keksen, Schneegestöber und Wachauer Legenden ihr Weihnachtsabenteuer.</p>
-            <p>Unser Tipp für Familien: erst die Geschichte kennenlernen, dann den echten Dürnsteiner Advent besuchen – und den Wachau-Aufenthalt bei Zuhause am Bach mit den echten Windis verbinden.</p>
-            <a class="btn" href="#booking">Windis-Weihnachtsmarkt-Wochenende buchen</a>
-          </div>
-        </div>
-      </article>
-    </details>
-    <div class="identity-cta">
-      <strong>🐾 Winter mit den Wilden Wachauer Windis</strong>
-      <span>Fidel, Gloria und Pia gehören zu Zuhause am Bach. Auch im Advent und Winter sind sie Teil der persönlichen Atmosphäre im Haus – ideal für Gäste, die Hunde mögen und keine anonyme Unterkunft suchen.</span>
-      <a class="hero-secondary" href="#basislager">Die Windis kennenlernen</a>
-    </div>
-    <div class="identity-cta">
-      <strong>Wintertermin schon bekannt?</strong>
-      <span>Freie Nächte und aktuellen Direktpreis sofort prüfen.</span>
-      <a class="btn" href="#booking">Wintertermin prüfen</a>
-    </div>
-  </section>
-
-  <section class="active-service" id="eine-nacht" aria-labelledby="eine-nacht-title">
-    <div class="active-service-head">
-      <span class="eyebrow">Für Etappengäste</span>
-      <h2 id="eine-nacht-title">Nur 1 Nacht in der Wachau? Grundsätzlich möglich.</h2>
-      <p>Viele Radfahrer am Donauradweg und Wanderer am Welterbesteig benötigen genau eine Etappenübernachtung. Bei Zuhause am Bach kann auch nur eine Nacht gebucht werden, sofern der Termin verfügbar ist. An einzelnen stark nachgefragten Veranstaltungsterminen können abweichende Mindestaufenthalte gelten.</p>
-      <a class="btn" href="{{ url_for('seo_eine_nacht_wachau') }}">1 Nacht in der Wachau ansehen</a>
-    </div>
-  </section>
-
-
-
-  <section class="active-service" id="wachau-planen" aria-labelledby="wachau-planen-title">
-    <div class="active-service-head">
-      <span class="eyebrow">Wachau gezielt planen</span>
-      <h2 id="wachau-planen-title">Unterkunft, Ort, Radreise, Jauerling &amp; starke Termine</h2>
-      <p>Je genauer die Reiseidee, desto schneller zum passenden Termin. Diese Seiten bündeln die wichtigsten Gründe, warum Gäste nach Aggsbach Markt kommen.</p>
-    </div>
-    <div class="active-service-grid active-service-grid--four">
-      <article class="active-service-card"><div><h3>⌂ Unterkunft Wachau</h3><p>Ruhig und persönlich in Aggsbach Markt übernachten.</p><a href="{{ url_for('seo_unterkunft_wachau') }}">Unterkunft Wachau</a></div></article>
-      <article class="active-service-card"><div><h3>📍 Aggsbach Markt</h3><p>Direkt im Ort schlafen und die Wachau weiterziehen.</p><a href="{{ url_for('seo_aggsbach_markt') }}">Übernachten in Aggsbach Markt</a></div></article>
-      <article class="active-service-card"><div><h3>🚲 Radfahrer</h3><p>Fahrrad sicher abstellen, E-Bike laden und weiterfahren.</p><a href="{{ url_for('seo_radfahrer_wachau') }}">Radfahrer-Unterkunft</a></div></article>
-      <article class="active-service-card"><div><h3>🥾 Wanderer</h3><p>Welterbesteig-Etappe, Frühstück auf Wunsch, Trocknung und Gepäcktransport auf Anfrage.</p><a href="{{ url_for('seo_wanderer_wachau') }}">Wanderer-Unterkunft</a></div></article>
-      <article class="active-service-card"><div><h3>⛰ Jauerling</h3><p>Naturpark, Wandern und Wachau als Reise kombinieren.</p><a href="{{ url_for('seo_jauerling') }}">Unterkunft Jauerling</a></div></article>
-      <article class="active-service-card"><div><h3>🌸 Marillenblüte</h3><p>Frühlingsblüte flexibel planen und ruhig in Aggsbach Markt übernachten.</p><a href="{{ url_for('seo_marillenbluete_wachau') }}">Marillenblüte Wachau</a></div></article>
-      <article class="active-service-card"><div><h3>🍑 Marillenernte</h3><p>Marillenzeit, Genuss, Rad und Wandern mit einer Wachau-Nacht verbinden.</p><a href="{{ url_for('seo_marillenernte_wachau') }}">Marillenzeit Wachau</a></div></article>
-      <article class="active-service-card"><div><h3>🗓 Wachau nach Jahreszeit</h3><p>Marillenblüte, Rad, Wandern, Marillenzeit, Advent und Winter auf einer Seite planen.</p><a href="/wachau-jahreszeiten-urlaub">Wachau nach Jahreszeit</a></div></article>
-      <article class="active-service-card"><div><h3>❄ Winter Wachau</h3><p>Wintertage, Advent und Jauerling mit einer ruhigen Übernachtung verbinden.</p><a href="{{ url_for('seo_winterurlaub_wachau') }}">Winterurlaub Wachau</a></div></article>
-      <article class="active-service-card"><div><h3>💼 Business, Monteure &amp; Firmen</h3><p>Ruhige Business-Unterkunft und Monteurzimmer für 1–2 Personen zwischen Melk und Krems – mit WLAN, Parkplatz, exklusivem Privatbad direkt gegenüber und mehrtägigen Aufenthalten.</p><a href="{{ url_for('seo_business_unterkunft') }}">Business-Unterkunft Melk–Krems</a></div></article>
-    </div>
-    <div class="identity-cta">
-      <strong>Eventtermin schon bekannt?</strong>
-      <span>Advent, Marillenblüte, Sonnenwende und Marillenzeit haben eigene Frühplaner-Seiten.</span>
-      <a class="btn" href="{{ url_for('wachau_events') }}">Wachau-Events ansehen</a>
-    </div>
-  </section>
-
-
-
-
-  <section id="ausstattung" class="feature-strip">
-    <article><span>♨</span><strong>Frühstück mit Liebe</strong><small>Regional, vegetarisch oder vegan.</small></article>
-    <article><span>🚲</span><strong>E-Bike willkommen</strong><small>Laden und Unterstand; kleine Hilfe mit Werkzeug oder Kompressor nach Absprache und Verfügbarkeit.</small></article>
-    <article><span>🥾</span><strong>Wanderer & Radfahrer</strong><small>Gepäcktransport auf Anfrage.</small></article>
-    <article><span>💬</span><strong>Ausflugstipps</strong><small>Karten und Geheimtipps in der Gäste-App.</small></article>
-    <article><span>📱</span><strong>Gäste-App</strong><small>Alle Informationen auf dem Smartphone.</small></article>
-    <a class="qr-block" href="{{ guest_app_url }}" target="_blank" rel="noopener">
-      <img src="{{ url_for('static', filename='images/gaesteapp-qr.png') }}" alt="QR-Code zur Gäste-App" loading="lazy" decoding="async">
-      <span>Zur Gäste-App</span>
-    </a>
-  </section>
-
-
-
-
-  <section id="basislager" class="identity-section" aria-labelledby="basislager-title">
-    <h2 id="basislager-title">Persönlich zu Gast am Bach</h2>
-    <p>Fidel, Gloria und Pia, unsere drei Windhunde, leben mit uns im Haus. Bitte berücksichtigt das bei eurer Zimmerwahl.</p>
-    <p>Tipps für euren Aufenthalt und weitere Einblicke findet ihr in unserer <a href="{{ guest_app_url }}" target="_blank" rel="noopener">Gäste-App</a>.</p>
-  </section>
-
-
-
-
-  <section id="filmgeschichte" class="film-history">
-    <div class="film-history-media">
-      <img src="{{ url_for('static', filename='images/mariandl-aggsbach-markt-1961.jpg') }}" alt="Historische Filmszene aus Mariandl von 1961 in Aggsbach Markt" loading="lazy" decoding="async">
-    </div>
-    <div class="film-history-copy">
-      <span class="eyebrow">Vergessene Filmgeschichte · 1961</span>
-      <h2>Mariandl und das ehemalige Hotel Post in Aggsbach Markt</h2>
-      <p>Der österreichische Filmklassiker <em>Mariandl</em> aus dem Jahr 1961 ist Teil der Wachauer Filmgeschichte. Nach lokaler Überlieferung und unserer Dokumentation wurden die Unfallszene sowie Aufnahmen beim damaligen Hotel Post in Aggsbach Markt gedreht.</p>
-      <p>Das Hotel Post besteht heute nicht mehr. Mit historischen Bildern und Erinnerungen möchten wir diesen fast vergessenen Teil der Ortsgeschichte bewahren und für Wachau-Gäste wieder sichtbar machen.</p>
-      <small>Hinweis: Der konkrete Aggsbach-Drehort wird hier als lokal überlieferte und von uns dokumentierte Ortsgeschichte wiedergegeben.</small>
-    </div>
-  </section>
-
-
-
-
-
-
-
-
 
 
   <section id="wandern-aggsbach-markt" class="story-section" aria-labelledby="wandern-aggsbach-title">
@@ -811,13 +1011,43 @@
       <p><a href="https://www.outdooractive.com/de/list/welterbesteig-rundwege-bei-aggsbach-markt-zuhause-am-bach/354392012/" target="_blank" rel="noopener noreferrer">Rundwege &amp; Welterbesteig-Sammlung öffnen</a></p>
       <p>Bitte vor dem Start Wetter, Wegzustand und aktuelle Sperren prüfen. Für einzelne Outdooractive-Funktionen kann eine Anmeldung oder ein kostenpflichtiger Tarif erforderlich sein.</p>
       <p>Deine Übernachtung dazu: ein Doppelzimmer für maximal zwei Gäste mit exklusivem Privatbad direkt gegenüber. Frühstück und Gepäcktransport nach Vereinbarung.</p>
-      <a class="btn" href="#booking">Zimmer buchen – Verfügbarkeit &amp; Preis prüfen</a>
+      <a class="btn" href="#booking">Zimmer anfragen – Verfügbarkeit &amp; Preis prüfen</a>
     </div>
   </section>
 
+  <section id="reiseplanung" class="story-section">
+    <div>
+      <span class="eyebrow">Wachau planen</span>
+      <h2>Unterkunft für Welterbesteig, Donauradweg und Aggsbach Markt</h2>
+      <p>Je nach Reiseart findest du hier die passende Information zur direkten Übernachtungsplanung. Preise und freie Termine prüfst du immer direkt bei Zuhause am Bach:</p>
+      <p><a href="/unterkunft-wachau">Unterkunft in der Wachau direkt beim Gastgeber</a></p>
+      <p><a href="/unterkunft-welterbesteig-wachau">Unterkunft am Welterbesteig Wachau</a></p>
+      <p><a href="/unterkunft-donauradweg-wachau">Unterkunft am Donauradweg Wachau</a></p>
+      <p><a href="/uebernachten-aggsbach-markt">Übernachten in Aggsbach Markt</a></p>
+      <p><a href="/radfahrer-unterkunft-wachau">Radfahrer-Unterkunft in der Wachau</a></p>
+      <p><a href="/unterkunft-jauerling-wachau">Unterkunft am Jauerling in der Wachau</a></p>
+      <p><a href="/skifahren-jauerling-unterkunft-wachau">Skifahren am Jauerling mit Unterkunft</a></p>
+      <p><a href="/business-unterkunft-melk-krems">Business-Unterkunft &amp; Monteurzimmer zwischen Melk und Krems</a></p>
+    </div>
+    <div class="review-box">
+      <strong>Direkt statt Umweg</strong>
+      <small>Freie Termine und Preis direkt bei Zuhause am Bach prüfen.</small>
+      <a href="#booking">Verfügbarkeit prüfen</a>
+    </div>
+  </section>
 
-
-
+  <section class="active-service" id="breite-suche" aria-labelledby="breite-suche-title">
+    <div class="active-service-head">
+      <span class="eyebrow">Unterkunft in der Wachau</span>
+      <h2 id="breite-suche-title">Ruhig übernachten in Aggsbach Markt</h2>
+      <p>Wer eine persönliche <strong>Unterkunft in der Wachau</strong> zwischen Melk und Krems sucht, findet bei Zuhause am Bach ein ruhiges Gartenzimmer in Aggsbach Markt. Unser Haus eignet sich für Wachau-Urlauber ebenso wie für Radfahrer am Donauradweg und Wanderer am Welterbesteig. Das Gartenzimmer ist grundsätzlich auch für eine Nacht buchbar. Preis und Verfügbarkeit können direkt online geprüft werden.</p>
+    </div>
+    <div class="active-service-grid">
+      <article class="active-service-card"><div><h3>Zimmer in Aggsbach Markt</h3><p>Persönlich geführtes Privatzimmer mit eigenem Bad, WLAN und ruhiger Lage in der Wachau.</p><a href="{{ url_for('seo_aggsbach_markt') }}">Übernachten in Aggsbach Markt</a></div></article>
+      <article class="active-service-card"><div><h3>Privatzimmer in der Wachau</h3><p>Eine persönliche Alternative für Gäste, die bei ihrer Suche nach Pension oder Unterkunft in der Wachau direkten Gastgeberkontakt bevorzugen.</p><a href="{{ url_for('seo_unterkunft_wachau') }}">Unterkunft Wachau ansehen</a></div></article>
+      <article class="active-service-card"><div><h3>Direkt buchen</h3><p>Live-Verfügbarkeit, klarer Preis und Extras direkt auf der offiziellen Website prüfen.</p><a href="#booking">Verfügbarkeit &amp; Preis prüfen</a></div></article>
+    </div>
+  </section>
 
   <section id="umgebung" class="story-section">
     <div>
@@ -831,24 +1061,6 @@
       {% if settings.google_review_url %}
       <a href="{{ settings.google_review_url }}" target="_blank" rel="noopener">Google-Bewertungen ansehen / bewerten</a>
       {% endif %}
-    </div>
-  </section>
-
-  <section class="story-section" aria-labelledby="zielgruppen-title">
-    <div>
-      <span class="eyebrow">Ganzjährig direkt buchen</span>
-      <h2 id="zielgruppen-title">Wachau, Arbeitswoche &amp; Jauerling</h2>
-      <p>Zuhause am Bach ist nicht nur für Rad- und Wandergäste gedacht. Unter der Woche eignet sich das Gartenzimmer auch für Geschäftsreisende, Monteure, Servicetechniker und Projektmitarbeiter zwischen Melk und Krems. Im Winter sind Wachau, Advent und Jauerling zusätzliche Reiseanlässe.</p>
-      <p><a href="/business-unterkunft-melk-krems"><strong>Business-Unterkunft &amp; Monteurzimmer Melk–Krems →</strong></a></p>
-      <p><a href="/unterkunft-jauerling-wachau"><strong>Unterkunft für Jauerling &amp; Wachau →</strong></a></p>
-      <p><a href="/winterurlaub-wachau"><strong>Winterurlaub Wachau →</strong></a></p>
-      <p><a href="/unterkunft-wachau"><strong>Unterkunft Wachau zwischen Melk und Krems →</strong></a></p>
-      <p><a href="/wachau-urlaub-deutschland-schweiz"><strong>Wachau-Urlaub aus Deutschland &amp; Schweiz →</strong></a></p>
-    </div>
-    <div class="review-box">
-      <strong>Direkt statt Umweg</strong>
-      <small>Reisedaten auf der offiziellen Website prüfen und direkt beim Gastgeber buchen.</small>
-      <a href="#booking">Verfügbarkeit &amp; Direktpreis prüfen</a>
     </div>
   </section>
 </main>
@@ -869,28 +1081,28 @@
   <a class="admin-link" href="{{ url_for('legal_page',key='agb') }}">Buchungsbedingungen</a>
   <a class="admin-link" href="{{ url_for('admin_login') }}">Verwaltung</a>
 
-  <div class="footer-links" style="margin-top:12px"><a href="{{ url_for('partner_page') }}">Partner & Kooperation</a> · <a href="{{ url_for('review_page') }}">Aufenthalt bewerten</a> · <a href="{{ url_for('future_planning') }}">Wachau 2027/2028 planen</a> · <a href="{{ url_for('wachau_events') }}">Events 2027/2028</a> · <a href="{{ url_for('seo_wachau_dach') }}">Wachau-Urlaub Deutschland &amp; Schweiz</a></div>
+  <div class="footer-links" style="margin-top:12px"><a href="{{ url_for('partner_page') }}">Partner & Kooperation</a> · <a href="{{ url_for('review_page') }}">Aufenthalt bewerten</a> · <a href="{{ url_for('future_planning') }}">Wachau 2027/2028 planen</a> · <a href="{{ url_for('wachau_events') }}">Events 2027/2028</a> · <a href="{{ url_for('seo_wachau_dach') }}">Wachau-Urlaub aus Deutschland & Schweiz</a></div>
   <div aria-label="Social Media Zuhause am Bach"><a href="https://www.facebook.com/ZuHauseamBach" target="_blank" rel="me noopener">Facebook</a> · <a href="https://www.instagram.com/altstadthans/" target="_blank" rel="me noopener">Instagram</a></div>
 </footer>
 
 <div class="mobile-conversion-bar"><span id="stickyLabel">Gartenzimmer ab 99 € / Nacht</span><a href="#booking" id="stickyCta">Verfügbarkeit prüfen</a></div>
 
-<script src="{{ url_for('static', filename='js/app.js') }}?v=20261008-directflow2"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}?v=20261017-windis-conversion3"></script>
 <script>
 (function(){
   const lang=new URLSearchParams(location.search).get("lang");
   const T={
-    cs:{labels:["Příjezd","Odjezd","Noci","Osoby"],check:"OVĚŘIT DOSTUPNOST",services:"Přidat k pobytu",servicesTitle:"Snídaně, svačina do Wachau a přeprava zavazadel",room:"Zahradní pokoj",roomText:"Klidný dvoulůžkový pokoj s příjemnou atmosférou. Koupelna je mimo pokoj, přímo naproti, a je určena pouze vám.",features:"Dvoulůžko · soukromá koupelna přímo naproti pokoji · Wi-Fi",total:"Celková cena",guest:"Údaje hosta",first:"Jméno",last:"Příjmení",phone:"Telefon",msg:"Přání nebo zpráva",coupon:"Slevový kód",payment:"Způsob platby",bank:"Bankovní převod",onsite:"Platba při příjezdu",submit:"REZERVOVAT PŘÍMO",note:"Způsob potvrzení rezervace je uveden u zvolené platby."},
-    sk:{labels:["Príchod","Odchod","Noci","Osoby"],check:"OVERIŤ DOSTUPNOSŤ",services:"Pridať k pobytu",servicesTitle:"Raňajky, desiata do Wachau a preprava batožiny",room:"Záhradná izba",roomText:"Pokojná dvojlôžková izba s príjemnou atmosférou. Kúpeľňa je mimo izby, priamo oproti, a je určená iba vám.",features:"Dvojlôžko · súkromná kúpeľňa priamo oproti izbe · Wi-Fi",total:"Celková cena",guest:"Údaje hosťa",first:"Meno",last:"Priezvisko",phone:"Telefón",msg:"Želania alebo správa",coupon:"Zľavový kód",payment:"Spôsob platby",bank:"Bankový prevod",onsite:"Platba pri príchode",submit:"REZERVOVAŤ PRIAMO",note:"Spôsob potvrdenia rezervácie je uvedený pri zvolenej platbe."},
-    en:{labels:["Arrival","Departure","Nights","Guests"],check:"CHECK AVAILABILITY",services:"Add to your stay",servicesTitle:"Breakfast, Wachau snack and luggage transfer",room:"Garden room",roomText:"Quiet double room with a personal, comfortable atmosphere. The bathroom is outside the room, directly opposite, and exclusively for your use.",features:"Double bed · exclusive private bathroom directly opposite · Wi-Fi",total:"Total price",guest:"Guest details",first:"First name",last:"Last name",phone:"Phone",msg:"Requests or message",coupon:"Voucher code",payment:"Payment method",bank:"Bank transfer",onsite:"Pay on arrival",submit:"BOOK DIRECT",note:"See the selected payment method for when your booking is confirmed."},
-    hu:{labels:["Érkezés","Távozás","Éjszakák","Vendégek"],check:"ELÉRHETŐSÉG ELLENŐRZÉSE",services:"Kiegészítők",servicesTitle:"Reggeli, wachaui uzsonna és poggyászszállítás",room:"Kerti szoba",roomText:"Csendes kétágyas szoba személyes, otthonos hangulattal. A fürdőszoba a szobán kívül, közvetlenül szemben található, kizárólag az önök használatára.",features:"Franciaágy · privát fürdőszoba közvetlenül a szobával szemben · Wi-Fi",total:"Teljes ár",guest:"Vendégadatok",first:"Keresztnév",last:"Vezetéknév",phone:"Telefon",msg:"Kérés vagy üzenet",coupon:"Kuponkód",payment:"Fizetési mód",bank:"Banki átutalás",onsite:"Fizetés érkezéskor",submit:"KÖZVETLEN FOGLALÁS",note:"A kiválasztott fizetési módnál látható, mikor válik véglegessé a foglalás."},
-    nl:{labels:["Aankomst","Vertrek","Nachten","Gasten"],check:"BESCHIKBAARHEID CONTROLEREN",services:"Toevoegen aan uw verblijf",servicesTitle:"Ontbijt, Wachau-snack en bagagevervoer",room:"Tuinkamer",roomText:"Rustige tweepersoonskamer met een persoonlijke, gezellige sfeer. De badkamer ligt buiten de kamer, direct ertegenover, uitsluitend voor uw gebruik.",features:"Tweepersoonsbed · privébadkamer direct tegenover de kamer · wifi",total:"Totaalprijs",guest:"Gastgegevens",first:"Voornaam",last:"Achternaam",phone:"Telefoon",msg:"Wensen of bericht",coupon:"Kortingscode",payment:"Betaalmethode",bank:"Bankoverschrijving",onsite:"Betalen bij aankomst",submit:"DIRECT BOEKEN",note:"Bij de gekozen betaalmethode staat wanneer uw boeking bevestigd is."},
-    pl:{labels:["Przyjazd","Wyjazd","Noce","Goście"],check:"SPRAWDŹ DOSTĘPNOŚĆ",services:"Dodaj do pobytu",servicesTitle:"Śniadanie, przekąska z Wachau i transport bagażu",room:"Pokój ogrodowy",roomText:"Spokojny pokój dwuosobowy o kameralnej, przyjaznej atmosferze. Łazienka znajduje się poza pokojem, bezpośrednio naprzeciwko, wyłącznie do Państwa użytku.",features:"Łóżko dwuosobowe · prywatna łazienka naprzeciwko pokoju · Wi-Fi",total:"Cena całkowita",guest:"Dane gościa",first:"Imię",last:"Nazwisko",phone:"Telefon",msg:"Życzenia lub wiadomość",coupon:"Kod rabatowy",payment:"Sposób płatności",bank:"Przelew bankowy",onsite:"Płatność przy przyjeździe",submit:"REZERWUJ BEZPOŚREDNIO",note:"Wybrana metoda płatności określa, kiedy rezerwacja zostaje potwierdzona."},
-    it:{labels:["Arrivo","Partenza","Notti","Ospiti"],check:"VERIFICA DISPONIBILITÀ",services:"Aggiungi al soggiorno",servicesTitle:"Colazione, merenda della Wachau e trasporto bagagli",room:"Camera sul giardino",roomText:"Tranquilla camera doppia dall'atmosfera personale e accogliente. Il bagno è fuori dalla camera, direttamente di fronte, ed è riservato esclusivamente a voi.",features:"Letto matrimoniale · bagno privato di fronte alla camera · Wi-Fi",total:"Prezzo totale",guest:"Dati dell'ospite",first:"Nome",last:"Cognome",phone:"Telefono",msg:"Richieste o messaggio",coupon:"Codice sconto",payment:"Metodo di pagamento",bank:"Bonifico bancario",onsite:"Pagamento all'arrivo",submit:"PRENOTA DIRETTAMENTE",note:"Il metodo di pagamento scelto indica quando la prenotazione è confermata."},
-    es:{labels:["Llegada","Salida","Noches","Huéspedes"],check:"COMPROBAR DISPONIBILIDAD",services:"Añadir a la estancia",servicesTitle:"Desayuno, merienda de Wachau y traslado de equipaje",room:"Habitación jardín",roomText:"Habitación doble tranquila, acogedora y de ambiente personal. El baño está fuera de la habitación, justo enfrente, y es de uso exclusivo para ustedes.",features:"Cama doble · baño privado justo enfrente de la habitación · Wi-Fi",total:"Precio total",guest:"Datos del huésped",first:"Nombre",last:"Apellidos",phone:"Teléfono",msg:"Peticiones o mensaje",coupon:"Código de descuento",payment:"Forma de pago",bank:"Transferencia bancaria",onsite:"Pago a la llegada",submit:"RESERVAR DIRECTAMENTE",note:"La forma de pago elegida indica cuándo se confirma la reserva."},
-    fr:{labels:["Arrivée","Départ","Nuits","Voyageurs"],check:"VÉRIFIER LES DISPONIBILITÉS",services:"Ajouter au séjour",servicesTitle:"Petit-déjeuner, collation de la Wachau et transport des bagages",room:"Chambre côté jardin",roomText:"Chambre double calme, personnelle et confortable. La salle de bains est située hors de la chambre, juste en face, et vous est exclusivement réservée.",features:"Lit double · salle de bains privée juste en face de la chambre · Wi-Fi",total:"Prix total",guest:"Coordonnées du voyageur",first:"Prénom",last:"Nom",phone:"Téléphone",msg:"Demandes ou message",coupon:"Code promotionnel",payment:"Mode de paiement",bank:"Virement bancaire",onsite:"Paiement à l'arrivée",submit:"RÉSERVER EN DIRECT",note:"Le mode de paiement choisi indique quand votre réservation est confirmée."},
-    ch:{labels:["Aareis","Abreis","Nächt","Gäste"],check:"VERFÜGBARKEIT PRÜEFE",services:"Zum Ufenthalt dezue",servicesTitle:"Frühstück, Wachauer Abendjause und Gepäcktransport",room:"Gartenzimmer",roomText:"Ruhigs Doppelzimmer mit persönlicher und gemütlicher Atmosphäre. S Bad isch usserhalb vom Zimmer, direkt gegenüber, und nur für euch reserviert.",features:"Doppelbett · privats Bad direkt gegenüber · WLAN",total:"Gesamtpriis",guest:"Gästedate",first:"Vorname",last:"Nachname",phone:"Telefon",msg:"Wünsch oder Nachricht",coupon:"Gutscheincode",payment:"Zahligsart",bank:"Banküberwiisig",onsite:"Zahlig bi de Aareis",submit:"DIREKT BUECHE",note:"De Hiwiis zur gwählte Zahligsart erklärt, wenn eui Buechig bestätigt isch."},
-    ar:{labels:["الوصول","المغادرة","الليالي","الضيوف"],check:"تحقق من التوافر",services:"أضف إلى إقامتك",servicesTitle:"الإفطار ووجبة Wachau ونقل الأمتعة",room:"غرفة الحديقة",roomText:"غرفة مزدوجة هادئة بأجواء شخصية ومريحة. الحمام خارج الغرفة ومقابلها مباشرة، وهو مخصص لكم حصرياً.",features:"سرير مزدوج · حمام خاص مقابل الغرفة مباشرة · واي فاي",total:"السعر الإجمالي",guest:"بيانات الضيف",first:"الاسم الأول",last:"اسم العائلة",phone:"الهاتف",msg:"طلبات أو رسالة",coupon:"رمز الخصم",payment:"طريقة الدفع",bank:"تحويل بنكي",onsite:"الدفع عند الوصول",submit:"احجز مباشرة",note:"توضح طريقة الدفع المختارة متى يتم تأكيد الحجز."}
+    cs:{labels:["Příjezd","Odjezd","Noci","Osoby"],check:"OVĚŘIT DOSTUPNOST",services:"Přidat k pobytu",servicesTitle:"Snídaně, svačina do Wachau a přeprava zavazadel",room:"Zahradní pokoj",roomText:"Klidný dvoulůžkový pokoj s příjemnou atmosférou.",features:"Dvoulůžko · vlastní koupelna · Wi-Fi · klidná poloha",total:"Celková cena",guest:"Údaje hosta",first:"Jméno",last:"Příjmení",phone:"Telefon",msg:"Přání nebo zpráva",coupon:"Slevový kód",payment:"Způsob platby",bank:"Bankovní převod",onsite:"Platba při příjezdu",submit:"REZERVOVAT PŘÍMO",note:"Poptávka se ihned zaznamená v kalendáři přímých rezervací. Následně obdržíte osobní potvrzení."},
+    sk:{labels:["Príchod","Odchod","Noci","Osoby"],check:"OVERIŤ DOSTUPNOSŤ",services:"Pridať k pobytu",servicesTitle:"Raňajky, desiata do Wachau a preprava batožiny",room:"Záhradná izba",roomText:"Pokojná dvojlôžková izba s príjemnou atmosférou.",features:"Dvojlôžko · vlastná kúpeľňa · Wi-Fi · pokojná poloha",total:"Celková cena",guest:"Údaje hosťa",first:"Meno",last:"Priezvisko",phone:"Telefón",msg:"Želania alebo správa",coupon:"Zľavový kód",payment:"Spôsob platby",bank:"Bankový prevod",onsite:"Platba pri príchode",submit:"REZERVOVAŤ PRIAMO",note:"Požiadavka sa ihneď zaznamená v kalendári priamych rezervácií. Následne dostanete osobné potvrdenie."},
+    en:{labels:["Arrival","Departure","Nights","Guests"],check:"CHECK AVAILABILITY",services:"Add to your stay",servicesTitle:"Breakfast, Wachau snack and luggage transfer",room:"Garden room",roomText:"Quiet double room with a personal, comfortable atmosphere.",features:"Double bed · private bathroom · Wi-Fi · quiet location",total:"Total price",guest:"Guest details",first:"First name",last:"Last name",phone:"Phone",msg:"Requests or message",coupon:"Voucher code",payment:"Payment method",bank:"Bank transfer",onsite:"Pay on arrival",submit:"BOOK DIRECT",note:"Your request is recorded immediately in the direct-booking calendar. We then send you a personal confirmation."},
+    hu:{labels:["Érkezés","Távozás","Éjszakák","Vendégek"],check:"ELÉRHETŐSÉG ELLENŐRZÉSE",services:"Kiegészítők",servicesTitle:"Reggeli, wachaui uzsonna és poggyászszállítás",room:"Kerti szoba",roomText:"Csendes kétágyas szoba személyes, otthonos hangulattal.",features:"Franciaágy · saját fürdőszoba · Wi-Fi · csendes fekvés",total:"Teljes ár",guest:"Vendégadatok",first:"Keresztnév",last:"Vezetéknév",phone:"Telefon",msg:"Kérés vagy üzenet",coupon:"Kuponkód",payment:"Fizetési mód",bank:"Banki átutalás",onsite:"Fizetés érkezéskor",submit:"KÖZVETLEN FOGLALÁS",note:"A kérés azonnal bekerül a közvetlen foglalási naptárba. Ezután személyes visszaigazolást küldünk."},
+    nl:{labels:["Aankomst","Vertrek","Nachten","Gasten"],check:"BESCHIKBAARHEID CONTROLEREN",services:"Toevoegen aan uw verblijf",servicesTitle:"Ontbijt, Wachau-snack en bagagevervoer",room:"Tuinkamer",roomText:"Rustige tweepersoonskamer met een persoonlijke, gezellige sfeer.",features:"Tweepersoonsbed · eigen badkamer · wifi · rustige ligging",total:"Totaalprijs",guest:"Gastgegevens",first:"Voornaam",last:"Achternaam",phone:"Telefoon",msg:"Wensen of bericht",coupon:"Kortingscode",payment:"Betaalmethode",bank:"Bankoverschrijving",onsite:"Betalen bij aankomst",submit:"DIRECT BOEKEN",note:"Uw aanvraag wordt meteen in de directe boekingskalender genoteerd. Daarna ontvangt u onze persoonlijke bevestiging."},
+    pl:{labels:["Przyjazd","Wyjazd","Noce","Goście"],check:"SPRAWDŹ DOSTĘPNOŚĆ",services:"Dodaj do pobytu",servicesTitle:"Śniadanie, przekąska z Wachau i transport bagażu",room:"Pokój ogrodowy",roomText:"Spokojny pokój dwuosobowy o kameralnej, przyjaznej atmosferze.",features:"Łóżko dwuosobowe · prywatna łazienka · Wi-Fi · spokojne położenie",total:"Cena całkowita",guest:"Dane gościa",first:"Imię",last:"Nazwisko",phone:"Telefon",msg:"Życzenia lub wiadomość",coupon:"Kod rabatowy",payment:"Sposób płatności",bank:"Przelew bankowy",onsite:"Płatność przy przyjeździe",submit:"REZERWUJ BEZPOŚREDNIO",note:"Zapytanie zostaje od razu zapisane w kalendarzu rezerwacji bezpośrednich. Następnie otrzymasz nasze osobiste potwierdzenie."},
+    it:{labels:["Arrivo","Partenza","Notti","Ospiti"],check:"VERIFICA DISPONIBILITÀ",services:"Aggiungi al soggiorno",servicesTitle:"Colazione, merenda della Wachau e trasporto bagagli",room:"Camera sul giardino",roomText:"Tranquilla camera doppia dall'atmosfera personale e accogliente.",features:"Letto matrimoniale · bagno privato · Wi-Fi · posizione tranquilla",total:"Prezzo totale",guest:"Dati dell'ospite",first:"Nome",last:"Cognome",phone:"Telefono",msg:"Richieste o messaggio",coupon:"Codice sconto",payment:"Metodo di pagamento",bank:"Bonifico bancario",onsite:"Pagamento all'arrivo",submit:"PRENOTA DIRETTAMENTE",note:"La richiesta viene registrata subito nel calendario delle prenotazioni dirette. Riceverai poi la nostra conferma personale."},
+    es:{labels:["Llegada","Salida","Noches","Huéspedes"],check:"COMPROBAR DISPONIBILIDAD",services:"Añadir a la estancia",servicesTitle:"Desayuno, merienda de Wachau y traslado de equipaje",room:"Habitación jardín",roomText:"Habitación doble tranquila, acogedora y de ambiente personal.",features:"Cama doble · baño privado · Wi-Fi · ubicación tranquila",total:"Precio total",guest:"Datos del huésped",first:"Nombre",last:"Apellidos",phone:"Teléfono",msg:"Peticiones o mensaje",coupon:"Código de descuento",payment:"Forma de pago",bank:"Transferencia bancaria",onsite:"Pago a la llegada",submit:"RESERVAR DIRECTAMENTE",note:"La solicitud se registra inmediatamente en el calendario de reservas directas. Después recibirás nuestra confirmación personal."},
+    fr:{labels:["Arrivée","Départ","Nuits","Voyageurs"],check:"VÉRIFIER LES DISPONIBILITÉS",services:"Ajouter au séjour",servicesTitle:"Petit-déjeuner, collation de la Wachau et transport des bagages",room:"Chambre côté jardin",roomText:"Chambre double calme, personnelle et confortable.",features:"Lit double · salle de bain privée · Wi-Fi · emplacement calme",total:"Prix total",guest:"Coordonnées du voyageur",first:"Prénom",last:"Nom",phone:"Téléphone",msg:"Demandes ou message",coupon:"Code promotionnel",payment:"Mode de paiement",bank:"Virement bancaire",onsite:"Paiement à l'arrivée",submit:"RÉSERVER EN DIRECT",note:"Votre demande est immédiatement enregistrée dans le calendrier des réservations directes. Nous vous envoyons ensuite une confirmation personnelle."},
+    ch:{labels:["Aareis","Abreis","Nächt","Gäste"],check:"VERFÜGBARKEIT PRÜEFE",services:"Zum Ufenthalt dezue",servicesTitle:"Frühstück, Wachauer Proviant und Gepäcktransport",room:"Gartenzimmer",roomText:"Ruhigs Doppelzimmer mit persönlicher und gemütlicher Atmosphäre.",features:"Doppelbett · eigets Bad · WLAN · ruhigi Lag",total:"Gesamtpriis",guest:"Gästedate",first:"Vorname",last:"Nachname",phone:"Telefon",msg:"Wünsch oder Nachricht",coupon:"Gutscheincode",payment:"Zahligsart",bank:"Banküberwiisig",onsite:"Zahlig bi de Aareis",submit:"DIREKT BUECHE",note:"D Afrag wird sofort im Direktbuechigskalender vorgmerkt. Nachher chunnt üsi persönlechi Bestätigung."},
+    ar:{labels:["الوصول","المغادرة","الليالي","الضيوف"],check:"تحقق من التوافر",services:"أضف إلى إقامتك",servicesTitle:"الإفطار ووجبة Wachau ونقل الأمتعة",room:"غرفة الحديقة",roomText:"غرفة مزدوجة هادئة بأجواء شخصية ومريحة.",features:"سرير مزدوج · حمام خاص · واي فاي · موقع هادئ",total:"السعر الإجمالي",guest:"بيانات الضيف",first:"الاسم الأول",last:"اسم العائلة",phone:"الهاتف",msg:"طلبات أو رسالة",coupon:"رمز الخصم",payment:"طريقة الدفع",bank:"تحويل بنكي",onsite:"الدفع عند الوصول",submit:"احجز مباشرة",note:"يتم تسجيل طلبك فوراً في تقويم الحجوزات المباشرة، ثم نرسل لك تأكيداً شخصياً."}
   }[lang];
   if(!T) return;
   document.documentElement.lang=lang;
@@ -911,8 +1123,8 @@
   const cc=document.querySelector('#guestArea label:has(#couponCode)'); if(cc) cc.childNodes[0].nodeValue=T.coupon;
   const payh=[...document.querySelectorAll("#guestArea h3")].find(x=>x!==gh); if(payh) payh.textContent=T.payment;
   const payLabels=[...document.querySelectorAll(".payment-grid label strong")]; if(payLabels[1]) payLabels[1].textContent=T.bank; if(payLabels[2]) payLabels[2].textContent=T.onsite;
-  const sub=document.getElementById("bookingSubmit"); if(sub) updatePaymentUI();
-  const note=document.getElementById("bookingConfirmationHint"); if(note) note.textContent=T.note;
+  const sub=document.getElementById("bookingSubmit"); if(sub) sub.textContent=T.submit;
+  const note=document.querySelector("#guestArea .legal-note:last-of-type"); if(note) note.textContent=T.note;
 })();
 </script>
 
@@ -953,8 +1165,8 @@
 (function(){
   const photos=[
     {src:"{{ url_for('static', filename='images/gartenzimmer-04-web.jpg') }}",caption:"Gartenzimmer – Gesamtansicht"},
-    {src:"{{ url_for('static', filename='images/bad-zuhause-am-bach-v2.webp') }}",caption:"Exklusives Privatbad direkt gegenüber"},
-    {src:"{{ url_for('static', filename='images/fahrradschuppen-wachau.webp') }}?v=20261017",caption:"Abschließbarer Fahrradschuppen mit E-Bike-Lademöglichkeit"},
+    {src:"{{ url_for('static', filename='images/bad-zuhause-am-bach-v2.webp') }}",caption:"Eigenes Badezimmer"},
+    {src:"{{ url_for('static', filename='images/gartenzimmer-direktbuchung-v2.webp') }}?v=20260930-restored",caption:"Gartenzimmer – weiterer Blick"},
     {src:"{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-v2.webp') }}",caption:"Gästeküche / Gemeinschaftsbereich"},
     {src:"{{ url_for('static', filename='images/bach-hinterm-haus-v11.webp') }}",caption:"Bach und Außenbereich hinter dem Haus"}
   ];
@@ -1056,7 +1268,7 @@
 
 <script id="google-hotel-prefill-20260930">
 (function(){
-  function validDate(v){ return /^\\d{4}-\\d{2}-\\d{2}$/.test(v||""); }
+  function validDate(v){ return /^\d{4}-\d{2}-\d{2}$/.test(v||""); }
   function firstParam(params,names){ for(const n of names){ const v=params.get(n); if(v) return v; } return ""; }
   function applyHotelParams(){
     const params=new URLSearchParams(window.location.search);
@@ -1082,29 +1294,10 @@
   else applyHotelParams();
 })();
 </script>
-
-<script id="remove-internal-image-note">
-(function(){
-  const internalNote=/bachblick.*bild.*adminbereich.*ersetzen/i;
-  function removeInternalNote(){
-    document.querySelectorAll("body *").forEach(function(el){
-      if(el.children.length || !internalNote.test((el.textContent||"").trim())) return;
-      const note=el.closest("figcaption,small,.image-credit,.hero-image-note")||el;
-      note.remove();
-    });
-  }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",removeInternalNote,{once:true});
-  else removeInternalNote();
-})();
-</script>
 <script id="booking-attribution-20260930">
 (function(){
   const params=new URLSearchParams(window.location.search);
   const source=params.get("utm_source") || params.get("source") || (document.referrer ? "referral" : "direct");
-  const businessFields=document.getElementById("businessFields");
-  if(businessFields && (source==="business" || source==="corporate" || params.get("utm_campaign")==="business")){
-    businessFields.classList.remove("hidden");
-  }
   const fields={
     bookingSource:source,
     bookingUtmMedium:params.get("utm_medium")||"",
@@ -1129,6 +1322,20 @@
       link.href="/?arrival="+encodeURIComponent(day)+"&departure="+encodeURIComponent(depIso)+"&source=gap-night#booking";
       section.classList.remove("hidden");
     }).catch(()=>{});
+})();
+</script>
+<script id="remove-internal-image-note">
+(function(){
+  const internalNote=/bachblick.*bild.*adminbereich.*ersetzen/i;
+  function removeInternalNote(){
+    document.querySelectorAll("body *").forEach(function(el){
+      if(el.children.length || !internalNote.test((el.textContent||"").trim())) return;
+      const note=el.closest("figcaption,small,.image-credit,.hero-image-note")||el;
+      note.remove();
+    });
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",removeInternalNote,{once:true});
+  else removeInternalNote();
 })();
 </script>
 </body>
