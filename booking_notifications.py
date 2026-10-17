@@ -15,6 +15,45 @@ from transactional_email import send_transactional_email
 PAID_GUEST_SUBJECT = "Buchung bestätigt / Booking confirmed – Zuhause am Bach"
 PUBLIC_CONTACT_EMAIL = "Zuhause.am.Bach@outlook.com"
 
+def _booking_extras_text(booking):
+    """Read selected, priced extras from the stored booking breakdown."""
+    keys = set(booking.keys())
+    for field in ("price_breakdown_json", "checkout_payload"):
+        raw = booking[field] if field in keys else ""
+        if not raw:
+            continue
+        try:
+            payload = json.loads(raw)
+            breakdown = payload.get("breakdown") if isinstance(payload, dict) else None
+            if not isinstance(breakdown, dict):
+                breakdown = payload
+            lines = breakdown.get("extras") if isinstance(breakdown, dict) else []
+            labels = []
+            for line in lines or []:
+                if not isinstance(line, dict):
+                    continue
+                label = str(line.get("label") or "").strip()
+                if not label:
+                    continue
+                try:
+                    amount = float(line.get("amount"))
+                    label += " (" + format(amount, ".2f").replace(".", ",") + " EUR)"
+                except (TypeError, ValueError):
+                    pass
+                labels.append(label)
+            if labels:
+                return ", ".join(labels)
+        except (TypeError, ValueError):
+            continue
+
+    labels = []
+    for key, label in (("breakfast", "Frühstück"), ("jause", "Wachauer Jause"),
+                       ("luggage", "Gepäcktransport")):
+        if key in keys and bool(booking[key]):
+            labels.append(label)
+    return ", ".join(labels) if labels else "Keine"
+
+
 
 def init_booking_notifications(app, db):
     """Send booking emails and expose a safe, non-binding direct-inquiry endpoint."""
@@ -66,22 +105,7 @@ def init_booking_notifications(app, db):
             else str(booking["uid"] or f"ZAB-{booking_id:06d}")
         )
 
-        extras_text = "Keine"
-        if "price_breakdown_json" in keys and booking["price_breakdown_json"]:
-            try:
-                breakdown = json.loads(booking["price_breakdown_json"])
-                lines = breakdown.get("extras") if isinstance(breakdown, dict) else []
-                labels = [
-                    str(line.get("label") or "").strip()
-                    for line in (lines or [])
-                    if isinstance(line, dict) and str(line.get("label") or "").strip()
-                ]
-                if labels:
-                    extras_text = ", ".join(labels)
-            except Exception:
-                pass
-        elif "breakfast" in keys and int(booking["breakfast"] or 0):
-            extras_text = "Frühstück"
+        extras_text = _booking_extras_text(booking)
 
         cfg = settings()
         cancellation_text = (
