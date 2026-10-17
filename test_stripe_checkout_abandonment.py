@@ -111,7 +111,7 @@ class ExpiredCheckoutNotificationTests(unittest.TestCase):
                 INSERT INTO bookings VALUES(
                     1,'ZAB-test','Bachblick','2026-12-10','2026-12-12',2,0,
                     'Test','Gast','test@example.test','+430000000','',
-                    'stripe_checkout',200,'pending',0,'2000-01-01','','ZAB-hash','');
+                    'stripe_checkout',200,'pending',0,'2000-01-01','','','ZAB-hash');
             """)
         self.app = Flask(__name__)
         init_payment_hold(self.app, self.db)
