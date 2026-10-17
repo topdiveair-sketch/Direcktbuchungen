@@ -34,6 +34,7 @@ class StripeLiveWebhookTests(unittest.TestCase):
                     first_name TEXT DEFAULT '', last_name TEXT DEFAULT '',
                     email TEXT DEFAULT '', phone TEXT DEFAULT '', message TEXT DEFAULT '',
                     total REAL, payment_method TEXT, status TEXT, paid INTEGER DEFAULT 0,
+                    created_at TEXT DEFAULT '',
                     stripe_session_id TEXT, stripe_payment_intent_id TEXT,
                     hold_expires_at TEXT
                 );
