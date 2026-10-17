@@ -1273,7 +1273,9 @@ def room_available(room: str, arrival: date, departure: date) -> tuple[bool, str
     # Booking/iCal ist die unabhängige Sicherheitsquelle. Vor jeder
     # Verfügbarkeitsprüfung frisch synchronisieren, damit eine neue
     # Booking-Sperre nie durch einen leeren/stalen Masterkalender als frei gilt.
-    sync_room(room)
+    _, sync_status = sync_room(room)
+    if sync_status != "Synchronisierung erfolgreich.":
+        return False, "Kalenderabgleich unvollständig. Bitte direkt anfragen."
 
     live_ok, live_message = live_master_availability(arrival, departure)
     if live_ok is None:
@@ -1489,7 +1491,7 @@ def sync_room(room: str) -> tuple[int, str]:
             (now, message, room),
         )
 
-    if any_success:
+    if any_success and len(results) == len(sources) and not any("Fehler" in item for item in results):
         # Keep the sync_room return contract stable for checkout callers:
         # detailed per-provider results stay in ical_settings.last_result, while
         # callers receive the canonical success marker whenever at least one
@@ -2629,7 +2631,10 @@ def api_calendar():
     # Booking/iCal vor der Anzeige frisch synchronisieren und seine Sperren
     # als Sicherheitsnetz über den Masterkalender legen. Der Master kann leer
     # oder verzögert sein; Booking-Belegungen dürfen dadurch nie "free" werden.
-    sync_room(room)
+    _, sync_status = sync_room(room)
+    if sync_status != "Synchronisierung erfolgreich.":
+        live_ok = False
+        states = {day: "unknown" for day in states}
 
     # Eigene Direktbuchungen und Booking/iCal-Sperren werden immer zusätzlich
     # berücksichtigt.

@@ -8,7 +8,7 @@ import tempfile
 import time
 import unittest
 from contextlib import contextmanager
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from pathlib import Path
 from unittest.mock import patch
 
@@ -34,6 +34,7 @@ class StripeLiveWebhookTests(unittest.TestCase):
                     first_name TEXT DEFAULT '', last_name TEXT DEFAULT '',
                     email TEXT DEFAULT '', phone TEXT DEFAULT '', message TEXT DEFAULT '',
                     total REAL, payment_method TEXT, status TEXT, paid INTEGER DEFAULT 0,
+                    created_at TEXT DEFAULT '',
                     stripe_session_id TEXT, stripe_payment_intent_id TEXT,
                     hold_expires_at TEXT
                 );
@@ -49,7 +50,7 @@ class StripeLiveWebhookTests(unittest.TestCase):
             """)
         self.app = Flask(__name__)
         init_stripe_checkout(
-            self.app, self.db, {"Bachblick": {}}, lambda s: s,
+            self.app, self.db, {"Bachblick": {}}, lambda s: date.fromisoformat(s),
             lambda *args: {"total": 119.0}, lambda *args: (True, ""),
             lambda room: (0, "Synchronisierung erfolgreich."),
         )
@@ -162,7 +163,7 @@ class StripeLiveWebhookTests(unittest.TestCase):
             "phone": "+430000000", "extras": {},
         }
         with patch("stripe_checkout.urllib.request.urlopen", return_value=FakeResponse()):
-            with patch.dict(os.environ, {"STRIPE_SECRET_KEY": "rk_live_offline_test_only"}):
+            with patch.dict(os.environ, {"STRIPE_SECRET_KEY": "rk_live_offline_test_only", "ZAB_STRIPE_LIVE_ENABLED": "1", "STRIPE_WEBHOOK_SECRET": "whsec_offline_test_only"}):
                 first = self.client.post(
                     "/api/stripe/create-checkout-session", json=payload,
                     headers={"X-Forwarded-For": "198.51.100.27"},
@@ -171,8 +172,8 @@ class StripeLiveWebhookTests(unittest.TestCase):
                     "/api/stripe/create-checkout-session", json=payload,
                     headers={"X-Forwarded-For": "198.51.100.27"},
                 )
-        self.assertEqual(first.status_code, 200)
-        self.assertEqual(second.status_code, 429)
+        self.assertEqual(first.status_code, 200, first.get_json())
+        self.assertEqual(second.status_code, 429, second.get_json())
         self.assertIn("bereits ein Karten-Checkout", second.get_json()["message"])
 
     def test_checkout_rate_limit_stops_repeated_holds_after_expiry(self):
