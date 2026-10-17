@@ -175,6 +175,25 @@ class StripeLiveWebhookTests(unittest.TestCase):
         self.assertEqual(second.status_code, 429)
         self.assertIn("bereits ein Karten-Checkout", second.get_json()["message"])
 
+    def test_checkout_rate_limit_stops_repeated_holds_after_expiry(self):
+        ip_hash = hmac.new(
+            b"whsec_offline_test_only", b"198.51.100.28", hashlib.sha256
+        ).hexdigest()
+        with self.db() as conn:
+            conn.execute("INSERT INTO ical_settings(room,import_url,last_sync) VALUES(?,?,?)",
+                         ("Bachblick", "https://example.test/calendar.ics", datetime.now().isoformat()))
+            conn.execute("INSERT INTO stripe_checkout_attempts(ip_hash,created_at) VALUES(?,?)",
+                         (ip_hash, datetime.now().isoformat(timespec="seconds")))
+        response = self.client.post(
+            "/api/stripe/create-checkout-session",
+            json={"room": "Bachblick", "arrival": "2026-12-10", "departure": "2026-12-12",
+                  "adults": 2, "first_name": "Test", "last_name": "Gast",
+                  "email": "test@example.test", "phone": "+430000000", "extras": {}},
+            headers={"X-Forwarded-For": "198.51.100.28"},
+        )
+        self.assertEqual(response.status_code, 429)
+        self.assertIn("sechs Stunden", response.get_json()["message"])
+
     def refund_event(self, amount_refunded=11900, payment_intent="pi_test_payment", tamper=False):
         event = {"id": "evt_refund_test", "livemode": True, "type": "charge.refunded",
                  "data": {"object": {"object": "charge", "livemode": True,
