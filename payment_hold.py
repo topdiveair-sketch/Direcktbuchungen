@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime, timedelta
 
 from transactional_email import send_transactional_email
@@ -7,6 +8,45 @@ from transactional_email import send_transactional_email
 
 HOLD_MINUTES = 10
 ALERT_EMAIL = "Zuhause.am.Bach@outlook.com"
+
+def _booking_extras_text(booking):
+    """Read selected, priced extras from the stored booking breakdown."""
+    keys = set(booking.keys())
+    for field in ("price_breakdown_json", "checkout_payload"):
+        raw = booking[field] if field in keys else ""
+        if not raw:
+            continue
+        try:
+            payload = json.loads(raw)
+            breakdown = payload.get("breakdown") if isinstance(payload, dict) else None
+            if not isinstance(breakdown, dict):
+                breakdown = payload
+            lines = breakdown.get("extras") if isinstance(breakdown, dict) else []
+            labels = []
+            for line in lines or []:
+                if not isinstance(line, dict):
+                    continue
+                label = str(line.get("label") or "").strip()
+                if not label:
+                    continue
+                try:
+                    amount = float(line.get("amount"))
+                    label += " (" + format(amount, ".2f").replace(".", ",") + " EUR)"
+                except (TypeError, ValueError):
+                    pass
+                labels.append(label)
+            if labels:
+                return ", ".join(labels)
+        except (TypeError, ValueError):
+            continue
+
+    labels = []
+    for key, label in (("breakfast", "Frühstück"), ("jause", "Wachauer Jause"),
+                       ("luggage", "Gepäcktransport")):
+        if key in keys and bool(booking[key]):
+            labels.append(label)
+    return ", ".join(labels) if labels else "Keine"
+
 
 
 def init_payment_hold(app, db):
@@ -104,10 +144,7 @@ def init_payment_hold(app, db):
             headline = "NEUE BUCHUNGSANFRAGE"
             status_line = "Status: Anfrage / vorläufig reserviert\n"
 
-        extras = []
-        if b["breakfast"]:
-            extras.append("Frühstück")
-        extras_text = ", ".join(extras) if extras else "keine"
+        extras_text = _booking_extras_text(b)
         message_text = (b["message"] or "").strip() or "keine Nachricht"
 
         details = (

@@ -54,7 +54,7 @@
     return !busy && form.checkValidity() &&
       Boolean(field("arrival") && field("departure") &&
       form.querySelector('input[name="room"]:checked')?.value === "Bachblick") &&
-      !field("coupon_code") && !checked("luggage") &&
+      !field("coupon_code") &&
       !document.getElementById("guestArea")?.classList.contains("hidden") &&
       !document.getElementById("availabilityResult")?.classList.contains("hidden") &&
       !document.getElementById("bookingSubmit")?.disabled;
@@ -65,7 +65,7 @@
     note.textContent = field("coupon_code")
       ? "Gutscheine bitte über die anderen Zahlungsarten einlösen."
       : checked("luggage")
-        ? "Gepäcktransport bitte separat anfragen."
+        ? `Gepäcktransport: ${Number(document.getElementById("luggage")?.dataset.price || 15).toLocaleString("de-AT", {style:"currency", currency:"EUR"})} pro Strecke für bis zu 2 Gäste. Im Gesamtpreis enthalten.`
         : "Sichere Kartenzahlung über Stripe, nach erneuter Preis- und Terminprüfung.";
   }
 
