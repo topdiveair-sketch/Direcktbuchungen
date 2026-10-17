@@ -8,7 +8,7 @@ import tempfile
 import time
 import unittest
 from contextlib import contextmanager
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from pathlib import Path
 from unittest.mock import patch
 
@@ -49,7 +49,7 @@ class StripeLiveWebhookTests(unittest.TestCase):
             """)
         self.app = Flask(__name__)
         init_stripe_checkout(
-            self.app, self.db, {"Bachblick": {}}, lambda s: s,
+            self.app, self.db, {"Bachblick": {}}, lambda s: date.fromisoformat(s),
             lambda *args: {"total": 119.0}, lambda *args: (True, ""),
             lambda room: (0, "Synchronisierung erfolgreich."),
         )
