@@ -153,6 +153,16 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
   .language-switcher{order:3;width:100%;justify-content:center}
   .feature-strip.feature-strip-i18n{grid-template-columns:1fr}
 }
+
+/* Booking extras with their matching guest service photos */
+.featured-extras{grid-template-columns:repeat(2,minmax(0,1fr))}
+.featured-extra{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:start;gap:8px 10px;padding:10px}
+.featured-extra-image{grid-column:1/-1;display:block;width:100%;height:170px;aspect-ratio:3/2;object-fit:cover;border-radius:7px;background:#f4f2ed}
+.featured-extra-image--jause{object-fit:contain}
+.featured-extra input{grid-column:1;grid-row:2;margin:3px 0 0}
+.featured-extra>span{grid-column:2;grid-row:2}
+.featured-extra strong{line-height:1.35}
+@media(max-width:800px){.featured-extras{grid-template-columns:1fr}.featured-extra-image{height:auto;max-height:240px;aspect-ratio:3/2}}
 \n
 .hero-room{background:linear-gradient(to bottom,rgba(0,0,0,.18),rgba(0,0,0,.58)),url("/static/images/rooms/bachblick.jpg") center 48%/cover no-repeat}
 .identity-section{margin:26px 0 46px;padding:36px;background:#fff;border-radius:18px;box-shadow:var(--shadow)}

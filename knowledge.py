@@ -93,7 +93,7 @@ def init_knowledge(app, DB_PATH, db, require_admin, ROOMS):
             ("Unterkunft", "Fahrradunterstand", "Innenbereich", "", ""),
             ("Unterkunft", "E-Bike laden", "Ja", "", ""),
             ("Preise", "Frühstück", "12.00", "EUR/Person/Nacht", ""),
-            ("Preise", "Wachauer Jause", "29.90", "EUR/2 Personen", ""),
+            ("Preise", "Wachauer Jause", "29.80", "EUR/2 Personen", ""),
             ("Preise", "Gepäcktransport", "25.00", "EUR/Fahrt", "Richtwert"),
             ("Hausregeln", "Rauchen", "Nicht im Zimmer", "", ""),
             ("Hausregeln", "Ruhezeit", "22:00 bis 07:00", "", ""),

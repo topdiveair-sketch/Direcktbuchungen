@@ -393,7 +393,7 @@
           <div class="zab-room-gallery" aria-label="Bildergalerie Gartenzimmer">
             <div class="zab-gallery-head">
               <strong>Gartenzimmer ansehen</strong>
-              <span>5 Fotos · Bad · Küche · Umgebung</span>
+              <span>5 Fotos · Bad · Fahrradschuppen · Küche</span>
             </div>
             <div class="zab-gallery-thumbs">
               <button type="button" class="zab-gallery-thumb is-active" data-gallery-index="0" aria-label="Gartenzimmer groß ansehen">
@@ -402,8 +402,8 @@
               <button type="button" class="zab-gallery-thumb" data-gallery-index="1" aria-label="Badezimmer groß ansehen">
                 <img src="{{ url_for('static', filename='images/bad-zuhause-am-bach-v2.webp') }}" alt="Exklusives Privatbad direkt gegenüber dem Gartenzimmer bei Zuhause am Bach in der Wachau" loading="lazy">
               </button>
-              <button type="button" class="zab-gallery-thumb" data-gallery-index="2" aria-label="Zweites Zimmerbild groß ansehen">
-                <img src="{{ url_for('static', filename='images/gartenzimmer-direktbuchung-v2.webp') }}?v=20260930-restored" alt="Weiterer Blick auf Doppelbett und Ausstattung im Gartenzimmer in Aggsbach Markt" loading="lazy">
+              <button type="button" class="zab-gallery-thumb" data-gallery-index="2" aria-label="Fahrradschuppen groß ansehen">
+                <img src="{{ url_for('static', filename='images/fahrradschuppen-wachau.webp') }}?v=20261017" alt="Abschließbarer Fahrradschuppen und E-Bike-Ladestation bei Zuhause am Bach in Aggsbach Markt" loading="lazy">
               </button>
               <button type="button" class="zab-gallery-thumb" data-gallery-index="3" aria-label="Gästeküche groß ansehen">
                 <img src="{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-v2.webp') }}" alt="Gästeküche für Gäste von Zuhause am Bach in Aggsbach Markt" loading="lazy">
@@ -432,7 +432,12 @@
             {% for key in ['jause', 'luggage'] %}
               {% set item = extras.get(key) %}
               {% if item and item.enabled %}
-              <label class="extra-option featured-extra">
+              <label class="extra-option featured-extra featured-extra--{{ key }}">
+                {% if key == 'jause' %}
+                  <img class="featured-extra-image featured-extra-image--jause" src="{{ url_for('static', filename='images/wachauer-jause-2980.webp') }}?v=20261017" alt="Wachauer Jause für zwei Personen, 29,80 Euro" loading="lazy" decoding="async" width="1448" height="1086">
+                {% elif key == 'luggage' %}
+                  <img class="featured-extra-image" src="{{ url_for('static', filename='images/transportservice-wachau.webp') }}?v=20261017" alt="Gepäckübergabe für Wanderer am Welterbesteig Wachau" loading="lazy" decoding="async" width="900" height="600">
+                {% endif %}
                 <input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}">
                 <span>
                   <strong>{% if key == 'jause' %}Wachauer Jause zum Abendessen{% elif key == 'luggage' %}Gepäcktransport{% else %}{{ item.label }}{% endif %}</strong>
@@ -949,7 +954,7 @@
   const photos=[
     {src:"{{ url_for('static', filename='images/gartenzimmer-04-web.jpg') }}",caption:"Gartenzimmer – Gesamtansicht"},
     {src:"{{ url_for('static', filename='images/bad-zuhause-am-bach-v2.webp') }}",caption:"Exklusives Privatbad direkt gegenüber"},
-    {src:"{{ url_for('static', filename='images/gartenzimmer-direktbuchung-v2.webp') }}?v=20260930-restored",caption:"Gartenzimmer – weiterer Blick"},
+    {src:"{{ url_for('static', filename='images/fahrradschuppen-wachau.webp') }}?v=20261017",caption:"Abschließbarer Fahrradschuppen mit E-Bike-Lademöglichkeit"},
     {src:"{{ url_for('static', filename='images/gaestekueche-zuhause-am-bach-v2.webp') }}",caption:"Gästeküche / Gemeinschaftsbereich"},
     {src:"{{ url_for('static', filename='images/bach-hinterm-haus-v11.webp') }}",caption:"Bach und Außenbereich hinter dem Haus"}
   ];
