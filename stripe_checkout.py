@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import hmac
 import os
 import sqlite3
 import time
@@ -15,6 +17,7 @@ from flask import Response, jsonify, redirect, render_template_string, request
 
 
 HOLD_MINUTES = 30
+CHECKOUT_WINDOW_HOURS = 6
 DEFAULT_DIRECT_ORIGIN = "https://topdiveair-sketch.github.io"
 DEFAULT_RETURN_URL = "https://topdiveair-sketch.github.io/Direcktbuchungen/"
 STRIPE_API_BASE = "https://api.stripe.com/v1"
@@ -51,8 +54,23 @@ def init_stripe_checkout(
         ensure_column(conn, "bookings", "checkout_payload", "TEXT DEFAULT ''")
         ensure_column(conn, "bookings", "stripe_session_id", "TEXT DEFAULT ''")
         ensure_column(conn, "bookings", "stripe_payment_intent_id", "TEXT DEFAULT ''")
+        ensure_column(conn, "bookings", "checkout_ip_hash", "TEXT DEFAULT ''")
+        ensure_column(conn, "bookings", "stripe_cancel_token_hash", "TEXT DEFAULT ''")
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_bookings_stripe_session ON bookings(stripe_session_id)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_bookings_checkout_ip_hash ON bookings(checkout_ip_hash, status, hold_expires_at)"
+        )
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS stripe_checkout_attempts (
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   ip_hash TEXT NOT NULL,
+                   created_at TEXT NOT NULL
+               )"""
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_stripe_checkout_attempts_ip_time ON stripe_checkout_attempts(ip_hash, created_at)"
         )
 
     def cors_headers():
@@ -78,6 +96,14 @@ def init_stripe_checkout(
 
     def secret_key():
         return os.environ.get("STRIPE_SECRET_KEY", "").strip()
+
+    def checkout_ip_hash():
+        """Hash the apparent client IP; do not persist or email the raw address."""
+        forwarded = request.headers.get("X-Forwarded-For", "")
+        client_ip = (forwarded.split(",", 1)[0].strip() if forwarded
+                     else (request.remote_addr or "unknown"))
+        salt = os.environ.get("SECRET_KEY", "") or secret_key()
+        return hmac.new(salt.encode("utf-8"), client_ip.encode("utf-8"), hashlib.sha256).hexdigest()
 
     def checkout_base_url():
         configured = os.environ.get("PUBLIC_CHECKOUT_BASE_URL", "").strip().rstrip("/")
@@ -254,7 +280,11 @@ def init_stripe_checkout(
 
             uid = f"ZAB-CARD-{uuid4()}@zuhause-am-bach"
             now = datetime.now()
+            now_iso = now.isoformat(timespec="seconds")
             hold_expires = now + timedelta(minutes=HOLD_MINUTES)
+            ip_hash = checkout_ip_hash()
+            cancel_token = uuid4().hex
+            cancel_token_hash = hashlib.sha256(cancel_token.encode("utf-8")).hexdigest()
             payload_store = json.dumps(
                 {"extras": chosen, "breakdown": breakdown, "source": "github-pages-stripe"},
                 ensure_ascii=False,
@@ -262,16 +292,49 @@ def init_stripe_checkout(
             try:
                 with db() as conn:
                     conn.execute("BEGIN IMMEDIATE")
+                    conn.execute(
+                        "DELETE FROM stripe_checkout_attempts WHERE created_at<?",
+                        ((now - timedelta(days=1)).isoformat(timespec="seconds"),),
+                    )
+                    active_hold = conn.execute(
+                        """SELECT hold_expires_at FROM bookings
+                           WHERE checkout_ip_hash=? AND payment_method='stripe_checkout'
+                             AND status='pending' AND COALESCE(paid,0)=0
+                             AND COALESCE(hold_expires_at,'')>? LIMIT 1""",
+                        (ip_hash, now_iso),
+                    ).fetchone()
+                    if active_hold:
+                        conn.rollback()
+                        return api_json({
+                            "ok": False,
+                            "message": "Für diesen Internetanschluss läuft bereits ein Karten-Checkout. Bitte schließen Sie die Zahlung ab oder wählen Sie eine andere Zahlungsart.",
+                            "retry_after": active_hold["hold_expires_at"],
+                        }, 429)
+                    cutoff = (now - timedelta(hours=CHECKOUT_WINDOW_HOURS)).isoformat(timespec="seconds")
+                    attempt_count = conn.execute(
+                        "SELECT COUNT(*) FROM stripe_checkout_attempts WHERE ip_hash=? AND created_at>=?",
+                        (ip_hash, cutoff),
+                    ).fetchone()[0]
+                    if attempt_count >= 1:
+                        conn.rollback()
+                        return api_json({
+                            "ok": False,
+                            "message": "Von diesem Internetanschluss wurde vor kurzem bereits ein Karten-Checkout gestartet. Bitte versuchen Sie es in sechs Stunden erneut oder wählen Sie eine andere Zahlungsart.",
+                        }, 429)
                     ok, message = room_available_in_conn(conn, room, arrival, departure)
                     if not ok:
                         conn.rollback()
                         return api_json({"ok": False, "message": message}, 409)
+                    conn.execute(
+                        "INSERT INTO stripe_checkout_attempts(ip_hash,created_at) VALUES(?,?)",
+                        (ip_hash, now_iso),
+                    )
                     cur = conn.execute(
                         """INSERT INTO bookings
                            (uid,room,arrival,departure,adults,breakfast,first_name,last_name,
                             email,phone,message,payment_method,total,status,created_at,
-                            paid,hold_expires_at,checkout_payload)
-                           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',?,0,?,?)""",
+                            paid,hold_expires_at,checkout_payload,checkout_ip_hash,stripe_cancel_token_hash)
+                           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',?,?,?,?,?)""",
                         (
                             uid, room, arrival.isoformat(), departure.isoformat(), adults,
                             1 if chosen["breakfast"] else 0,
@@ -279,6 +342,7 @@ def init_stripe_checkout(
                             customer["phone"], customer["message"], "stripe_checkout",
                             float(total), now.isoformat(timespec="seconds"),
                             hold_expires.isoformat(timespec="seconds"), payload_store,
+                            ip_hash, cancel_token_hash,
                         ),
                     )
                     booking_id = int(cur.lastrowid)
@@ -287,7 +351,7 @@ def init_stripe_checkout(
 
             base = checkout_base_url()
             success_url = f"{base}/stripe/success?session_id={{CHECKOUT_SESSION_ID}}&booking={booking_id}"
-            cancel_url = f"{base}/stripe/cancel?booking={booking_id}"
+            cancel_url = f"{base}/stripe/cancel?booking={booking_id}&token={cancel_token}"
             expires_at = int(time.time()) + (HOLD_MINUTES * 60)
             params = {
                 "mode": "payment",
@@ -333,6 +397,10 @@ def init_stripe_checkout(
                            WHERE id=? AND COALESCE(paid,0)=0""",
                         (datetime.now().isoformat(timespec="seconds"), str(exc)[:500], booking_id),
                     )
+                    conn.execute(
+                        "DELETE FROM stripe_checkout_attempts WHERE ip_hash=? AND created_at=?",
+                        (ip_hash, now_iso),
+                    )
                 return api_json({"ok": False, "message": f"Kartenzahlung derzeit nicht verfügbar: {exc}"}, 503)
         except ValueError as exc:
             return api_json({"ok": False, "message": str(exc)}, 409)
@@ -361,14 +429,30 @@ def init_stripe_checkout(
     @app.get("/stripe/cancel")
     def stripe_cancel():
         booking_id = request.args.get("booking", type=int)
-        if booking_id:
+        token = request.args.get("token", "").strip()
+        if booking_id and token:
+            token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
             with db() as conn:
-                conn.execute(
-                    """UPDATE bookings SET status='cancelled', released_at=?,
-                       release_reason='Kartenzahlung abgebrochen'
-                       WHERE id=? AND COALESCE(paid,0)=0""",
-                    (datetime.now().isoformat(timespec="seconds"), booking_id),
-                )
+                row = conn.execute(
+                    "SELECT stripe_cancel_token_hash FROM bookings WHERE id=? AND payment_method='stripe_checkout'",
+                    (booking_id,),
+                ).fetchone()
+                if row and row["stripe_cancel_token_hash"] and hmac.compare_digest(
+                    str(row["stripe_cancel_token_hash"]), token_hash
+                ):
+                    updated = conn.execute(
+                        """UPDATE bookings SET status='cancelled', released_at=?,
+                           hold_expires_at='', release_reason='Kartenzahlung abgebrochen'
+                           WHERE id=? AND status='pending' AND COALESCE(paid,0)=0""",
+                        (datetime.now().isoformat(timespec="seconds"), booking_id),
+                    )
+                    if updated.rowcount == 1:
+                        alert = app.extensions.get("zab_send_priority_alert")
+                        if alert:
+                            try:
+                                alert(booking_id, "abandoned")
+                            except Exception:
+                                app.logger.exception("stripe checkout abandonment alert failed")
         return redirect(os.environ.get("STRIPE_RETURN_URL", DEFAULT_RETURN_URL) + "?payment=cancelled")
 
     app.extensions["zab_stripe_checkout_enabled"] = bool(secret_key())
