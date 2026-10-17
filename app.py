@@ -453,6 +453,8 @@ def init_db() -> None:
         conn.execute("UPDATE discounts SET enabled=0, percent=0 WHERE key='direct_booking'")
         for row in [("breakfast","Frühstück",12,"person_night",1),("jause","Wachauer Jause",29.9,"booking",1),("luggage","Gepäcktransport",15,"booking",1),("dog","Hund",10,"night",1),("baby_bed","Babybett",8,"booking",1)]: conn.execute("INSERT OR IGNORE INTO extras VALUES(?,?,?,?,?)",row)
         conn.execute("UPDATE extras SET price=15 WHERE key='luggage' AND ABS(price - 25) < 0.001")
+        # Breakfast is a bookable, pre-order extra at the published €12 per person/night rate.
+        conn.execute("UPDATE extras SET label='Frühstück', price=12, unit='person_night', enabled=1 WHERE key='breakfast'")
         conn.execute("INSERT OR IGNORE INTO seasons(id,name,start_date,end_date) VALUES(1,'Hauptsaison Sommer','2026-06-01','2026-09-30')")
 
 
@@ -1437,6 +1439,7 @@ def index():
     response = Response(render_template(
         "index.html",
         today=date.today().isoformat(),
+        today_iso=date.today().isoformat(),
         booking_horizon_year=date.today().year + 2,
         settings=get_settings(),
         room_images=get_room_images(),
