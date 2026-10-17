@@ -41,6 +41,15 @@ def init_payment_hold(app, db):
     def release_expired() -> int:
         now_iso = datetime.now().isoformat(timespec="seconds")
         with db() as conn:
+            expired = conn.execute(
+                """SELECT id,payment_method FROM bookings
+                   WHERE status='pending' AND COALESCE(paid,0)=0
+                     AND COALESCE(hold_expires_at,'')!=''
+                     AND hold_expires_at<=?""",
+                (now_iso,),
+            ).fetchall()
+            if not expired:
+                return 0
             cur = conn.execute(
                 """UPDATE bookings
                    SET status='cancelled', released_at=?,
@@ -51,7 +60,15 @@ def init_payment_hold(app, db):
                      AND hold_expires_at<=?""",
                 (now_iso, now_iso),
             )
-            return cur.rowcount
+        alert = app.extensions.get("zab_send_priority_alert")
+        if alert:
+            for row in expired:
+                if row["payment_method"] == "stripe_checkout":
+                    try:
+                        alert(row["id"], "abandoned")
+                    except Exception:
+                        app.logger.exception("expired stripe checkout alert failed booking_id=%s", row["id"])
+        return cur.rowcount
 
     def smtp_send(to: str, subject: str, body: str, *, important: bool = False, reply_to: str | None = None):
         return send_transactional_email(
@@ -84,10 +101,15 @@ def init_payment_hold(app, db):
 
         row_keys = set(b.keys())
         is_confirmed = event == "confirmed"
+        is_abandoned = event == "abandoned"
         if is_confirmed:
             subject = f"[WICHTIG] Neue bezahlte Buchung: {b['room']}"
             headline = "NEUE DIREKTBUCHUNG - BEZAHLT UND BESTÄTIGT"
             status_line = "Status: bezahlt und verbindlich bestätigt\n"
+        elif is_abandoned:
+            subject = f"[INFO] Karten-Checkout abgebrochen: {b['room']}"
+            headline = "KARTEN-CHECKOUT ABGEBROCHEN ODER ABGELAUFEN"
+            status_line = f"Status: {b['release_reason'] or 'nicht bezahlt'}\n"
         else:
             subject = f"[WICHTIG] Neue Buchungsanfrage: {b['room']}"
             headline = "NEUE BUCHUNGSANFRAGE"
@@ -130,6 +152,10 @@ def init_payment_hold(app, db):
                     reserved_until = hold_value
                 details += f"Reserviert bis: {reserved_until}\n"
 
+        if is_abandoned and "checkout_ip_hash" in row_keys:
+            ip_hash = str(b["checkout_ip_hash"] or "")
+            if ip_hash:
+                details += f"IP-Kennzeichen (pseudonymisiert, nicht rückverfolgbar): {ip_hash[:12]}…\n"
         details += "\nBitte zeitnah am Handy prüfen."
         ok, send_status = smtp_send(ALERT_EMAIL, subject, details, important=True, reply_to=b['email'])
         try:
