@@ -225,6 +225,102 @@ arrival.addEventListener("change", () => {
   });
 });
 
+// Only offer alternative dates verified as free in the authoritative calendar.
+let alternativeSearchId = 0;
+const alternativePanel = document.createElement("section");
+alternativePanel.id = "zabAlternativeDates";
+alternativePanel.setAttribute("aria-live", "polite");
+alternativePanel.hidden = true;
+alternativePanel.style.cssText = "margin-top:14px;padding:16px;border:1px solid #d8e2dd;border-radius:12px;background:#f1f8f3;color:#17392b";
+result.insertAdjacentElement("afterend", alternativePanel);
+
+function localISO(date) {
+  return [date.getFullYear(), String(date.getMonth()+1).padStart(2,"0"), String(date.getDate()).padStart(2,"0")].join("-");
+}
+function moveDays(iso, days) {
+  const date = new Date(iso + "T12:00:00");
+  date.setDate(date.getDate() + days);
+  return localISO(date);
+}
+async function showAlternativeDates() {
+  const requestId = ++alternativeSearchId;
+  alternativePanel.hidden = false;
+  alternativePanel.replaceChildren();
+  const headline = document.createElement("strong");
+  headline.textContent = "Dieser Wunschtermin ist leider schon vergeben.";
+  const explanation = document.createElement("p");
+  explanation.textContent = "Weil wir nur ein Gartenzimmer haben, können wir an diesem Tag keine weitere Reservierung annehmen.";
+  const prompt = document.createElement("p");
+  prompt.textContent = "Aber diese Termine könntest du noch bekommen:";
+  const candidatesEl = document.createElement("div");
+  candidatesEl.style.cssText = "display:flex;flex-wrap:wrap;gap:8px";
+  candidatesEl.textContent = "Wir prüfen die nächsten freien Termine …";
+  alternativePanel.append(headline, explanation, prompt, candidatesEl);
+  const requestedArrival = arrival.value;
+  const stayDays = nights();
+  if (!requestedArrival || !Number.isInteger(stayDays) || stayDays < 1 || stayDays > 30) {
+    candidatesEl.textContent = "Bitte gültige Reisedaten auswählen.";
+    return;
+  }
+  const start = moveDays(requestedArrival, 1);
+  const end = moveDays(requestedArrival, 60 + stayDays);
+  const months = [];
+  let cursor = new Date(start + "T12:00:00");
+  const last = new Date(end + "T12:00:00");
+  while (cursor.getFullYear()*12+cursor.getMonth() <= last.getFullYear()*12+last.getMonth()) {
+    months.push({year:cursor.getFullYear(),month:cursor.getMonth()+1});
+    cursor = new Date(cursor.getFullYear(),cursor.getMonth()+1,1,12);
+  }
+  try {
+    const chunks = await Promise.all(months.map(async m => {
+      const response = await fetch("/api/calendar?room=Bachblick&year="+m.year+"&month="+m.month, {cache:"no-store"});
+      if (!response.ok) throw Error("Calendar unavailable");
+      const data = await response.json();
+      if (!data.live || !data.days) throw Error("Calendar not live");
+      return data.days;
+    }));
+    if (requestId !== alternativeSearchId || arrival.value !== requestedArrival) return;
+    const states = Object.assign({}, ...chunks);
+    const candidates = [];
+    for (let offset = 1;offset <= 60 && candidates.length < 3;offset++) {
+      const candidate = moveDays(requestedArrival, offset);
+      let allFree = true;
+      for (let night = 0; night < stayDays;night++) {
+        if (states[moveDays(candidate, night)] !== "free") { allFree = false; break; }
+      }
+      if (allFree) candidates.push(candidate);
+    }
+    candidatesEl.replaceChildren();
+    if (!candidates.length) {
+      candidatesEl.textContent = "Zurzeit können wir keine freien Alternativen zuverlässig bestätigen.";
+      return;
+    }
+    for (const candidate of candidates) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = new Date(candidate + "T12:00:00").toLocaleDateString("de-AT", {day:"2-digit",month:"long",year:"numeric"});
+      button.style.cssText = "background:#176b5a;color:#fff;border:0;border-radius:9px;padding:11px 14px;cursor:pointer;font-weight:600";
+      button.addEventListener("click", () => {
+        ++alternativeSearchId;
+        alternativePanel.hidden = true;
+        arrival.value = candidate;
+        departure.value = moveDays(candidate, stayDays);
+        departure.min = moveDays(candidate, 1);
+        arrival.dispatchEvent(new Event("change", {bubbles:true}));
+        departure.value = moveDays(candidate, stayDays);
+        departure.dispatchEvent(new Event("change", {bubbles:true}));
+        document.getElementById("checkAvailability").click();
+      });
+      candidatesEl.append(button);
+    }
+    const warning=document.createElement("small");
+    warning.textContent="Die Verfügbarkeit wird vor der Buchung nochmals geprüft.";
+    alternativePanel.append(warning);
+  } catch(e) {
+    if (requestId === alternativeSearchId) candidatesEl.textContent="Freie Alternativen können momentan nicht zuverlässig geprüft werden.";
+  }
+}
+
 document.getElementById("checkAvailability").addEventListener("click", async () => {
   if (!arrival.value || !departure.value || !selectedRoom()) {
     result.textContent = tx("missing");
@@ -239,6 +335,8 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
   extraIds.forEach(id=>{const el=document.getElementById(id);fd.append(id,el&&el.checked?"true":"false")});
   fd.append("coupon_code", couponCode?.value.trim() || "");
 
+  ++alternativeSearchId;
+  alternativePanel.hidden = true;
   result.textContent = tx("checking");
   result.className = "availability-result";
   track("availability_started");
@@ -257,6 +355,9 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
       : (status === "free" ? tx("free") : status === "unknown" ? tx("unknown") : tx("blocked"));
     result.className = status === "free" ? "availability-result ok" : status === "unknown" ? "availability-result unknown" : "availability-result bad";
     track(`availability_result_${status}`);
+    if (status === "blocked") showAlternativeDates();
+    else { ++alternativeSearchId; alternativePanel.hidden = true; }
+
     if (status === "free") {
       trackDemand("price_quote_loaded", {
         arrival:arrival.value,
