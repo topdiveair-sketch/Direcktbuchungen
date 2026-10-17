@@ -162,7 +162,7 @@ class StripeLiveWebhookTests(unittest.TestCase):
             "phone": "+430000000", "extras": {},
         }
         with patch("stripe_checkout.urllib.request.urlopen", return_value=FakeResponse()):
-            with patch.dict(os.environ, {"STRIPE_SECRET_KEY": "rk_live_offline_test_only"}):
+            with patch.dict(os.environ, {"STRIPE_SECRET_KEY": "rk_live_offline_test_only", "ZAB_STRIPE_LIVE_ENABLED": "1", "STRIPE_WEBHOOK_SECRET": "whsec_offline_test_only"}):
                 first = self.client.post(
                     "/api/stripe/create-checkout-session", json=payload,
                     headers={"X-Forwarded-For": "198.51.100.27"},
