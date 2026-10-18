@@ -653,7 +653,7 @@ renderCalendar();
     if (!response.ok) return;
     const state = await response.json();
     if (state.configured === true && state.webhook_configured === true) {
-      option.hidden = false;
+      option.style.display = "";
     }
   } catch (_) { /* Fail closed: no unverified card checkout is offered. */ }
 })();
