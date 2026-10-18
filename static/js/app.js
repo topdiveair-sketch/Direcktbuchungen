@@ -182,7 +182,10 @@ function updatePaymentUI() {
     bankTransferDetails.classList.toggle("hidden", method !== "Banküberweisung");
   }
 
-  if (method === "PayPal") {
+  if (method === "Stripe") {
+    bookingSubmit.textContent = "MIT KARTE BEZAHLEN";
+    if (paymentNotice) paymentNotice.textContent = "Sichere Weiterleitung zur Kartenzahlung.";
+  } else if (method === "PayPal") {
     bookingSubmit.textContent = tx("paypal");
     if (paymentNotice) paymentNotice.textContent = tx("paypalNote");
   } else if (method === "Banküberweisung") {
@@ -457,7 +460,7 @@ guestArea?.addEventListener("input", () => {
 
 document.getElementById("bookingForm").addEventListener("submit", async (event) => {
   const method = selectedPayment();
-  if (method !== "PayPal") {
+  if (method !== "PayPal" && method !== "Stripe") {
     track("booking_submit_nonpaypal");
     bookingSubmitted = true;
     bookingSubmit.disabled = true;
@@ -493,6 +496,30 @@ document.getElementById("bookingForm").addEventListener("submit", async (event) 
       luggage: Boolean(document.getElementById("luggage")?.checked)
     }
   };
+
+  if (method === "Stripe") {
+    bookingSubmit.disabled = true;
+    bookingSubmit.textContent = "KARTENZAHLUNG VORBEREITEN";
+    try {
+      const response = await fetch("/api/stripe/create-checkout-session", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        cache: "no-store",
+        body: JSON.stringify(payload)
+      });
+      const checkout = await response.json();
+      if (!response.ok || !checkout.ok || !checkout.checkout_url) {
+        throw new Error(checkout.message || "Kartenzahlung konnte nicht gestartet werden.");
+      }
+      bookingSubmitted = true;
+      window.location.assign(checkout.checkout_url);
+    } catch (error) {
+      bookingSubmit.disabled = false;
+      bookingSubmit.textContent = "MIT KARTE BEZAHLEN";
+      if (paymentNotice) paymentNotice.textContent = "⚠️ " + (error?.message || "Kartenzahlung nicht verfügbar.");
+    }
+    return;
+  }
 
   bookingSubmit.disabled = true;
   bookingSubmit.textContent = tx("paypalPrep");
@@ -616,3 +643,17 @@ updateTotals();
 updatePaymentUI();
 updateBookingSummary();
 renderCalendar();
+
+/* Stripe remains hidden unless the active server explicitly confirms readiness. */
+(async () => {
+  const option = document.getElementById("stripePaymentOption");
+  if (!option) return;
+  try {
+    const response = await fetch("/api/stripe/status", {cache:"no-store"});
+    if (!response.ok) return;
+    const state = await response.json();
+    if (state.configured === true && state.webhook_configured === true) {
+      option.hidden = false;
+    }
+  } catch (_) { /* Fail closed: no unverified card checkout is offered. */ }
+})();
