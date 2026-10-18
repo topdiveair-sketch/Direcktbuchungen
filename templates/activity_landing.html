@@ -119,7 +119,7 @@
     .activity-faq details{padding:17px 0;border-bottom:1px solid var(--line)}
     .activity-faq summary{font-weight:850;cursor:pointer}
     @media(max-width:760px){.activity-grid{grid-template-columns:1fr}.activity-hero{padding:24px}.activity-main{padding-inline:14px}}
-  </style>
+    .trail-closure-alert{margin:4px 0 0;padding:16px 18px;border:2px solid #a84d08;border-left-width:7px;border-radius:12px;background:#fff4e5;color:#30251c;line-height:1.55;text-align:left;box-shadow:0 8px 22px rgba(88,48,12,.08)}\n    .trail-closure-alert>strong{display:block;color:#783800;margin-bottom:8px}\n    .trail-closure-alert p{margin:7px 0;color:#493b30;font-size:16px;line-height:1.6}\n    .trail-closure-alert a{color:#14533c;font-weight:800;text-decoration:underline;text-underline-offset:2px}\n    @media(max-width:760px){.trail-closure-alert{margin-top:0;padding:12px 13px;font-size:.95rem}.trail-closure-alert p{font-size:.95rem}}\n  </style>
 </head>
 <body>
 <header class="topbar" style="max-width:1180px;margin:0 auto;padding:18px 20px">
@@ -135,6 +135,13 @@
     <span class="eyebrow">{{ eyebrow }}</span>
     <h1>{{ headline }}</h1>
     <p>{{ intro }}</p>
+    {% if kind == "hike" %}
+    <aside class="trail-closure-alert" role="note" aria-label="Zeitlich begrenzte Sperre am Welterbesteig">
+      <strong>⚠ Zeitlich begrenzte Vollsperre · 19. Oktober bis voraussichtlich 20. November 2026</strong>
+      <p>Die amtliche Mitteilung betrifft den bezeichneten Streckenabschnitt des Welterbesteigs am Glatzberg (Revierteil Bachleiten). Dieser Abschnitt ist vollständig gesperrt. Auch die Bachleiten-Forststraße ist gesperrt und darf nicht als Ausweichroute benutzt werden.</p>
+      <p>Die Sperrmitteilung bezieht sich nur auf diesen bezeichneten Abschnitt; sie macht keine Aussage zum aktuellen Zustand anderer Etappen. Bitte prüfe vor dem Start die <a href="https://www.aggsbach.gv.at/Forstliches_Sperrgebiet_-_Welterbesteig_Wachau_Teilabschnitt_Glatzberg" target="_blank" rel="noopener noreferrer">amtliche Mitteilung der Marktgemeinde Aggsbach vom 14. Oktober 2026</a> auf mögliche Aktualisierungen oder eine frühere Aufhebung. Hinweisstand: 18. Oktober 2026.</p>
+    </aside>
+    {% endif %}
     <div class="activity-actions">
       <a class="btn" href="{{ url_for('index') }}#booking">{{ cta }}</a>
       <a class="activity-secondary" href="{{ url_for('index') }}">Zuhause am Bach ansehen</a>
