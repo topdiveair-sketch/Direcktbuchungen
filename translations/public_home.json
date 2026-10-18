@@ -67,7 +67,8 @@
     "walking_text": "Die drei Rundwege starten und enden am Marktplatz Aggsbach Markt. Auf Outdooractive findest du Strecken, Höhenprofile und Tourenbeschreibungen. Vor dem Start Wetter, Wegzustand und Sperren prüfen.",
     "walking_collection": "Rundwege und Welterbesteig-Etappen 6 & 7 ansehen",
     "languages_more": "Weitere Sprachen",
-    "extra_jause_image_alt": "Wachauer Jause mit regionalen Spezialitäten, liebevoll angerichtet"
+    "extra_jause_image_alt": "Wachauer Jause mit regionalen Spezialitäten, liebevoll angerichtet",
+    "payment_card": "Debit- oder Kreditkarte"
   },
   "en": {
     "lang_name": "EN",
@@ -136,7 +137,9 @@
     "walking_title": "Walking from Aggsbach Markt",
     "walking_text": "The three circular walks start and finish at Aggsbach Markt market square. Outdooractive provides routes, elevation profiles and descriptions. Check weather, trail conditions and closures before setting out.",
     "walking_collection": "View circular walks and Welterbesteig stages 6 & 7",
-    "languages_more": "More languages"
+    "languages_more": "More languages",
+    "extra_jause_image_alt": "Wachauer Jause regional food",
+    "payment_card": "Debit or credit card"
   },
   "cs": {
     "lang_name": "CZ",
@@ -205,7 +208,9 @@
     "walking_title": "Pěší túry z Aggsbach Markt",
     "walking_text": "Všechny tři okružní trasy začínají a končí na náměstí v Aggsbach Markt. Na Outdooractive najdete trasy, výškové profily a popisy. Před výletem ověřte počasí, stav cest a uzavírky.",
     "walking_collection": "Zobrazit okružní trasy a etapy 6 a 7 Welterbesteigu",
-    "languages_more": "Další jazyky"
+    "languages_more": "Další jazyky",
+    "extra_jause_image_alt": "Wachauer Jause regional food",
+    "payment_card": "Debit or credit card"
   },
   "sk": {
     "lang_name": "SK",
@@ -274,7 +279,9 @@
     "walking_title": "Pešie túry z Aggsbach Markt",
     "walking_text": "Všetky tri okružné trasy začínajú a končia na námestí v Aggsbach Markt. Na Outdooractive nájdete trasy, výškové profily a popisy. Pred výletom overte počasie, stav chodníkov a uzávery.",
     "walking_collection": "Zobraziť okružné trasy a etapy 6 a 7 Welterbesteigu",
-    "languages_more": "Ďalšie jazyky"
+    "languages_more": "Ďalšie jazyky",
+    "extra_jause_image_alt": "Wachauer Jause regional food",
+    "payment_card": "Debit or credit card"
   },
   "hu": {
     "lang_name": "HU",
@@ -343,7 +350,9 @@
     "walking_title": "Túrázás Aggsbach Marktból",
     "walking_text": "Mindhárom körtúra Aggsbach Markt főterén indul és ér véget. Az Outdooractive oldalon útvonalak, szintprofilok és leírások találhatók. Indulás előtt ellenőrizze az időjárást, az utak állapotát és a lezárásokat.",
     "walking_collection": "Körtúrák és a Welterbesteig 6. és 7. szakasza",
-    "languages_more": "További nyelvek"
+    "languages_more": "További nyelvek",
+    "extra_jause_image_alt": "Wachauer Jause regional food",
+    "payment_card": "Debit or credit card"
   },
   "es": {
     "lang_name": "ES",
@@ -412,7 +421,9 @@
     "walking_title": "Senderismo desde Aggsbach Markt",
     "walking_text": "Las tres rutas circulares empiezan y terminan en la plaza del mercado de Aggsbach Markt. Outdooractive ofrece recorridos, perfiles de altitud y descripciones. Antes de salir, comprueba el tiempo, el estado de los senderos y los cierres.",
     "walking_collection": "Ver rutas circulares y etapas 6 y 7 del Welterbesteig",
-    "languages_more": "Más idiomas"
+    "languages_more": "Más idiomas",
+    "extra_jause_image_alt": "Wachauer Jause regional food",
+    "payment_card": "Debit or credit card"
   },
   "fr": {
     "lang_name": "FR",
@@ -481,7 +492,9 @@
     "walking_title": "Randonnées au départ d’Aggsbach Markt",
     "walking_text": "Les trois circuits commencent et se terminent sur la place du marché d’Aggsbach Markt. Outdooractive propose les itinéraires, profils d’altitude et descriptions. Vérifiez la météo, l’état des sentiers et les fermetures avant le départ.",
     "walking_collection": "Voir les circuits et les étapes 6 et 7 du Welterbesteig",
-    "languages_more": "Autres langues"
+    "languages_more": "Autres langues",
+    "extra_jause_image_alt": "Wachauer Jause regional food",
+    "payment_card": "Debit or credit card"
   },
   "nl": {
     "lang_name": "NL",
@@ -550,7 +563,9 @@
     "walking_title": "Wandelen vanuit Aggsbach Markt",
     "walking_text": "De drie rondwandelingen beginnen en eindigen op het marktplein van Aggsbach Markt. Op Outdooractive staan routes, hoogteprofielen en beschrijvingen. Controleer voor vertrek het weer, de toestand van de paden en afsluitingen.",
     "walking_collection": "Bekijk rondwandelingen en Welterbesteig-etappes 6 en 7",
-    "languages_more": "Meer talen"
+    "languages_more": "Meer talen",
+    "extra_jause_image_alt": "Wachauer Jause regional food",
+    "payment_card": "Debit or credit card"
   },
   "pl": {
     "lang_name": "PL",
@@ -619,7 +634,9 @@
     "walking_title": "Wędrówki z Aggsbach Markt",
     "walking_text": "Wszystkie trzy trasy okrężne zaczynają się i kończą na rynku w Aggsbach Markt. Outdooractive udostępnia trasy, profile wysokościowe i opisy. Przed wyjściem sprawdź pogodę, stan szlaków i zamknięcia.",
     "walking_collection": "Zobacz trasy okrężne oraz etapy 6 i 7 Welterbesteig",
-    "languages_more": "Więcej języków"
+    "languages_more": "Więcej języków",
+    "extra_jause_image_alt": "Wachauer Jause regional food",
+    "payment_card": "Debit or credit card"
   },
   "it": {
     "lang_name": "IT",
@@ -688,7 +705,9 @@
     "walking_title": "Escursioni da Aggsbach Markt",
     "walking_text": "I tre percorsi ad anello iniziano e terminano nella piazza del mercato di Aggsbach Markt. Su Outdooractive trovi itinerari, profili altimetrici e descrizioni. Prima di partire verifica meteo, condizioni dei sentieri e chiusure.",
     "walking_collection": "Vedi i percorsi ad anello e le tappe 6 e 7 del Welterbesteig",
-    "languages_more": "Altre lingue"
+    "languages_more": "Altre lingue",
+    "extra_jause_image_alt": "Wachauer Jause regional food",
+    "payment_card": "Debit or credit card"
   },
   "ch": {
     "lang_name": "CH",
@@ -757,7 +776,9 @@
     "walking_title": "从 Aggsbach Markt 出发徒步",
     "walking_text": "三条环线均从 Aggsbach Markt 的集市广场出发并返回。Outdooractive 提供路线、海拔剖面和路线介绍。出发前请确认天气、步道状况及封闭信息。",
     "walking_collection": "查看环线及 Welterbesteig 第 6、7 段",
-    "languages_more": "Meh Spraache"
+    "languages_more": "Meh Spraache",
+    "extra_jause_image_alt": "Wachauer Jause regional food",
+    "payment_card": "Debit or credit card"
   },
   "ar": {
     "lang_name": "AR",
@@ -826,6 +847,8 @@
     "walking_title": "المشي انطلاقاً من Aggsbach Markt",
     "walking_text": "تبدأ المسارات الدائرية الثلاثة وتنتهي في ساحة السوق في Aggsbach Markt. يوفّر Outdooractive المسارات ومخططات الارتفاع والأوصاف. تحقّق من الطقس وحالة المسارات والإغلاقات قبل الانطلاق.",
     "walking_collection": "عرض المسارات الدائرية والمرحلتين 6 و7 من Welterbesteig",
-    "languages_more": "المزيد من اللغات"
+    "languages_more": "المزيد من اللغات",
+    "extra_jause_image_alt": "Wachauer Jause regional food",
+    "payment_card": "Debit or credit card"
   }
 }
