@@ -109,6 +109,12 @@
     .activity-faq details{padding:17px 0;border-bottom:1px solid var(--line)}
     .activity-faq summary{font-weight:850;cursor:pointer}
     @media(max-width:760px){.activity-grid{grid-template-columns:1fr}.activity-hero{padding:24px}.activity-main{padding-inline:14px}}
+  
+    .trail-closure-alert{margin:18px 0;padding:16px 18px;border:2px solid #a84d08;border-left-width:7px;border-radius:12px;background:#fff4e5;color:#30251c;box-shadow:0 5px 18px rgba(67,43,16,.08)}
+    .trail-closure-alert strong{display:block;color:#783800;font-size:1.05rem;line-height:1.35}
+    .trail-closure-alert p{margin:8px 0;line-height:1.55}
+    .trail-closure-alert a{color:#14533c;font-weight:800;text-decoration:underline;text-underline-offset:2px}
+    @media(max-width:600px){.trail-closure-alert{margin:14px 0;padding:13px 14px}.trail-closure-alert strong{font-size:1rem}}
   </style>
 </head>
 <body>
@@ -125,6 +131,13 @@
     <span class="eyebrow">{{ eyebrow }}</span>
     <h1>{{ headline }}</h1>
     <p>{{ intro }}</p>
+    {% if kind == "hike" %}
+    <aside class="trail-closure-alert" role="note" aria-label="Zeitlich begrenzte Sperre am Welterbesteig">
+      <strong>⚠ Zeitlich begrenzte Vollsperre · 19. Oktober bis voraussichtlich 20. November 2026</strong>
+      <p>Die amtliche Mitteilung betrifft den bezeichneten Streckenabschnitt des Welterbesteigs am Glatzberg (Revierteil Bachleiten). Dieser Abschnitt ist vollständig gesperrt. Auch die Bachleiten-Forststraße ist gesperrt und darf nicht als Ausweichroute benutzt werden.</p>
+      <p>Die Sperrmitteilung bezieht sich nur auf diesen bezeichneten Abschnitt; sie macht keine Aussage zum aktuellen Zustand anderer Etappen. Bitte prüfe vor dem Start die <a href="https://www.aggsbach.gv.at/Forstliches_Sperrgebiet_-_Welterbesteig_Wachau_Teilabschnitt_Glatzberg" target="_blank" rel="noopener noreferrer">amtliche Mitteilung der Marktgemeinde Aggsbach vom 14. Oktober 2026</a> auf mögliche Aktualisierungen oder eine frühere Aufhebung. Hinweisstand: 18. Oktober 2026.</p>
+    </aside>
+    {% endif %}
     <div class="activity-actions">
       <a class="btn" href="{{ url_for('index') }}#booking">{{ cta }}</a>
       <a class="activity-secondary" href="{{ url_for('index') }}">Zuhause am Bach ansehen</a>
