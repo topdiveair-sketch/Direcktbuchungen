@@ -68,7 +68,8 @@
     "walking_collection": "Rundwege und Welterbesteig-Etappen 6 & 7 ansehen",
     "languages_more": "Weitere Sprachen",
     "extra_jause_image_alt": "Wachauer Jause mit regionalen Spezialitäten, liebevoll angerichtet",
-    "payment_card": "Debit- oder Kreditkarte"
+    "payment_card": "Debit- oder Kreditkarte",
+    "card_brands_display": "Visa · Mastercard"
   },
   "en": {
     "lang_name": "EN",
@@ -139,7 +140,8 @@
     "walking_collection": "View circular walks and Welterbesteig stages 6 & 7",
     "languages_more": "More languages",
     "extra_jause_image_alt": "Wachauer Jause regional food",
-    "payment_card": "Debit or credit card"
+    "payment_card": "Debit or credit card",
+    "card_brands_display": "Visa · Mastercard"
   },
   "cs": {
     "lang_name": "CZ",
@@ -210,7 +212,8 @@
     "walking_collection": "Zobrazit okružní trasy a etapy 6 a 7 Welterbesteigu",
     "languages_more": "Další jazyky",
     "extra_jause_image_alt": "Wachauer Jause regional food",
-    "payment_card": "Debit or credit card"
+    "payment_card": "Debit or credit card",
+    "card_brands_display": "Visa · Mastercard"
   },
   "sk": {
     "lang_name": "SK",
@@ -281,7 +284,8 @@
     "walking_collection": "Zobraziť okružné trasy a etapy 6 a 7 Welterbesteigu",
     "languages_more": "Ďalšie jazyky",
     "extra_jause_image_alt": "Wachauer Jause regional food",
-    "payment_card": "Debit or credit card"
+    "payment_card": "Debit or credit card",
+    "card_brands_display": "Visa · Mastercard"
   },
   "hu": {
     "lang_name": "HU",
@@ -352,7 +356,8 @@
     "walking_collection": "Körtúrák és a Welterbesteig 6. és 7. szakasza",
     "languages_more": "További nyelvek",
     "extra_jause_image_alt": "Wachauer Jause regional food",
-    "payment_card": "Debit or credit card"
+    "payment_card": "Debit or credit card",
+    "card_brands_display": "Visa · Mastercard"
   },
   "es": {
     "lang_name": "ES",
@@ -423,7 +428,8 @@
     "walking_collection": "Ver rutas circulares y etapas 6 y 7 del Welterbesteig",
     "languages_more": "Más idiomas",
     "extra_jause_image_alt": "Wachauer Jause regional food",
-    "payment_card": "Debit or credit card"
+    "payment_card": "Debit or credit card",
+    "card_brands_display": "Visa · Mastercard"
   },
   "fr": {
     "lang_name": "FR",
@@ -494,7 +500,8 @@
     "walking_collection": "Voir les circuits et les étapes 6 et 7 du Welterbesteig",
     "languages_more": "Autres langues",
     "extra_jause_image_alt": "Wachauer Jause regional food",
-    "payment_card": "Debit or credit card"
+    "payment_card": "Debit or credit card",
+    "card_brands_display": "Visa · Mastercard"
   },
   "nl": {
     "lang_name": "NL",
@@ -565,7 +572,8 @@
     "walking_collection": "Bekijk rondwandelingen en Welterbesteig-etappes 6 en 7",
     "languages_more": "Meer talen",
     "extra_jause_image_alt": "Wachauer Jause regional food",
-    "payment_card": "Debit or credit card"
+    "payment_card": "Debit or credit card",
+    "card_brands_display": "Visa · Mastercard"
   },
   "pl": {
     "lang_name": "PL",
@@ -636,7 +644,8 @@
     "walking_collection": "Zobacz trasy okrężne oraz etapy 6 i 7 Welterbesteig",
     "languages_more": "Więcej języków",
     "extra_jause_image_alt": "Wachauer Jause regional food",
-    "payment_card": "Debit or credit card"
+    "payment_card": "Debit or credit card",
+    "card_brands_display": "Visa · Mastercard"
   },
   "it": {
     "lang_name": "IT",
@@ -707,7 +716,8 @@
     "walking_collection": "Vedi i percorsi ad anello e le tappe 6 e 7 del Welterbesteig",
     "languages_more": "Altre lingue",
     "extra_jause_image_alt": "Wachauer Jause regional food",
-    "payment_card": "Debit or credit card"
+    "payment_card": "Debit or credit card",
+    "card_brands_display": "Visa · Mastercard"
   },
   "ch": {
     "lang_name": "CH",
@@ -778,7 +788,8 @@
     "walking_collection": "查看环线及 Welterbesteig 第 6、7 段",
     "languages_more": "Meh Spraache",
     "extra_jause_image_alt": "Wachauer Jause regional food",
-    "payment_card": "Debit or credit card"
+    "payment_card": "Debit or credit card",
+    "card_brands_display": "Visa · Mastercard"
   },
   "ar": {
     "lang_name": "AR",
@@ -849,6 +860,7 @@
     "walking_collection": "عرض المسارات الدائرية والمرحلتين 6 و7 من Welterbesteig",
     "languages_more": "المزيد من اللغات",
     "extra_jause_image_alt": "Wachauer Jause regional food",
-    "payment_card": "Debit or credit card"
+    "payment_card": "Debit or credit card",
+    "card_brands_display": "Visa · Mastercard"
   }
 }
