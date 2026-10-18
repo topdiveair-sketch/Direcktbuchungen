@@ -221,10 +221,6 @@ def init_stripe_checkout(
             "dog": False,
             "baby_bed": False,
         }
-        if chosen["luggage"]:
-            raise ValueError(
-                "Gepäcktransport hat einen streckenabhängigen Preis und kann nicht automatisch per Karte bezahlt werden."
-            )
         customer = {
             "first_name": str(data.get("first_name", "")).strip(),
             "last_name": str(data.get("last_name", "")).strip(),
