@@ -40,6 +40,14 @@ from booking_connectivity import init_booking_connectivity  # noqa: E402
 from booking_guest_sync import init_booking_guest_sync  # noqa: E402
 from zab_control_center_v3 import init_zab_control_center_v3  # noqa: E402
 
+# Reconnect the existing guarded Stripe Checkout module on the live Flask app.
+from stripe_checkout import init_stripe_checkout  # noqa: E402
+init_stripe_checkout(
+    app, legacy_app.db, legacy_app.ROOMS, legacy_app.parse_date,
+    legacy_app.price_breakdown, legacy_app.room_available_in_conn,
+    legacy_app.sync_room,
+)
+
 init_wachauetappe_notifications(app, legacy_app.db)
 init_demand_analytics(app, legacy_app.db, legacy_app.require_admin)
 
