@@ -68,6 +68,11 @@
     .small{color:var(--muted)}footer{padding:28px 0;background:#17211f;color:#fff}.footer-cta{margin-bottom:14px}
     html[dir="rtl"] body{text-align:right}html[dir="rtl"] .top .wrap{direction:rtl}html[dir="rtl"] .langs{direction:ltr}html[dir="rtl"] .grid,html[dir="rtl"] .facts{direction:rtl}
     @media(max-width:760px){.grid,.facts{grid-template-columns:1fr}.hero{padding-top:48px}}
+  
+    .closure-notice{max-width:900px;margin:18px 0 0;padding:13px 16px;border:2px solid #f1bd70;border-left-width:7px;border-radius:12px;background:#fff4e5;color:#30251c;text-shadow:none;line-height:1.5}
+    .closure-notice strong{display:block;color:#783800}
+    .closure-notice a{color:#14533c;font-weight:800;text-decoration:underline;text-underline-offset:2px}
+    @media(max-width:600px){.closure-notice{margin-top:13px;padding:12px 13px;font-size:.95rem}}
   </style>
 </head>
 <body>
@@ -92,7 +97,7 @@
       <h1>{{ t.h1 }}</h1>
       <p class="lead">{{ t.lead }}</p>
       <a class="cta" href="/?lang={{ lang }}#booking">{{ t.booking_cta }}</a>
-      <div class="trustline">{{ t.direct_live }} · {{ t.direct_contact }} · {{ t.direct_price }}</div>
+      <div class="trustline">{{ t.direct_live }} · {{ t.direct_contact }} · {{ t.direct_price }}</div>\n      <aside class="closure-notice" role="note" aria-label="{{ t.closure_notice_title }}"><strong>{{ t.closure_notice_title }}</strong>{{ t.closure_notice_text }}<br><a href="https://www.aggsbach.gv.at/Forstliches_Sperrgebiet_-_Welterbesteig_Wachau_Teilabschnitt_Glatzberg" target="_blank" rel="noopener noreferrer">{{ t.closure_notice_link }}</a></aside>
       {% set dog_notice = {
         "en":"🐾 Important before booking: Fidel, Gloria and Pia are three greyhounds and live in the house as part of our family. They also move freely through shared areas, including the living room and kitchen. Guests should be comfortable with dogs in the house.",
         "cs":"🐾 Důležité před rezervací: Fidel, Gloria a Pia jsou tři chrti a žijí s námi v domě jako součást rodiny. Pohybují se také ve společných prostorách včetně obývacího pokoje a kuchyně. Hosté by se měli cítit dobře se psy v domě.",
