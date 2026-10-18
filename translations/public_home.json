@@ -66,7 +66,10 @@
     "walking_title": "Wandern ab Aggsbach Markt",
     "walking_text": "Die drei Rundwege starten und enden am Marktplatz Aggsbach Markt. Auf Outdooractive findest du Strecken, Höhenprofile und Tourenbeschreibungen. Vor dem Start Wetter, Wegzustand und Sperren prüfen.",
     "walking_collection": "Rundwege und Welterbesteig-Etappen 6 & 7 ansehen",
-    "languages_more": "Weitere Sprachen"
+    "languages_more": "Weitere Sprachen",
+    "closure_notice_title": "Zeitlich begrenzte Wegsperre am Welterbesteig",
+    "closure_notice_text": "Vom 19.10. bis voraussichtlich 20.11.2026 ist nur der bezeichnete Abschnitt Glatzberg/Bachleiten vollständig gesperrt. Auch die Bachleiten-Forststraße ist gesperrt und keine Ausweichroute. Die amtliche Meldung betrifft nur diesen Abschnitt; sie sagt nichts über den aktuellen Zustand anderer Etappen aus.",
+    "closure_notice_link": "Amtliche Mitteilung der Marktgemeinde Aggsbach (14.10.2026)"
   },
   "en": {
     "lang_name": "EN",
@@ -135,7 +138,10 @@
     "walking_title": "Walking from Aggsbach Markt",
     "walking_text": "The three circular walks start and finish at Aggsbach Markt market square. Outdooractive provides routes, elevation profiles and descriptions. Check weather, trail conditions and closures before setting out.",
     "walking_collection": "View circular walks and Welterbesteig stages 6 & 7",
-    "languages_more": "More languages"
+    "languages_more": "More languages",
+    "closure_notice_title": "Temporary trail closure on the World Heritage Trail",
+    "closure_notice_text": "From 19 October until expected 20 November 2026, only the designated Glatzberg/Bachleiten section is fully closed. The Bachleiten forest road is also closed and is not an alternative route. This notice concerns only that section; it does not confirm the current status of other stages.",
+    "closure_notice_link": "Official notice from the Municipality of Aggsbach (14 October 2026)"
   },
   "cs": {
     "lang_name": "CZ",
@@ -204,7 +210,10 @@
     "walking_title": "Pěší túry z Aggsbach Markt",
     "walking_text": "Všechny tři okružní trasy začínají a končí na náměstí v Aggsbach Markt. Na Outdooractive najdete trasy, výškové profily a popisy. Před výletem ověřte počasí, stav cest a uzavírky.",
     "walking_collection": "Zobrazit okružní trasy a etapy 6 a 7 Welterbesteigu",
-    "languages_more": "Další jazyky"
+    "languages_more": "Další jazyky",
+    "closure_notice_title": "Dočasná uzavírka na stezce Welterbesteig",
+    "closure_notice_text": "Od 19. 10. do předpokládaného 20. 11. 2026 je zcela uzavřen pouze označený úsek Glatzberg/Bachleiten. Uzavřena je také lesní cesta Bachleiten a nelze ji použít jako náhradní trasu. Oznámení se týká pouze tohoto úseku a nepotvrzuje aktuální stav ostatních etap.",
+    "closure_notice_link": "Oficiální oznámení obce Aggsbach (14. 10. 2026)"
   },
   "sk": {
     "lang_name": "SK",
@@ -273,7 +282,10 @@
     "walking_title": "Pešie túry z Aggsbach Markt",
     "walking_text": "Všetky tri okružné trasy začínajú a končia na námestí v Aggsbach Markt. Na Outdooractive nájdete trasy, výškové profily a popisy. Pred výletom overte počasie, stav chodníkov a uzávery.",
     "walking_collection": "Zobraziť okružné trasy a etapy 6 a 7 Welterbesteigu",
-    "languages_more": "Ďalšie jazyky"
+    "languages_more": "Ďalšie jazyky",
+    "closure_notice_title": "Dočasná uzávierka na trase Welterbesteig",
+    "closure_notice_text": "Od 19. 10. do predpokladaného 20. 11. 2026 je úplne uzavretý iba označený úsek Glatzberg/Bachleiten. Uzavretá je aj lesná cesta Bachleiten a nemožno ju použiť ako obchádzku. Oznámenie sa týka iba tohto úseku a nepotvrdzuje aktuálny stav ostatných etáp.",
+    "closure_notice_link": "Oficiálne oznámenie obce Aggsbach (14. 10. 2026)"
   },
   "hu": {
     "lang_name": "HU",
@@ -342,7 +354,10 @@
     "walking_title": "Túrázás Aggsbach Marktból",
     "walking_text": "Mindhárom körtúra Aggsbach Markt főterén indul és ér véget. Az Outdooractive oldalon útvonalak, szintprofilok és leírások találhatók. Indulás előtt ellenőrizze az időjárást, az utak állapotát és a lezárásokat.",
     "walking_collection": "Körtúrák és a Welterbesteig 6. és 7. szakasza",
-    "languages_more": "További nyelvek"
+    "languages_more": "További nyelvek",
+    "closure_notice_title": "Ideiglenes útlezárás a Welterbesteig útvonalon",
+    "closure_notice_text": "2026. október 19. és várhatóan november 20. között csak a Glatzberg/Bachleiten kijelölt szakasza van teljesen lezárva. A Bachleiten erdei út is zárva van, és nem használható kerülőútként. A közlemény csak erre a szakaszra vonatkozik; más szakaszok aktuális állapotáról nem ad tájékoztatást.",
+    "closure_notice_link": "Aggsbach önkormányzatának hivatalos közleménye (2026. október 14.)"
   },
   "es": {
     "lang_name": "ES",
@@ -411,7 +426,10 @@
     "walking_title": "Senderismo desde Aggsbach Markt",
     "walking_text": "Las tres rutas circulares empiezan y terminan en la plaza del mercado de Aggsbach Markt. Outdooractive ofrece recorridos, perfiles de altitud y descripciones. Antes de salir, comprueba el tiempo, el estado de los senderos y los cierres.",
     "walking_collection": "Ver rutas circulares y etapas 6 y 7 del Welterbesteig",
-    "languages_more": "Más idiomas"
+    "languages_more": "Más idiomas",
+    "closure_notice_title": "Cierre temporal del sendero Welterbesteig",
+    "closure_notice_text": "Del 19 de octubre al 20 de noviembre de 2026 aproximadamente, solo está completamente cerrado el tramo indicado de Glatzberg/Bachleiten. El camino forestal de Bachleiten también está cerrado y no puede utilizarse como ruta alternativa. El aviso se refiere únicamente a este tramo y no confirma el estado actual de las demás etapas.",
+    "closure_notice_link": "Aviso oficial del Ayuntamiento de Aggsbach (14 de octubre de 2026)"
   },
   "fr": {
     "lang_name": "FR",
@@ -480,7 +498,10 @@
     "walking_title": "Randonnées au départ d’Aggsbach Markt",
     "walking_text": "Les trois circuits commencent et se terminent sur la place du marché d’Aggsbach Markt. Outdooractive propose les itinéraires, profils d’altitude et descriptions. Vérifiez la météo, l’état des sentiers et les fermetures avant le départ.",
     "walking_collection": "Voir les circuits et les étapes 6 et 7 du Welterbesteig",
-    "languages_more": "Autres langues"
+    "languages_more": "Autres langues",
+    "closure_notice_title": "Fermeture temporaire du sentier Welterbesteig",
+    "closure_notice_text": "Du 19 octobre au 20 novembre 2026 environ, seul le tronçon indiqué de Glatzberg/Bachleiten est entièrement fermé. La route forestière de Bachleiten est également fermée et ne peut pas servir d’itinéraire de remplacement. Cet avis concerne uniquement ce tronçon et ne confirme pas l’état actuel des autres étapes.",
+    "closure_notice_link": "Avis officiel de la commune d’Aggsbach (14 octobre 2026)"
   },
   "nl": {
     "lang_name": "NL",
@@ -549,7 +570,10 @@
     "walking_title": "Wandelen vanuit Aggsbach Markt",
     "walking_text": "De drie rondwandelingen beginnen en eindigen op het marktplein van Aggsbach Markt. Op Outdooractive staan routes, hoogteprofielen en beschrijvingen. Controleer voor vertrek het weer, de toestand van de paden en afsluitingen.",
     "walking_collection": "Bekijk rondwandelingen en Welterbesteig-etappes 6 en 7",
-    "languages_more": "Meer talen"
+    "languages_more": "Meer talen",
+    "closure_notice_title": "Tijdelijke afsluiting van de Welterbesteig",
+    "closure_notice_text": "Van 19 oktober tot naar verwachting 20 november 2026 is alleen het aangewezen traject Glatzberg/Bachleiten volledig afgesloten. Ook de bosweg Bachleiten is gesloten en mag niet als alternatieve route worden gebruikt. De melding betreft alleen dit traject en zegt niets over de actuele toestand van andere etappes.",
+    "closure_notice_link": "Officiële mededeling van de gemeente Aggsbach (14 oktober 2026)"
   },
   "pl": {
     "lang_name": "PL",
@@ -618,7 +642,10 @@
     "walking_title": "Wędrówki z Aggsbach Markt",
     "walking_text": "Wszystkie trzy trasy okrężne zaczynają się i kończą na rynku w Aggsbach Markt. Outdooractive udostępnia trasy, profile wysokościowe i opisy. Przed wyjściem sprawdź pogodę, stan szlaków i zamknięcia.",
     "walking_collection": "Zobacz trasy okrężne oraz etapy 6 i 7 Welterbesteig",
-    "languages_more": "Więcej języków"
+    "languages_more": "Więcej języków",
+    "closure_notice_title": "Czasowe zamknięcie szlaku Welterbesteig",
+    "closure_notice_text": "Od 19 października do przewidywanego 20 listopada 2026 r. całkowicie zamknięty jest tylko wskazany odcinek Glatzberg/Bachleiten. Leśna droga Bachleiten również jest zamknięta i nie może służyć jako trasa zastępcza. Komunikat dotyczy wyłącznie tego odcinka i nie potwierdza aktualnego stanu innych etapów.",
+    "closure_notice_link": "Oficjalny komunikat gminy Aggsbach (14 października 2026 r.)"
   },
   "it": {
     "lang_name": "IT",
@@ -687,7 +714,10 @@
     "walking_title": "Escursioni da Aggsbach Markt",
     "walking_text": "I tre percorsi ad anello iniziano e terminano nella piazza del mercato di Aggsbach Markt. Su Outdooractive trovi itinerari, profili altimetrici e descrizioni. Prima di partire verifica meteo, condizioni dei sentieri e chiusure.",
     "walking_collection": "Vedi i percorsi ad anello e le tappe 6 e 7 del Welterbesteig",
-    "languages_more": "Altre lingue"
+    "languages_more": "Altre lingue",
+    "closure_notice_title": "Chiusura temporanea del sentiero Welterbesteig",
+    "closure_notice_text": "Dal 19 ottobre al 20 novembre 2026 circa è completamente chiuso solo il tratto indicato di Glatzberg/Bachleiten. Anche la strada forestale di Bachleiten è chiusa e non può essere usata come percorso alternativo. L’avviso riguarda solo questo tratto e non conferma lo stato attuale delle altre tappe.",
+    "closure_notice_link": "Avviso ufficiale del Comune di Aggsbach (14 ottobre 2026)"
   },
   "ch": {
     "lang_name": "CH",
@@ -756,7 +786,10 @@
     "walking_title": "从 Aggsbach Markt 出发徒步",
     "walking_text": "三条环线均从 Aggsbach Markt 的集市广场出发并返回。Outdooractive 提供路线、海拔剖面和路线介绍。出发前请确认天气、步道状况及封闭信息。",
     "walking_collection": "查看环线及 Welterbesteig 第 6、7 段",
-    "languages_more": "Meh Spraache"
+    "languages_more": "Meh Spraache",
+    "closure_notice_title": "Ziitlich begrenzti Wegsperrig am Welterbesteig",
+    "closure_notice_text": "Vom 19.10. bis voraussichtlich 20.11.2026 isch nume de bezeichneti Abschnitt Glatzberg/Bachleiten vollständig gsperrt. Au d Bachleiten-Forststrass isch gsperrt und kei Uswiichroute. D Mitteilg betrifft nume dä Abschnitt und seit nüt über de aktuelle Zustand vo andere Etappe us.",
+    "closure_notice_link": "Amtlichi Mitteilg vo de Gmeind Aggsbach (14.10.2026)"
   },
   "ar": {
     "lang_name": "AR",
