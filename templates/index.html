@@ -433,6 +433,27 @@
         <input type="hidden" name="utm_campaign" id="bookingUtmCampaign">
         <input type="hidden" name="landing_page" id="bookingLandingPage">
         <input type="hidden" name="referrer" id="bookingReferrer">
+        <section class="booking-services" aria-label="Zusatzleistungen">
+          <div class="service-heading">
+            <span>Auf Wunsch gleich dazu</span>
+            <strong>Frühstück, Wachauer Jause und Gepäcktransport</strong>
+          </div>
+          <div class="extras-grid featured-extras">
+            {% for key in ['breakfast', 'jause', 'luggage'] %}
+              {% set item = extras.get(key) %}
+              {% if item and item.enabled %}
+              <label class="extra-option featured-extra">
+                <input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}">
+                <span>
+                  <strong>{% if key=='luggage' %}Gepäcktransport{% elif key=='breakfast' %}Frühstück auf Vorbestellung{% else %}{{ item.label }}{% endif %}</strong>
+                  <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} € {% if key=='luggage' %}pro Strecke{% elif item.unit=='person_night' %}pro Person/Nacht{% elif item.unit=='night' %}pro Nacht{% else %}einmalig{% endif %}{% if key=='breakfast' %} · für 1–2 Gäste, nur auf Vorbestellung{% endif %}</small>
+                </span>
+              </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </section>
+
         <div class="booking-grid">
           <label>Anreise
             <input type="date" id="arrival" name="arrival" aria-label="Anreisedatum" title="Anreisedatum" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
@@ -464,26 +485,7 @@
           <small>Danach nur noch Gästedaten eingeben, Zahlungsart wählen und Buchung bestätigen.</small>
         </div>
 
-        <section class="booking-services" aria-label="Zusatzleistungen">
-          <div class="service-heading">
-            <span>Auf Wunsch gleich dazu</span>
-            <strong>Frühstück, Wachauer Jause und Gepäcktransport</strong>
-          </div>
-          <div class="extras-grid featured-extras">
-            {% for key in ['breakfast', 'jause', 'luggage'] %}
-              {% set item = extras.get(key) %}
-              {% if item and item.enabled %}
-              <label class="extra-option featured-extra">
-                <input type="checkbox" id="{{ key }}" name="{{ key }}" data-price="{{ item.price }}" data-unit="{{ item.unit }}">
-                <span>
-                  <strong>{% if key=='luggage' %}Gepäcktransport{% elif key=='breakfast' %}Frühstück auf Vorbestellung{% else %}{{ item.label }}{% endif %}</strong>
-                  <small>{{ '%.2f'|format(item.price)|replace('.', ',') }} € {% if key=='luggage' %}pro Strecke{% elif item.unit=='person_night' %}pro Person/Nacht{% elif item.unit=='night' %}pro Nacht{% else %}einmalig{% endif %}{% if key=='breakfast' %} · für 1–2 Gäste, nur auf Vorbestellung{% endif %}</small>
-                </span>
-              </label>
-              {% endif %}
-            {% endfor %}
-          </div>
-        </section>
+
 
 
 
