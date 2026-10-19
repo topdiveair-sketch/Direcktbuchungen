@@ -370,10 +370,7 @@
     <div class="hero-proof"><strong>Gartenzimmer ab 99 € / Nacht</strong> · 1 Nacht grundsätzlich möglich · Flexible Rate · kostenfrei stornierbar bis 7 Tage vor Anreise</div>
     <div class="hero-proof"><strong>★ 4,9 Google · 9 Rezensionen</strong> · <strong>8,8/10 Booking · 50 Bewertungen</strong> · Gastgeber 9,8/10</div>
     <div class="hero-proof">🐾 Fidel, Gloria und Pia leben als Teil unserer Familie im Haus und bewegen sich auch in gemeinschaftlichen Bereichen. Gäste sollten sich mit Hunden im Haus wohlfühlen.</div>
-    <aside class="trail-closure-home" role="note" aria-label="Aktuelle Sperre am Welterbesteig">
-      <strong>Wegsperre am Welterbesteig · Stand 18.10.2026:</strong> Vom 19.10. bis voraussichtlich 20.11.2026 ist nur der bezeichnete Abschnitt Glatzberg/Bachleiten vollständig gesperrt. Auch die Bachleiten-Forststraße ist gesperrt und keine Ausweichroute. <a href="/unterkunft-welterbesteig-wachau">Details ansehen</a> · <a href="https://www.aggsbach.gv.at/Forstliches_Sperrgebiet_-_Welterbesteig_Wachau_Teilabschnitt_Glatzberg" target="_blank" rel="noopener noreferrer">Amtliche Mitteilung der Marktgemeinde Aggsbach (14.10.2026)</a>.
-    </aside>
-  </div>
+</div>
 </header>
 
 <main>
@@ -493,6 +490,31 @@
           </label>
           {% endif %}
         </section>
+
+  <section id="kalender" class="calendar-section">
+    <div class="calendar-head">
+      <div>
+        <span class="eyebrow">Live-Verfügbarkeit</span>
+        <h2>Freie und belegte Tage</h2>
+      </div>
+      <select id="calendarRoom" aria-label="Zimmer">
+        <option value="Bachblick">Gartenzimmer</option>
+      </select>
+    </div>
+    <div class="calendar-controls">
+      <button type="button" id="prevMonth">‹</button>
+      <strong id="calendarTitle"></strong>
+      <button type="button" id="nextMonth">›</button>
+    </div>
+    <div class="calendar-legend">
+      <span><i class="free"></i> frei</span>
+      <span><i class="booking"></i> Booking/iCal</span>
+      <span><i class="direct"></i> Direktbuchung</span>
+      <span><i class="pending"></i> vorgemerkt</span>
+      <span><i class="unknown"></i> Prüfung erforderlich</span>
+    </div>
+    <div id="liveCalendar" class="live-calendar"></div>
+  </section>
 
         <h3 class="subheading">Gartenzimmer</h3>
         <div id="zimmer" class="room-list">
@@ -947,30 +969,7 @@
     </div>
   </section>
 
-  <section id="kalender" class="calendar-section">
-    <div class="calendar-head">
-      <div>
-        <span class="eyebrow">Live-Verfügbarkeit</span>
-        <h2>Freie und belegte Tage</h2>
-      </div>
-      <select id="calendarRoom" aria-label="Zimmer">
-        <option value="Bachblick">Gartenzimmer</option>
-      </select>
-    </div>
-    <div class="calendar-controls">
-      <button type="button" id="prevMonth">‹</button>
-      <strong id="calendarTitle"></strong>
-      <button type="button" id="nextMonth">›</button>
-    </div>
-    <div class="calendar-legend">
-      <span><i class="free"></i> frei</span>
-      <span><i class="booking"></i> Booking/iCal</span>
-      <span><i class="direct"></i> Direktbuchung</span>
-      <span><i class="pending"></i> vorgemerkt</span>
-      <span><i class="unknown"></i> Prüfung erforderlich</span>
-    </div>
-    <div id="liveCalendar" class="live-calendar"></div>
-  </section>
+
 
 
   <section class="sales-faq" aria-labelledby="sales-faq-title">
@@ -1012,6 +1011,10 @@
       <span class="eyebrow">Wachau zu Fuß erleben</span>
       <h2 id="wandern-aggsbach-title">Wandern ab Aggsbach Markt</h2>
       <p>Drei Rundwege für deinen Wachau-Aufenthalt: Start und Ziel sind jeweils am <strong>Marktplatz Aggsbach Markt</strong>. Auf Outdooractive findest du Strecken, Höhenprofile und Tourenbeschreibungen.</p>
+    <aside class="trail-closure-home" role="note" aria-label="Aktuelle Sperre am Welterbesteig">
+      <strong>Wegsperre am Welterbesteig · Stand 18.10.2026:</strong> Vom 19.10. bis voraussichtlich 20.11.2026 ist nur der bezeichnete Abschnitt Glatzberg/Bachleiten vollständig gesperrt. Auch die Bachleiten-Forststraße ist gesperrt und keine Ausweichroute. <a href="/unterkunft-welterbesteig-wachau">Details ansehen</a> · <a href="https://www.aggsbach.gv.at/Forstliches_Sperrgebiet_-_Welterbesteig_Wachau_Teilabschnitt_Glatzberg" target="_blank" rel="noopener noreferrer">Amtliche Mitteilung der Marktgemeinde Aggsbach (14.10.2026)</a>.
+    </aside>
+  
       <ul><li><strong>Bireben-Rundweg</strong> – Kurze Runde am Endlingbach, durch Wald und mit Blicken auf die Donau. <a href="https://www.outdooractive.com/de/r/812657081" target="_blank" rel="noopener noreferrer">Bireben-Rundweg auf Outdooractive ansehen</a></li>
 <li><strong>Edelberg-Rundweg</strong> – Rundwanderung durch die Hänge und Wälder oberhalb von Aggsbach Markt. <a href="https://www.outdooractive.com/de/r/812657082" target="_blank" rel="noopener noreferrer">Edelberg-Rundweg auf Outdooractive ansehen</a></li>
 <li><strong>Seeber-Rundweg</strong> – Längere Rundwanderung für einen ausgedehnten Wandertag bei Aggsbach Markt. <a href="https://www.outdooractive.com/de/r/812657083" target="_blank" rel="noopener noreferrer">Seeber-Rundweg auf Outdooractive ansehen</a></li></ul>
