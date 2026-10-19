@@ -21,6 +21,12 @@ class _HomepageText(HTMLParser):
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         if tag.lower() in self._ignored:
             self._ignored_depth += 1
+        if not self._ignored_depth:
+            for name, value in attrs:
+                if name.lower() in {"alt", "title", "aria-label", "placeholder"} and value:
+                    normalized = " ".join(value.split())
+                    if normalized:
+                        self.parts.append(normalized)
 
     def handle_endtag(self, tag: str) -> None:
         if tag.lower() in self._ignored and self._ignored_depth:
