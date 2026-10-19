@@ -628,3 +628,23 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
  .mobile-conversion-bar a{min-width:0;max-width:100%;padding:11px 8px;font-size:clamp(.72rem,3vw,.9rem);line-height:1.2;text-align:center;white-space:normal;overflow-wrap:anywhere}
  .calendar-section{min-width:0;overflow:hidden}
 }
+
+
+/* Sprachwahl auf Mobilgeraeten: Dropdown sichtbar und klickbar halten. */
+@media (max-width:700px){
+ .hero.hero-mobile-clean{overflow:visible}
+ .hero-mobile-clean .topbar{position:relative;z-index:100;overflow:visible}
+ .hero-mobile-clean .language-switcher{position:relative;overflow:visible;min-width:0;flex-wrap:wrap;white-space:normal}
+ .hero-mobile-clean .language-more{position:static}
+ .hero-mobile-clean .language-more>summary{cursor:pointer;min-height:44px;align-items:center}
+ .hero-mobile-clean .language-more-panel{
+   position:absolute;z-index:110;top:calc(100% + 6px);
+   left:50%;right:auto;transform:translateX(-50%);
+   width:min(310px,calc(100vw - 32px));min-width:0;
+   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;
+   max-height:55vh;overflow-y:auto;background:#fff;
+   border:1px solid #dfe1d7;border-radius:12px;padding:10px;
+   box-shadow:0 12px 30px rgba(0,0,0,.25)
+ }
+ .hero-mobile-clean .language-more-panel a{min-height:40px;justify-content:center;display:flex;align-items:center}
+}
