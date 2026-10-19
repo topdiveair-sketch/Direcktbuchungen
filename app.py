@@ -121,36 +121,19 @@ EVENT_PRICING = (
 def event_pricing_for_day(day: date):
     for start, end_exclusive, name, factor, cap, min_nights in EVENT_PRICING:
         if start <= day < end_exclusive:
-            # Bei ALLES MARILLE! gilt der 2-Nächte-Mindestaufenthalt nur
-            # für Freitag/Samstag-Nächte, nicht pauschal für Werktage.
-            if name == "ALLES MARILLE!" and day.weekday() in (4, 5):
-                min_nights = 2
-            if name in {"Wachauer Advent Dürnstein", "Aggsteiner Burgadvent", "Melker Advent"}:
-                # Adventtermine sind explizit hinterlegt. Freitag/Samstag
-                # erhalten 2-Nächte-Mindestaufenthalt; Sonntag bleibt 1 Nacht möglich.
-                if day.weekday() in (4, 5):
-                    min_nights = 2
             return {
                 "name": name,
                 "factor": factor,
                 "cap": cap,
-                "min_nights": min_nights,
+                "min_nights": 1,
             }
     return None
 
 
 def minimum_stay_for_period(arrival: date, departure: date):
-    required = 1
-    reasons = []
-    cur = arrival
-    while cur < departure:
-        event = event_pricing_for_day(cur)
-        if event and int(event["min_nights"]) > required:
-            required = int(event["min_nights"])
-        if event and int(event["min_nights"]) > 1 and event["name"] not in reasons:
-            reasons.append(str(event["name"]))
-        cur += timedelta(days=1)
-    return required, reasons
+    # Direktbuchungen sind auch an starken Wochenenden fuer eine Nacht erlaubt.
+    return 1, []
+
 
 ROOMS = {
     "Bachblick": {
@@ -1563,7 +1546,7 @@ def seo_landing_context(slug: str) -> dict:
     ]
     faq_direct = [
         {"@type":"Question","name":"Kann ich direkt bei Zuhause am Bach buchen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Verfügbarkeit, Preis und Zusatzleistungen können auf der offiziellen Website direkt geprüft werden."}},
-        {"@type":"Question","name":"Kann ich in der Wachau bei Zuhause am Bach nur 1 Nacht übernachten?","acceptedAnswer":{"@type":"Answer","text":"Ja. Eine Übernachtung für nur eine Nacht ist grundsätzlich möglich, sofern der Termin verfügbar ist. An einzelnen stark nachgefragten Veranstaltungsterminen können abweichende Mindestaufenthalte gelten."}},
+        {"@type":"Question","name":"Kann ich in der Wachau bei Zuhause am Bach nur 1 Nacht übernachten?","acceptedAnswer":{"@type":"Answer","text":"Ja. Eine Übernachtung für nur eine Nacht ist grundsätzlich möglich, sofern der Termin verfügbar ist. Auch an stark nachgefragten Veranstaltungsterminen ist eine Nacht möglich, sofern der Termin frei ist."}},
         {"@type":"Question","name":"Wie weit im Voraus kann ich planen?","acceptedAnswer":{"@type":"Answer","text":"Zuhause am Bach kommuniziert aktuell einen Planungshorizont bis %s." % (date.today().year + 2)}},
     ]
     pages = {
@@ -1586,7 +1569,7 @@ def seo_landing_context(slug: str) -> dict:
             "faq":[
                 {"@type":"Question","name":"Kann ich aus Deutschland oder der Schweiz direkt bei Zuhause am Bach buchen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Verfügbarkeit, Preis und Zusatzleistungen können direkt auf der deutschsprachigen offiziellen Website geprüft werden."}},
                 {"@type":"Question","name":"In welcher Währung wird der Aufenthalt bezahlt?","acceptedAnswer":{"@type":"Answer","text":"Die Preise auf der Direktbuchungsseite werden in Euro angegeben."}},
-                {"@type":"Question","name":"Ist auch nur eine Nacht in der Wachau möglich?","acceptedAnswer":{"@type":"Answer","text":"Ja. Eine einzelne Übernachtung ist grundsätzlich möglich, sofern der Termin verfügbar ist. An einzelnen stark nachgefragten Terminen können abweichende Mindestaufenthalte gelten."}}
+                {"@type":"Question","name":"Ist auch nur eine Nacht in der Wachau möglich?","acceptedAnswer":{"@type":"Answer","text":"Ja. Eine einzelne Übernachtung ist grundsätzlich möglich, sofern der Termin verfügbar ist. Auch an stark nachgefragten Terminen ist eine Nacht möglich, sofern der Termin frei ist."}}
             ],
         },
         "wachau": {
@@ -1625,7 +1608,7 @@ def seo_landing_context(slug: str) -> dict:
             "lead":"Für Radfahrer am Donauradweg, Wanderer am Welterbesteig und Durchreisende ist bei Zuhause am Bach auch eine einzelne Übernachtung grundsätzlich möglich – sofern der Termin verfügbar ist.",
             "eyebrow":"1 Nacht · Donauradweg · Welterbesteig",
             "subheading":"Etappenübernachtung direkt beim Gastgeber",
-            "paragraphs":["Wer auf einer Rad- oder Wanderetappe unterwegs ist, braucht oft kein Wochenende, sondern genau eine ruhige Nacht. Unser Gartenzimmer in Aggsbach Markt ist für maximal zwei Gäste direkt buchbar.","Frühstück auf Wunsch, sichere Fahrradunterbringung, E-Bike-Lademöglichkeit, Trocknungsmöglichkeit und Gepäcktransport auf Anfrage unterstützen die Weiterreise.","Freie Einzelübernachtungen können direkt im Live-Kalender geprüft werden. An einzelnen stark nachgefragten Veranstaltungsterminen können abweichende Mindestaufenthalte gelten."],
+            "paragraphs":["Wer auf einer Rad- oder Wanderetappe unterwegs ist, braucht oft kein Wochenende, sondern genau eine ruhige Nacht. Unser Gartenzimmer in Aggsbach Markt ist für maximal zwei Gäste direkt buchbar.","Frühstück auf Wunsch, sichere Fahrradunterbringung, E-Bike-Lademöglichkeit, Trocknungsmöglichkeit und Gepäcktransport auf Anfrage unterstützen die Weiterreise.","Freie Einzelübernachtungen können direkt im Live-Kalender geprüft werden. Auch an stark nachgefragten Veranstaltungsterminen ist eine Nacht möglich, sofern der Termin frei ist."],
             "features":[("🌙","1 Nacht möglich","Einzelübernachtungen direkt auf Verfügbarkeit prüfen."),("🚲","Für Radreisende","Fahrrad sicher unterbringen und E-Bike laden."),("🥾","Für Wanderer","Praktisch für Etappen am Welterbesteig."),("🍳","Frühstück auf Wunsch","Stärkung vor der nächsten Etappe.")],
             "hero_image":"images/gartenzimmer-04-web.jpg","hero_image_alt":"Gartenzimmer für eine Nacht in der Wachau bei Zuhause am Bach","hero_image_caption":"Eine ruhige Nacht in Aggsbach Markt zwischen zwei Etappen.",
             "secondary_image":"images/bach-hinterm-haus-v11.webp","secondary_image_alt":"Ruhige Umgebung bei Zuhause am Bach in Aggsbach Markt","secondary_image_caption":"Ruhig ankommen, schlafen und am nächsten Tag weiterziehen.",
@@ -2095,7 +2078,7 @@ def event_landing_context(slug: str) -> dict:
             "eyebrow": "Wachauer Advent 2026",
             "headline": "Unterkunft zum Wachauer Advent Dürnstein 2026",
             "intro": "Dürnstein verbindet Adventstimmung, historische Altstadt und Donau. Zuhause am Bach in Aggsbach Markt ist eine ruhige Wachau-Basis für ein Adventwochenende mit direkter Buchungsmöglichkeit.",
-            "scarcity_text": "Die vier bestätigten Dürnstein-Terminblöcke sind starke Nachfragezeiten. Für Freitag und Samstag schützt ein Mindestaufenthalt von zwei Nächten die knappen Wochenenden.",
+            "scarcity_text": "Die vier bestätigten Dürnstein-Terminblöcke sind starke Nachfragezeiten. Auch Freitag und Samstag sind einzeln buchbar, sofern das Gartenzimmer frei ist.",
         },
         "burgadvent-aggstein-2026": {
             "page_title": "Burgadvent Aggstein 2026 Unterkunft Wachau | Zuhause am Bach",
@@ -2140,7 +2123,7 @@ def event_landing_context(slug: str) -> dict:
             "eyebrow": "Advent in der Wachau",
             "headline": "Unterkunft zum Kremser Adventzauber 2026",
             "intro": "Wer Advent in Krems mit einer ruhigen Übernachtung in der Wachau verbinden möchte, kann bei Zuhause am Bach in Aggsbach Markt früh direkt prüfen.",
-            "scarcity_text": "An starken Adventwochenenden ist ein einzelnes Zimmer schnell vergeben. Freitag bis Sonntag schützen wir diese Nachfrage mit Eventpreis und zwei Nächten Mindestaufenthalt.",
+            "scarcity_text": "An starken Adventwochenenden ist ein einzelnes Zimmer schnell vergeben. Auch eine einzelne Nacht ist bei Verfügbarkeit buchbar; der Eventpreis bleibt bestehen.",
         },
         "marillenbluetenmarkt-2027": {
             "page_title": "Marillenblütenmarkt Krems 2027 Unterkunft | Zuhause am Bach Wachau",
@@ -2170,7 +2153,7 @@ def event_landing_context(slug: str) -> dict:
             "eyebrow": "Premium-Termin 2027",
             "headline": "Unterkunft zur Wachauer Sonnenwende 2027",
             "intro": "Die Wachauer Sonnenwende gehört zu den stärksten Terminen des Jahres. Für den 19. Juni 2027 kann das Gartenzimmer früh direkt angefragt werden.",
-            "scarcity_text": "Für die Sonnenwende gilt ein Premiumpreis und ein Mindestaufenthalt von zwei Nächten. Bei nur einem Gartenzimmer ist dieser Termin besonders knapp.",
+            "scarcity_text": "Für die Sonnenwende gilt ein Premiumpreis; auch eine Nacht ist bei Verfügbarkeit möglich. Bei nur einem Gartenzimmer ist dieser Termin besonders knapp.",
         },
         "alles-marille-2027": {
             "page_title": "ALLES MARILLE 2027 Unterkunft Wachau | Zuhause am Bach",
@@ -2185,7 +2168,7 @@ def event_landing_context(slug: str) -> dict:
             "eyebrow": "Marillenzeit 2027",
             "headline": "Unterkunft zu ALLES MARILLE! 2027",
             "intro": "Drei Juli-Wochenenden stehen in Krems im Zeichen der Wachauer Marille. Zuhause am Bach ist die ruhige Wachau-Basis für Gäste, die Genuss und Aktivurlaub verbinden.",
-            "scarcity_text": "Freitag- und Samstagnächte während ALLES MARILLE! sind als starke Nachfragezeiten mit zwei Nächten Mindestaufenthalt geschützt.",
+            "scarcity_text": "Freitag- und Samstagnächte während ALLES MARILLE! sind auch einzeln buchbar, sofern das Gartenzimmer frei ist.",
         },
         "sonnenwende-wachau-2028": {
             "page_title": "Wachauer Sonnenwende 2028 Unterkunft | Zuhause am Bach",
@@ -2200,7 +2183,7 @@ def event_landing_context(slug: str) -> dict:
             "eyebrow": "Premium-Termin 2028",
             "headline": "Unterkunft zur Wachauer Sonnenwende 2028",
             "intro": "Auch die Wachauer Sonnenwende 2028 ist offiziell terminiert. Wer diesen Abend mit einer Wachau-Reise verbinden möchte, kann den Wunschtermin schon früh prüfen.",
-            "scarcity_text": "Für die Sonnenwende gilt ein Premiumpreis und ein Mindestaufenthalt von zwei Nächten. Frühplanung sichert den Termin, nicht einen Rabatt.",
+            "scarcity_text": "Für die Sonnenwende gilt ein Premiumpreis; auch eine Nacht ist bei Verfügbarkeit möglich. Frühplanung sichert den Termin, nicht einen Rabatt.",
         },
     }
     data = events.get(slug)
