@@ -14,6 +14,11 @@ class HomepageTextComparisonTests(unittest.TestCase):
         after = '<a href="/neu">Jetzt direkt buchen</a>'
         self.assertNotEqual(visible_homepage_text(before), visible_homepage_text(after))
 
+    def test_accessible_text_attributes_are_checked(self):
+        before = '<button aria-label="Sprachauswahl">DE</button>'
+        after = '<button aria-label="Choose language">DE</button>'
+        self.assertNotEqual(visible_homepage_text(before), visible_homepage_text(after))
+
     def test_script_and_style_source_changes_are_ignored(self):
         before = '<style>.menu{gap:4px}</style><script>const a="alt";</script><p>Guten Tag</p>'
         after = '<style>.menu{gap:8px}</style><script>const a="neu";</script><p>Guten Tag</p>'
