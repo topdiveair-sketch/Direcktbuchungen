@@ -601,3 +601,30 @@ footer{background:#243027;color:white;padding:38px 5%;display:grid;grid-template
 .booking-services .extra-feature-description small{line-height:1.45}
 .booking-services .breakfast-extra{margin-top:10px}
 @media (max-width:640px){.booking-services .pictured-extras{grid-template-columns:1fr}.booking-services .extra-feature-image{height:190px}}
+
+
+/* Smartphone viewport repair: prevent horizontal overflow in direct booking */
+@media (max-width:700px){
+ html,body{max-width:100%;overflow-x:clip}
+ main,#booking,.booking-shell,.booking-card,.benefit-column,.calendar-section,
+ .booking-services,.room-list,.booking-summary,.booking-trust-strip{min-width:0;max-width:100%;box-sizing:border-box}
+ #booking{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+ #booking>.booking-card,#booking>.benefit-column{width:100%;min-width:0}
+ .benefit-column{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+ .benefit-column article,.benefit-column article div{min-width:0;max-width:100%}
+ .booking-grid,.guest-grid,.payment-grid{grid-template-columns:minmax(0,1fr)}
+ .booking-grid label,.booking-grid input,.booking-grid select,.booking-grid button{min-width:0;max-width:100%;box-sizing:border-box}
+ .check-main{grid-column:1/-1;width:100%;white-space:normal}
+ .room-option{grid-template-columns:82px minmax(0,1fr);width:100%;min-width:0}
+ .room-option img{width:82px;height:82px;max-width:100%}
+ .room-copy,.room-copy small,.room-features{min-width:0;overflow-wrap:anywhere;white-space:normal}
+ .booking-services .pictured-extras{grid-template-columns:minmax(0,1fr)}
+ .booking-services .pictured-extra{min-width:0;width:100%}
+ .booking-services .extra-feature-image{max-width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+ .booking-summary-total,.booking-rate,.flexible-rate,.rate-row{min-width:0;max-width:100%;flex-wrap:wrap}
+ .booking-card p,.booking-card strong,.booking-card small,.booking-card h2,.booking-card h3{overflow-wrap:anywhere}
+ .mobile-conversion-bar{width:100%;max-width:100%;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;padding:8px 10px}
+ .mobile-conversion-bar span{min-width:0;font-size:clamp(.72rem,3vw,.9rem);line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+ .mobile-conversion-bar a{min-width:0;max-width:100%;padding:11px 8px;font-size:clamp(.72rem,3vw,.9rem);line-height:1.2;text-align:center;white-space:normal;overflow-wrap:anywhere}
+ .calendar-section{min-width:0;overflow:hidden}
+}
