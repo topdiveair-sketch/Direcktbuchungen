@@ -1,0 +1,260 @@
+{
+  "source": "KDP-Bücherregal PDF, 14 Seiten, vom Nutzer am 20.10.2026 bereitgestellt",
+  "scope": "Nur dort ausdrücklich als Live markierte Taschenbücher; andere Formate separat prüfen",
+  "last_verified": "2026-10-20",
+  "rules": {
+    "advertise_only": "status == live",
+    "paid_ads": false,
+    "price_changes": false
+  },
+  "books": [
+    {
+      "title": "Die wilden Wachauer Windis – Vom Wind Spaniens zum Zuhause in der Wachau",
+      "asin": "B0G888WYWD",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0G888WYWD"
+    },
+    {
+      "title": "Auswandern nach Griechenland – Der große Praxisratgeber für Rentner",
+      "asin": "B0GHNB7V34",
+      "category": "auswandern",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GHNB7V34"
+    },
+    {
+      "title": "Die Windis & das Geheimnis der Ruine Aggstein",
+      "asin": "B0FZ9WBVX5",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0FZ9WBVX5"
+    },
+    {
+      "title": "Die wilden Windis & das Geheimnis von Dürnstein",
+      "asin": "B0G1JV4K48",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0G1JV4K48"
+    },
+    {
+      "title": "Die Wilden Wachauer Windis – Achtung Gleise!",
+      "asin": "B0GF2LCTWW",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GF2LCTWW"
+    },
+    {
+      "title": "Die wilden Wachauer Windis – Abenteuer mit der Schnaufi-Bahn",
+      "asin": "B0G2C4FBTC",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0G2C4FBTC"
+    },
+    {
+      "title": "Warum Pia vier Pfoten hat & nicht zwölf",
+      "asin": "B0GD14JWYJ",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GD14JWYJ"
+    },
+    {
+      "title": "Die Wilden Wachauer Windis & Der Marillenknödel-Fall",
+      "asin": "B0GDVBRXV7",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GDVBRXV7"
+    },
+    {
+      "title": "Die Wilden Wachauer Windis & Das Geheimnis am Bach",
+      "asin": "B0GDX4H45F",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GDX4H45F"
+    },
+    {
+      "title": "Ungarn für Rentner – Der komplette Auswanderungs-Guide",
+      "asin": "B0GHMQ5CQP",
+      "category": "auswandern",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GHMQ5CQP"
+    },
+    {
+      "title": "NUR WEG VON DEUTSCHLAND? – Das Renten Exil Handbuch",
+      "asin": "B0G6WW417T",
+      "category": "gesellschaft",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0G6WW417T"
+    },
+    {
+      "title": "Abenteuer am Welterbesteig – Die Wilden Wachauer Windis",
+      "asin": "B0GM6NJ2PK",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GM6NJ2PK"
+    },
+    {
+      "title": "VIER WEGE DER MACHT",
+      "asin": "B0G6T3WB7Y",
+      "category": "gesellschaft",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0G6T3WB7Y"
+    },
+    {
+      "title": "Die wilden Wachauer Windis – Geheimnisse des Dunkelsteinerwaldes",
+      "asin": "B0GC543X8J",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GC543X8J"
+    },
+    {
+      "title": "WELTKRIEG OHNE KRIEGSERKLÄRUNG",
+      "asin": "B0GG9LZWDB",
+      "category": "gesellschaft",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GG9LZWDB"
+    },
+    {
+      "title": "EIN LEBEN IM SYSTEM 2.0",
+      "asin": "B0GDRHX7KG",
+      "category": "gesellschaft",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GDRHX7KG"
+    },
+    {
+      "title": "Die wilden Wachauer Windis in Regensburg",
+      "asin": "B0GC613B6T",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GC613B6T"
+    },
+    {
+      "title": "Die Wilden Wachauer Windis & dem Spatz vom Rathausplatz in Wien",
+      "asin": "B0G6SVNHMX",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0G6SVNHMX"
+    },
+    {
+      "title": "Der deutsche Rentenbetrug",
+      "asin": "B0G6Y1C5KQ",
+      "category": "gesellschaft",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0G6Y1C5KQ"
+    },
+    {
+      "title": "Die wilden Windis auf dem Dürnsteiner Weihnachtsmarkt",
+      "asin": "B0G2RYG75Y",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0G2RYG75Y"
+    },
+    {
+      "title": "Leben unter der Sonne Balis",
+      "asin": "B0GK6GCMQ5",
+      "category": "auswandern",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GK6GCMQ5"
+    },
+    {
+      "title": "Die Wilden Wachauer Windis in Pressburg / Bratislava",
+      "asin": "B0G539RHKH",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0G539RHKH"
+    },
+    {
+      "title": "Versichert und trotzdem pleite",
+      "asin": "B0GKKZXXMV",
+      "category": "gesellschaft",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GKKZXXMV"
+    },
+    {
+      "title": "Der Ausstieg – Leben nach der Leistung",
+      "asin": "B0GK7VM1FQ",
+      "category": "gesellschaft",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GK7VM1FQ"
+    },
+    {
+      "title": "Arbeiten bis zum Umfallen",
+      "asin": "B0GJTB2748",
+      "category": "gesellschaft",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GJTB2748"
+    },
+    {
+      "title": "Invalidität – Wenn das System dich nicht mehr braucht",
+      "asin": "B0GJSF9W41",
+      "category": "gesellschaft",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GJSF9W41"
+    },
+    {
+      "title": "Pflegegeld – Der Kampf gegen Gutachter und Systeme",
+      "asin": "B0GJSRK4S7",
+      "category": "gesellschaft",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GJSRK4S7"
+    },
+    {
+      "title": "Die wilden Windis – Auf Geisterwanderung zu Nittenau",
+      "asin": "B0G1LYBRKK",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0G1LYBRKK"
+    },
+    {
+      "title": "Der Krieg im System Band 2",
+      "asin": "B0GGH1ZMCM",
+      "category": "gesellschaft",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GGH1ZMCM"
+    },
+    {
+      "title": "Der letzte Spielraum Band 3",
+      "asin": "B0GGJ4TL28",
+      "category": "gesellschaft",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GGJ4TL28"
+    },
+    {
+      "title": "The Wild Wachau Windis – Mind the Tracks!",
+      "asin": "B0GG5XPGPV",
+      "category": "windis",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0GG5XPGPV"
+    }
+  ]
+}
