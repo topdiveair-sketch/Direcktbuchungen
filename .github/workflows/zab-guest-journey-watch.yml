@@ -1,0 +1,33 @@
+name: ZAB Guest Journey Watch
+on:
+  schedule:
+    - cron: "10 5,11,17 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-website:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check public homepage and guest landing pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://www.zuhauseambach-wachau.at"
+          for route in "/" "/unterkunft-donauradweg-wachau" "/unterkunft-welterbesteig-wachau"; do
+            echo "Checking ${base}${route}"
+            curl --fail --location --silent --show-error --retry 2 --retry-delay 3 --max-time 35 --output /tmp/zab-page "${base}${route}"
+            if ! grep -qi "Zuhause am Bach" /tmp/zab-page; then
+              echo "::error::Missing accommodation identity at ${route}"
+              exit 1
+            fi
+          done
+          curl --fail --location --silent --show-error --retry 2 --retry-delay 3 --max-time 35 --output /tmp/zab-home "${base}/"
+          for marker in 'id="booking"' 'id="bookingForm"' 'id="checkAvailability"' 'name="payment_method"'; do
+            if ! grep -Fq "$marker" /tmp/zab-home; then
+              echo "::error::Missing booking control: $marker"
+              exit 1
+            fi
+          done
+          echo "Public site and booking entry points present; this does not test payment or reservation completion."
