@@ -1,0 +1,38 @@
+name: KDP live catalog guard
+on:
+  push:
+    paths:
+      - 'marketing/kdp-live-books.json'
+      - '.github/workflows/kdp-catalog-guard.yml'
+  pull_request:
+    paths:
+      - 'marketing/kdp-live-books.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check that only live catalog entries are promoted
+        run: |
+          python - <<'PY'
+          import json, re
+          from pathlib import Path
+          p = Path("marketing/kdp-live-books.json")
+          data = json.loads(p.read_text(encoding="utf-8"))
+          books = data["books"]
+          assert books, "Empty KDP catalog"
+          asins = set()
+          for b in books:
+              assert b["status"] == "live", f"Not live: {b['title']}"
+              assert b["format"] == "paperback"
+              assert re.fullmatch(r"B0[A-Z0-9]{8}", b["asin"]), b["asin"]
+              assert b["asin"] not in asins, f"Duplicate ASIN: {b['asin']}"
+              assert b["amazon_url"] == "https://www.amazon.de/dp/" + b["asin"]
+              asins.add(b["asin"])
+          assert data["rules"]["paid_ads"] is False
+          assert data["rules"]["price_changes"] is False
+          print(f"Validated {len(books)} live paperback listings.")
+          PY
