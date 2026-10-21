@@ -7,17 +7,20 @@
 <link rel="canonical" href="https://www.zuhauseambach-wachau.at/bewertung">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260924-platzhirsch2">
 <style>
-.review-main{max-width:820px;margin:auto;padding:42px 18px 80px}.review-box{padding:34px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(145deg,#f4faf7,#fff9ed);box-shadow:0 14px 38px rgba(23,55,47,.09)}.review-box h1{font-size:clamp(36px,6vw,58px);margin:8px 0 14px}.review-box p{font-size:17px;line-height:1.7;color:var(--muted)}.review-note{margin-top:18px;padding:16px;border-radius:14px;background:#fff;border:1px solid var(--line)}
+.review-main{max-width:820px;margin:auto;padding:42px 18px 80px}.review-box{padding:34px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(145deg,#f4faf7,#fff9ed);box-shadow:0 14px 38px rgba(23,55,47,.09)}.review-box h1{font-size:clamp(36px,6vw,58px);margin:8px 0 14px}.review-box p{font-size:17px;line-height:1.7;color:var(--muted)}.review-hint{font-size:.92rem!important;line-height:1.5!important;margin:10px 0}.review-note{margin-top:18px;padding:16px;border-radius:14px;background:#fff;border:1px solid var(--line)}
 </style></head><body>
 <header class="topbar" style="max-width:1180px;margin:auto;padding:18px"><a class="brand" href="{{ url_for('index') }}"><span class="logo-mark">⌂</span><span>Zuhause am Bach<small>Gästehaus Wachau</small></span></a></header>
 <main class="review-main"><section class="review-box">
 <span class="eyebrow">Danke für deinen Aufenthalt</span>
 <h1>Wie war deine Zeit bei Zuhause am Bach?</h1>
 <p>Eine ehrliche Bewertung hilft anderen Gästen, eine passende Unterkunft in der Wachau zu finden. Schreib einfach, was dir besonders gefallen hat oder was wir verbessern können.</p>
-{% if settings.google_review_url %}
-<a class="btn" href="{{ settings.google_review_url }}" target="_blank" rel="noopener">Google-Bewertung schreiben</a>
+{% set google_review_url = settings.google_review_url|default('', true) %}
+{% if google_review_url and '/maps/search/' not in google_review_url %}
+<a class="btn" href="{{ google_review_url }}" target="_blank" rel="noopener noreferrer">Bei Google ehrlich bewerten</a>
 {% else %}
-<a class="btn" href="mailto:{{ settings.email }}?subject=Feedback%20zu%20Zuhause%20am%20Bach">Feedback per E-Mail senden</a>
+<a class="btn" href="https://www.google.com/maps?cid=15431343642405872413" target="_blank" rel="noopener noreferrer">Google-Profil öffnen &amp; Rezension schreiben</a>
+<p class="review-hint">Im Google-Unternehmensprofil bitte „Rezension schreiben“ auswählen. Der Link führt direkt zum richtigen Eintrag, nicht zu einer allgemeinen Namenssuche.</p>
 {% endif %}
+<p><a href="mailto:{{ settings.email }}?subject=Feedback%20zu%20Zuhause%20am%20Bach">Feedback auch direkt an uns senden</a></p>
 <div class="review-note"><strong>Wichtig:</strong> Wir bitten um deine persönliche und unverfälschte Meinung. Es gibt keine Vorgabe, welche Bewertung oder Formulierungen du verwenden sollst.</div>
 </section></main></body></html>
