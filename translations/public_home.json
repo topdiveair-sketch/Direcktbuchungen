@@ -71,7 +71,8 @@
     "closure_notice_text": "Vom 19.10. bis voraussichtlich 20.11.2026 ist nur der bezeichnete Abschnitt Glatzberg/Bachleiten vollständig gesperrt. Auch die Bachleiten-Forststraße ist gesperrt und keine Ausweichroute. Die Mitteilung betrifft ausschließlich diesen bezeichneten Streckenabschnitt; zum aktuellen Zustand anderer Etappen macht sie keine Aussage.",
     "closure_notice_link": "Amtliche Mitteilung der Marktgemeinde Aggsbach (14.10.2026)",
     "guides_hub_title": "Kostenlose Wachau-Guides",
-    "guides_hub_intro": "Radpausen, Welterbesteig-Packliste und Geschichten der Wilden Wachauer Windis."
+    "guides_hub_intro": "Radpausen, Welterbesteig-Packliste und Geschichten der Wilden Wachauer Windis.",
+    "komoot_hike_link": "Wanderwege auf Komoot ansehen"
   },
   "en": {
     "lang_name": "EN",
@@ -145,7 +146,8 @@
     "closure_notice_text": "From 19 October until expected 20 November 2026, only the designated Glatzberg/Bachleiten section is fully closed. The Bachleiten forest road is also closed and is not an alternative route. This notice concerns only that section; it does not confirm the current status of other stages.",
     "closure_notice_link": "Official notice from the Municipality of Aggsbach (14 October 2026)",
     "guides_hub_title": "Free Wachau travel guides",
-    "guides_hub_intro": "Cycling stops, a hiking packing list and stories of the Wachau windhounds."
+    "guides_hub_intro": "Cycling stops, a hiking packing list and stories of the Wachau windhounds.",
+    "komoot_hike_link": "Explore hiking routes on Komoot"
   },
   "cs": {
     "lang_name": "CZ",
@@ -219,7 +221,8 @@
     "closure_notice_text": "Od 19. 10. do předpokládaného 20. 11. 2026 je zcela uzavřen pouze označený úsek Glatzberg/Bachleiten. Uzavřena je také lesní cesta Bachleiten a nelze ji použít jako náhradní trasu. Oznámení se týká pouze tohoto úseku a nepotvrzuje aktuální stav ostatních etap.",
     "closure_notice_link": "Oficiální oznámení obce Aggsbach (14. 10. 2026)",
     "guides_hub_title": "Bezplatné průvodce Wachau",
-    "guides_hub_intro": "Cyklistické zastávky, výbava na turistiku a příběhy chrtů z Wachau."
+    "guides_hub_intro": "Cyklistické zastávky, výbava na turistiku a příběhy chrtů z Wachau.",
+    "komoot_hike_link": "Prohlédnout turistické trasy na Komootu"
   },
   "sk": {
     "lang_name": "SK",
@@ -293,7 +296,8 @@
     "closure_notice_text": "Od 19. 10. do predpokladaného 20. 11. 2026 je úplne uzavretý iba označený úsek Glatzberg/Bachleiten. Uzavretá je aj lesná cesta Bachleiten a nemožno ju použiť ako obchádzku. Oznámenie sa týka iba tohto úseku a nepotvrdzuje aktuálny stav ostatných etáp.",
     "closure_notice_link": "Oficiálne oznámenie obce Aggsbach (14. 10. 2026)",
     "guides_hub_title": "Bezplatní sprievodcovia Wachau",
-    "guides_hub_intro": "Cyklistické zastávky, výbava na túru a príbehy chrtov z Wachau."
+    "guides_hub_intro": "Cyklistické zastávky, výbava na túru a príbehy chrtov z Wachau.",
+    "komoot_hike_link": "Pozrieť turistické trasy na Komoote"
   },
   "hu": {
     "lang_name": "HU",
@@ -367,7 +371,8 @@
     "closure_notice_text": "2026. október 19. és várhatóan november 20. között csak a Glatzberg/Bachleiten kijelölt szakasza van teljesen lezárva. A Bachleiten erdei út is zárva van, és nem használható kerülőútként. A közlemény csak erre a szakaszra vonatkozik; más szakaszok aktuális állapotáról nem ad tájékoztatást.",
     "closure_notice_link": "Aggsbach önkormányzatának hivatalos közleménye (2026. október 14.)",
     "guides_hub_title": "Ingyenes Wachau-útikalauzok",
-    "guides_hub_intro": "Kerékpáros pihenők, túrafelszerelési lista és történetek a wachaui agarakról."
+    "guides_hub_intro": "Kerékpáros pihenők, túrafelszerelési lista és történetek a wachaui agarakról.",
+    "komoot_hike_link": "Túraútvonalak a Komooton"
   },
   "es": {
     "lang_name": "ES",
@@ -441,7 +446,8 @@
     "closure_notice_text": "Del 19 de octubre al 20 de noviembre de 2026 aproximadamente, solo está completamente cerrado el tramo indicado de Glatzberg/Bachleiten. El camino forestal de Bachleiten también está cerrado y no puede utilizarse como ruta alternativa. El aviso se refiere únicamente a este tramo y no confirma el estado actual de las demás etapas.",
     "closure_notice_link": "Aviso oficial del Ayuntamiento de Aggsbach (14 de octubre de 2026)",
     "guides_hub_title": "Guías gratuitas de Wachau",
-    "guides_hub_intro": "Paradas ciclistas, lista para senderismo e historias de los galgos de Wachau."
+    "guides_hub_intro": "Paradas ciclistas, lista para senderismo e historias de los galgos de Wachau.",
+    "komoot_hike_link": "Rutas a pie en Komoot"
   },
   "fr": {
     "lang_name": "FR",
@@ -515,7 +521,8 @@
     "closure_notice_text": "Du 19 octobre au 20 novembre 2026 environ, seul le tronçon indiqué de Glatzberg/Bachleiten est entièrement fermé. La route forestière de Bachleiten est également fermée et ne peut pas servir d’itinéraire de remplacement. Cet avis concerne uniquement ce tronçon et ne confirme pas l’état actuel des autres étapes.",
     "closure_notice_link": "Avis officiel de la commune d’Aggsbach (14 octobre 2026)",
     "guides_hub_title": "Guides gratuits de la Wachau",
-    "guides_hub_intro": "Pauses à vélo, liste de randonnée et histoires des lévriers de Wachau."
+    "guides_hub_intro": "Pauses à vélo, liste de randonnée et histoires des lévriers de Wachau.",
+    "komoot_hike_link": "Randonnées sur Komoot"
   },
   "nl": {
     "lang_name": "NL",
@@ -589,7 +596,8 @@
     "closure_notice_text": "Van 19 oktober tot naar verwachting 20 november 2026 is alleen het aangewezen traject Glatzberg/Bachleiten volledig afgesloten. Ook de bosweg Bachleiten is gesloten en mag niet als alternatieve route worden gebruikt. De melding betreft alleen dit traject en zegt niets over de actuele toestand van andere etappes.",
     "closure_notice_link": "Officiële mededeling van de gemeente Aggsbach (14 oktober 2026)",
     "guides_hub_title": "Gratis Wachau-gidsen",
-    "guides_hub_intro": "Fietsstops, wandelpaklijst en verhalen over de windhonden van Wachau."
+    "guides_hub_intro": "Fietsstops, wandelpaklijst en verhalen over de windhonden van Wachau.",
+    "komoot_hike_link": "Wandelroutes bekijken op Komoot"
   },
   "pl": {
     "lang_name": "PL",
@@ -663,7 +671,8 @@
     "closure_notice_text": "Od 19 października do przewidywanego 20 listopada 2026 r. całkowicie zamknięty jest tylko wskazany odcinek Glatzberg/Bachleiten. Leśna droga Bachleiten również jest zamknięta i nie może służyć jako trasa zastępcza. Komunikat dotyczy wyłącznie tego odcinka i nie potwierdza aktualnego stanu innych etapów.",
     "closure_notice_link": "Oficjalny komunikat gminy Aggsbach (14 października 2026 r.)",
     "guides_hub_title": "Bezpłatne przewodniki po Wachau",
-    "guides_hub_intro": "Przystanki rowerowe, lista na wędrówkę i historie chartów z Wachau."
+    "guides_hub_intro": "Przystanki rowerowe, lista na wędrówkę i historie chartów z Wachau.",
+    "komoot_hike_link": "Trasy piesze na Komoot"
   },
   "it": {
     "lang_name": "IT",
@@ -737,7 +746,8 @@
     "closure_notice_text": "Dal 19 ottobre al 20 novembre 2026 circa è completamente chiuso solo il tratto indicato di Glatzberg/Bachleiten. Anche la strada forestale di Bachleiten è chiusa e non può essere usata come percorso alternativo. L’avviso riguarda solo questo tratto e non conferma lo stato attuale delle altre tappe.",
     "closure_notice_link": "Avviso ufficiale del Comune di Aggsbach (14 ottobre 2026)",
     "guides_hub_title": "Guide gratuite della Wachau",
-    "guides_hub_intro": "Soste in bici, lista escursionistica e storie dei levrieri della Wachau."
+    "guides_hub_intro": "Soste in bici, lista escursionistica e storie dei levrieri della Wachau.",
+    "komoot_hike_link": "Escursioni su Komoot"
   },
   "ch": {
     "lang_name": "CH",
@@ -811,7 +821,8 @@
     "closure_notice_text": "Vom 19.10. bis voraussichtlich 20.11.2026 isch nume de bezeichneti Abschnitt Glatzberg/Bachleiten vollständig gsperrt. Au d Bachleiten-Forststrass isch gsperrt und kei Uswiichroute. D Mitteilg betrifft nume dä Abschnitt und seit nüt über de aktuelle Zustand vo andere Etappe us.",
     "closure_notice_link": "Amtlichi Mitteilg vo de Gmeind Aggsbach (14.10.2026)",
     "guides_hub_title": "Kostenlose Wachau-Guides",
-    "guides_hub_intro": "Velopausen, Welterbesteig-Packliste und Geschichten der Wilden Wachauer Windis."
+    "guides_hub_intro": "Velopausen, Welterbesteig-Packliste und Geschichten der Wilden Wachauer Windis.",
+    "komoot_hike_link": "Wanderwege auf Komoot ansehen"
   },
   "ar": {
     "lang_name": "AR",
@@ -882,6 +893,7 @@
     "walking_collection": "عرض المسارات الدائرية والمرحلتين 6 و7 من Welterbesteig",
     "languages_more": "المزيد من اللغات",
     "guides_hub_title": "أدلة مجانية لمنطقة فاخاو",
-    "guides_hub_intro": "استراحات لركوب الدراجات وقائمة تجهيزات المشي وحكايات كلاب الصيد."
+    "guides_hub_intro": "استراحات لركوب الدراجات وقائمة تجهيزات المشي وحكايات كلاب الصيد.",
+    "komoot_hike_link": "استكشف مسارات المشي على كوموت"
   }
 }
