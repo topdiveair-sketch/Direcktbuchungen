@@ -227,6 +227,23 @@
   </section>
   {% endif %}
 
+  {% if 'donauradweg' in canonical or 'welterbesteig' in canonical or 'radfahrer' in canonical or 'wanderer' in canonical %}
+  <section class="story-section" aria-label="Fahrrad- und Wander-Service">
+    <div>
+      <span class="eyebrow">Etappenkomfort in Aggsbach Markt</span>
+      <h2>Worauf es beim Rad- und Wanderurlaub wirklich ankommt</h2>
+      <p><strong>Fahrrad sicher unterstellen:</strong> Für Übernachtungsgäste steht ein abschließbarer Fahrradschuppen zur Verfügung. E-Bike-Laden ist bei uns für Gäste möglich, nicht als öffentliche Ladesäule.</p>
+      <p><strong>Nasse Ausrüstung:</strong> Trockenmöglichkeiten für Kleidung und Wandersachen bitte mit uns abstimmen. Frühstück gibt es auf Vorbestellung; gewünschte frühe Zeiten vorab anfragen.</p>
+      <p><strong>Etappe statt Wochenpaket:</strong> Bei freien Terminen ist auch eine einzelne Übernachtung im Gartenzimmer für maximal zwei Gäste grundsätzlich möglich.</p>
+    </div>
+    <div class="review-box">
+      <strong>Offizielle Direktbuchung</strong>
+      <small>Verfügbarkeit, Preis und gewünschte Zusatzleistungen direkt beim Gastgeber prüfen – ohne verbindliches Versprechen über freie Termine oder Sonderleistungen.</small>
+      <a href="{{ url_for('index') }}#booking">Gartenzimmer direkt anfragen</a>
+    </div>
+  </section>
+  {% endif %}
+
   <section class="story-section">
     <div>
       <span class="eyebrow">Gartenzimmer</span>
