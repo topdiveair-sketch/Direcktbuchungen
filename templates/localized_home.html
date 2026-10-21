@@ -144,6 +144,95 @@
         </div>
       </section>
 
+      {% set restaurant_copy = {
+  "en": {
+    "title": "Food & dining in Aggsbach Markt",
+    "info": "Our local restaurant tip by the Danube. Check current opening hours with the restaurant.",
+    "site": "Restaurant website",
+    "menu": "Menu",
+    "jause": "Our own Wachau snack platter is available directly at Zuhause am Bach by advance order only, not from the restaurant."
+  },
+  "cs": {
+    "title": "Jídlo a gastronomické zážitky v Aggsbach Markt",
+    "info": "Náš tip na restauraci u Dunaje. Otevírací dobu si ověřte přímo v restauraci.",
+    "site": "Web restaurace",
+    "menu": "Jídelní lístek",
+    "jause": "Naši vlastní studenou mísu si můžete objednat předem přímo v ubytování Zuhause am Bach; restaurace ji neposkytuje."
+  },
+  "sk": {
+    "title": "Jedlo a gastronómia v Aggsbach Markt",
+    "info": "Náš tip na reštauráciu pri Dunaji. Otváracie hodiny si overte priamo v reštaurácii.",
+    "site": "Web reštaurácie",
+    "menu": "Jedálny lístok",
+    "jause": "Našu vlastnú studenú misu si môžete objednať vopred priamo v ubytovaní Zuhause am Bach, nie v reštaurácii."
+  },
+  "hu": {
+    "title": "Étkezés és gasztronómia Aggsbach Marktban",
+    "info": "Helyi étteremajánlónk a Duna partján. A nyitvatartást ellenőrizze az étteremnél.",
+    "site": "Étterem honlapja",
+    "menu": "Étlap",
+    "jause": "Saját wachaui hidegtálunk kizárólag előrendeléssel érhető el a Zuhause am Bach szálláson, nem az étteremben."
+  },
+  "nl": {
+    "title": "Eten en genieten in Aggsbach Markt",
+    "info": "Onze restauranttip aan de Donau. Controleer de actuele openingstijden bij het restaurant.",
+    "site": "Website restaurant",
+    "menu": "Menukaart",
+    "jause": "Onze eigen Wachau-hapjesschotel is alleen vooraf te bestellen bij Zuhause am Bach, niet bij het restaurant."
+  },
+  "pl": {
+    "title": "Jedzenie i smaki Aggsbach Markt",
+    "info": "Polecana przez nas restauracja nad Dunajem. Sprawdź godziny otwarcia bezpośrednio w restauracji.",
+    "site": "Strona restauracji",
+    "menu": "Menu",
+    "jause": "Naszą własną deskę przysmaków zamówisz z wyprzedzeniem w Zuhause am Bach, a nie w restauracji."
+  },
+  "it": {
+    "title": "Cibo e gusto ad Aggsbach Markt",
+    "info": "Il nostro ristorante consigliato sul Danubio. Controllate gli orari direttamente con il ristorante.",
+    "site": "Sito del ristorante",
+    "menu": "Menù",
+    "jause": "Il nostro tagliere della Wachau è disponibile presso Zuhause am Bach solo su prenotazione anticipata, non al ristorante."
+  },
+  "es": {
+    "title": "Comer y disfrutar en Aggsbach Markt",
+    "info": "Nuestro restaurante recomendado junto al Danubio. Consulte sus horarios directamente con el restaurante.",
+    "site": "Web del restaurante",
+    "menu": "Carta",
+    "jause": "Nuestra tabla de especialidades se ofrece en Zuhause am Bach solo por encargo previo, no en el restaurante."
+  },
+  "fr": {
+    "title": "Manger et savourer à Aggsbach Markt",
+    "info": "Notre restaurant conseillé au bord du Danube. Vérifiez les horaires directement auprès du restaurant.",
+    "site": "Site du restaurant",
+    "menu": "Carte",
+    "jause": "Notre plateau maison est proposé chez Zuhause am Bach uniquement sur commande préalable, pas au restaurant."
+  },
+  "ch": {
+    "title": "Essen & Gnüsse in Aggsbach Markt",
+    "info": "Üse Restauranttipp a de Donau. D Öffnigsziite bitte direkt bim Restaurant prüefe.",
+    "site": "Restaurant-Websiite",
+    "menu": "Spiiskarte",
+    "jause": "Üsi eigeti Wachauer Jause git's nume uf Vorbstellig bi Zuhause am Bach, nöd im Restaurant."
+  },
+  "ar": {
+    "title": "الطعام والمذاقات في أغسباخ ماركت",
+    "info": "مطعم نوصي به على ضفاف الدانوب. يرجى التحقق من مواعيد العمل مباشرة لدى المطعم.",
+    "site": "موقع المطعم",
+    "menu": "قائمة الطعام",
+    "jause": "طبق المأكولات الخاص بنا متوفر في Zuhause am Bach عند الطلب المسبق فقط، وليس في المطعم."
+  }
+} %}
+      {% set rc = restaurant_copy.get(lang,restaurant_copy["en"]) %}
+      <section class="card wide" id="essen-genuss" aria-labelledby="essen-genuss-title">
+        <h2 id="essen-genuss-title">{{ rc.title }}</h2>
+        <h3>🍽️ Restaurant Genussterrasse</h3>
+        <p>{{ rc.info }}</p>
+        <p><a href="https://www.restaurant-genussterrasse.at/" target="_blank" rel="noopener noreferrer">{{ rc.site }} ↗</a> · <a href="https://www.restaurant-genussterrasse.at/speisen/" target="_blank" rel="noopener noreferrer">{{ rc.menu }} ↗</a></p>
+        <h3>🥨 {{ t.snack_title }}</h3>
+        <p>{{ rc.jause }}</p>
+      </section>
+
       <section class="card wide">
         <div class="eyebrow">{{ t.direct_eyebrow }}</div>
         <h2>{{ t.direct_title }}</h2>
