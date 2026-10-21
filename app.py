@@ -2210,6 +2210,22 @@ def review_page():
     )
 
 
+# SEO / AEO: redaktionelle Gastgeber-Guides ohne Einfluss auf Buchungslogik.
+@app.get("/radpausen-donauradweg-wachau")
+def guide_radpausen_donauradweg_wachau():
+    return render_template("guides/radpausen-donauradweg-wachau.html")
+
+
+@app.get("/welterbesteig-wachau-packliste")
+def guide_welterbesteig_wachau_packliste():
+    return render_template("guides/welterbesteig-wachau-packliste.html")
+
+
+@app.get("/urlaub-wilde-wachauer-windis")
+def guide_urlaub_wilde_wachauer_windis():
+    return render_template("guides/urlaub-wilde-wachauer-windis.html")
+
+
 @app.get("/partner")
 def partner_page():
     return render_template(
@@ -2433,6 +2449,9 @@ def public_sitemap_urls():
         "https://www.zuhauseambach-wachau.at/winterurlaub-wachau",
         "https://www.zuhauseambach-wachau.at/business-unterkunft-melk-krems",
         "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
+        "https://www.zuhauseambach-wachau.at/radpausen-donauradweg-wachau",
+        "https://www.zuhauseambach-wachau.at/welterbesteig-wachau-packliste",
+        "https://www.zuhauseambach-wachau.at/urlaub-wilde-wachauer-windis",
         "https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau",
         "https://www.zuhauseambach-wachau.at/wachau-aktivurlaub-2027-2028",
         "https://www.zuhauseambach-wachau.at/wachau-events-2027-2028",
