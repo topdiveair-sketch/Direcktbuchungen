@@ -17,6 +17,12 @@
       "source": "Booking iCal Sicherheitsabgleich"
     },
     {
+      "start": "2026-12-16",
+      "end": "2026-12-17",
+      "summary": "CLOSED - Not available",
+      "source": "Booking iCal Sicherheitsabgleich"
+    },
+    {
       "start": "2026-12-19",
       "end": "2027-01-11",
       "summary": "CLOSED - Not available",
@@ -35,12 +41,12 @@
       "source": "Booking iCal Sicherheitsabgleich"
     },
     {
-      "start": "2027-10-24",
+      "start": "2027-10-25",
       "end": "2028-04-25",
       "summary": "CLOSED - Not available",
       "source": "Booking iCal Sicherheitsabgleich"
     }
   ],
-  "updatedAt": "25.10.2026, 13:07:54",
-  "updatedAtIso": "2026-10-25T12:07:54.809Z"
+  "updatedAt": "25.10.2026, 17:10:58",
+  "updatedAtIso": "2026-10-25T16:10:58.029Z"
 }
