@@ -2248,6 +2248,12 @@ def guide_welterbesteig_wachau_packliste():
     return render_template("guides/welterbesteig-wachau-packliste.html")
 
 
+@app.get("/mariandl-aggsbach-markt")
+def mariandl_aggsbach_markt():
+    """Regionale Filmgeschichte auf einer eigenen, vom Checkout getrennten Seite."""
+    return render_template("mariandl-aggsbach-markt.html")
+
+
 @app.get("/urlaub-wilde-wachauer-windis")
 def guide_urlaub_wilde_wachauer_windis():
     return render_template("guides/urlaub-wilde-wachauer-windis.html")
