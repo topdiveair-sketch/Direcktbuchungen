@@ -87,7 +87,7 @@ Zwecke und Rechtsgrundlagen
 Die Verarbeitung erfolgt zur Bearbeitung von Buchungen und Anfragen, zur Durchführung des Aufenthalts, zur Kommunikation mit Gästen, zur Zahlungsabwicklung, zur Rechnungslegung, zur Erfüllung gesetzlicher Pflichten sowie zur Sicherstellung eines stabilen und sicheren Betriebs. Rechtsgrundlagen sind insbesondere Vertragserfüllung bzw. vorvertragliche Maßnahmen, gesetzliche Verpflichtungen und berechtigte Interessen am sicheren Betrieb.
 
 Zahlungsabwicklung
-Bei Auswahl von PayPal werden die für die Zahlung erforderlichen Daten im Rahmen des PayPal-Checkouts verarbeitet. PayPal verarbeitet Zahlungsdaten nach den eigenen Datenschutzbestimmungen. Bei Banküberweisung werden auf dieser Website unsere Bankdaten angezeigt; die eigentliche Überweisung erfolgt über das vom Gast verwendete Kreditinstitut.
+Bei Auswahl von PayPal werden die für die Zahlung erforderlichen Daten im Rahmen des PayPal-Checkouts verarbeitet. Für Debit- und Kreditkartenzahlungen erfolgt die Weiterleitung zum Zahlungsdienstleister Stripe; die hierfür erforderlichen Bestell- und Kontaktdaten werden an Stripe übertragen. Die Zahlungsdienstleister verarbeiten Zahlungsdaten nach ihren jeweiligen Datenschutzbestimmungen. Bei Banküberweisung werden die Bankverbindungsdaten des Gastgebers angezeigt; die Überweisung erfolgt über das vom Gast gewählte Kreditinstitut.
 
 Technischer Betrieb
 Die Website und zugehörige Serverfunktionen werden auf Railway betrieben. Für den E-Mail-Versand wird ein SMTP-Dienst genutzt. Externe Links, etwa zu Google Maps oder zur Gäste-App, werden erst durch aktives Anklicken aufgerufen.
@@ -110,13 +110,15 @@ Die auf der Website angezeigte Verfügbarkeit wird unmittelbar vor Abschluss ern
 
 Bei erfolgreicher PayPal-Zahlung wird die Buchung nach serverseitiger Zahlungsbestätigung als bestätigt markiert und der Zeitraum verbindlich reserviert.
 
-Bei Auswahl von Banküberweisung oder Zahlung vor Ort wird zunächst eine Buchungsanfrage übermittelt. Diese Anfrage blockiert den Zeitraum noch nicht. Erst nach persönlicher Bestätigung wird der Termin verbindlich reserviert.
+Bei Banküberweisung entsteht durch den Buchungsabschluss eine verbindliche Zimmerreservierung. Der Zeitraum wird sofort im Direktbuchungskalender blockiert. Die Zahlung muss innerhalb von 48 Stunden als Zahlungseingang erfasst sein, andernfalls wird die unbezahlte Reservierung automatisch aufgehoben. Eine verspätete Überweisung bitte umgehend melden.
+
+Zahlung vor Ort ist keine automatisch verfügbare Online-Zahlungsart. Sie kann nur nach vorheriger gesonderter Vereinbarung angeboten werden.
 
 2. Preise
 Alle auf der Website dargestellten Preise verstehen sich in Euro. Der im Buchungsprozess ausgewiesene Gesamtpreis berücksichtigt die ausgewählten Zusatzleistungen und gegebenenfalls gültige Rabatte. Gesetzliche Abgaben oder Ortstaxen können zusätzlich anfallen, sofern sie nicht ausdrücklich als enthalten ausgewiesen sind.
 
 3. Zahlung
-PayPal-Zahlungen werden über den sicheren PayPal-Checkout abgewickelt und führen nach erfolgreicher serverseitiger Zahlungsbestätigung zur verbindlichen Reservierung. Bei Banküberweisung werden Kontoinhaber, IBAN, Betrag und Verwendungszweck angezeigt; die Überweisung soll erst nach persönlicher Buchungsbestätigung erfolgen. Bei Zahlung vor Ort ist der Betrag nach bestätigter Buchung bei Anreise fällig, sofern nichts anderes vereinbart wurde.
+PayPal-Zahlungen werden im PayPal-Checkout abgewickelt und nach serverseitig bestätigtem Zahlungserfolg verbindlich gebucht. Debit- und Kreditkartenzahlungen erfolgen über Stripe; die Buchung wird erst nach serverseitiger Zahlungsbestätigung verbindlich. Bei Banküberweisung werden nach dem verbindlichen Buchungsabschluss Kontoinhaber, IBAN, Betrag und Verwendungszweck angezeigt. Die 48-Stunden-Frist beginnt mit dem Buchungsabschluss. Bei gesondert vereinbarter Zahlung vor Ort gilt ausschließlich die individuelle Vereinbarung.
 
 4. Check-in und Check-out
 Check-in ist grundsätzlich ab 14:00 Uhr möglich, Check-out bis 10:00 Uhr. Abweichungen bedürfen einer vorherigen Vereinbarung.
@@ -125,7 +127,9 @@ Check-in ist grundsätzlich ab 14:00 Uhr möglich, Check-out bis 10:00 Uhr. Abwe
 Gäste verpflichten sich zu einem sorgfältigen Umgang mit Unterkunft, Inventar und Hausumgebung. Schäden sind unverzüglich zu melden. Zusätzliche Gäste, Veranstaltungen, Rauchen oder Haustiere bedürfen einer ausdrücklichen Vereinbarung, soweit sie nicht bereits Bestandteil der bestätigten Buchung sind.
 
 6. Stornierung
-Es gelten die auf der Website veröffentlichten Stornobedingungen sowie gegebenenfalls abweichende Bedingungen in der individuellen Buchungsbestätigung.
+Bei der Flexiblen Rate ist die Stornierung bis sieben Tage vor Anreise kostenlos. Bei späterer Stornierung gelten die gesondert veröffentlichten Stornobedingungen und gegebenenfalls die vor der Buchung individuell vereinbarten Bedingungen. Die Höhe möglicher Kosten muss für Gäste vor der verbindlichen Buchung nachvollziehbar sein.
+
+Für eine datumsgebundene touristische Beherbergung besteht grundsätzlich kein gesetzliches 14-tägiges Rücktrittsrecht nach § 18 Abs. 1 Z 10 FAGG. Das vertraglich vereinbarte Stornierungsrecht bleibt davon unberührt.
 
 7. Anwendbares Recht
 Es gilt österreichisches Recht, soweit keine zwingenden verbraucherschützenden Vorschriften entgegenstehen."""),
