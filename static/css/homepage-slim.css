@@ -81,3 +81,35 @@
  .zab-slim .booking-card{padding:16px 12px}
  .zab-slim .zab-terms-ack span{min-width:0;overflow-wrap:anywhere}
 }
+
+/* Mobile screenshot QA: constrain intrinsic gallery width rather than masking overflow. */
+@media(max-width:700px){
+  .zab-slim .room-list,.zab-slim .booking-grid,.zab-slim .guest-grid,
+  .zab-slim .booking-card,.zab-slim .room-option{
+    min-width:0!important;max-width:100%!important;box-sizing:border-box;
+  }
+  .zab-slim .room-list{display:grid;grid-template-columns:minmax(0,1fr)!important}
+  .zab-slim .room-option{grid-template-columns:82px minmax(0,1fr)!important}
+  .zab-slim .room-copy,.zab-slim .room-price{min-width:0!important;max-width:100%;overflow-wrap:anywhere}
+  .zab-slim .zab-room-gallery{
+    display:block;width:100%;max-width:100%;min-width:0!important;
+    box-sizing:border-box;overflow:hidden;
+  }
+  .zab-slim .zab-gallery-thumbs{
+    min-width:0!important;max-width:100%;width:100%;
+    display:grid;grid-template-columns:repeat(5,72px);gap:8px;
+    overflow-x:auto;overflow-y:hidden;box-sizing:border-box;
+    overscroll-behavior-x:contain;scrollbar-width:thin;
+  }
+  .zab-slim .zab-gallery-head,.zab-slim .zab-gallery-actions{min-width:0;max-width:100%}
+  .zab-slim .total-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 12px}
+  .zab-slim .total-row>*{min-width:0!important;max-width:100%;overflow-wrap:anywhere}
+  .zab-slim .total-row>strong{text-align:right}
+  .zab-slim .booking-summary-grid{min-width:0;grid-template-columns:minmax(0,1fr)}
+  .zab-slim .booking-summary-row{min-width:0;overflow-wrap:anywhere}
+  .zab-slim .hero-actions .hero-secondary{
+    color:#fff!important;border:1px solid rgba(255,255,255,.85)!important;
+    background:rgba(0,0,0,.4)!important;text-shadow:0 1px 4px #000!important;
+  }
+  .zab-slim .hero-actions .hero-secondary:hover{color:#fff!important;background:rgba(0,0,0,.65)!important}
+}
