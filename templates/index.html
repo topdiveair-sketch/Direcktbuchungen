@@ -346,14 +346,14 @@
   .zab-direct-assurance p{margin:6px 0 0;font-size:.95rem;line-height:1.5}
   @media(max-width:600px){.zab-direct-assurance{padding:12px;margin:10px 0 14px}.zab-direct-assurance p{font-size:.92rem}}
   </style>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/homepage-slim.css') }}?v=20261026-slim1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/homepage-slim.css') }}?v=20261026-trust-checkout1">
 </head>
 <body class="zab-slim">
 <header class="hero hero-room hero-mobile-clean" id="start">
   <nav class="topbar">
     <a class="brand" href="#start">
       <span class="logo-mark">⌂</span>
-      <span>Zuhause am Bach<small>Gästehaus Wachau</small></span>
+      <span>Zuhause am Bach<small>Privatzimmer Wachau</small></span>
     </a>
     <div class="nav-links">
       <a href="#ausstattung">Zimmer &amp; Ausstattung</a>
@@ -373,11 +373,11 @@
 
   <div class="hero-content">
     <h1>Unterkunft in der Wachau zwischen Melk und Krems</h1>
-    <p>Privates Gartenzimmer mit eigenem Badezimmer in Aggsbach Markt · ab 99 € pro Nacht · auch 1 Nacht grundsätzlich möglich · Preis und Verfügbarkeit direkt prüfen</p>
+    <p>Privates Gartenzimmer mit exklusivem Bad direkt gegenüber in Aggsbach Markt · ab 99 € pro Nacht · auch 1 Nacht grundsätzlich möglich · Preis und Verfügbarkeit direkt prüfen</p>
     {% if google_landing %}<div class="google-trust">🚴 Fahrradunterbringung · ⚡ E-Bike laden · 🥾 Welterbesteig · 🍳 Frühstück auf Wunsch</div>{% endif %}
     <div class="hero-actions"><a class="btn" href="#booking">Verfügbarkeit &amp; Preis prüfen</a><a class="hero-secondary" href="#ausstattung">Zimmer ansehen</a></div>
     <div class="hero-proof"><strong>Gartenzimmer ab 99 € / Nacht</strong> · 1 Nacht grundsätzlich möglich · Flexible Rate · kostenfrei stornierbar bis 7 Tage vor Anreise</div>
-    <div class="hero-proof"><strong>★ 4,9 Google · 9 Rezensionen</strong> · <strong>8,8/10 Booking · 50 Bewertungen</strong> · Gastgeber 9,8/10</div>
+    <div class="hero-proof">Gästebewertungen: <a href="{{ settings.google_review_url }}" target="_blank" rel="noopener noreferrer">Google</a> · <a href="https://www.booking.com/hotel/at/zu-hause-am-bach.de.html" target="_blank" rel="noopener noreferrer">Booking.com</a> (aktuelle Bewertungen direkt bei den Portalen)</div>
     <div class="hero-proof">🐾 Fidel, Gloria und Pia leben als Teil unserer Familie im Haus und bewegen sich auch in gemeinschaftlichen Bereichen. Gäste sollten sich mit Hunden im Haus wohlfühlen.</div>
 </div>
 </header>
@@ -411,15 +411,15 @@
         <span class="section-icon">▣</span>
         <div>
           <h2>Verfügbarkeit &amp; Preis</h2>
-          <p>Auch lange im Voraus planen: Reisedaten bis {{ booking_horizon_year }} prüfen und direkt anfragen.</p>
+          <p>1. Reisedaten wählen · 2. Gesamtpreis prüfen · 3. Zahlungsart wählen und Buchung abschließen.</p>
         </div>
       </div>
       <aside class="zab-direct-assurance" aria-label="Dein Direktbucher-Vorteil">
-        <strong>Deine persönliche Unterkunft in Aggsbach Markt – direkt beim Gastgeber anfragen</strong>
-        <p>Ein Gartenzimmer für maximal zwei Gäste, auch einzelne Nächte grundsätzlich möglich. Bei uns siehst du den verfügbaren Termin und den aktuellen Direktpreis ohne Umweg über ein Buchungsportal. Abschließbarer Fahrradraum, E-Bike-Laden für Übernachtungsgäste und Frühstück auf Vorbestellung. Verbindlich ist die bestätigte Buchung.</p>
+        <strong>Direkt buchen – mit vollständiger Preisübersicht</strong>
+        <p>Ein Gartenzimmer für zwei Gäste. Bei PayPal und Karte wird die Buchung nach bestätigter Zahlung verbindlich. Bei Banküberweisung reservieren wir das Zimmer sofort nach dem Buchungsabschluss; die Zahlung muss innerhalb von 48 Stunden eingehen.</p>
       </aside>
 
-      <p class="zab-short-note">Ein Gartenzimmer für maximal zwei Gäste · auch eine Nacht möglich · Gesamtpreis vor dem Abschluss sichtbar.</p>
+      <p class="zab-short-note">Eine Nacht grundsätzlich möglich · Gesamtpreis vor dem letzten Buchungsschritt sichtbar.</p>
 
       <form id="bookingForm" action="{{ url_for('book') }}" method="post">
         <input type="hidden" name="idempotency_key" id="idempotencyKey">
@@ -428,6 +428,26 @@
         <input type="hidden" name="utm_campaign" id="bookingUtmCampaign">
         <input type="hidden" name="landing_page" id="bookingLandingPage">
         <input type="hidden" name="referrer" id="bookingReferrer">
+        <div class="booking-grid">
+          <label>Anreise
+            <input type="date" id="arrival" name="arrival" aria-label="Anreisedatum" title="Anreisedatum" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
+          </label>
+          <label>Abreise
+            <input type="date" id="departure" name="departure" aria-label="Abreisedatum" title="Abreisedatum" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
+          </label>
+          <label>Nächte
+            <input type="text" id="nights" value="0" readonly>
+          </label>
+          <label>Personen
+            <select id="adults" name="adults">
+              <option value="1">1 Erwachsener</option>
+              <option value="2" selected>2 Erwachsene</option>
+            </select>
+          </label>
+          <button class="btn check-main" type="button" id="checkAvailability">VERFÜGBARKEIT PRÜFEN</button>
+        </div>
+
+        <details class="zab-extras-details"><summary>🍳 Frühstück, Jause und Gepäcktransport (optional)</summary><p class="small">Extras auswählen und die Verfügbarkeit einschließlich Gesamtpreis prüfen. Nach Änderungen bitte erneut prüfen.</p>
         <section class="booking-services" aria-label="Zusatzleistungen">
           <div class="service-heading">
             <span>Auf Wunsch gleich dazu</span>
@@ -456,25 +476,7 @@
           </label>
           {% endif %}
         </section>
-
-        <div class="booking-grid">
-          <label>Anreise
-            <input type="date" id="arrival" name="arrival" aria-label="Anreisedatum" title="Anreisedatum" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
-          </label>
-          <label>Abreise
-            <input type="date" id="departure" name="departure" aria-label="Abreisedatum" title="Abreisedatum" min="{{ today }}" max="{{ booking_horizon_year }}-12-31" required>
-          </label>
-          <label>Nächte
-            <input type="text" id="nights" value="0" readonly>
-          </label>
-          <label>Personen
-            <select id="adults" name="adults">
-              <option value="1">1 Erwachsener</option>
-              <option value="2" selected>2 Erwachsene</option>
-            </select>
-          </label>
-          <button class="btn check-main" type="button" id="checkAvailability">VERFÜGBARKEIT PRÜFEN</button>
-        </div>
+        </details>
 
         <div id="availabilityResult" class="availability-result hidden"></div>
 
@@ -503,7 +505,7 @@
             <span class="room-copy">
               <strong>Gartenzimmer</strong>
               <small>Ruhiges Doppelzimmer mit persönlicher Atmosphäre – gemütlich und zum Wohlfühlen.</small>
-              <span class="room-features">Doppelbett · eigenes Bad · WLAN · ruhige Lage</span>
+              <span class="room-features">Doppelbett · exklusives Bad gegenüber · WLAN · ruhige Lage</span>
             </span>
             <span class="room-price">
               <strong>ab 99 €</strong>
@@ -551,7 +553,7 @@
           ✓ Kostenfrei stornierbar bis 7 Tage vor Anreise
         </div>
 
-        <div class="zab-windis-reassure"><strong>Dein Gartenzimmer – dein Termin – dein Direktpreis.</strong> Du siehst vor dem Buchen den Gesamtpreis einschließlich deiner gewählten Extras. Und bei Fragen sind wir persönlich für dich da.</div>
+        <p class="zab-short-note">Gesamtpreis inklusive gewählter Extras nach Terminprüfung. Die Zahlungsarten folgen im letzten Schritt.</p>
         <div class="booking-trust-strip" aria-label="Vorteile der Direktbuchung">
           <div><strong>✓ Direkt beim Gastgeber</strong><small>Ohne Buchungsportal dazwischen.</small></div>
           <div><strong>✓ Klarer Preis</strong><small>Gesamtpreis nach Terminprüfung sichtbar.</small></div>
@@ -566,7 +568,7 @@
         {% endif %}
 
         <div id="guestArea" class="guest-area hidden">
-          <p class="zab-windis-reassure"><strong>Wie schön, dass du die Wachau bei uns erleben möchtest!</strong> Fidel, Gloria und Pia freuen sich mit dir auf deinen Besuch und haben jede Menge Wachau-Tipps vorbereitet.</p>
+          <p class="zab-short-note">Fast geschafft: Gästedaten ergänzen, Gesamtpreis kontrollieren und Zahlungsart wählen.</p>
           <div class="checkout-step-note">Schritt 2 von 3</div>
           <h3>Gästedaten</h3>
           <div class="guest-grid">
@@ -601,7 +603,7 @@
           <div class="payment-grid">
             <label><input type="radio" name="payment_method" value="PayPal" checked><span><strong>PayPal</strong><small>{{ paypal_email }}</small></span></label>
             <label id="stripePaymentOption" style="display:none"><input type="radio" name="payment_method" value="Stripe"><span><strong>Debit- oder Kreditkarte</strong><small>Sichere Kartenzahlung über Stripe</small><span class="card-brand-logos" aria-label="Visa und Mastercard" style="display:inline-flex;gap:6px;align-items:center;margin-top:5px"><span aria-label="Visa" style="font:italic 800 14px Arial,sans-serif;color:#174b9b;background:#fff;border:1px solid #d5dce5;border-radius:4px;padding:3px 6px">VISA</span><span aria-label="Mastercard" style="display:inline-flex;align-items:center;background:#fff;border:1px solid #d5dce5;border-radius:4px;padding:5px 7px"><svg width="34" height="20" viewBox="0 0 34 20" role="img" aria-label="Mastercard" xmlns="http://www.w3.org/2000/svg"><circle cx="13" cy="10" r="9" fill="#eb001b"/><circle cx="21" cy="10" r="9" fill="#f79e1b" fill-opacity=".91"/></svg></span></span></span></label>
-             <label><input type="radio" name="payment_method" value="Banküberweisung"><span><strong>Banküberweisung</strong><small>IBAN wird sofort angezeigt</small></span></label>
+             <label><input type="radio" name="payment_method" value="Banküberweisung"><span><strong>Banküberweisung</strong><small>Verbindliche Reservierung · 48 Stunden Zahlungsfrist</small></span></label>
             <p class="small">Zahlung vor Ort ist derzeit nicht online buchbar, sondern nur nach vorheriger persönlicher Vereinbarung möglich.</p>
           </div>
           <div id="paymentNotice" class="legal-note" style="display:block;margin:10px 0 12px"></div>
@@ -609,11 +611,12 @@
             <strong>Banküberweisung</strong><br>
             Kontoinhaber: <strong>{{ bank_account_holder }}</strong><br>
             IBAN: <strong>{{ bank_iban_display or bank_iban }}</strong><br>
-            Der genaue Betrag und Verwendungszweck werden angezeigt. Bitte erst nach unserer persönlichen Buchungsbestätigung überweisen.
+            Betrag und Verwendungszweck werden nach Buchungsabschluss angezeigt. Die Zahlungsfrist beträgt 48 Stunden; ohne verbuchten Zahlungseingang wird die Reservierung wieder freigegeben.
           </div>
 
-          <button class="btn full" id="bookingSubmit" type="submit">JETZT DIREKT BUCHEN</button>
-          <small class="legal-note">Die Anfrage wird sofort im Direktbuchungskalender vorgemerkt. Die persönliche Bestätigung folgt anschließend.</small>
+          <label class="zab-terms-ack"><input type="checkbox" id="termsAccepted" name="conditions_acknowledged" required><span>Ich habe die <a href="/legal/agb" target="_blank" rel="noopener noreferrer">Buchungsbedingungen</a> und <a href="/legal/storno" target="_blank" rel="noopener noreferrer">Stornobedingungen</a> gelesen. <a href="/legal/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a></span></label>
+          <p class="zab-short-note" id="bookingContractNotice">Bei PayPal/Karte wird die Buchung nach bestätigter Zahlung verbindlich. Bei Banküberweisung ist die Buchung sofort verbindlich und innerhalb von 48 Stunden zu bezahlen.</p>
+          <button class="btn full" id="bookingSubmit" type="submit">ZAHLUNGSPFLICHTIG BUCHEN</button>
         </div>
       </form>
     </div>
@@ -721,7 +724,7 @@
     <details><summary>Wo befindet sich das Badezimmer?</summary><p>Das ausschließlich zum Gartenzimmer gehörende Privatbad liegt direkt gegenüber auf dem Flur, nicht im Zimmer.</p></details>
     <details><summary>Sind Fahrradschuppen, E-Bike-Laden und Parkplatz vorhanden?</summary><p>Ja. Abschließbare Fahrradunterbringung, kostenlose E-Bike-Lademöglichkeit für Übernachtungsgäste, WLAN und Parkplatz sind vorhanden. Werkzeug nach Absprache; wir sind kein Fahrradfachbetrieb.</p></details>
     <details><summary>Kann ich Frühstück oder eine Jause bestellen?</summary><p>Ja, jeweils auf Vorbestellung. Die aktuellen Preise und verfügbaren Zusatzleistungen stehen im Buchungsformular.</p></details>
-    <details><summary>Wie funktionieren Zahlung und Stornierung?</summary><p>Die verfügbaren Zahlungsarten werden im Buchungsformular angezeigt. Bei Banküberweisung ist die rechtzeitige Zahlung erforderlich. Die Flexible Rate ermöglicht kostenfreie Stornierung bis sieben Tage vor Anreise; maßgeblich sind die Buchungsbedingungen und die Buchungsbestätigung.</p></details>
+    <details><summary>Wie funktionieren Zahlung und Stornierung?</summary><p>Die verfügbaren Zahlungsarten werden im Buchungsformular angezeigt. Bei Banküberweisung ist die rechtzeitige Zahlung erforderlich. Die Flexible Rate ermöglicht kostenfreie Stornierung bis sieben Tage vor Anreise. Vor der Buchung die verlinkten Stornobedingungen lesen.</p></details>
     <details><summary>Wohnen Hunde im Haus?</summary><p>Ja. Fidel, Gloria und Pia leben als Familienhunde im Haus und halten sich auch in gemeinschaftlich genutzten Bereichen auf. Eigene Haustiere der Gäste können nicht mitgebracht werden.</p></details>
     <p class="zab-slim-contact">Noch Fragen? <a href="#kontakt">Kontakt und Buchungsbedingungen</a> findest du unten auf der Seite.</p>
     <a class="btn zab-slim-last-cta" href="#booking">Verfügbarkeit &amp; Preis prüfen</a>
@@ -742,7 +745,8 @@
   <a class="admin-link" href="{{ url_for('legal_page',key='impressum') }}">Impressum</a>
   <a class="admin-link" href="{{ url_for('legal_page',key='datenschutz') }}">Datenschutz</a>
   <a class="admin-link" href="{{ url_for('legal_page',key='agb') }}">Buchungsbedingungen</a>
-  <a class="admin-link" href="{{ url_for('admin_login') }}">Verwaltung</a>
+  <a class="admin-link" href="{{ url_for('legal_page',key='storno') }}">Stornobedingungen</a>
+  
 
   <div class="footer-links" style="margin-top:12px"><a href="{{ url_for('partner_page') }}">Partner & Kooperation</a> · <a href="{{ url_for('review_page') }}">Aufenthalt bewerten</a> · <a href="{{ url_for('future_planning') }}">Wachau 2027/2028 planen</a> · <a href="{{ url_for('wachau_events') }}">Events 2027/2028</a> · <a href="{{ url_for('seo_wachau_dach') }}">Wachau-Urlaub aus Deutschland & Schweiz</a></div>
   <div aria-label="Social Media Zuhause am Bach"><a href="https://www.facebook.com/ZuHauseamBach" target="_blank" rel="me noopener">Facebook</a> · <a href="https://www.instagram.com/altstadthans/" target="_blank" rel="me noopener">Instagram</a></div>
@@ -750,7 +754,7 @@
 
 <div class="mobile-conversion-bar"><span id="stickyLabel">Gartenzimmer ab 99 € / Nacht</span><a href="#booking" id="stickyCta">Verfügbarkeit prüfen</a></div>
 
-<script src="{{ url_for('static', filename='js/app.js') }}?v=20261026-booking-reliability1"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}?v=20261026-trust-checkout1"></script>
 <script>
 (function(){
   const lang=new URLSearchParams(location.search).get("lang");
