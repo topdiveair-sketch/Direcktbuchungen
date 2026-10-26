@@ -82,7 +82,7 @@ class CheckoutGuardTests(unittest.TestCase):
         self.assertNotIn("CHECKOUT_WINDOW_HOURS", code)
         self.assertNotIn("attempt_count >=", code)
         self.assertIn("re.fullmatch(", code)
-        regex = r"[^\\s@]+@[^\\s@]+\\.[^\\s@]+"
+        regex = r"[^\s@]+@[^\s@]+\.[^\s@]+"
         for email in ("guest@example.com", "first.last+stay@example.at"):
             self.assertIsNotNone(re.fullmatch(regex, email))
         for email in ("invalid", "guest @example.com", "guest@example", "a@@b.com"):
