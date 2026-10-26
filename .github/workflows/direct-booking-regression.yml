@@ -26,3 +26,5 @@ jobs:
         run: node --check static/js/app.js
       - name: Check payment and price regressions without network
         run: python -m unittest discover -s tests -p 'test_booking_reliability_20261026.py' -v
+      - name: Check homepage structure, anchor links and booking safety
+        run: python -m unittest discover -s tests -p 'test_homepage_slim.py' -v
