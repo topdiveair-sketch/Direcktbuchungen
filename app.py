@@ -2310,7 +2310,7 @@ def event_landing_context(slug: str) -> dict:
             "eyebrow": "Burgadvent 2026",
             "headline": "Unterkunft zum Burgadvent auf Aggstein 2026",
             "intro": "Der Burgadvent auf Aggstein ist ein besonders früher Advent-Anlass in der Wachau. Zuhause am Bach in Aggsbach Markt eignet sich als ruhige Unterkunft für ein Wochenende zwischen Burg, Donau und Wachau.",
-            "scarcity_text": "Die bestätigten Burgadvent-Wochenenden werden als starke Nachfragefenster behandelt. Freitag und Samstag sind deshalb auf zwei Nächte ausgelegt.",
+            "scarcity_text": "Für diese Veranstaltung kann der Zimmerpreis steigen. Auch eine einzelne Nacht bleibt bei freiem Zimmer direkt buchbar.",
         },
         "melker-advent-2026": {
             "page_title": "Melker Advent 2026 Unterkunft Wachau | Zuhause am Bach",
