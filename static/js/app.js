@@ -37,7 +37,13 @@ const stickyLabel = document.getElementById("stickyLabel");
 const stickyCta = document.getElementById("stickyCta");
 const paymentRadios = [...document.querySelectorAll('input[name="payment_method"]')];
 const paymentNotice = document.getElementById("paymentNotice");
-const bankTransferDetails = document.getElementById("bankTransferDetails");
+const bankDetailsAfterBooking = document.getElementById("bankDetailsAfterBooking");
+const taxAmount = document.getElementById("taxAmount");
+const stayTotal = document.getElementById("stayTotal");
+const taxCostNote = document.getElementById("taxCostNote");
+const summaryTax = document.getElementById("summaryTax");
+const summaryStayTotal = document.getElementById("summaryStayTotal");
+const summaryTaxNote = document.getElementById("summaryTaxNote");
 const bookingSummary = document.getElementById("bookingSummary");
 const summaryDates = document.getElementById("summaryDates");
 const summaryNights = document.getElementById("summaryNights");
@@ -48,6 +54,7 @@ const summaryTotal = document.getElementById("summaryTotal");
 let checkoutOpen = false;
 let bookingSubmitted = false;
 let lastQuotedTotal = null;
+let lastTaxQuote = null;
 let guestDetailsTracked = false;
 
 function track(event) {
@@ -111,10 +118,34 @@ function updateBookingSummary() {
   if (summaryGuests) summaryGuests.textContent = adults.value || "–";
   if (summaryPayment) summaryPayment.textContent = selectedPayment();
   if (summaryTotal) summaryTotal.textContent = lastQuotedTotal != null ? euro(lastQuotedTotal) : "–";
+  if (summaryTax) summaryTax.textContent = lastTaxQuote?.known ? euro(lastTaxQuote.amount) : (lastTaxQuote ? "Amtlicher Satz ausständig" : "–");
+  if (summaryStayTotal) summaryStayTotal.textContent = lastTaxQuote?.known && lastQuotedTotal != null
+    ? euro(lastQuotedTotal + lastTaxQuote.amount) : (lastQuotedTotal != null ? "Noch nicht berechenbar" : "–");
+  if (summaryTaxNote) summaryTaxNote.textContent = lastTaxQuote?.known
+    ? "Nächtigungstaxe wird getrennt bei Anreise bezahlt und nicht mit der Online-Zahlung abgebucht."
+    : (lastTaxQuote ? "Für diese Reisedaten liegt noch nicht jeder amtliche Nächtigungstaxensatz vor. Der Buchungsbetrag steht fest, die Gesamtkosten noch nicht." : "Nach der Terminprüfung werden Buchungsbetrag, Nächtigungstaxe und Gesamtkosten aufgeschlüsselt.");
   if (summaryExtras) {
     const labels = extraInputs.filter(el=>el.checked).map(el=>el.closest("label")?.querySelector("strong")?.textContent?.trim()).filter(Boolean);
     summaryExtras.textContent = labels.length ? labels.join(", ") : "Keine";
   }
+}
+
+function renderStayCosts(breakdown) {
+  const tax = breakdown?.overnight_tax;
+  const known = tax?.known === true && Number.isFinite(Number(tax.amount));
+  lastTaxQuote = tax ? {known, amount: known ? Number(tax.amount) : null} : null;
+  if (taxAmount) taxAmount.textContent = known ? euro(tax.amount) : (tax ? "Noch nicht veröffentlicht" : "Keine Steuerdaten");
+  if (stayTotal) stayTotal.textContent = known && lastQuotedTotal != null ? euro(lastQuotedTotal + Number(tax.amount)) : "Noch nicht berechenbar";
+  if (taxCostNote) taxCostNote.textContent = known
+    ? "Dieser Betrag wird getrennt bei Anreise bezahlt; online oder per Überweisung fällt nur der oben genannte Buchungsbetrag an."
+    : "Für einen Teil deiner Reisedaten fehlt noch der amtliche Steuersatz. Die tatsächlichen Gesamtkosten können deshalb noch nicht verbindlich beziffert werden.";
+  updateBookingSummary();
+}
+function clearStayCosts() {
+  lastTaxQuote = null;
+  if (taxAmount) taxAmount.textContent = "Nach Terminprüfung";
+  if (stayTotal) stayTotal.textContent = "Nach Terminprüfung";
+  if (taxCostNote) taxCostNote.textContent = "Nächtigungstaxe wird separat bei Anreise bezahlt.";
 }
 
 function updateTotals() {
@@ -175,8 +206,8 @@ function updatePaymentUI() {
   bookingSubmit.disabled = false;
   bookingSubmit.removeAttribute("aria-busy");
 
-  if (bankTransferDetails) {
-    bankTransferDetails.classList.toggle("hidden", method !== "Banküberweisung");
+  if (bankDetailsAfterBooking) {
+    bankDetailsAfterBooking.hidden = method !== "Banküberweisung";
   }
 
   if (method === "Stripe") {
@@ -202,6 +233,7 @@ function resetAvailability() {
   if (directBookStep) directBookStep.classList.add("hidden");
   checkoutOpen = false;
   lastQuotedTotal = null;
+  clearStayCosts();
   updateBookingSummary();
 }
 
@@ -400,9 +432,10 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
             : "Termin wird persönlich bestätigt";
         }
         if (directBookPrice) {
-          directBookPrice.textContent = status === "free" && data.total != null
-            ? "Gesamtpreis: " + euro(Number(data.total))
-            : "Gästedaten eingeben und Anfrage absenden";
+          directBookPrice.textContent = "Buchungsbetrag: " + euro(Number(data.total)) +
+            (data.breakdown?.stay_total_known && data.breakdown.stay_total != null
+              ? " · Gesamtkosten inkl. Nächtigungstaxe: " + euro(Number(data.breakdown.stay_total))
+              : " · Nächtigungstaxe für spätere Jahre noch nicht bekannt");
         }
       }
       updatePaymentUI();
@@ -410,6 +443,7 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
       stickyCta.textContent = status === "free" ? tx("book") : tx("ask");
       lastQuotedTotal = Number(data.total);
       totalPrice.textContent=euro(data.total);
+      renderStayCosts(data.breakdown);
       updateBookingSummary();
       if(data.breakdown){let h=`<div><span>${tx("roomLabel")}</span><strong>${euro(data.breakdown.room_total)}</strong></div>`;data.breakdown.extras.forEach(x=>h+=`<div><span>${x.label}</span><strong>${euro(x.amount)}</strong></div>`);data.breakdown.discounts.forEach(x=>h+=`<div class="discount-line"><span>${x.label} (${x.percent}%)</span><strong>− ${euro(x.amount)}</strong></div>`);priceBreakdown.innerHTML=h;}
     } else {
@@ -417,6 +451,7 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
       if (directBookStep) directBookStep.classList.add("hidden");
       checkoutOpen = false;
       lastQuotedTotal = null;
+      clearStayCosts();
       updateBookingSummary();
       totalPrice.textContent = tx("afterCheck");
     }
@@ -425,6 +460,7 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
     if (directBookStep) directBookStep.classList.add("hidden");
     checkoutOpen = false;
     lastQuotedTotal = null;
+    clearStayCosts();
     totalPrice.textContent = tx("afterCheck");
     result.textContent = tx("fail");
     result.className = "availability-result bad";
