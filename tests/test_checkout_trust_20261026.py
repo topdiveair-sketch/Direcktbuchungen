@@ -54,7 +54,7 @@ class CheckoutTrustTests(unittest.TestCase):
         self.assertIn('class="zab-extras-details"',H)
         self.assertIn('zab-terms-ack',STYLE)
     def test_anchor_targets_no_duplicates(self):
-        ids=re.findall(r'\\bid="([^"]+)"',H)
+        ids=re.findall(r'id="([^"]+)"',H)
         # Jinja-generated field IDs are dynamic and intentionally excluded
         self.assertEqual(len(ids),len(set(ids)))
         for anchor in re.findall(r'href="#([^"]+)"',H):
