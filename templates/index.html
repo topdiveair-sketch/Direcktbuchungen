@@ -346,7 +346,7 @@
   .zab-direct-assurance p{margin:6px 0 0;font-size:.95rem;line-height:1.5}
   @media(max-width:600px){.zab-direct-assurance{padding:12px;margin:10px 0 14px}.zab-direct-assurance p{font-size:.92rem}}
   </style>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/homepage-slim.css') }}?v=20261026-trust-checkout1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/homepage-slim.css') }}?v=20261026-complete-cost1">
 </head>
 <body class="zab-slim">
 <header class="hero hero-room hero-mobile-clean" id="start">
@@ -545,14 +545,16 @@
 
         <div id="priceBreakdown" class="price-breakdown"></div>
 
-        <div class="total-row">
-          <span><strong>Flexible Rate</strong> <small>(inkl. gewählter Extras)</small></span>
-          <strong id="totalPrice">ab 99,00 € / Nacht</strong>
+        <div class="total-row"><span><strong>Buchungsbetrag</strong> <small>Zimmer + gewählte Extras, ohne Nächtigungstaxe</small></span><strong id="totalPrice">ab 99,00 € / Nacht</strong></div>
+        <div class="zab-stay-costs" id="stayCostPanel" aria-live="polite">
+          <div><span>Gesetzliche Nächtigungstaxe (bei Anreise separat)</span><strong id="taxAmount">Nach Terminprüfung</strong></div>
+          <div class="zab-stay-total"><span>Gesamtkosten des Aufenthalts</span><strong id="stayTotal">Nach Terminprüfung</strong></div>
+          <p id="taxCostNote" class="small">Die Nächtigungstaxe wird nicht online abgebucht. Für 2028 ist der amtliche Satz noch nicht bekannt.</p>
         </div>
-        <div class="legal-note" id="flexibleRateNote" style="margin-top:6px">✓ Kostenfrei stornierbar bis 7 Tage vor Anreise</div>
-        <div class="legal-note zab-tax-disclosure" id="taxDisclosure"><strong>Zusätzliche gesetzliche Nächtigungstaxe:</strong> gesondert vom Zimmerpreis. 2026: 2,60 € pro erwachsenem Gast und Nacht; 2027: 2,70 €. Für spätere Jahre gilt der dann amtlich veröffentlichte Satz. Die Abgabe ist nicht im angezeigten Buchungsbetrag enthalten. <a href="https://www.noe.gv.at/noe/Wirtschaft-Tourismus-Technologie/Naechtigungstaxensaetze.html" target="_blank" rel="noopener noreferrer">Amtliche Sätze (Land NÖ)</a>.</div>
+        <div class="legal-note" id="flexibleRateNote" style="margin-top:6px">✓ Storno bis einschließlich 7 Tage vor Anreise: kostenlos (0 %). Ab 6 Tage vorher oder bei Nichtanreise: 90 % des Zimmerpreises für neue Buchungen; ersparte Aufwendungen und Weitervermietung werden angerechnet. <a href="/legal/storno" target="_blank" rel="noopener noreferrer">Stornobedingungen</a></div>
+        <div class="legal-note zab-tax-disclosure" id="taxDisclosure"><strong>Gesetzliche Nächtigungstaxe:</strong> für 2026 sind 2,60 €, für 2027 2,70 € pro erwachsenem Gast und Nacht vorgesehen. Die genaue Summe wird nach Terminprüfung oben angezeigt und ist bei Anreise gesondert zu bezahlen. Für 2028 sind noch keine amtlichen Sätze veröffentlicht. <a href="https://www.noe.gv.at/noe/Wirtschaft-Tourismus-Technologie/Naechtigungstaxensaetze.html" target="_blank" rel="noopener noreferrer">Quelle: Land NÖ</a>.</div>
 
-        <p class="zab-short-note">Gesamtpreis inklusive gewählter Extras nach Terminprüfung. Die Zahlungsarten folgen im letzten Schritt.</p>
+        <p class="zab-short-note">Zimmerbetrag und Nächtigungstaxe werden getrennt angezeigt. Bei PayPal/Karte wird nur der Buchungsbetrag online bezahlt; die Nächtigungstaxe ist bei Anreise separat fällig.</p>
         <div class="booking-trust-strip" aria-label="Vorteile der Direktbuchung">
           <div><strong>✓ Direkt beim Gastgeber</strong><small>Ohne Buchungsportal dazwischen.</small></div>
           <div><strong>✓ Klarer Preis</strong><small>Gesamtpreis nach Terminprüfung sichtbar.</small></div>
@@ -593,8 +595,11 @@
               <div class="booking-summary-row"><span>Extras</span><strong id="summaryExtras">Keine</strong></div>
               <div class="booking-summary-row"><span>Zahlungsart</span><strong id="summaryPayment">PayPal</strong></div>
             </div>
-            <div class="booking-summary-total"><span>Gesamtpreis</span><strong id="summaryTotal">–</strong></div>
-            <div class="booking-summary-note">Der ausgewiesene Buchungsbetrag enthält Zimmer und gewählte Extras. Die gesetzliche Nächtigungstaxe wird separat berechnet und ist nicht im Buchungsbetrag enthalten. Frühstück: 12 € je Gast und Nacht (maximal 2 Gäste). Gepäcktransport: 15 € für eine Strecke für bis zu 2 Gäste; eine weitere Strecke bitte anfragen. · Flexible Rate · kostenfrei stornierbar bis 7 Tage vor Anreise</div>
+            <div class="zab-summary-cost"><span>Buchungsbetrag an den Gastgeber (PayPal/Karte/Überweisung)</span><strong id="summaryTotal">–</strong></div>
+            <div class="zab-summary-cost"><span>Nächtigungstaxe bei Anreise separat</span><strong id="summaryTax">–</strong></div>
+            <div class="booking-summary-total"><span>Gesamtkosten des Aufenthalts</span><strong id="summaryStayTotal">–</strong></div>
+            <p id="summaryTaxNote" class="small">Für noch nicht amtlich veröffentlichte Steuersätze ist keine verbindliche Gesamtsumme möglich.</p>
+            <div class="booking-summary-note">Zimmer und Extras sind im Buchungsbetrag enthalten. Frühstück: 12 € je Gast und Nacht (maximal 2 Gäste). Gepäcktransport: 15 € für eine Strecke für bis zu 2 Gäste; eine weitere Strecke bitte anfragen. Flexible Rate: bis 7 Tage vorher 0 %, danach 90 % des Zimmerpreises; Details in den Stornobedingungen.</div>
           </div>
 
           <div class="checkout-step-note">Schritt 3 von 3</div>
@@ -606,15 +611,10 @@
             <p class="small">Zahlung vor Ort ist derzeit nicht online buchbar, sondern nur nach vorheriger persönlicher Vereinbarung möglich.</p>
           </div>
           <div id="paymentNotice" class="legal-note" style="display:block;margin:10px 0 12px"></div>
-          <div id="bankTransferDetails" class="paypal-note hidden" style="margin:10px 0 12px">
-            <strong>Banküberweisung</strong><br>
-            Kontoinhaber: <strong>{{ bank_account_holder }}</strong><br>
-            IBAN: <strong>{{ bank_iban_display or bank_iban }}</strong><br>
-            Betrag und Verwendungszweck werden nach Buchungsabschluss angezeigt. Die Zahlungsfrist beträgt 48 Stunden; ohne verbuchten Zahlungseingang wird die Reservierung wieder freigegeben.
-          </div>
+          <p class="zab-bank-post-book-note" id="bankDetailsAfterBooking">Bei Banküberweisung erscheinen Kontoinhaber, IBAN, Buchungsnummer und der verbindliche Überweisungsbetrag <strong>erst nach erfolgreichem Buchungsabschluss</strong> auf der Bestätigungsseite und in der Buchungsbestätigung.</p>
 
           <label class="zab-terms-ack"><input type="checkbox" id="termsAccepted" name="conditions_acknowledged" required><span>Ich habe die <a href="/legal/agb" target="_blank" rel="noopener noreferrer">Buchungsbedingungen</a> und <a href="/legal/storno" target="_blank" rel="noopener noreferrer">Stornobedingungen</a> gelesen. <a href="/legal/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutz</a></span></label>
-          <p class="zab-short-note" id="bookingContractNotice">Bei PayPal/Karte wird die Buchung nach bestätigter Zahlung verbindlich. Bei Banküberweisung ist die Buchung sofort verbindlich und innerhalb von 48 Stunden zu bezahlen.</p>
+          <p class="zab-short-note" id="bookingContractNotice">Bei PayPal/Karte wird die Buchung nach bestätigter Zahlung verbindlich. Bei Überweisung erfolgt die verbindliche Reservierung mit dem Buchungsabschluss; Zahlung innerhalb von 48 Stunden. Nächtigungstaxe separat bei Anreise.</p>
           <button class="btn full" id="bookingSubmit" type="submit">ZAHLUNGSPFLICHTIG BUCHEN</button>
         </div>
       </form>
@@ -723,7 +723,7 @@
     <details><summary>Wo befindet sich das Badezimmer?</summary><p>Das ausschließlich zum Gartenzimmer gehörende Privatbad liegt direkt gegenüber auf dem Flur, nicht im Zimmer.</p></details>
     <details><summary>Sind Fahrradschuppen, E-Bike-Laden und Parkplatz vorhanden?</summary><p>Ja. Abschließbare Fahrradunterbringung, kostenlose E-Bike-Lademöglichkeit für Übernachtungsgäste, WLAN und Parkplatz sind vorhanden. Werkzeug nach Absprache; wir sind kein Fahrradfachbetrieb.</p></details>
     <details><summary>Kann ich Frühstück oder eine Jause bestellen?</summary><p>Ja, jeweils auf Vorbestellung. Die aktuellen Preise und verfügbaren Zusatzleistungen stehen im Buchungsformular.</p></details>
-    <details><summary>Wie funktionieren Zahlung und Stornierung?</summary><p>Die verfügbaren Zahlungsarten werden im Buchungsformular angezeigt. Bei Banküberweisung ist die rechtzeitige Zahlung erforderlich. Die Flexible Rate ermöglicht kostenfreie Stornierung bis sieben Tage vor Anreise. Vor der Buchung die verlinkten Stornobedingungen lesen.</p></details>
+    <details><summary>Wie funktionieren Zahlung und Stornierung?</summary><p>Die verfügbaren Zahlungsarten werden im Buchungsformular angezeigt. Bei Banküberweisung ist die rechtzeitige Zahlung erforderlich. Kostenlos bis einschließlich 7 Tage vor Anreise. Bei späterer Stornierung oder Nichtanreise fallen für neue Buchungen 90 % des Zimmerpreises an; ersparte Aufwendungen und Weitervermietung werden angerechnet. Details stehen in den Stornobedingungen.</p></details>
     <details><summary>Wohnen Hunde im Haus?</summary><p>Ja. Fidel, Gloria und Pia leben als Familienhunde im Haus und halten sich auch in gemeinschaftlich genutzten Bereichen auf. Eigene Haustiere der Gäste können nicht mitgebracht werden.</p></details>
     <p class="zab-slim-contact">Noch Fragen? <a href="#kontakt">Kontakt und Buchungsbedingungen</a> findest du unten auf der Seite.</p>
     <a class="btn zab-slim-last-cta" href="#booking">Verfügbarkeit &amp; Preis prüfen</a>
@@ -753,7 +753,7 @@
 
 <div class="mobile-conversion-bar"><span id="stickyLabel">Gartenzimmer ab 99 € / Nacht</span><a href="#booking" id="stickyCta">Verfügbarkeit prüfen</a></div>
 
-<script src="{{ url_for('static', filename='js/app.js') }}?v=20261026-trust-checkout1"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}?v=20261026-complete-cost1"></script>
 <script>
 (function(){
   const lang=new URLSearchParams(location.search).get("lang");
