@@ -38,9 +38,24 @@ with sync_playwright() as playwright:
         assert page.locator("#bookingForm").count() == 1
         assert page.locator("#bankDetailsAfterBooking").count() == 1
         assert not page.locator("body").inner_text().find("IBAN:") >= 0
-        overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
-        assert overflow <= 2, f"Horizontal overflow at {width}px: {overflow}px"
-        page.screenshot(path=str(OUT / f"guest-home-{width}.png"), full_page=True)
+        viewport_metrics = page.evaluate("""() => ({
+            inner: window.innerWidth,
+            doc: document.documentElement.scrollWidth,
+            body: document.body.scrollWidth,
+            offenders: [...document.querySelectorAll('body *')]
+              .map(el => ({tag: el.tagName.toLowerCase(), id: el.id,
+                  cls: String(el.className || '').slice(0,70),
+                  right: Math.round(el.getBoundingClientRect().right)}))
+              .filter(el => el.right > window.innerWidth + 3)
+              .sort((a,b) => b.right-a.right).slice(0,12)
+        })""")
+        screenshot = page.screenshot(path=str(OUT / f"guest-home-{width}.png"), full_page=True)
+        from io import BytesIO
+        from PIL import Image
+        png_width = Image.open(BytesIO(screenshot)).width
+        print("MOBILE METRICS:", width, "image width", png_width, viewport_metrics, flush=True)
+        assert png_width <= width + 2, f"Full-page screenshot wider than viewport at {width}px: {png_width}px"
+        assert viewport_metrics["doc"] <= width + 2, f"Document overflow at {width}px"
         if width == 390:
             page.locator("#arrival").fill("2026-11-12")
             page.locator("#departure").fill("2026-11-13")
@@ -55,6 +70,6 @@ with sync_playwright() as playwright:
             assert "IBAN:" not in page.locator("#bookingForm").inner_text()
             assert page.locator("#bookingSubmit").is_visible()
             page.screenshot(path=str(OUT / "guest-checkout-390.png"), full_page=True)
-        print(f"MOBILE PASS: {width}px; horizontal overflow {overflow}px")
+        print(f"MOBILE PASS: {width}px; screenshot {png_width}px")
         page.close()
     browser.close()
