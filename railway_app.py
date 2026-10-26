@@ -287,7 +287,8 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
              "rate": round(cap_room_rate(PUBLIC_BACHBLICK_NIGHTLY_PRICE), 2)}
             for index in range(nights)
         ]
-    return {
+    from overnight_tax import with_guest_stay_costs
+    final_quote = {
         **breakdown,
         "nightly_rates": nightly_rates,
         "room_total": room_total,
@@ -295,6 +296,7 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
         "revenue_management": yield_details,
         "total": round(room_total + extras_total, 2),
     }
+    return with_guest_stay_costs(final_quote, arrival, departure, adults)
 
 
 # Public availability, booking requests and payment use the same final direct

@@ -52,3 +52,70 @@
 .zab-slim .zab-terms-ack:has(input:focus-visible){outline:3px solid #d5a343;outline-offset:2px}
 .zab-slim .hero-proof a{color:#fff;text-decoration:underline;text-underline-offset:3px;font-weight:750}
 @media(max-width:640px){.zab-slim .zab-extras-details>.booking-services{margin:7px 9px 12px}.zab-slim .zab-terms-ack{gap:9px;padding:12px 10px}}
+
+/* Explicit, guest-facing booking amount vs statutory tax vs overall stay costs */
+.zab-slim .zab-stay-costs{margin:12px 0;border:1px solid #d4e2d8;border-radius:13px;padding:13px 16px;background:#f8fbf9}
+.zab-slim .zab-stay-costs>div,.zab-slim .zab-summary-cost{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:9px 0;line-height:1.5}
+.zab-slim .zab-stay-costs>div>span,.zab-slim .zab-summary-cost>span{min-width:0;color:#345241}
+.zab-slim .zab-stay-costs>div>strong,.zab-slim .zab-summary-cost>strong{white-space:normal;overflow-wrap:anywhere;text-align:right;font-variant-numeric:tabular-nums}
+.zab-slim .zab-stay-total{border-top:1px solid #c8dacf;font-size:1.13rem;font-weight:760;color:#1a4b32}
+.zab-slim .zab-stay-total span{font-weight:760}
+.zab-slim #taxCostNote{font-size:.9rem;color:#456453;line-height:1.5;margin:8px 0 0}
+.zab-slim .zab-summary-cost{border-bottom:1px solid #dce9dd}
+.zab-slim #summaryTaxNote{font-size:.87rem;line-height:1.5;color:#456453;margin:10px 0}
+.zab-slim .zab-bank-post-book-note{background:#f0f7f2;border-left:3px solid #315b45;color:#2c4938;padding:12px 15px;line-height:1.55;margin:10px 0 15px}
+.zab-slim .zab-bank-post-book-note[hidden]{display:none!important}
+.zab-slim .booking-summary-total{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.zab-slim .booking-summary-total>span,.zab-slim .booking-summary-total>strong{min-width:0;overflow-wrap:anywhere}
+@media(max-width:700px){
+ .zab-slim .hero-content,.zab-slim .booking-card,.zab-slim .zab-slim-section,.zab-slim .booking-summary{min-width:0;max-width:100%;overflow-wrap:anywhere}
+ .zab-slim .zab-stay-costs>div,.zab-slim .zab-summary-cost,.zab-slim .booking-summary-total{flex-wrap:wrap;align-items:flex-start}
+ .zab-slim .zab-stay-costs>div>strong,.zab-slim .zab-summary-cost>strong,.zab-slim .booking-summary-total>strong{text-align:left;max-width:100%}
+ .zab-slim #taxDisclosure{overflow-wrap:anywhere}
+ .zab-slim input,.zab-slim select,.zab-slim textarea,.zab-slim button{max-width:100%;box-sizing:border-box}
+ .zab-slim .zab-extras-details summary{overflow-wrap:anywhere}
+}
+@media(max-width:390px){
+ .zab-slim .zab-stay-costs{padding:11px 10px}
+ .zab-slim .zab-slim-section{padding:17px 12px}
+ .zab-slim .booking-card{padding:16px 12px}
+ .zab-slim .zab-terms-ack span{min-width:0;overflow-wrap:anywhere}
+}
+
+/* Mobile screenshot QA: constrain intrinsic gallery width rather than masking overflow. */
+@media(max-width:700px){
+  .zab-slim .room-list,.zab-slim .booking-grid,.zab-slim .guest-grid,
+  .zab-slim .booking-card,.zab-slim .room-option{
+    min-width:0!important;max-width:100%!important;box-sizing:border-box;
+  }
+  .zab-slim .room-list{display:grid;grid-template-columns:minmax(0,1fr)!important}
+  .zab-slim .room-option{grid-template-columns:82px minmax(0,1fr)!important}
+  .zab-slim .room-copy,.zab-slim .room-price{min-width:0!important;max-width:100%;overflow-wrap:anywhere}
+  .zab-slim .zab-room-gallery{
+    display:block;width:100%;max-width:100%;min-width:0!important;
+    box-sizing:border-box;overflow:hidden;
+  }
+  .zab-slim .zab-gallery-thumbs{
+    min-width:0!important;max-width:100%;width:100%;
+    display:grid;grid-template-columns:repeat(5,72px);gap:8px;
+    overflow-x:auto;overflow-y:hidden;box-sizing:border-box;
+    overscroll-behavior-x:contain;scrollbar-width:thin;
+  }
+  .zab-slim .zab-gallery-head,.zab-slim .zab-gallery-actions{min-width:0;max-width:100%}
+  .zab-slim .total-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 12px}
+  .zab-slim .total-row>*{min-width:0!important;max-width:100%;overflow-wrap:anywhere}
+  .zab-slim .total-row>strong{text-align:right}
+  .zab-slim .booking-summary-grid{min-width:0;grid-template-columns:minmax(0,1fr)}
+  .zab-slim .booking-summary-row{min-width:0;overflow-wrap:anywhere}
+  .zab-slim .hero-actions .hero-secondary{
+    color:#fff!important;border:1px solid rgba(255,255,255,.85)!important;
+    background:rgba(0,0,0,.4)!important;text-shadow:0 1px 4px #000!important;
+  }
+  .zab-slim .hero-actions .hero-secondary:hover{color:#fff!important;background:rgba(0,0,0,.65)!important}
+}
+
+/* Final handheld form polish: full-width voucher field and readable input labels. */
+.zab-slim #guestArea>label{display:block;font-weight:700;margin-top:14px;line-height:1.5}
+.zab-slim #couponCode{display:block;box-sizing:border-box;width:100%;max-width:100%;min-height:48px;margin-top:7px;padding:10px 12px;border-radius:10px;font-size:16px}
+.zab-slim #guestArea .guest-grid label{display:flex;flex-direction:column;gap:7px}
+.zab-slim #guestArea .guest-grid input{width:100%;box-sizing:border-box;min-height:48px;font-size:16px}

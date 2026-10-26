@@ -756,7 +756,10 @@ def price_breakdown(room,arrival,departure,adults,chosen,coupon_code=""):
             amt=subtotal*float(coupon["percent"])/100
             subtotal-=amt
             applied.append({"label":f"Gutschein {coupon_code}","percent":coupon["percent"],"amount":round(amt,2)})
-    return {"nights":n,"room_total":round(room_total,2),"nightly_rates":nightly_rates,"extras":lines,"discounts":applied,"total":round(subtotal,2)}
+    from overnight_tax import with_guest_stay_costs
+    quote = {"nights":n,"room_total":round(room_total,2),"nightly_rates":nightly_rates,
+             "extras":lines,"discounts":applied,"total":round(subtotal,2)}
+    return with_guest_stay_costs(quote, arrival, departure, adults)
 
 def parse_date(value: str) -> date:
     return datetime.strptime(value, "%Y-%m-%d").date()
@@ -1597,9 +1600,6 @@ def index():
         room_images=get_room_images(),
         rooms={"Bachblick": ROOMS["Bachblick"]},
         price_settings=pricing_data()[0], discounts=pricing_data()[1], extras_cfg=pricing_data()[2], seasons=pricing_data()[3],
-        bank_account_holder=env_value("BANK_ACCOUNT_HOLDER"),
-        bank_iban=env_value("BANK_IBAN"),
-        bank_iban_display=format_iban(env_value("BANK_IBAN")),
         paypal_email=PAYPAL_EMAIL,
     ))
     # Preview/Homepage immer frisch ausliefern, damit alte Zimmertexte nicht aus dem Browser-Cache kommen.
@@ -2307,7 +2307,7 @@ def event_landing_context(slug: str) -> dict:
             "eyebrow": "Burgadvent 2026",
             "headline": "Unterkunft zum Burgadvent auf Aggstein 2026",
             "intro": "Der Burgadvent auf Aggstein ist ein besonders früher Advent-Anlass in der Wachau. Zuhause am Bach in Aggsbach Markt eignet sich als ruhige Unterkunft für ein Wochenende zwischen Burg, Donau und Wachau.",
-            "scarcity_text": "Die bestätigten Burgadvent-Wochenenden werden als starke Nachfragefenster behandelt. Freitag und Samstag sind deshalb auf zwei Nächte ausgelegt.",
+            "scarcity_text": "Für diese Veranstaltung kann der Zimmerpreis steigen. Auch eine einzelne Nacht bleibt bei freiem Zimmer direkt buchbar.",
         },
         "melker-advent-2026": {
             "page_title": "Melker Advent 2026 Unterkunft Wachau | Zuhause am Bach",
@@ -2755,16 +2755,23 @@ def booking_success_response(booking):
     data["booking_number"] = data.get("booking_number") or (f"ZAB-{booking_id:06d}" if booking_id else "ZAB")
     data["room"] = public_room_name(str(data.get("room", "")))
     settings = get_settings()
-    return render_template(
+    from overnight_tax import overnight_tax_breakdown
+    tax = overnight_tax_breakdown(parse_date(data["arrival"]), parse_date(data["departure"]), int(data["adults"]))
+    stay_total = round(float(data["total"]) + tax["amount"], 2) if tax["known"] else None
+    response = Response(render_template(
         "success.html",
         booking=data,
+        overnight_tax=tax,
+        stay_total=stay_total,
         settings=settings,
         bank_account_holder=env_value("BANK_ACCOUNT_HOLDER"),
         bank_iban=env_value("BANK_IBAN"),
         bank_iban_display=format_iban(env_value("BANK_IBAN")),
         paypal_email=PAYPAL_EMAIL,
         guest_app_url=settings.get("public_base_url", "https://topdiveair-sketch.github.io/Gaeste/"),
-    )
+    ))
+    response.headers["Cache-Control"] = "private, no-store, max-age=0"
+    return response
 
 
 @app.post("/book")

@@ -127,7 +127,14 @@ Check-in ist grundsätzlich ab 14:00 Uhr möglich, Check-out bis 10:00 Uhr. Abwe
 Gäste verpflichten sich zu einem sorgfältigen Umgang mit Unterkunft, Inventar und Hausumgebung. Schäden sind unverzüglich zu melden. Zusätzliche Gäste, Veranstaltungen, Rauchen oder Haustiere bedürfen einer ausdrücklichen Vereinbarung, soweit sie nicht bereits Bestandteil der bestätigten Buchung sind.
 
 6. Stornierung
-Bei der Flexiblen Rate ist die Stornierung bis sieben Tage vor Anreise kostenlos. Bei späterer Stornierung gelten die gesondert veröffentlichten Stornobedingungen und gegebenenfalls die vor der Buchung individuell vereinbarten Bedingungen. Die Höhe möglicher Kosten muss für Gäste vor der verbindlichen Buchung nachvollziehbar sein.
+Bei der Flexiblen Rate ist eine Stornierung bis einschließlich 7 Kalendertage vor Anreise kostenlos (0 %).
+Für neu abgeschlossene Buchungen ab dem 26. Oktober 2026 beträgt die vereinbarte
+Stornogebühr bei Stornierung innerhalb der letzten 6 Tage vor Anreise oder bei
+Nichtanreise 90 % des vereinbarten Zimmerpreises (ohne Nächtigungstaxe und
+ohne nicht erbrachte Zusatzleistungen). Weitervermietung und ersparte Aufwendungen
+werden zugunsten des Gastes berücksichtigt. Es werden maximal die nach
+österreichischem Recht zulässigen Kosten verlangt. Für ältere Buchungen
+gelten die beim damaligen Buchungsabschluss vereinbarten Bedingungen.
 
 Für eine datumsgebundene touristische Beherbergung besteht grundsätzlich kein gesetzliches 14-tägiges Rücktrittsrecht nach § 18 Abs. 1 Z 10 FAGG. Das vertraglich vereinbarte Stornierungsrecht bleibt davon unberührt.
 
@@ -135,9 +142,18 @@ Für eine datumsgebundene touristische Beherbergung besteht grundsätzlich kein 
 Es gilt österreichisches Recht, soweit keine zwingenden verbraucherschützenden Vorschriften entgegenstehen."""),
             "storno": ("Stornobedingungen", """Stornobedingungen
 
-Eine Stornierung ist bis 7 Tage vor Anreise kostenlos möglich, sofern in der individuellen Buchungsbestätigung nichts Abweichendes vereinbart wurde.
+Für die Flexible Rate gilt bei neuen Buchungen ab 26. Oktober 2026:
+- Bis einschließlich 7 Kalendertage vor Anreise: 0 % Stornogebühr (kostenlos).
+- Ab 6 Kalendertage vor Anreise bis zur Anreise sowie bei Nichtanreise: 90 % des gebuchten Zimmerpreises.
+- Nächtigungstaxe und nicht erbrachte Zusatzleistungen werden nicht als Stornogebühr berechnet.
+- Ersparte Aufwendungen und eine Weitervermietung werden zugunsten des Gastes berücksichtigt.
+- Für bereits früher abgeschlossene Buchungen bleiben die damals vereinbarten Bedingungen maßgeblich.
 
-Bei späterer Stornierung, Nichtanreise oder vorzeitiger Abreise können Stornokosten anfallen. Die konkrete Höhe richtet sich nach den bestätigten Buchungsbedingungen, dem Zeitpunkt der Stornierung, der Aufenthaltsdauer und einer möglichen Weitervermietung.
+Die Frist berechnet sich anhand des Anreisedatums und des Eingangs der
+Stornierung in österreichischer Ortszeit (Europe/Vienna).
+Bei einer vorzeitigen Abreise gelten die vereinbarten Bedingungen und
+die einschlägigen gesetzlichen Regelungen; ersparte Aufwendungen
+und Weitervermietung werden angerechnet.
 
 Stornierungen sollen über den persönlichen Stornierungslink aus der Buchungsbestätigung oder schriftlich per E-Mail an Zuhause.am.Bach@outlook.com erfolgen. Maßgeblich ist der Zeitpunkt des Eingangs.
 

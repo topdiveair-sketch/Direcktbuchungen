@@ -34,7 +34,14 @@
         <p><strong>Frühstück:</strong> {{ 'Ja' if booking.breakfast else 'Nein' }}</p>
         <p><strong>Zahlung:</strong> {{ booking.payment_method }}</p>
         <p><strong>Zahlungsstatus:</strong> {{ "Bezahlt" if booking.paid else "Zahlung ausstehend" }}</p>
-        <p class="summary-total"><strong>Gesamt:</strong> {{ '%.2f'|format(booking.total)|replace('.', ',') }} €</p>
+        <p><strong>Buchungsbetrag (Zimmer + Extras):</strong> {{ '%.2f'|format(booking.total)|replace('.', ',') }} €</p>
+        {% if overnight_tax.known %}
+        <p><strong>Nächtigungstaxe (bei Anreise separat):</strong> {{ '%.2f'|format(overnight_tax.amount)|replace('.', ',') }} €</p>
+        <p class="summary-total"><strong>Gesamtkosten des Aufenthalts:</strong> {{ '%.2f'|format(stay_total)|replace('.', ',') }} €</p>
+        {% else %}
+        <p><strong>Nächtigungstaxe:</strong> amtlicher Satz für einen Teil der Reisedaten noch nicht bekannt. Wird bei Anreise gesondert erhoben.</p>
+        <p class="summary-total"><strong>Buchungsbetrag:</strong> {{ '%.2f'|format(booking.total)|replace('.', ',') }} € (Gesamtkosten noch nicht bestimmbar)</p>
+        {% endif %}
       </div>
 
       {% if booking.payment_method == 'PayPal' %}
@@ -58,7 +65,7 @@
       <div class="paypal-note">
         <strong>Jetzt überweisen – Zahlungseingang innerhalb von 48 Stunden</strong>
         <p>Kontoinhaber: {{ bank_account_holder }}<br>IBAN: {{ bank_iban_display or bank_iban }}<br>
-        Betrag: {{ '%.2f'|format(booking.total)|replace('.', ',') }} €<br>
+        Buchungsbetrag (ohne separat bei Anreise fällige Nächtigungstaxe): {{ '%.2f'|format(booking.total)|replace('.', ',') }} €<br>
         Verwendungszweck: {{ booking.booking_number }}<br>
         Zahlungsfrist: {{ booking.bank_payment_due_at|replace('T', ' ') }} UTC</p>
         <p>Bei fehlendem Zahlungseingang wird die Reservierung nach Fristablauf aufgehoben. Für schnelle Zahlung ggf. Echtzeitüberweisung nutzen.</p>
