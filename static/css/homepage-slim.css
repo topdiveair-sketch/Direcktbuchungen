@@ -39,3 +39,16 @@
 .zab-slim .zab-slim-last-cta{display:inline-flex;align-items:center;justify-content:center;min-height:48px;margin-top:18px;padding:12px 20px}
 @media(max-width:960px){.zab-slim .zab-slim-links{grid-template-columns:repeat(2,minmax(0,1fr))}.zab-slim .zab-slim-perks{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.zab-slim .zab-slim-section{margin:18px 8px;padding:20px 14px}.zab-slim .zab-slim-links,.zab-slim .zab-slim-perks,.zab-slim .zab-slim-photos,.zab-slim .zab-slim-more-links{grid-template-columns:minmax(0,1fr)}.zab-slim .zab-slim-photos img{height:195px;max-height:none}.zab-slim .zab-slim-last-cta{width:100%;box-sizing:border-box}.zab-slim .zab-slim-links article{padding:14px}.zab-slim #booking{margin-left:8px;margin-right:8px}.zab-slim .zab-slim-heading h2{font-size:1.7rem}}
+
+/* 26.10.2026: accessible, compact optional extras and legal acknowledgement */
+.zab-slim .zab-extras-details{margin:14px 0 18px;border:1px solid #d8e4da;border-radius:13px;background:#f8fbf7;overflow:visible}
+.zab-slim .zab-extras-details>summary{cursor:pointer;padding:15px 17px;font-weight:760;color:#244b35;line-height:1.5}
+.zab-slim .zab-extras-details[open]>summary{border-bottom:1px solid #d8e4da}
+.zab-slim .zab-extras-details>p.small{padding:3px 17px 0;margin:9px 0;color:#4d6558}
+.zab-slim .zab-extras-details>.booking-services{margin:8px 13px 15px;padding:8px 0;background:transparent}
+.zab-slim .zab-terms-ack{display:flex;gap:12px;align-items:flex-start;padding:14px 15px;margin:16px 0 12px;border:1px solid #c7d9cc;border-radius:12px;background:#f5faf6;cursor:pointer;font-size:.94rem;line-height:1.6;color:#244534}
+.zab-slim .zab-terms-ack>input{flex:0 0 auto;width:19px;height:19px;margin:3px 0 0;accent-color:#315b45}
+.zab-slim .zab-terms-ack a{font-weight:750;text-decoration:underline;color:#25553a;text-underline-offset:2px}
+.zab-slim .zab-terms-ack:has(input:focus-visible){outline:3px solid #d5a343;outline-offset:2px}
+.zab-slim .hero-proof a{color:#fff;text-decoration:underline;text-underline-offset:3px;font-weight:750}
+@media(max-width:640px){.zab-slim .zab-extras-details>.booking-services{margin:7px 9px 12px}.zab-slim .zab-terms-ack{gap:9px;padding:12px 10px}}
