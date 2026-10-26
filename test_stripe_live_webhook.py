@@ -176,7 +176,16 @@ class StripeLiveWebhookTests(unittest.TestCase):
         self.assertEqual(second.status_code, 429, second.get_json())
         self.assertIn("bereits ein Karten-Checkout", second.get_json()["message"])
 
-    def test_checkout_rate_limit_stops_repeated_holds_after_expiry(self):
+    def test_old_ip_attempt_does_not_block_new_checkout(self):
+        """The old six-hour throttle must not block a fresh checkout."""
+        class FakeResponse:
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                return False
+            def read(self):
+                return b'{"id":"cs_live_retry_test","url":"https://checkout.stripe.com/test"}'
+
         ip_hash = hmac.new(
             b"whsec_offline_test_only", b"198.51.100.28", hashlib.sha256
         ).hexdigest()
@@ -185,15 +194,37 @@ class StripeLiveWebhookTests(unittest.TestCase):
                          ("Bachblick", "https://example.test/calendar.ics", datetime.now().isoformat()))
             conn.execute("INSERT INTO stripe_checkout_attempts(ip_hash,created_at) VALUES(?,?)",
                          (ip_hash, datetime.now().isoformat(timespec="seconds")))
-        response = self.client.post(
-            "/api/stripe/create-checkout-session",
-            json={"room": "Bachblick", "arrival": "2026-12-10", "departure": "2026-12-12",
-                  "adults": 2, "first_name": "Test", "last_name": "Gast",
-                  "email": "test@example.test", "phone": "+430000000", "extras": {}},
-            headers={"X-Forwarded-For": "198.51.100.28"},
-        )
-        self.assertEqual(response.status_code, 429)
-        self.assertIn("sechs Stunden", response.get_json()["message"])
+        with patch("stripe_checkout.urllib.request.urlopen", return_value=FakeResponse()):
+            with patch.dict(os.environ, {
+                "STRIPE_SECRET_KEY": "rk_live_offline_test_only",
+                "ZAB_STRIPE_LIVE_ENABLED": "1",
+                "STRIPE_WEBHOOK_SECRET": "whsec_offline_test_only",
+            }):
+                response = self.client.post(
+                    "/api/stripe/create-checkout-session",
+                    json={"room": "Bachblick", "arrival": "2026-12-10", "departure": "2026-12-12",
+                          "adults": 2, "first_name": "Test", "last_name": "Gast",
+                          "email": "test@example.test", "phone": "+430000000", "extras": {}},
+                    headers={"X-Forwarded-For": "198.51.100.28"},
+                )
+        self.assertEqual(response.status_code, 200, response.get_json())
+        self.assertTrue(response.get_json()["ok"])
+
+    def test_invalid_email_rejected_before_stripe_api_call(self):
+        with patch.dict(os.environ, {
+            "STRIPE_SECRET_KEY": "rk_live_offline_test_only",
+            "ZAB_STRIPE_LIVE_ENABLED": "1",
+            "STRIPE_WEBHOOK_SECRET": "whsec_offline_test_only",
+        }):
+            response = self.client.post(
+                "/api/stripe/create-checkout-session",
+                json={"room": "Bachblick", "arrival": "2026-12-10", "departure": "2026-12-12",
+                      "adults": 2, "first_name": "Test", "last_name": "Gast",
+                      "email": "invalid email", "phone": "+430000000", "extras": {}},
+                headers={"X-Forwarded-For": "198.51.100.29"},
+            )
+        self.assertEqual(response.status_code, 409, response.get_json())
+        self.assertIn("E-Mail", response.get_json()["message"])
 
     def refund_event(self, amount_refunded=11900, payment_intent="pi_test_payment", tamper=False):
         event = {"id": "evt_refund_test", "livemode": True, "type": "charge.refunded",
