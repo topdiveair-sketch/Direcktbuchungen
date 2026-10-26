@@ -1432,6 +1432,11 @@ def index():
         bank_iban=env_value("BANK_IBAN"),
         bank_iban_display=format_iban(env_value("BANK_IBAN")),
         paypal_email=PAYPAL_EMAIL,
+        stripe_checkout_enabled=(
+            env_flag("STRIPE_CHECKOUT_ENABLED")
+            and os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_")
+            and os.environ.get("STRIPE_WEBHOOK_SECRET", "").startswith("whsec_")
+        ),
     ))
     # Preview/Homepage immer frisch ausliefern, damit alte Zimmertexte nicht aus dem Browser-Cache kommen.
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
@@ -2561,6 +2566,85 @@ def booking_success_response(booking):
     )
 
 
+@app.get("/stripe/return")
+def stripe_checkout_return():
+    """Reconcile the paid test Checkout on browser return; never trust URL alone."""
+    session_id = request.args.get("session_id", "").strip()
+    if not session_id.startswith("cs_test_") or len(session_id) > 255:
+        flash("Kartenzahlung konnte nicht zugeordnet werden.", "error")
+        return redirect(url_for("index") + "#booking")
+    try:
+        checkout = stripe_fetch_test_session(session_id)
+        booking_ref = str(checkout.get("client_reference_id") or "")
+        if not booking_ref.isdecimal():
+            raise ValueError("Invalid Checkout booking reference")
+        confirmed = stripe_confirm_paid_test_booking(int(booking_ref), session_id)
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError, RuntimeError):
+        app.logger.exception("stripe_checkout_return_reconciliation_failed")
+        flash("Zahlungsstatus wird noch geprüft. Bitte keine zweite Zahlung auslösen.", "error")
+        return redirect(url_for("index") + "#booking")
+    if confirmed:
+        flash("Testzahlung bestätigt. Die Buchung ist im System vorgemerkt.", "success")
+    else:
+        flash("Zahlung noch nicht bestätigt. Bitte keine zweite Zahlung auslösen.", "error")
+    return redirect(url_for("index") + "#booking")
+
+
+@app.post("/stripe/webhook")
+def stripe_webhook():
+    """Signed test webhook; intentionally does not confirm bookings until lifecycle is integrated."""
+    if not os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_"):
+        return Response("Stripe test mode not configured", status=503)
+    try:
+        event = stripe_verify_signature(request.get_data(cache=False), request.headers.get("Stripe-Signature", ""))
+    except (ValueError, TypeError, json.JSONDecodeError):
+        return Response("Invalid Stripe signature", status=400)
+    # Do not acknowledge successful payment as a booking without verifying
+    # amount, currency, Checkout session, booking state and idempotency.
+    app.logger.info("stripe_test_webhook_received type=%s id=%s",
+                    str(event.get("type", ""))[:80], str(event.get("id", ""))[:120])
+    event_type = event.get("type")
+    if event_type in {"checkout.session.completed", "checkout.session.async_payment_succeeded"}:
+        session = (event.get("data") or {}).get("object") or {}
+        session_id = str(session.get("id") or "")
+        booking_ref = str(session.get("client_reference_id") or "")
+        if not session_id.startswith("cs_test_") or not booking_ref.isdecimal():
+            return jsonify(received=False, error="invalid_session_reference"), 400
+        # A checkout.session.completed event can precede final settlement.
+        # Only acknowledge after the authoritative paid state was persisted.
+        try:
+            confirmed = stripe_confirm_paid_test_booking(int(booking_ref), session_id)
+        except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+            app.logger.exception("stripe_payment_confirmation_retryable_error")
+            return jsonify(received=False, error="stripe_reconciliation_failed"), 503
+        if not confirmed:
+            return jsonify(received=False, error="booking_not_confirmed"), 503
+        return jsonify(received=True, booking_updated=True)
+    if event_type == "checkout.session.expired":
+        session = (event.get("data") or {}).get("object") or {}
+        booking_ref = str(session.get("client_reference_id") or "")
+        session_id = str(session.get("id") or "")
+        if not booking_ref.isdecimal() or not session_id.startswith("cs_test_"):
+            return jsonify(received=False, error="invalid_booking_reference"), 400
+        # Never expire a hold based on a different Checkout session.
+        with db() as conn:
+            hold = conn.execute(
+                "SELECT payment_reference FROM bookings WHERE id=?",
+                (int(booking_ref),),
+            ).fetchone()
+        if not hold or hold["payment_reference"] != session_id:
+            return jsonify(received=False, error="session_booking_mismatch"), 400
+        try:
+            released = stripe_release_expired_test_hold(int(booking_ref))
+        except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+            app.logger.exception("stripe_hold_release_retryable_error")
+            return jsonify(received=False, error="stripe_reconciliation_failed"), 503
+        if not released:
+            return jsonify(received=False, error="hold_not_released"), 503
+        return jsonify(received=True, booking_updated=True)
+    return jsonify(received=True, booking_updated=False)
+
+
 @app.post("/book")
 def book():
     try:
@@ -2589,7 +2673,14 @@ def book():
     if payment_method == "PayPal":
         flash("PayPal-Zahlungen bitte über den sicheren PayPal-Button starten.", "error")
         return redirect(url_for("index") + "#booking")
-    if payment_method not in {"Banküberweisung", "Vor Ort"}:
+    if payment_method == "Stripe" and not (
+        env_flag("STRIPE_CHECKOUT_ENABLED")
+        and os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_")
+        and os.environ.get("STRIPE_WEBHOOK_SECRET", "").startswith("whsec_")
+    ):
+        flash("Kartenzahlung ist derzeit nicht verfügbar.", "error")
+        return redirect(url_for("index") + "#booking")
+    if payment_method not in {"Banküberweisung", "Vor Ort", "Stripe"}:
         flash("Bitte eine gültige Zahlungsart wählen.", "error")
         return redirect(url_for("index") + "#booking")
 
@@ -2604,6 +2695,9 @@ def book():
                 (idempotency_key,),
             ).fetchone()
         if existing:
+            if existing["payment_method"] == "Stripe":
+                flash("Diese Kartenzahlung wurde bereits gestartet. Bitte den Zahlungsstatus prüfen.", "error")
+                return redirect(url_for("index") + "#booking")
             resend_existing_booking_mail(int(existing["id"]))
             return booking_success_response(existing)
 
@@ -2630,6 +2724,9 @@ def book():
                 ).fetchone()
                 if existing:
                     conn.rollback()
+                    if existing["payment_method"] == "Stripe":
+                        flash("Diese Kartenzahlung wurde bereits gestartet.", "error")
+                        return redirect(url_for("index") + "#booking")
                     return booking_success_response(existing)
 
             ok, message = room_available_in_conn(conn, room, arrival, departure)
@@ -2645,12 +2742,13 @@ def book():
                  last_name, email, phone, message, payment_method, total, status,
                  created_at, idempotency_key, price_breakdown_json,
                  source,utm_medium,utm_campaign,landing_page,referrer)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inquiry', ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     uid, room, arrival.isoformat(), departure.isoformat(), adults,
                     1 if breakfast else 0, first_name, last_name, email, phone,
                     request.form.get("message", "").strip(), payment_method, total,
+                    "pending" if payment_method == "Stripe" else "inquiry",
                     datetime.now().isoformat(timespec="seconds"), idempotency_key,
                     json.dumps(breakdown, ensure_ascii=False),
                     booking_source, utm_medium, utm_campaign, landing_page, referrer,
@@ -2665,10 +2763,48 @@ def book():
                     (idempotency_key,),
                 ).fetchone()
             if existing:
+                if existing["payment_method"] == "Stripe":
+                    flash("Diese Kartenzahlung wurde bereits gestartet.", "error")
+                    return redirect(url_for("index") + "#booking")
                 resend_existing_booking_mail(int(existing["id"]))
                 return booking_success_response(existing)
         flash("Die Buchung wurde bereits verarbeitet. Bitte Seite aktualisieren.", "error")
         return redirect(url_for("index") + "#booking")
+
+    if payment_method == "Stripe":
+        try:
+            session_data = stripe_create_test_checkout(
+                booking_id=booking_id, total_eur=total, guest_email=email,
+                success_url=url_for("stripe_checkout_return", _external=True) + "?session_id={CHECKOUT_SESSION_ID}",
+                cancel_url=url_for("index", _external=True) + "?stripe=cancel#booking",
+            )
+            checkout_id = str(session_data.get("id") or "")
+            checkout_url = str(session_data.get("url") or "")
+            if not checkout_id.startswith("cs_test_") or not checkout_url.startswith("https://checkout.stripe.com/"):
+                raise ValueError("Invalid Stripe Checkout response")
+            with db() as conn:
+                updated = conn.execute(
+                    """UPDATE bookings SET payment_reference=?, payment_status='unpaid'
+                       WHERE id=? AND payment_method='Stripe' AND status='pending'
+                         AND COALESCE(payment_reference,'')=''""",
+                    (checkout_id, booking_id),
+                )
+                conn.commit()
+            if updated.rowcount != 1:
+                raise ValueError("Stripe Checkout reservation reference not persisted")
+            return redirect(checkout_url, code=303)
+        except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
+            app.logger.exception("stripe_checkout_start_failed booking_id=%s", booking_id)
+            with db() as conn:
+                conn.execute(
+                    """UPDATE bookings SET status='expired', payment_status='failed'
+                       WHERE id=? AND payment_method='Stripe' AND status='pending'
+                         AND COALESCE(payment_reference,'')=''""",
+                    (booking_id,),
+                )
+                conn.commit()
+            flash("Kartenzahlung konnte nicht gestartet werden. Bitte erneut versuchen.", "error")
+            return redirect(url_for("index") + "#booking")
 
     if app.extensions.get("zab_ensure_tokens"):
         app.extensions["zab_ensure_tokens"](booking_id)
@@ -2720,6 +2856,182 @@ def _twilio_verify_post(path: str, data: dict) -> dict:
         method="POST",
     )
     with urllib.request.urlopen(req, timeout=15) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def stripe_fetch_test_session(session_id: str) -> dict:
+    """Fetch authoritative Stripe Checkout status before releasing a hold."""
+    key = os.environ.get("STRIPE_SECRET_KEY", "")
+    if not key.startswith("sk_test_"):
+        raise RuntimeError("Stripe test key required")
+    if not session_id.startswith("cs_test_") or len(session_id) > 255:
+        raise ValueError("Invalid test Checkout session ID")
+    url = "https://api.stripe.com/v1/checkout/sessions/" + urllib.parse.quote(session_id, safe="")
+    req = urllib.request.Request(url, headers={"Authorization": "Bearer " + key})
+    with urllib.request.urlopen(req, timeout=20) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def stripe_session_is_safe_to_release(session: dict, booking_id: int) -> bool:
+    """Only an explicitly expired, unpaid session tied to this booking can release inventory."""
+    return (
+        isinstance(session.get("id"), str)
+        and session["id"].startswith("cs_test_")
+        and session.get("livemode") is False
+        and session.get("status") == "expired"
+        and session.get("payment_status") == "unpaid"
+        and str(session.get("client_reference_id", "")) == str(booking_id)
+    )
+
+
+def stripe_test_session_matches_booking(session: dict, booking: sqlite3.Row) -> bool:
+    """Validate Checkout ownership, currency, exact amount and settled payment."""
+    if not session or not booking:
+        return False
+    if booking["payment_method"] != "Stripe":
+        return False
+    if session.get("id") != booking["payment_reference"]:
+        return False
+    if not str(session.get("id", "")).startswith("cs_test_"):
+        return False
+    if str(session.get("client_reference_id", "")) != str(booking["id"]):
+        return False
+    if session.get("currency") != "eur" or session.get("payment_status") != "paid":
+        return False
+    if session.get("status") != "complete" or session.get("mode") != "payment":
+        return False
+    expected = int((Decimal(str(booking["total"])) * 100).quantize(
+        Decimal("1"), rounding=ROUND_HALF_UP))
+    return (
+        expected > 0
+        and type(session.get("amount_total")) is int
+        and session["amount_total"] == expected
+        and session.get("livemode") is False
+    )
+
+
+def stripe_confirm_paid_test_booking(booking_id: int, session_id: str) -> bool:
+    """Confirm a held test booking after independently retrieving Stripe payment status.
+
+    Returns True for an already confirmed matching payment (idempotent).
+    Mail sending is deliberately deferred until delivery deduplication exists.
+    """
+    session = stripe_fetch_test_session(session_id)
+    with db() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        booking = conn.execute("SELECT * FROM bookings WHERE id=?", (booking_id,)).fetchone()
+        if not booking or not stripe_test_session_matches_booking(session, booking):
+            conn.rollback()
+            return False
+        if booking["status"] == "confirmed" and booking["payment_status"] == "paid":
+            conn.rollback()
+            return True
+        if booking["status"] != "pending":
+            conn.rollback()
+            return False
+        changed = conn.execute(
+            """UPDATE bookings SET status='confirmed', payment_status='paid'
+               WHERE id=? AND status='pending' AND payment_method='Stripe'
+                 AND payment_reference=?
+                 AND COALESCE(payment_status,'') NOT IN ('paid','succeeded')""",
+            (booking_id, session_id),
+        )
+        conn.commit()
+        return changed.rowcount == 1
+
+
+def stripe_release_expired_test_hold(booking_id: int) -> bool:
+    """Release a single Stripe test hold only after authoritative Stripe reconciliation.
+
+    Never releases holds without a recorded Checkout session, and never releases
+    an open, completed or paid Checkout session.
+    """
+    if not os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_test_"):
+        return False
+    with db() as conn:
+        row = conn.execute(
+            """SELECT id, status, payment_method, payment_status, payment_reference
+               FROM bookings WHERE id=?""", (booking_id,)
+        ).fetchone()
+    if not row or row["payment_method"] != "Stripe":
+        return False
+    if row["status"] == "expired" and (row["payment_status"] or "").lower() == "expired":
+        return True
+    if row["status"] != "pending":
+        return False
+    if (row["payment_status"] or "").lower() in {"paid", "succeeded"}:
+        return False
+    session_id = row["payment_reference"] or ""
+    if not session_id.startswith("cs_test_"):
+        return False
+    session = stripe_fetch_test_session(session_id)
+    if not stripe_session_is_safe_to_release(session, booking_id):
+        return False
+    with db() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        result = conn.execute(
+            """UPDATE bookings SET status='expired', payment_status='expired'
+               WHERE id=? AND payment_method='Stripe' AND status='pending'
+                 AND payment_reference=?
+                 AND COALESCE(payment_status,'') NOT IN ('paid','succeeded')""",
+            (booking_id, session_id),
+        )
+        conn.commit()
+        return result.rowcount == 1
+
+
+def stripe_verify_signature(payload: bytes, header: str) -> dict:
+    """Verify a Stripe webhook using raw body, signed timestamp and constant-time comparison."""
+    import time
+    secret = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+    if not secret.startswith("whsec_"):
+        raise ValueError("Stripe webhook secret missing")
+    fields = {}
+    for part in header.split(","):
+        key, sep, value = part.partition("=")
+        if sep:
+            fields.setdefault(key, []).append(value)
+    timestamp = int(fields.get("t", ["0"])[0])
+    if abs(time.time() - timestamp) > 300:
+        raise ValueError("Stripe webhook timestamp expired")
+    signed = str(timestamp).encode() + b"." + payload
+    expected = hmac.new(secret.encode(), signed, hashlib.sha256).hexdigest()
+    if not any(hmac.compare_digest(expected, value) for value in fields.get("v1", [])):
+        raise ValueError("Invalid Stripe signature")
+    return json.loads(payload)
+
+
+def stripe_create_test_checkout(*, booking_id: int, total_eur, guest_email: str,
+                                success_url: str, cancel_url: str) -> dict:
+    """Test-only helper. Caller must atomically reserve inventory before use."""
+    key = os.environ.get("STRIPE_SECRET_KEY", "")
+    if not key.startswith("sk_test_"):
+        raise RuntimeError("Only Stripe test keys are allowed")
+    cents = int((Decimal(str(total_eur)) * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+    if cents < 50:
+        raise ValueError("Invalid payment amount")
+    body = urllib.parse.urlencode({
+        "mode": "payment",
+        "payment_method_types[0]": "card",
+        "line_items[0][price_data][currency]": "eur",
+        "line_items[0][price_data][unit_amount]": str(cents),
+        "line_items[0][price_data][product_data][name]": "Zuhause am Bach - Zimmerbuchung",
+        "line_items[0][quantity]": "1",
+        "client_reference_id": str(booking_id),
+        "expires_at": str(int(__import__("time").time()) + 1800),
+        "customer_email": guest_email,
+        "success_url": success_url,
+        "cancel_url": cancel_url,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.stripe.com/v1/checkout/sessions",
+        data=body,
+        headers={"Authorization": "Bearer " + key,
+                 "Content-Type": "application/x-www-form-urlencoded",
+                 "Idempotency-Key": "zab-checkout-" + str(booking_id)},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=20) as response:
         return json.loads(response.read().decode("utf-8"))
 
 
