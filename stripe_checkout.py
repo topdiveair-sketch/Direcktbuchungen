@@ -4,6 +4,7 @@ import json
 import hmac
 import hashlib
 import os
+import re
 import sqlite3
 import time
 import urllib.error
@@ -17,8 +18,6 @@ from flask import Response, jsonify, redirect, render_template_string, request
 
 
 HOLD_MINUTES = 45
-CHECKOUT_ATTEMPTS_PER_WINDOW = 1
-CHECKOUT_WINDOW_HOURS = 6
 DEFAULT_DIRECT_ORIGIN = "https://topdiveair-sketch.github.io"
 DEFAULT_RETURN_URL = "https://topdiveair-sketch.github.io/Direcktbuchungen/"
 STRIPE_API_BASE = "https://api.stripe.com/v1"
@@ -230,6 +229,9 @@ def init_stripe_checkout(
         }
         if require_customer and not all(customer[k] for k in ("first_name", "last_name", "email", "phone")):
             raise ValueError("Bitte Name, E-Mail und Telefonnummer vollständig eingeben.")
+        if require_customer and (len(customer["email"]) > 254 or
+                                 not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", customer["email"])):
+            raise ValueError("Bitte eine gültige E-Mail-Adresse eingeben.")
         return data, room, arrival, departure, adults, chosen, customer
 
     def finalize_paid_session(session):
@@ -379,25 +381,10 @@ def init_stripe_checkout(
                             "message": "Für diesen Internetanschluss läuft bereits ein Karten-Checkout. Bitte schließen Sie die Zahlung ab oder versuchen Sie es nach Ablauf der Reservierung erneut.",
                             "retry_after": active_hold["hold_expires_at"],
                         }, 429)
-                    cutoff = (now - timedelta(hours=CHECKOUT_WINDOW_HOURS)).isoformat(timespec="seconds")
-                    attempt_count = conn.execute(
-                        "SELECT COUNT(*) FROM stripe_checkout_attempts WHERE ip_hash=? AND created_at>=?",
-                        (ip_hash, cutoff),
-                    ).fetchone()[0]
-                    if attempt_count >= CHECKOUT_ATTEMPTS_PER_WINDOW:
-                        conn.rollback()
-                        return api_json({
-                            "ok": False,
-                            "message": "Von diesem Internetanschluss wurde vor kurzem bereits ein Karten-Checkout gestartet. Bitte versuchen Sie es in sechs Stunden erneut oder wählen Sie eine andere Zahlungsart.",
-                        }, 429)
                     ok, message = room_available_in_conn(conn, room, arrival, departure)
                     if not ok:
                         conn.rollback()
                         return api_json({"ok": False, "message": message}, 409)
-                    conn.execute(
-                        "INSERT INTO stripe_checkout_attempts(ip_hash,created_at) VALUES(?,?)",
-                        (ip_hash, now_iso),
-                    )
                     cur = conn.execute(
                         """INSERT INTO bookings
                            (uid,room,arrival,departure,adults,breakfast,first_name,last_name,

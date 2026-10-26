@@ -521,8 +521,32 @@ def central_override_for_day(room: str, day: date) -> dict:
         return {}
 
 
+def explicit_manual_direct_price_for_day(room: str, day: date) -> float | None:
+    """Explicit OS-direct day prices are final, never dynamically surcharged."""
+    try:
+        with db() as conn:
+            row = conn.execute(
+                "SELECT price FROM zab_channel_day_settings "
+                "WHERE room=? AND channel='direct' AND day=?",
+                (room, day.isoformat()),
+            ).fetchone()
+    except sqlite3.OperationalError as exc:
+        if "no such table" not in str(exc).lower():
+            raise
+        row = None
+    if row is not None and row["price"] is not None:
+        return round(cap_room_rate(max(99.0, float(row["price"]))), 2)
+    legacy = central_override_for_day(room, day)
+    if legacy.get("price") is not None:
+        return round(cap_room_rate(max(99.0, float(legacy["price"]))), 2)
+    return None
+
+
 def _base_direct_nightly_price_for_day(room: str, day: date) -> float:
     """Return the OS/base rate before demand adjustment."""
+    manual_price = explicit_manual_direct_price_for_day(room, day)
+    if manual_price is not None:
+        return manual_price
     prices, _discounts, _extras, _seasons = pricing_data()
     getter = app.extensions.get("zab_channel_price_for_day")
     if callable(getter):
@@ -597,7 +621,10 @@ def _demand_percent_for_day(room: str, day: date) -> tuple[float, int]:
 
 
 def direct_nightly_price_for_day(room: str, day: date) -> float:
-    """OS base price plus aggregate date demand, with hard floor/cap protection."""
+    """Explicit OS prices are final; other nights use demand rules."""
+    manual_price = explicit_manual_direct_price_for_day(room, day)
+    if manual_price is not None:
+        return manual_price
     base = _base_direct_nightly_price_for_day(room, day)
     if room != "Bachblick":
         return base

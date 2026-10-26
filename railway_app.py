@@ -242,13 +242,14 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
             yield_details = []
             break
 
+        manual_final = core_app.explicit_manual_direct_price_for_day(room, current)
         base_rate = float(nightly)
-        add_eur, occupancy = _revenue_adjustment_for_day(
+        add_eur, occupancy = (0.0, 0.0) if manual_final is not None else _revenue_adjustment_for_day(
             current, occupied=occupied, today=today
         )
-        nightly = base_rate + add_eur
+        nightly = float(manual_final) if manual_final is not None else base_rate + add_eur
         same_day_late_add_eur = 0.0
-        if current == today and now_local.hour >= late_hour:
+        if manual_final is None and current == today and now_local.hour >= late_hour:
             same_day_late_add_eur = late_add_eur
             nightly += same_day_late_add_eur
 
@@ -258,6 +259,7 @@ def direct_checkout_price_breakdown(room, arrival, departure, adults, chosen, co
             {
                 "date": current.isoformat(),
                 "base_rate": round(base_rate, 2),
+                "manual_direct_price": manual_final is not None,
                 "occupancy_30d_percent": occupancy,
                 "yield_add_eur": round(add_eur, 2),
                 "same_day_late_add_eur": round(same_day_late_add_eur, 2),
