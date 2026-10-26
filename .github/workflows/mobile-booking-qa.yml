@@ -1,0 +1,47 @@
+name: Isolated mobile direct-booking check
+
+on:
+  pull_request:
+    branches: [fix/booking-section-order]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    env:
+      DATA_DIR: /tmp/zab-mobile-qa
+      PORT: "8765"
+      MOBILE_TEST_BASE: http://127.0.0.1:8765
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install app and browser dependencies
+        run: |
+          python -m pip install -r requirements.txt playwright
+          python -m playwright install --with-deps chromium
+      - name: Start isolated application, without payment credentials
+        run: |
+          mkdir -p "$DATA_DIR"
+          nohup gunicorn --bind 127.0.0.1:8765 --workers 1 --threads 2 --timeout 120 bing_verification_gateway:app > /tmp/zab-mobile-app.log 2>&1 &
+          for n in $(seq 1 50); do
+            curl -fsS http://127.0.0.1:8765/health/live && break
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:8765/health/live
+      - name: Check 320-1280px layouts and mocked quote
+        run: python tests/mobile_booking_browser.py
+      - name: Upload visual screenshots and server diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: guest-mobile-qa
+          path: |
+            mobile-qa/*.png
+            /tmp/zab-mobile-app.log
+          retention-days: 7
