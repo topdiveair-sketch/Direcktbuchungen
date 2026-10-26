@@ -756,7 +756,10 @@ def price_breakdown(room,arrival,departure,adults,chosen,coupon_code=""):
             amt=subtotal*float(coupon["percent"])/100
             subtotal-=amt
             applied.append({"label":f"Gutschein {coupon_code}","percent":coupon["percent"],"amount":round(amt,2)})
-    return {"nights":n,"room_total":round(room_total,2),"nightly_rates":nightly_rates,"extras":lines,"discounts":applied,"total":round(subtotal,2)}
+    from overnight_tax import with_guest_stay_costs
+    quote = {"nights":n,"room_total":round(room_total,2),"nightly_rates":nightly_rates,
+             "extras":lines,"discounts":applied,"total":round(subtotal,2)}
+    return with_guest_stay_costs(quote, arrival, departure, adults)
 
 def parse_date(value: str) -> date:
     return datetime.strptime(value, "%Y-%m-%d").date()
