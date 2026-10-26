@@ -113,3 +113,9 @@
   }
   .zab-slim .hero-actions .hero-secondary:hover{color:#fff!important;background:rgba(0,0,0,.65)!important}
 }
+
+/* Final handheld form polish: full-width voucher field and readable input labels. */
+.zab-slim #guestArea>label{display:block;font-weight:700;margin-top:14px;line-height:1.5}
+.zab-slim #couponCode{display:block;box-sizing:border-box;width:100%;max-width:100%;min-height:48px;margin-top:7px;padding:10px 12px;border-radius:10px;font-size:16px}
+.zab-slim #guestArea .guest-grid label{display:flex;flex-direction:column;gap:7px}
+.zab-slim #guestArea .guest-grid input{width:100%;box-sizing:border-box;min-height:48px;font-size:16px}
