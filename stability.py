@@ -115,7 +115,7 @@ Bei Banküberweisung entsteht durch den Buchungsabschluss eine verbindliche Zimm
 Zahlung vor Ort ist keine automatisch verfügbare Online-Zahlungsart. Sie kann nur nach vorheriger gesonderter Vereinbarung angeboten werden.
 
 2. Preise
-Alle auf der Website dargestellten Preise verstehen sich in Euro. Der im Buchungsprozess ausgewiesene Gesamtpreis berücksichtigt die ausgewählten Zusatzleistungen und gegebenenfalls gültige Rabatte. Gesetzliche Abgaben oder Ortstaxen können zusätzlich anfallen, sofern sie nicht ausdrücklich als enthalten ausgewiesen sind.
+Alle auf der Website dargestellten Preise verstehen sich in Euro. Der im Buchungsprozess ausgewiesene Gesamtpreis berücksichtigt die ausgewählten Zusatzleistungen und gegebenenfalls gültige Rabatte. Die gesetzliche Nächtigungstaxe wird getrennt vom Zimmerpreis erhoben und ist nicht im ausgewiesenen Zimmer- und Extras-Buchungsbetrag enthalten. Für erwachsene Gäste in einer niederösterreichischen Nicht-Kurortgemeinde beträgt sie für Nächtigungen 2026 2,60 € und 2027 2,70 € pro Person und Nacht. Für spätere Jahre gelten die amtlich kundgemachten Sätze. Gesetzliche Befreiungen bleiben unberührt.
 
 3. Zahlung
 PayPal-Zahlungen werden im PayPal-Checkout abgewickelt und nach serverseitig bestätigtem Zahlungserfolg verbindlich gebucht. Debit- und Kreditkartenzahlungen erfolgen über Stripe; die Buchung wird erst nach serverseitiger Zahlungsbestätigung verbindlich. Bei Banküberweisung werden nach dem verbindlichen Buchungsabschluss Kontoinhaber, IBAN, Betrag und Verwendungszweck angezeigt. Die 48-Stunden-Frist beginnt mit dem Buchungsabschluss. Bei gesondert vereinbarter Zahlung vor Ort gilt ausschließlich die individuelle Vereinbarung.
