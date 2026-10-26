@@ -142,37 +142,34 @@ function selectedPayment() {
   return document.querySelector('input[name="payment_method"]:checked')?.value || "PayPal";
 }
 
-function onsiteAllowedForArrival() {
+function bankAllowedForArrival() {
   if (!arrival.value) return true;
   const chosen = new Date(arrival.value + "T12:00:00");
   const today = new Date();
   today.setHours(12,0,0,0);
-  return Math.round((chosen - today) / 86400000) >= 3;
+  return Number.isFinite(chosen.getTime()) && Math.round((chosen - today) / 86400000) >= 3;
 }
 
-function updateOnsiteOption() {
-  const onsiteRadio = document.querySelector('input[name="payment_method"][value="Vor Ort"]');
-  if (!onsiteRadio) return;
-  const allowed = onsiteAllowedForArrival();
-  onsiteRadio.disabled = !allowed;
-  const card = onsiteRadio.closest("label");
-  if (card) {
-    card.classList.toggle("disabled", !allowed);
-    const small = card.querySelector("small");
-    if (small && checkoutLang === "de") {
-      small.textContent = allowed
-        ? "E-Mail-Bestätigung innerhalb von 2 Stunden"
-        : "Nicht verfügbar bei Anreise in weniger als 3 Tagen";
-    }
+function updateBankOption() {
+  const bank = document.querySelector('input[name="payment_method"][value="Banküberweisung"]');
+  if (!bank) return;
+  const allowed = bankAllowedForArrival();
+  bank.disabled = !allowed;
+  const label = bank.closest("label");
+  if (label) {
+    label.classList.toggle("disabled", !allowed);
+    const small = label.querySelector("small");
+    if (small && checkoutLang === "de")
+      small.textContent = allowed ? "Zahlungsfrist 48 Stunden · Anreise frühestens in 3 Tagen" : "Unter 3 Tagen nur PayPal oder Karte";
   }
-  if (!allowed && onsiteRadio.checked) {
-    const bank = document.querySelector('input[name="payment_method"][value="Banküberweisung"]');
-    if (bank) bank.checked = true;
+  if (!allowed && bank.checked) {
+    const paypal = document.querySelector('input[name="payment_method"][value="PayPal"]');
+    if (paypal) paypal.checked = true;
   }
 }
 
 function updatePaymentUI() {
-  updateOnsiteOption();
+  updateBankOption();
   const method = selectedPayment();
 
   bookingSubmit.disabled = false;
@@ -215,7 +212,7 @@ arrival.addEventListener("change", () => {
     departure.min = d.toISOString().slice(0,10);
     if (!departure.value || departure.value <= arrival.value) departure.value = departure.min;
   }
-  updateOnsiteOption();
+  updateBankOption();
   updateRoomRelease();
   resetAvailability();
 });
