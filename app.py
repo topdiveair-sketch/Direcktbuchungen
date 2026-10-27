@@ -1848,6 +1848,49 @@ def seo_landing_context(slug: str) -> dict:
                 {"@type":"Question","name":"Ist Frühstück im Zimmerpreis enthalten?","acceptedAnswer":{"@type":"Answer","text":"Nein. Frühstück ist eine optionale Zusatzleistung auf Vorbestellung."}}
             ],
         },
+        "verpflegung": {
+            "title":"Zimmer mit Frühstück & Abendjause Wachau | Zuhause am Bach",
+            "description":"Zimmer in der Wachau mit Frühstück und Wachauer Jause auf Vorbestellung: privates Gartenzimmer in Aggsbach Markt für 1–2 Gäste, auch 1 Nacht möglich.",
+            "canonical":"https://www.zuhauseambach-wachau.at/zimmer-fruehstueck-abendjause-wachau",
+            "h1":"Zimmer in der Wachau mit Frühstück und Abendjause",
+            "lead":"Bei Zuhause am Bach können Gäste Frühstück und eine Wachauer Jause als Abendessen auf Vorbestellung zum Aufenthalt dazubuchen. Beides ist optional und nicht automatisch im Zimmerpreis enthalten.",
+            "eyebrow":"Frühstück · Abendjause · Wachau",
+            "subheading":"Übernachten und auf Wunsch gleich Verpflegung vorbestellen",
+            "paragraphs":[
+                "Das Frühstück ist eine optionale Zusatzleistung für ein oder zwei Gäste. Wünsche wie vegetarisch oder vegan können bei der Buchung angegeben und vorab abgestimmt werden.",
+                "Als einfache Abendverpflegung kann eine Wachauer Jause auf Vorbestellung dazugebucht werden. Zuhause am Bach ist kein Restaurant und bietet keine klassische Halbpension an.",
+                "Das Gartenzimmer in Aggsbach Markt ist für maximal zwei Gäste gedacht. Auch eine einzelne Nacht ist grundsätzlich möglich, sofern der Termin frei ist."
+            ],
+            "features":[("🍳","Frühstück","Auf Vorbestellung zubuchbar."),("🥨","Wachauer Jause","Als Abendessen auf Vorbestellung."),("🌱","Vegetarisch / vegan","Wünsche vorab abstimmen."),("🌙","1 Nacht möglich","Sofern der Termin verfügbar ist.")],
+            "hero_image":"images/gartenzimmer-04-web.jpg","hero_image_alt":"Zimmer mit Frühstück und Abendjause in der Wachau bei Zuhause am Bach","hero_image_caption":"Privates Gartenzimmer in Aggsbach Markt.",
+            "secondary_image":"images/wachauer-jause-original.webp","secondary_image_alt":"Wachauer Jause als Abendessen auf Vorbestellung","secondary_image_caption":"Wachauer Jause auf Vorbestellung.",
+            "faq":faq_direct + [
+                {"@type":"Question","name":"Kann ich Frühstück dazubuchen?","acceptedAnswer":{"@type":"Answer","text":"Ja. Frühstück kann auf Vorbestellung als optionale Zusatzleistung gebucht werden."}},
+                {"@type":"Question","name":"Gibt es bei Zuhause am Bach Abendessen?","acceptedAnswer":{"@type":"Answer","text":"Als Abendverpflegung kann eine Wachauer Jause auf Vorbestellung dazugebucht werden. Zuhause am Bach ist kein Restaurant und bietet keine klassische Halbpension an."}},
+                {"@type":"Question","name":"Sind vegetarische oder vegane Wünsche möglich?","acceptedAnswer":{"@type":"Answer","text":"Ja. Vegetarische oder vegane Wünsche können bei der Buchung angegeben und vorab abgestimmt werden."}}
+            ],
+        },
+        "ohneauto": {
+            "title":"Wachau ohne Auto | Unterkunft in Aggsbach Markt",
+            "description":"Wachau ohne Auto erleben: Unterkunft in Aggsbach Markt für 1–2 Gäste. Anreise mit öffentlichen Verkehrsmitteln planen, Donauradweg und Welterbesteig verbinden und direkt buchen.",
+            "canonical":"https://www.zuhauseambach-wachau.at/wachau-ohne-auto",
+            "h1":"Wachau ohne Auto – Unterkunft in Aggsbach Markt",
+            "lead":"Zuhause am Bach eignet sich auch für Gäste, die die Wachau ohne eigenes Auto erleben möchten. Die öffentliche Anreise sollte vor Fahrtantritt mit den aktuellen Fahrplänen geprüft werden.",
+            "eyebrow":"Ohne Auto · Öffentliche Anreise · Wachau",
+            "subheading":"Mit Bahn und Bus in die Wachau und ruhig in Aggsbach Markt übernachten",
+            "paragraphs":[
+                "Aggsbach Markt liegt am nördlichen Wachauufer. Öffentliche Verbindungen in der Region ändern sich saisonal; deshalb verlinken wir bewusst auf aktuelle Fahrpläne statt starre Abfahrtszeiten zu versprechen.",
+                "Von der Unterkunft lassen sich Wander- und Radetappen in der Wachau kombinieren. Für Radgäste stehen eine sichere Fahrradunterbringung und eine E-Bike-Lademöglichkeit zur Verfügung.",
+                "Eine einzelne Nacht ist grundsätzlich möglich, sofern der Termin verfügbar ist. Frühstück und Wachauer Jause können auf Vorbestellung ergänzt werden."
+            ],
+            "features":[("🚌","Öffentlich anreisen","Aktuelle Verbindung vor der Fahrt prüfen."),("🥾","Zu Fuß weiter","Praktisch für Welterbesteig-Etappen."),("🚲","Rad kombinieren","Fahrrad sicher unterbringen und E-Bike laden."),("🌙","1 Nacht möglich","Sofern der Termin frei ist.")],
+            "hero_image":"images/bach-hinterm-haus-v11.webp","hero_image_alt":"Wachau ohne Auto mit Unterkunft in Aggsbach Markt","hero_image_caption":"Ruhige Unterkunft in Aggsbach Markt am nördlichen Wachauufer.",
+            "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer für eine autofreie Wachau-Reise","secondary_image_caption":"Privates Gartenzimmer für maximal zwei Gäste.",
+            "faq":faq_direct + [
+                {"@type":"Question","name":"Kann ich Zuhause am Bach ohne Auto erreichen?","acceptedAnswer":{"@type":"Answer","text":"Eine öffentliche Anreise nach Aggsbach Markt ist grundsätzlich planbar. Da Fahrpläne und saisonale Verbindungen wechseln können, sollten Gäste die aktuelle Verbindung vor der Fahrt beim Verkehrsverbund beziehungsweise Betreiber prüfen."}},
+                {"@type":"Question","name":"Kann ich eine autofreie Wachau-Reise mit Wandern oder Radfahren verbinden?","acceptedAnswer":{"@type":"Answer","text":"Ja. Aggsbach Markt eignet sich als Ausgangs- oder Etappenort für Wander- und Radreisen in der Wachau."}}
+            ],
+        },
         "lastminute": {
             "title":"Last Minute Zimmer Wachau | Kurzfristig Verfügbarkeit prüfen",
             "description":"Last Minute Zimmer in der Wachau gesucht? Freie Termine bei Zuhause am Bach in Aggsbach Markt direkt im Live-Kalender prüfen. 1 Nacht grundsätzlich möglich, keine Verfügbarkeitsgarantie.",
@@ -2236,6 +2279,28 @@ def seo_fruehstueck_vegetarisch_vegan():
     return render_template("seo_landing.html", **seo_landing_context("vegan"))
 
 
+@app.get("/zimmer-fruehstueck-abendjause-wachau")
+def seo_verpflegung_wachau():
+    return render_template("seo_landing.html", **seo_landing_context("verpflegung"))
+
+
+@app.get("/zimmer-mit-fruehstueck-wachau")
+@app.get("/wachau-zimmer-mit-fruehstueck")
+@app.get("/wachau-zimmer-mit-abendessen")
+def seo_verpflegung_aliases():
+    return redirect(url_for("seo_verpflegung_wachau"), code=301)
+
+
+@app.get("/wachau-ohne-auto")
+def seo_wachau_ohne_auto():
+    return render_template("seo_landing.html", **seo_landing_context("ohneauto"))
+
+
+@app.get("/wachau-ohne-auto-wachaubahn")
+def seo_wachau_ohne_auto_legacy():
+    return redirect(url_for("seo_wachau_ohne_auto"), code=301)
+
+
 @app.get("/last-minute-zimmer-wachau")
 @app.get("/kurzfristig-zimmer-wachau")
 def seo_last_minute_zimmer():
@@ -2315,6 +2380,33 @@ def activity_welterbesteig():
         booking_horizon_year=date.today().year + 2,
         settings=get_settings(),
     )
+
+@app.get("/ruhige-unterkunft-wachau")
+@app.get("/unterkunft-wachau-nordufer")
+@app.get("/unterkunft-wachau-melk-spitz")
+@app.get("/zuhause-am-bach-wachau")
+def legacy_general_wachau_redirects():
+    return redirect(url_for("seo_unterkunft_wachau"), code=301)
+
+
+@app.get("/unterkunft-aggsbach-markt")
+@app.get("/aggsbach-markt-wachau")
+def legacy_aggsbach_redirects():
+    return redirect(url_for("seo_aggsbach_markt"), code=301)
+
+
+@app.get("/ebike-unterkunft-wachau")
+@app.get("/donauradweg-passau-wien-unterkunft-wachau")
+@app.get("/donauradweg-etappenstopp-aggsbach-markt")
+def legacy_bike_redirects():
+    return redirect(url_for("activity_donauradweg"), code=301)
+
+
+@app.get("/wachau-trail-unterkunft")
+@app.get("/unterkunft-maria-laach-welterbesteig")
+def legacy_hiking_redirects():
+    return redirect(url_for("activity_welterbesteig"), code=301)
+
 
 @app.get("/donauradweg-unterkunft-wachau")
 def legacy_donauradweg_redirect():
@@ -2582,6 +2674,8 @@ def public_sitemap_urls():
         "https://www.zuhauseambach-wachau.at/zimmer-eigenes-bad-wachau",
         "https://www.zuhauseambach-wachau.at/unterkunft-wachau-parkplatz",
         "https://www.zuhauseambach-wachau.at/vegetarisches-veganes-fruehstueck-wachau",
+        "https://www.zuhauseambach-wachau.at/zimmer-fruehstueck-abendjause-wachau",
+        "https://www.zuhauseambach-wachau.at/wachau-ohne-auto",
         "https://www.zuhauseambach-wachau.at/last-minute-zimmer-wachau",
         "https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/wanderer-unterkunft-wachau",
@@ -2589,6 +2683,7 @@ def public_sitemap_urls():
         "https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau",
         "https://www.zuhauseambach-wachau.at/marillenbluete-wachau-unterkunft",
         "https://www.zuhauseambach-wachau.at/marillenernte-wachau-unterkunft",
+        "https://www.zuhauseambach-wachau.at/wachau-jahreszeiten-urlaub",
         "https://www.zuhauseambach-wachau.at/winterurlaub-wachau",
         "https://www.zuhauseambach-wachau.at/business-unterkunft-melk-krems",
         "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
@@ -2650,7 +2745,9 @@ Type: Small personal accommodation / guest room with direct booking
 - Welterbesteig accommodation: https://www.zuhauseambach-wachau.at/unterkunft-welterbesteig-wachau
 - Zimmer mit eigenem Bad in der Wachau: https://www.zuhauseambach-wachau.at/zimmer-eigenes-bad-wachau
 - Wachau Unterkunft mit kostenlosem Parkplatz: https://www.zuhauseambach-wachau.at/unterkunft-wachau-parkplatz
+- Frühstück und Wachauer Abendjause: https://www.zuhauseambach-wachau.at/zimmer-fruehstueck-abendjause-wachau
 - Vegetarisches / veganes Frühstück in der Wachau: https://www.zuhauseambach-wachau.at/vegetarisches-veganes-fruehstueck-wachau
+- Wachau ohne Auto / öffentliche Anreise: https://www.zuhauseambach-wachau.at/wachau-ohne-auto
 - Last Minute Zimmer Wachau / kurzfristige freie Nacht: https://www.zuhauseambach-wachau.at/last-minute-zimmer-wachau
 - Radfahrer-Unterkunft Wachau: https://www.zuhauseambach-wachau.at/radfahrer-unterkunft-wachau
 - Wanderer-Unterkunft Wachau: https://www.zuhauseambach-wachau.at/wanderer-unterkunft-wachau
