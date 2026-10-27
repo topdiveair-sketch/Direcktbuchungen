@@ -2268,15 +2268,23 @@ def seo_zimmer_eigenes_bad():
 
 
 @app.get("/unterkunft-wachau-parkplatz")
-@app.get("/zimmer-wachau-parkplatz")
 def seo_unterkunft_parkplatz():
     return render_template("seo_landing.html", **seo_landing_context("parkplatz"))
 
 
+@app.get("/zimmer-wachau-parkplatz")
+def seo_unterkunft_parkplatz_alias():
+    return redirect(url_for("seo_unterkunft_parkplatz"), code=301)
+
+
 @app.get("/vegetarisches-veganes-fruehstueck-wachau")
-@app.get("/veganes-fruehstueck-wachau")
 def seo_fruehstueck_vegetarisch_vegan():
     return render_template("seo_landing.html", **seo_landing_context("vegan"))
+
+
+@app.get("/veganes-fruehstueck-wachau")
+def seo_fruehstueck_vegetarisch_vegan_alias():
+    return redirect(url_for("seo_fruehstueck_vegetarisch_vegan"), code=301)
 
 
 @app.get("/zimmer-fruehstueck-abendjause-wachau")
@@ -2302,9 +2310,13 @@ def seo_wachau_ohne_auto_legacy():
 
 
 @app.get("/last-minute-zimmer-wachau")
-@app.get("/kurzfristig-zimmer-wachau")
 def seo_last_minute_zimmer():
     return render_template("seo_landing.html", **seo_landing_context("lastminute"))
+
+
+@app.get("/kurzfristig-zimmer-wachau")
+def seo_last_minute_zimmer_alias():
+    return redirect(url_for("seo_last_minute_zimmer"), code=301)
 
 
 @app.get("/radfahrer-unterkunft-wachau")
