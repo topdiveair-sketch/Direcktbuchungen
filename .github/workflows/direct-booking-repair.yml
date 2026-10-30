@@ -1,0 +1,28 @@
+name: Direct booking repair regressions
+
+on:
+  push:
+    branches: [fix/direct-booking-repair-20261030]
+  pull_request:
+    branches: [fix/booking-section-order]
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r requirements.txt
+      - name: Payment, calendar, storage and backup regressions
+        run: |
+          python -m unittest -v test_paypal_settlement test_storage_health test_sqlite_backup test_calendar_sync test_calendar_backoff test_calendar_db test_stripe_live_webhook test_backup_retention test_volume_diagnostics test_calendar_concurrency
+      - name: Bank booking isolation
+        run: python -m unittest -v test_bank_booking
+      - name: Existing checkout and price protections
+        run: python -m unittest discover -s tests -v

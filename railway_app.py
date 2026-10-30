@@ -23,6 +23,17 @@ try:
 except Exception as _early_retention_error:
     print("ZAB_EARLY_BACKUP_RETENTION_ERROR " + type(_early_retention_error).__name__, flush=True)
 
+# Preserve the existing database before this repair adds any durable sync state.
+# A failed backup aborts startup rather than proceeding with an unprotected DB.
+from pathlib import Path
+from sqlite_backup import verified_sqlite_backup
+_repair_data_root = Path(os.environ.get("DATA_DIR", str(Path(__file__).resolve().parent / "data")))
+_repair_database = _repair_data_root / "zab.db"
+_repair_backup = _repair_data_root / "backups" / "zab-before-direct-booking-repair-20261030.db"
+if _repair_database.is_file() and not _repair_backup.exists():
+    verified_sqlite_backup(_repair_database, _repair_backup)
+    print("ZAB_PRE_REPAIR_BACKUP verified", flush=True)
+
 import app as core_app
 from volume_diagnostics import volume_diagnostics
 
@@ -441,6 +452,17 @@ def railway_liveness_wsgi(environ, start_response):
             ],
         )
         return [body]
+    readonly_health = {
+        "/health/zab-storage": "zab_storage_health",
+        "/health/calendar-sync": "calendar_sync_health",
+    }
+    endpoint = readonly_health.get(environ.get("PATH_INFO"))
+    if endpoint and environ.get("REQUEST_METHOD") in {"GET", "HEAD"}:
+        # Diagnostics must not expire bookings or send notifications through
+        # ordinary Flask request hooks. These views only read local state.
+        with app.app_context():
+            response = app.make_response(app.view_functions[endpoint]())
+        return response(environ, start_response)
     return _flask_wsgi_app(environ, start_response)
 
 
@@ -490,6 +512,15 @@ def notify_successful_paid_booking(response):
         return response
     _notify_paid_booking(request.args.get("booking", type=int))
     return response
+
+
+@app.get("/health/zab-storage")
+def zab_storage_health():
+    from storage_health import storage_snapshot
+    payload = storage_snapshot(core_app.DB_PATH, os.environ.get("RAILWAY_VOLUME_MOUNT_PATH"))
+    response = jsonify(payload)
+    response.headers["Cache-Control"] = "no-store"
+    return response, 200 if payload["ok"] else 503
 
 
 @app.get("/health/deploy")

@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import re
 import sqlite3
 import urllib.error
 import urllib.request
@@ -231,6 +232,9 @@ def init_paypal_checkout(
         }
         if require_customer and not all(customer[key] for key in ("first_name", "last_name", "email", "phone")):
             raise ValueError("Bitte Name, E-Mail und Telefonnummer vollständig eingeben.")
+        if require_customer and (len(customer["email"]) > 254 or
+                                 not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", customer["email"])):
+            raise ValueError("Bitte eine gültige E-Mail-Adresse eingeben.")
         return data, room, arrival, departure, adults, chosen, customer
 
     def authoritative_quote(room, arrival, departure, adults, chosen):
@@ -467,7 +471,8 @@ def init_paypal_checkout(
         if booking["status"] == "cancelled" and not booking["paid"]:
             return render_template_string(ERROR_PAGE, message="Die Zahlungsfrist ist bereits abgelaufen."), 409
         stored_order = (booking["paypal_order_id"] or "").strip()
-        if not stored_order or stored_order != order_id:
+        if (booking["payment_method"] != "paypal_checkout"
+                or not stored_order or stored_order != order_id):
             return render_template_string(ERROR_PAGE, message="PayPal-Auftrag passt nicht zur Reservierung."), 409
         if booking["paid"] and booking["status"] == "confirmed":
             return render_template_string(
@@ -493,12 +498,44 @@ def init_paypal_checkout(
                 if not current:
                     conn.rollback()
                     raise RuntimeError("Reservierung wurde zwischenzeitlich entfernt.")
-                conn.execute(
+                # PayPal's HTTP request runs without a database transaction.
+                # Recheck the reservation and all occupancy sources atomically:
+                # another request may have cancelled/reassigned it meanwhile.
+                if (current["payment_method"] != "paypal_checkout"
+                        or current["paypal_order_id"] != order_id
+                        or Decimal(str(current["total"])).quantize(Decimal("0.01")) != expected):
+                    raise RuntimeError("Reservierung passt nicht mehr zur geprüften PayPal-Zahlung.")
+                if current["paid"]:
+                    if current["status"] != "confirmed" or current["paypal_capture_id"] != capture_id:
+                        raise RuntimeError("PayPal-Zahlung benötigt eine manuelle Zuordnung.")
+                else:
+                    if current["status"] != "pending":
+                        raise RuntimeError("Reservierung wurde während der Zahlung aufgehoben.")
+                    conflicts = conn.execute(
+                        """SELECT 1 FROM bookings WHERE room=? AND id<>?
+                           AND status IN ('pending','confirmed') AND arrival<? AND departure>? LIMIT 1""",
+                        (current["room"], booking_id, current["departure"], current["arrival"]),
+                    ).fetchone()
+                    external = conn.execute(
+                        """SELECT 1 FROM external_blocks WHERE room=?
+                           AND start_date<? AND end_date>? LIMIT 1""",
+                        (current["room"], current["departure"], current["arrival"]),
+                    ).fetchone()
+                    closed = conn.execute(
+                        """SELECT 1 FROM central_overrides WHERE room=? AND availability=0
+                           AND day>=? AND day<? LIMIT 1""",
+                        (current["room"], current["arrival"], current["departure"]),
+                    ).fetchone()
+                    if conflicts or external or closed:
+                        raise RuntimeError("Zimmer wurde während der Zahlung anderweitig gesperrt.")
+                updated = conn.execute(
                     """UPDATE bookings SET paid=1,paid_at=?,status='confirmed',paypal_capture_id=?,
                        hold_expires_at='',payment_error='',released_at='',release_reason=''
-                       WHERE id=?""",
+                       WHERE id=? AND status='pending' AND COALESCE(paid,0)=0""",
                     (paid_at, capture_id, booking_id),
                 )
+                if not current["paid"] and updated.rowcount != 1:
+                    raise RuntimeError("Reservierung konnte nicht eindeutig bestätigt werden.")
 
             return render_template_string(
                 SUCCESS_PAGE,
@@ -515,18 +552,11 @@ def init_paypal_checkout(
 
     @app.get("/paypal/cancel")
     def paypal_cancel():
-        booking_id = request.args.get("booking", type=int)
-        if booking_id:
-            with db() as conn:
-                conn.execute(
-                    """UPDATE bookings SET status='cancelled',released_at=?,
-                       release_reason='PayPal-Zahlung vom Gast abgebrochen'
-                       WHERE id=? AND COALESCE(paid,0)=0""",
-                    (datetime.now().isoformat(timespec="seconds"), booking_id),
-                )
+        # A browser return is not authoritative payment evidence. It may be
+        # replayed or arrive while capture is in flight. Expiry releases the hold.
         return render_template_string(
             ERROR_PAGE,
-            message="Die PayPal-Zahlung wurde abgebrochen. Der vorläufig reservierte Termin wurde wieder freigegeben.",
+            message="Die PayPal-Zahlung wurde im Browser abgebrochen. Eine noch offene Reservierung bleibt bis zum Ablauf der Zahlungsfrist bestehen. Falls PayPal eine Belastung anzeigt, bitte nicht erneut zahlen und uns kontaktieren.",
         )
 
     app.extensions["zab_paypal_checkout_enabled"] = True
