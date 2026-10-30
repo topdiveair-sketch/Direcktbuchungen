@@ -94,10 +94,10 @@ class CalendarSyncTests(unittest.TestCase):
         self.ns['_ical_watchdog']()
         return self.ns['_upsert_alert']
 
-    def test_partial_failure_keeps_snapshot_and_checkout_success(self):
+    def test_partial_failure_keeps_snapshot_and_blocks_checkout(self):
         failure = urllib.error.HTTPError(self.sources[1][2], 403, 'SECRET', {}, None)
         result, opener = self.sync([response(feed(7)), failure, response(feed(1))])
-        self.assertEqual(result, (8, 'Synchronisierung erfolgreich.'))
+        self.assertEqual(result, (0, self.status()))
         self.assertEqual(opener.call_count, 3)
         self.assertEqual(self.blocks('beds24_ical'), self.old)
         self.assertEqual(len(self.blocks('booking_ical')), 7)
@@ -110,44 +110,48 @@ class CalendarSyncTests(unittest.TestCase):
         self.assertFalse(self.ns['room_available_in_conn'](
             self.conn, 'Bachblick', date(2026, 10, 20), date(2026, 10, 21))[0])
 
-    def test_retry_recovers_and_replaces_only_successful_snapshot(self):
+    def test_later_run_recovers_after_timeout(self):
         result, opener = self.sync([response(feed(7)), urllib.error.URLError(TimeoutError('SECRET')),
-                                    response(feed(2)), response(feed(1))])
+                                    response(feed(1))])
+        self.assertEqual(result, (0, self.status()))
+        self.assertEqual(opener.call_count, 3)
+        self.conn.execute('UPDATE calendar_fetch_state SET next_attempt=0')
+        self.conn.commit()
+        result, opener = self.sync([response(feed(7)), response(feed(2)), response(feed(1))])
         self.assertEqual(result, (10, 'Synchronisierung erfolgreich.'))
-        self.assertEqual(opener.call_count, 4)
-        self.assertTrue(all(call.kwargs['timeout'] == 8 for call in opener.call_args_list))
+        self.assertEqual(opener.call_count, 3)
         self.assertEqual(len(self.blocks('beds24_ical')), 2)
         self.assertNotEqual(self.blocks('beds24_ical'), self.old)
-        self.assertIn('Beds24: 2 (nach Retry)', self.status())
         self.assertNotIn('Fehler', self.status())
         self.watchdog().assert_not_called()
         self.ns['_resolve_alerts'].assert_called_once_with('ical:', set())
 
     def test_persistent_timeout_is_bounded_and_remains_critical(self):
         result, opener = self.sync([response(feed(7)), TimeoutError('SECRET'),
-                                    TimeoutError('https://beds24.test/?token=SECRET'), response(feed(1))])
-        self.assertEqual(result, (8, 'Synchronisierung erfolgreich.'))
-        self.assertEqual(opener.call_count, 4)
+                                    response(feed(1))])
+        self.assertEqual(result, (0, self.status()))
+        self.assertEqual(opener.call_count, 3)
         self.assertEqual(self.blocks('beds24_ical'), self.old)
-        self.assertIn('Zeitüberschreitung; Versuche: 2', self.status())
+        self.assertIn('Zeitüberschreitung; Versuche: 1', self.status())
         self.assertNotIn('SECRET', self.status())
         self.assertEqual(self.watchdog().call_args.args[1], 'critical')
         self.assertNotIn('SECRET', repr(self.ns['app'].logger.mock_calls))
 
     def test_all_sources_fail_without_success_marker_or_lost_blocks(self):
         old = [self.blocks(s) for s, _, _ in self.sources]
-        result, opener = self.sync([TimeoutError('SECRET')] * 6)
-        self.assertEqual(opener.call_count, 6)
+        result, opener = self.sync([TimeoutError('SECRET')] * 3)
+        self.assertEqual(opener.call_count, 3)
         self.assertEqual(result, (0, self.status()))
         self.assertNotEqual(result[1], 'Synchronisierung erfolgreich.')
         self.assertEqual([self.blocks(s) for s, _, _ in self.sources], old)
 
-    def test_transient_http_503_retries(self):
+    def test_transient_http_503_waits_before_retry(self):
         self.sources = self.sources[1:2]
         failure = urllib.error.HTTPError(self.sources[0][2], 503, 'SECRET', {}, None)
-        result, opener = self.sync([failure, response(feed(1))])
-        self.assertEqual(opener.call_count, 2)
-        self.assertEqual(result, (1, 'Synchronisierung erfolgreich.'))
+        result, opener = self.sync([failure])
+        self.assertEqual(opener.call_count, 1)
+        self.assertNotEqual(result[1], 'Synchronisierung erfolgreich.')
+        self.assertEqual(self.sync([])[1].call_count, 0)
 
     def test_tls_failure_does_not_retry_or_leak_exception_text(self):
         self.sources = self.sources[1:2]
@@ -162,6 +166,8 @@ class CalendarSyncTests(unittest.TestCase):
         self.sources = self.sources[1:2]
         for payload in ['<html>SECRET</html>', feed(1).replace('END:VCALENDAR', '')]:
             with self.subTest(payload=payload):
+                self.conn.execute("DROP TABLE IF EXISTS calendar_fetch_state")
+                self.conn.commit()
                 result, opener = self.sync([response(payload)])
                 self.assertEqual(opener.call_count, 1)
                 self.assertIn('Ungültige Kalenderdaten', result[1])

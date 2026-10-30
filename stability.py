@@ -191,7 +191,8 @@ Bei außergewöhnlichen Umständen kann Zuhause am Bach - Wachau im Einzelfall e
         if not Path(DB_PATH).exists():
             return None
         target = backup_dir / f"zab-{label}-{datetime.now().strftime('%Y%m%d-%H%M%S')}.db"
-        shutil.copy2(DB_PATH,target)
+        from sqlite_backup import verified_sqlite_backup
+        verified_sqlite_backup(DB_PATH, target)
         rotate_backups()
         return target
 

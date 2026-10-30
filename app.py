@@ -1428,11 +1428,22 @@ def sync_room(room: str) -> tuple[int, str]:
             )
         return 0, "Kein externer Kalender hinterlegt."
 
+    from calendar_fetch_state import CalendarFetchState
+    fetch_state = CalendarFetchState(db)
     total = 0
     results = []
     any_success = False
 
     for source, label, url in sources:
+        claimed, state = fetch_state.claim(room, source, url)
+        if not claimed:
+            if fetch_state.cached_ok(state):
+                total += state["event_count"]
+                any_success = True
+                results.append(f"{label}: {state['event_count']} (gespeichert; frischer Abruf bestätigt)")
+            else:
+                results.append(f"{label}: Fehler ({state['error'] or 'Abruf läuft'}; Wartezeit aktiv; letzter Stand beibehalten)")
+            continue
         attempts = 0
         try:
             req = urllib.request.Request(
@@ -1442,22 +1453,20 @@ def sync_room(room: str) -> tuple[int, str]:
                     "Cache-Control": "no-cache",
                 },
             )
-            # One immediate retry only, confined to transient fetch/read errors.
-            # Do not repeat parsing or database writes, or retry auth/TLS errors.
-            for _ in range(2):
-                attempts += 1
-                try:
-                    with urllib.request.urlopen(req, timeout=8) as response:
-                        text = response.read().decode("utf-8", errors="replace")
-                    break
-                except Exception as exc:
-                    if attempts == 2 or not _calendar_failure(exc)[1]:
-                        raise
+            # One bounded request. Transient failures are retried by a later run,
+            # after the durable provider cooldown, never immediately.
+            attempts = 1
+            with urllib.request.urlopen(req, timeout=8) as response:
+                text = response.read().decode("utf-8", errors="replace")
             # An HTML error page or truncated response must not erase old blocks.
             lines = unfold_ical(text.lstrip("\ufeff").strip())
             if not lines or lines[0] != "BEGIN:VCALENDAR" or lines[-1] != "END:VCALENDAR":
                 raise ValueError("Invalid iCal envelope")
             events = parse_ical(text)
+            if (lines.count("BEGIN:VEVENT") != lines.count("END:VEVENT")
+                    or len(events) != lines.count("BEGIN:VEVENT")
+                    or any(e["end"] <= e["start"] for e in events)):
+                raise ValueError("Incomplete calendar events")
 
             # Replace only this provider's previous snapshot. If another provider
             # fails, its last successful snapshot remains as a safety net.
@@ -1484,11 +1493,14 @@ def sync_room(room: str) -> tuple[int, str]:
                         ),
                     )
 
+                fetch_state.success(conn, room, source, len(events))
+
             total += len(events)
             any_success = True
             results.append(f"{label}: {len(events)}" + (" (nach Retry)" if attempts > 1 else ""))
         except Exception as exc:
             reason, _ = _calendar_failure(exc)
+            fetch_state.failure(room, source, exc, reason)
             app.logger.warning(
                 "external_calendar_sync_failed room=%s source=%s attempts=%s reason=%s",
                 room, source, attempts, reason,
@@ -1505,16 +1517,24 @@ def sync_room(room: str) -> tuple[int, str]:
         )
 
     if any_success and len(results) == len(sources) and not any("Fehler" in item for item in results):
-        # Keep the sync_room return contract stable for checkout callers:
-        # detailed per-provider results stay in ical_settings.last_result, while
-        # callers receive the canonical success marker whenever at least one
-        # live provider refreshed successfully. Failed providers keep their
-        # last successful external_blocks snapshot as a safety net.
+        # Confirm only when every configured provider is fresh and error-free.
         return total, "Synchronisierung erfolgreich."
     return 0, message or "Kalender-Synchronisierung fehlgeschlagen."
 
 
 app.extensions["zab_sync_room"] = sync_room
+
+@app.get("/health/calendar-sync")
+def calendar_sync_health():
+    from calendar_fetch_state import health_snapshot
+    try:
+        payload = health_snapshot(db, _calendar_sources_for_room("Bachblick"))
+    except sqlite3.Error:
+        payload = dict(ok=False, revision="calendar-backoff-20261030", status="unknown")
+    response = jsonify(payload)
+    response.headers["Cache-Control"] = "no-store"
+    return response, 200 if payload["ok"] else 503
+
 
 
 ROLE_ALLOWED_PREFIXES = {

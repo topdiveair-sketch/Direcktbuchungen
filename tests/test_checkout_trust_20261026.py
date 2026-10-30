@@ -46,7 +46,7 @@ class CheckoutTrustTests(unittest.TestCase):
     def test_public_trust_copy(self):
         self.assertNotIn('8,8/10 Booking', H)
         self.assertNotIn('4,9 Google · 9', H)
-        self.assertIn('exklusivem Bad direkt gegenüber', H)
+        self.assertIn('Das ausschließlich zugehörige Badezimmer liegt direkt gegenüber auf dem Flur.', H)
         self.assertNotIn('>Verwaltung</a>', H)
         self.assertIn('Privatzimmer Wachau', H)
     def test_date_first_and_disclosed_extras(self):

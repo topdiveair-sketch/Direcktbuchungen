@@ -1,6 +1,6 @@
 """Concurrent Flask requests against a temporary DB; no live feeds or workers."""
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import date, datetime, timedelta
 import os
 import sqlite3
 import tempfile
@@ -71,6 +71,14 @@ class ConcurrentHomepageTests(unittest.TestCase):
             cls.tmp.cleanup()
             raise
 
+    def setUp(self):
+        with self.core.db() as conn:
+            conn.execute('DROP TABLE IF EXISTS calendar_fetch_state')
+            conn.execute("DELETE FROM external_blocks WHERE room='Bachblick'")
+            conn.execute("""INSERT INTO external_blocks
+                (room,start_date,end_date,source,uid,summary,imported_at)
+                VALUES('Bachblick','2026-10-20','2026-10-22','beds24_ical','old','Reserved','old')""")
+
     @classmethod
     def tearDownClass(cls):
         cls.env.stop()
@@ -106,11 +114,11 @@ class ConcurrentHomepageTests(unittest.TestCase):
                 for table in ('zab_rate_managed_days','zab_rate_outbox'):
                     conn.execute(f'DELETE FROM {table} WHERE room=? AND day=?',('Bachblick',day.isoformat()))
 
-    def test_os_base_price_gets_demand_and_portal_markup(self):
+    def test_explicit_os_final_price_skips_demand_and_gets_portal_markup(self):
         from datetime import date
         import railway_app
         from channel_pricing import portal_price
-        day = date(2026,10,26)
+        day = date.today() + timedelta(days=10)
         client = self.app.test_client()
         with client.session_transaction() as session:
             session['admin'] = True
@@ -122,16 +130,17 @@ class ConcurrentHomepageTests(unittest.TestCase):
                     'direct_price':'100','direct_status':'keep','booking_status':'keep',
                 })
                 self.assertEqual(result.status_code, 302)
-                self.assertEqual(railway_app.final_direct_rate('Bachblick', day), 105)
-                self.assertEqual(self.app.extensions['zab_portal_rate']('Bachblick', day), 110.25)
-                self.assertEqual(self.app.extensions['zab_channel_price_for_day']('Bachblick','booking',day), 110.25)
+                # An explicitly entered day price is the final direct rate.
+                self.assertEqual(railway_app.final_direct_rate('Bachblick', day), 100)
+                self.assertEqual(self.app.extensions['zab_portal_rate']('Bachblick', day), 105)
+                self.assertEqual(self.app.extensions['zab_channel_price_for_day']('Bachblick','booking',day), 105)
                 with self.core.db() as conn:
                     rows = conn.execute('SELECT desired_price FROM zab_rate_outbox WHERE day=?', (day.isoformat(),)).fetchall()
-                self.assertEqual([r['desired_price'] for r in rows], [110.25,110.25])
+                self.assertEqual([r['desired_price'] for r in rows], [105,105])
                 self.assertEqual(client.get('/os/channel-pricing/status').status_code,200)
-                dashboard = client.get('/os/calendar?year=2026&month=10&room=Bachblick&edit=2026-10-26')
+                dashboard = client.get(f'/os/calendar?year={day.year}&month={day.month}&room=Bachblick&edit={day.isoformat()}')
                 self.assertEqual(dashboard.status_code,200)
-                self.assertIn('110.25',dashboard.get_data(as_text=True))
+                self.assertIn('105.0',dashboard.get_data(as_text=True))
                 self.assertIn('aktuelle Basis 100.0',dashboard.get_data(as_text=True))
         finally:
             with self.core.db() as conn:
@@ -144,8 +153,9 @@ class ConcurrentHomepageTests(unittest.TestCase):
                 return response('{"ok":true,"events":[],"source":"test"}')
             return response(feed(1))
 
-        payload = {'room': 'Bachblick', 'arrival': '2026-10-26',
-                   'departure': '2026-10-29', 'adults': 2}
+        arrival = date.today() + timedelta(days=10)
+        payload = {'room': 'Bachblick', 'arrival': arrival.isoformat(),
+                   'departure': (arrival + timedelta(days=3)).isoformat(), 'adults': 2}
         with patch('urllib.request.urlopen', side_effect=fetch):
             for breakfast in (False, True):
                 with self.subTest(breakfast=breakfast):
@@ -157,7 +167,7 @@ class ConcurrentHomepageTests(unittest.TestCase):
                         **payload, 'extras': {'breakfast': breakfast},
                     })
                     self.assertEqual(public.status_code, 200)
-                    self.assertEqual(checkout.status_code, 200)
+                    self.assertEqual(checkout.status_code, 200, checkout.get_json())
                     first = public.get_json()['breakdown']
                     second = checkout.get_json()['breakdown']
                     for key in ('total', 'room_total', 'extras', 'discounts', 'nightly_rates'):
@@ -167,6 +177,16 @@ class ConcurrentHomepageTests(unittest.TestCase):
                     self.assertEqual(sum(row['rate'] for row in first['nightly_rates']), first['room_total'])
                     if breakfast:
                         self.assertGreater(first['total'], first['room_total'])
+
+    def test_health_diagnostics_bypass_booking_cleanup_and_notification_hooks(self):
+        client = self.app.test_client()
+        with patch.object(self.app, 'preprocess_request', side_effect=AssertionError('No cleanup hooks')), \
+             patch.object(self.app, 'process_response', side_effect=AssertionError('No notification hooks')):
+            for path in ('/health/zab-storage', '/health/calendar-sync'):
+                result = client.get(path)
+                self.assertIn(result.status_code, (200, 503))
+                self.assertEqual(result.headers['Cache-Control'], 'no-store')
+                self.assertIn('ok', result.get_json())
 
     def test_parallel_home_calendar_and_checks_keep_safety_snapshot(self):
         def fetch(req, **kwargs):
@@ -190,7 +210,7 @@ class ConcurrentHomepageTests(unittest.TestCase):
             result = client.post('/api/availability', data={
                 'room': 'Bachblick', 'arrival': arrival, 'departure': departure, 'adults': '2',
             })
-            self.assertEqual(result.get_json()['available'], kind == 2)
+            self.assertFalse(result.get_json()['available'])
             return result.status_code, result.get_json()['available']
 
         with patch('urllib.request.urlopen', side_effect=fetch), patch.object(
@@ -204,7 +224,7 @@ class ConcurrentHomepageTests(unittest.TestCase):
             row = conn.execute("SELECT uid,imported_at FROM external_blocks WHERE source='beds24_ical'").fetchone()
             self.assertEqual(tuple(row), ('old', 'old'))
             status = conn.execute("SELECT last_result FROM ical_settings WHERE room='Bachblick'").fetchone()[0]
-            self.assertIn('Beds24: Fehler (Zeitüberschreitung; Versuche: 2', status)
+            self.assertIn('Beds24: Fehler (Zeitüberschreitung', status)
 
 
 if __name__ == '__main__':
