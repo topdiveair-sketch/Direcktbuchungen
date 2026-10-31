@@ -5,6 +5,12 @@
   "masterUrl": "https://web-production-907d68.up.railway.app/calendar/public/Bachblick.ics",
   "events": [
     {
+      "start": "2026-10-31",
+      "end": "2026-11-01",
+      "summary": "CLOSED - Not available",
+      "source": "Booking iCal Sicherheitsabgleich"
+    },
+    {
       "start": "2026-11-06",
       "end": "2026-11-09",
       "summary": "CLOSED - Not available",
@@ -47,6 +53,6 @@
       "source": "Booking iCal Sicherheitsabgleich"
     }
   ],
-  "updatedAt": "31.10.2026, 15:49:54",
-  "updatedAtIso": "2026-10-31T14:49:54.172Z"
+  "updatedAt": "31.10.2026, 19:52:15",
+  "updatedAtIso": "2026-10-31T18:52:15.093Z"
 }
