@@ -724,3 +724,23 @@ def paypal_health():
         }, 503
     except Exception:
         return {"ok": False, "environment": environment, "reason": "paypal_unreachable"}, 503
+
+# Legacy SEO links: keep old winter URLs usable without touching checkout.
+from werkzeug.wrappers import Response as _WinterRedirectResponse
+_winter_old_urls = {
+    "/winterangebote-wachau": "/winterurlaub-wachau",
+    "/winter-wachau-jauerling": "/skifahren-jauerling-unterkunft-wachau",
+    "/wachauer-advent-unterkunft": "/wachauer-advent-duernstein-2026-unterkunft",
+    "/skifahren-jauerling-unterkunft-wachau/": "/skifahren-jauerling-unterkunft-wachau",
+}
+_prior_winter_wsgi = app.wsgi_app
+
+def _winter_url_compat(environ, start_response):
+    path = environ.get("PATH_INFO", "")
+    target = _winter_old_urls.get(path) or _winter_old_urls.get(path.rstrip("/"))
+    if target and environ.get("REQUEST_METHOD") in ("GET", "HEAD"):
+        response = _WinterRedirectResponse(status=301, headers={"Location": target})
+        return response(environ, start_response)
+    return _prior_winter_wsgi(environ, start_response)
+
+app.wsgi_app = _winter_url_compat
