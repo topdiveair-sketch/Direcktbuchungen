@@ -103,3 +103,31 @@ Optionale kurze Autorenbiografie als **Entwurf**:
 - **Jimdo-Shop weiter unveraendert:** https://www.diewildenwachauerwindis.at/buecher-shop/auswanderer-sachbuecher/ zeigt weiterhin alte Ungarn-Ausgabe. Separate Korrekturaufgabe https://github.com/topdiveair-sketch/windi-chronik/issues/3. Kein Jimdo-Login und keine kostenpflichtige Browserautomation.
 
 **Nachkontrolle: oeffentliche Seiten nun live verifiziert (02.11.2026).** Nach anfaenglicher GitHub-Pages-Verzoegerung wurde buecher.html live mit neuer Ungarn-ASIN B0HQ4M32NL und ohne alte B0GHMQ5CQP bzw. ungeklaerte B0G6WW417T abgerufen. books.html zeigt ebenfalls neuen Stand und verlinkt die kuratierte Buchseite. Die oeffentlich gelieferte sitemap.xml enthaelt jetzt buecher-johann-prem.html. **Die obigen vorlaeufigen Deploy-Hinweise sind historische Zwischenstaende, keine offenen Blocker mehr.** Der Jimdo-Shop bleibt gesondert unveraendert.
+
+
+## Buchverkaufs-Test: Original-Leseprobe statt zusaetzlicher Anzeigen (02.11.2026)
+
+**Live umgesetzt und oeffentlich bestaetigt:** https://topdiveair-sketch.github.io/Gaeste/auswandern-ungarn-rentner-2027.html enthaelt seit 02.11.2026 einen zusaetzlichen Abschnitt mit kurzen Originaltext-Auszügen aus der vorhandenen Word-Manuskriptfassung vom 02.11.2026 (Vorwort, Kapitel 1, Kapitel 2), sauber als Manuskript und nicht als druckverifizierte Originalseiten bezeichnet. Kostenlose Leseprobe und Amazon-Kauf-CTA fuer B0HQ4M32NL verlinkt. Code Commit 0c421372eaff193a614c5154b66f5213aa8e9527, gesonderter Live-Abruf des Auszugs erfolgreich.
+
+**Einen bestehenden Facebook-Beitrag (kein zusaetzlicher Werbepost) umgestellt:** 09.11.2026, 10:00 Uhr Europe/Berlin, urspruenglicher Metricool-Post 414079316, nach Update **414319729**, UUID -461678407141143031. Thema: Drei teure Auswanderungsfehler. CTA jetzt zu kostenloser Leseprobe und 7-Punkte-Check; kleine sachliche Korrektur auf "sechs fiktive Fallstudien". Geprueft: PENDING, draft=false, autoPublish=true, Termin erhalten.
+
+**Begrenzter Test und Messstandard:**
+- 0 EUR neues Anzeigenbudget; keine neue Posting-Serie.
+- 04.11 und 13.11 geplante Beitraege mit direktem Amazon-Link bleiben unveraendert (andere Message/Zeiten, keine randomisierte A/B-Studie).
+- 09.11 Beitrag mit Leseprobe als Alternative. Ab 10.11 tatsaechliche Facebook-Linkklicks ueber Metricool ansehen, sofern Metricool valide Daten liefert. Am 02.11 gab das Posts-Analytics-API nur rows:[], daher **keine** erfundenen Klickwerte.
+- Im KDP-Bericht den realen ASIN-Umsatz/Tantiemen je Tag und Format vergleichen; ohne Zugriff auf einen KDP-Bericht bleibt die Absatzwirkung unbekannt. Keinen kausalen Beweis aus Korrelation ableiten.
+- Endauswertung 09.12.2026: eingesetzte Arbeitszeit, KDP-Tantiemen, qualitative Rueckmeldungen, Linkklicks sofern vorhanden. Erfolg: mindestens ein bezahlter Kauf bei vertretbarem Aufwand; Abbruch: ohne Umsatznachweis keine erweiterte Promotion oder Neuproduktion.
+- Die Amazon-interne Funktion "Blick ins Buch" wird bei frischen Druckausgaben erst nach ca. 9–10 Werktagen aktiviert: https://kdp.amazon.com/de_DE/help/topic/G200644250 . Die selbst veroeffentlichte Leseprobe dient als temporaere Alternative, ersetzt diese Amazon-Funktion nicht.
+
+**Vorbereitete KDP-Stichwort-Hypothesen (nicht in KDP gespeichert):**
+1. S1 Formular Krankenversicherung
+2. deutsche Rente Besteuerung Ausland
+3. oesterreichische Pension Wohnsitz
+4. Immobilienkauf Grundbuch Pruefung
+5. Lebenshaltungskosten Forint Budget
+6. Pflegefall Rueckkehrplanung
+7. Aufenthaltsregistrierung EU Buerger
+
+Diese sieben konkreten Phrasen sind aus dem Buchinhalt abgeleitet, **nicht** nach Suchvolumen und Wettbewerb validiert; ohne KDP-Einblick ist unbekannt, welche Stichwoerter derzeit eingetragen sind. Keine KDP-Aenderung ohne Kenntnis bestehender Felder. Regeln: https://kdp.amazon.com/de_DE/help/topic/G201298500
+
+**Umsatzhebel:** Inhaltliche Kaufprobe und KDP-Produktdetailseite vor zusaetzlicher Reichweite; kein Versprechen steigender Verkaeufe.
