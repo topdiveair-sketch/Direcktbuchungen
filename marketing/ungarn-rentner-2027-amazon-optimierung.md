@@ -73,3 +73,22 @@ Optionale kurze Autorenbiografie als **Entwurf**:
 - KDP-Offizialregel bei wesentlich neuer Ausgabe bzw. Titelaenderung: https://kdp.amazon.com/de_DE/help/topic/GW7J4WEKBVU25YEC . Pruefen, ob Auflagenkennzeichnung und der geforderte Hinweis auf die Vorveroeffentlichung korrekt sind. Keine ungepruefte Unterstellung eines Regelverstosses.
 - Das erstellte A+-ZIP wurde technisch verifiziert: 4 RGB-JPGs, 1940x600 und dreimal 600x600, jeweils unter 2 MB; enthaelt klare Kennzeichnung von 6 fiktiven Fallstudien; keine Preise oder Kaufaufforderungen. Dieses Paket ist weiterhin **nicht** auf Amazon eingereicht.
 - Keine zusaetzlichen Werbebudget-Ausgaben. Belege fuer KDP-Verkaeufe bleiben offen.
+
+
+## Kindle 2027: kostenloser ein-Titel-Verkaufstest
+
+**Status 02.11.2026:** eigenstaendige, technisch kontrollierte EPUB3-Arbeitsfassung aus dem neueren Word-Manuskript `Ungarn_2027_Word.docx` erstellt. Originaltitelbild aus dem vorhandenen KDP-Gesamtcover separat als JPEG zugeschnitten. Eine KDP-Veroeffentlichung oder Freigabe im Kindle Previewer ist **nicht** erfolgt.
+
+**Technischer Test:** EPUB ZIP fehlerfrei, dynamisch mitfliessender Text, Quellenregister und Schlusswort enthalten, 69 Kapitelueberschriften und 143 Unterueberschriften, keine unaufloesbaren internen Sprungziele. Print-Inhaltsverzeichnis mit fixen Seitenzahlen wurde durch dynamische Navigation ersetzt. Am Buchende wurde eine kurze, thematisch passende Empfehlung fuer den Griechenland-Ratgeber von J.F.X. Prem (ASIN B0GHNB7V34) und die oeffentliche Amazon-Autorenseite aufgenommen. Keine Weitergabe oder Ablage des kostenpflichtigen Buchmanuskripts in diesem oeffentlichen GitHub-Repository.
+
+**Noch notwendig:** Echtes inhaltliches Lektorat und regulatorische Aktualitaetspruefung vor Kindle-Freigabe, Kindle Previewer auf E-Ink/Smartphone, technische KDP-Uploadvalidierung, Titel/Untertitel/Autor exakt passend zur Taschenbuchausgabe, Kosten-/Preispruefung. Die eBook-Ausgabe benoetigt keine ISBN. Die Print-ISBN darf fuer das eBook nicht wiederverwendet werden.
+
+**Kleiner Vertriebsexperiment-Vorschlag:** 1 vorhandenes eBook, 0 EUR zusaetzliches Werbebudget, maximal 60 Minuten menschlicher KDP-Setup-/Preview-Aufwand, Laufzeit 30 Tage ab bestaetigtem Livegang. Erfolg: mindestens 1 tatsaechlich bezahlter KDP-eBook-Verkauf mit positiver Tantiemenabrechnung; bei 0 Verkaeufen keine weitere eBook-Reihe starten. Kurzfristiger Rechenpreis 4,99 EUR nur eine Hypothese, **nicht** bei KDP eingestellt. Die KDP-70-Prozent-Tantiemenoption gilt unter Bedingungen (2026: EU-Preisband 2,69 bis 12,99 EUR inklusive MwSt.; eBook-Preis mindestens 20 Prozent unter dem Listenpreis jeder Druckausgabe; Lieferkosten werden abgezogen). KDP Select erst nach digitaler Exklusivitaetspruefung, kein automatischer Beitritt.
+
+**KDP-Hilfen:**
+- https://kdp.amazon.com/de_DE/help/topic/G200634390 (EPUB-Format)
+- https://kdp.amazon.com/de_DE/help/topic/G200645680 (Formatierung)
+- https://kdp.amazon.com/de_DE/help/topic/GQ6JQ7FM6C72HE4X (passende interne und externe Links)
+- https://kdp.amazon.com/de_DE/help/topic/G202172740 (Formate verknuepfen)
+- https://kdp.amazon.com/de_DE/help/topic/G200634500 (Preis/70 Prozent)
+- https://kdp.amazon.com/de_DE/help/topic/G200644250 (Leseprobe wird nach Veroeffentlichung automatisch angeboten, bei Print typischerweise nach 9 bis 10 Werktagen)
