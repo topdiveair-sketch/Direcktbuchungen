@@ -92,3 +92,12 @@ Optionale kurze Autorenbiografie als **Entwurf**:
 - https://kdp.amazon.com/de_DE/help/topic/G202172740 (Formate verknuepfen)
 - https://kdp.amazon.com/de_DE/help/topic/G200634500 (Preis/70 Prozent)
 - https://kdp.amazon.com/de_DE/help/topic/G200644250 (Leseprobe wird nach Veroeffentlichung automatisch angeboten, bei Print typischerweise nach 9 bis 10 Werktagen)
+
+
+## Kostenfreie Buchuebersicht und Katalogpflege (02.11.2026)
+
+- **Oeffentlich erreichbar (separat verifiziert):** https://topdiveair-sketch.github.io/Gaeste/buecher-johann-prem.html – Sieben auf Original-Produktseiten gepruefte Buecher, sechs Originalcover, direkte Amazon-/epubli-Links, deutsche Produktuebersicht und responsive CSS. Kein Checkout, kein Tracking oder Bezahlwerbung. Alte Ungarn-Ausgabe B0GHMQ5CQP bewusst ausgeschlossen. Repository: topdiveair-sketch/Gaeste, Datei buecher-johann-prem.html. Es gibt keine Zusage fuer Suchmaschinenindexierung oder Verkaeufe.
+- **Bestandskataloge korrigiert – GitHub gespeichert, Liveauslieferung noch offen:** https://topdiveair-sketch.github.io/Gaeste/buecher.html sowie https://topdiveair-sketch.github.io/Gaeste/books.html: alte KDP-ASIN B0GHMQ5CQP durch 2027-ASIN B0HQ4M32NL ersetzt; Titel und echtes Bild auf neue Ausgabe korrigiert; unbestaetigt zugehoeriger Mc-Gou-Titel B0G6WW417T aus beiden Katalogen entfernt; Querverweis zur neuen Buchauswahl eingefuegt.
+- **Sitemap GitHub aktualisiert, Liveauslieferung noch offen:** https://topdiveair-sketch.github.io/Gaeste/sitemap.xml enthaelt im Code nun neue Unterseite.
+- Der CDN/Pages-Abruf zeigte unmittelbar nach den Updates noch die ALTEN Fassungen von buecher.html, books.html, sitemap.xml. Nicht als live bestaetigt melden, bevor die oeffentlich abgerufenen URLs die neuen Links liefern.
+- **Jimdo-Shop weiter unveraendert:** https://www.diewildenwachauerwindis.at/buecher-shop/auswanderer-sachbuecher/ zeigt weiterhin alte Ungarn-Ausgabe. Separate Korrekturaufgabe https://github.com/topdiveair-sketch/windi-chronik/issues/3. Kein Jimdo-Login und keine kostenpflichtige Browserautomation.
