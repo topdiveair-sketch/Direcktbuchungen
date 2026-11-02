@@ -97,7 +97,10 @@
       "category": "gesellschaft",
       "format": "paperback",
       "status": "live",
-      "amazon_url": "https://www.amazon.de/dp/B0G6WW417T"
+      "amazon_url": "https://www.amazon.de/dp/B0G6WW417T",
+      "marketing_excluded": true,
+      "marketing_review_required": true,
+      "marketing_note": "Amazon.de zeigt Autor 'Mc Gou' fuer ASIN B0G6WW417T (geprueft 02.11.2026). Zuordnung zu Johann Prem / J.F.X. Prem / Pia Ordelia ist bislang nicht belegt. Nicht bewerben, bis die Rechte-/Pseudonym-Zuordnung bestaetigt wurde. Live-KDP-Status hier nicht veraendert."
     },
     {
       "title": "Abenteuer am Welterbesteig – Die Wilden Wachauer Windis",
