@@ -63,3 +63,13 @@ Optionale kurze Autorenbiografie als **Entwurf**:
 - Nach 30 Tagen echte Bestellungen und Tantiemen mit der organischen Werbeleistung vergleichen; falls keine substanzielle Nachfrage messbar ist, weitere Postserien einstellen.
 
 **Letzter technischer Bearbeitungsstatus:** Dieses Dokument wurde im GitHub-Marketing-Repository gespeichert, ist **kein Nachweis einer Amazon-Aenderung**.
+
+## Zusaetzliche Ergebnisse vom 02.11.2026
+
+- Einmaliger, unentgeltlicher redaktioneller Hinweis an die NÖN-Wachau-Redakteurin Gertrude Schopf vom bestehenden Pressekontakt gesendet: Gmail 1a19ce19cc8e93d1, Betreff "Buchtipp aus Aggsbach Markt: Ungarn fuer Rentner – neue Ausgabe 2027". Kein publizierter Artikel nachgewiesen.
+- Goodreads-Abgleich: weder die 2027-ISBN noch der Autor J.F.X. Prem konnten ueber oeffentliche Suche eindeutig im Goodreads-Katalog belegt werden. Kostenloses Goodreads Author Program existiert (https://www.goodreads.com/author/program), jedoch keine authentifizierte Goodreads-Buchanlage durchgefuehrt.
+- Die aeltere Amazon-KDP-Ausgabe B0GHMQ5CQP bleibt neben 2027 auf Author Central sichtbar. Die epubli-Kuendigung ist davon getrennt. Offizielle KDP-Anleitung zur gezielten Einstellung einzelner alter Formate: https://kdp.amazon.com/de_DE/help/topic/G4QJH4ENN4FZRFMP . Nicht im KDP-Konto ausgefuehrt.
+- Neue 2027-Ausgabe wird auf dem Amazon-Autorenprofil bereits gelistet. Die Leseprobe war bei oeffentlicher Abfrage am Erscheinungstag noch nicht auffindbar, daher nach einigen Tagen nachpruefen.
+- KDP-Offizialregel bei wesentlich neuer Ausgabe bzw. Titelaenderung: https://kdp.amazon.com/de_DE/help/topic/GW7J4WEKBVU25YEC . Pruefen, ob Auflagenkennzeichnung und der geforderte Hinweis auf die Vorveroeffentlichung korrekt sind. Keine ungepruefte Unterstellung eines Regelverstosses.
+- Das erstellte A+-ZIP wurde technisch verifiziert: 4 RGB-JPGs, 1940x600 und dreimal 600x600, jeweils unter 2 MB; enthaelt klare Kennzeichnung von 6 fiktiven Fallstudien; keine Preise oder Kaufaufforderungen. Dieses Paket ist weiterhin **nicht** auf Amazon eingereicht.
+- Keine zusaetzlichen Werbebudget-Ausgaben. Belege fuer KDP-Verkaeufe bleiben offen.
