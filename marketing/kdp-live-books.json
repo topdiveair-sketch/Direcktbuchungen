@@ -3,7 +3,7 @@
   "scope": "Nur dort ausdrücklich als Live markierte Taschenbücher; andere Formate separat prüfen",
   "last_verified": "2026-10-20",
   "rules": {
-    "advertise_only": "status == live",
+    "advertise_only": "status == live AND marketing_excluded != true",
     "paid_ads": false,
     "price_changes": false
   },
@@ -86,7 +86,10 @@
       "category": "auswandern",
       "format": "paperback",
       "status": "live",
-      "amazon_url": "https://www.amazon.de/dp/B0GHMQ5CQP"
+      "amazon_url": "https://www.amazon.de/dp/B0GHMQ5CQP",
+      "marketing_excluded": true,
+      "superseded_by_asin": "B0HQ4M32NL",
+      "marketing_note": "Vorgaengertitel; fuer neue Aktionen Ausgabe 2027 bevorzugen. Live-Status der aelteren Ausgabe unveraendert."
     },
     {
       "title": "NUR WEG VON DEUTSCHLAND? – Das Renten Exil Handbuch",
@@ -255,6 +258,17 @@
       "format": "paperback",
       "status": "live",
       "amazon_url": "https://www.amazon.de/dp/B0GG5XPGPV"
+    },
+    {
+      "title": "Ungarn für Rentner – Der ehrliche Praxisratgeber für Auswanderer, Ruheständler und Langzeitaufenthalte",
+      "asin": "B0HQ4M32NL",
+      "edition": "2027",
+      "category": "auswandern",
+      "format": "paperback",
+      "status": "live",
+      "amazon_url": "https://www.amazon.de/dp/B0HQ4M32NL",
+      "live_verified_at": "2026-11-02",
+      "verification": "Öffentliche Amazon.de-Produktseite mit ASIN, 126 Seiten, Veröffentlichungsdatum 02.11.2026"
     }
   ]
 }
