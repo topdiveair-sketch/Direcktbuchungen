@@ -6,7 +6,7 @@
   "events": [
     {
       "start": "2026-11-07",
-      "end": "2026-11-09",
+      "end": "2026-11-08",
       "summary": "CLOSED - Not available",
       "source": "Booking iCal Sicherheitsabgleich"
     },
@@ -53,6 +53,6 @@
       "source": "Booking iCal Sicherheitsabgleich"
     }
   ],
-  "updatedAt": "7.11.2026, 09:40:10",
-  "updatedAtIso": "2026-11-07T08:40:10.158Z"
+  "updatedAt": "7.11.2026, 16:09:40",
+  "updatedAtIso": "2026-11-07T15:09:40.570Z"
 }
