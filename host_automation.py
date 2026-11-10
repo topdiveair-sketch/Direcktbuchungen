@@ -72,6 +72,11 @@ def init_host_automation(app, db, require_admin, db_path):
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS automation_seo_rate_limits(
+                check_name TEXT PRIMARY KEY,
+                consecutive_429 INTEGER NOT NULL DEFAULT 0,
+                updated_at TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS automation_metrics(
                 metric_day TEXT PRIMARY KEY,
                 availability_checks INTEGER NOT NULL DEFAULT 0,
@@ -562,7 +567,7 @@ def init_host_automation(app, db, require_admin, db_path):
         base = os.environ.get("PUBLIC_SITE_URL", "https://www.zuhauseambach-wachau.at").rstrip("/")
         active = set()
         checks = [
-            ("home", base + "/", ("<link rel=\"canonical\"", "application/ld+json")),
+            ("home", base + "/", ("<link rel=\\"canonical\\"", "application/ld+json")),
             ("robots", base + "/robots.txt", ("sitemap",)),
             ("sitemap", base + "/sitemap.xml", ("<urlset",)),
         ]
@@ -570,17 +575,63 @@ def init_host_automation(app, db, require_admin, db_path):
             key = f"seo:{name}"
             try:
                 response = requests.get(url, timeout=(4, 10), headers={"User-Agent": "ZAB-Automation/1.0"})
+                if response.status_code == 429:
+                    # A throttled probe does not establish a missing or broken page.
+                    # The worker retries on its next normal cycle (about 5 minutes).
+                    with db() as conn:
+                        conn.execute(
+                            """INSERT INTO automation_seo_rate_limits(check_name,consecutive_429,updated_at)
+                               VALUES(?,1,?)
+                               ON CONFLICT(check_name) DO UPDATE SET
+                                 consecutive_429=consecutive_429+1,
+                                 updated_at=excluded.updated_at""",
+                            (name, _iso_now()),
+                        )
+                        count = conn.execute(
+                            "SELECT consecutive_429 FROM automation_seo_rate_limits WHERE check_name=?",
+                            (name,),
+                        ).fetchone()["consecutive_429"]
+                    active.add(key)  # Do not falsely resolve an earlier alert yet.
+                    if count >= 3:
+                        _upsert_alert(
+                            key,
+                            "warning",
+                            f"SEO-Selbsttest {name}: HTTP 429 in {count} aufeinanderfolgenden "
+                            "Prüfungen. Der Server begrenzt automatische Anfragen; "
+                            "der Seiteninhalt wurde nicht geprüft.",
+                        )
+                    continue
+
+                # A non-429 result breaks the consecutive throttling sequence.
+                with db() as conn:
+                    conn.execute(
+                        "DELETE FROM automation_seo_rate_limits WHERE check_name=?",
+                        (name,),
+                    )
+                if response.status_code != 200:
+                    active.add(key)
+                    _upsert_alert(
+                        key, "warning",
+                        f"SEO-Selbsttest {name} auffällig: HTTP {response.status_code}; "
+                        "Seiteninhalt nicht geprüft.",
+                    )
+                    continue
                 body = response.text.lower()
                 missing = [needle for needle in needles if needle.lower() not in body]
-                if response.status_code != 200 or missing:
+                if missing:
                     active.add(key)
                     _upsert_alert(
                         key,
                         "warning",
-                        f"SEO-Selbsttest {name} auffällig: HTTP {response.status_code}; "
-                        f"fehlend: {', '.join(missing) if missing else 'nichts'}.",
+                        f"SEO-Selbsttest {name}: HTTP 200, aber Inhalt unvollständig; "
+                        f"fehlend: {', '.join(missing)}.",
                     )
             except requests.RequestException as exc:
+                with db() as conn:
+                    conn.execute(
+                        "DELETE FROM automation_seo_rate_limits WHERE check_name=?",
+                        (name,),
+                    )
                 active.add(key)
                 _upsert_alert(key, "warning", f"SEO-Selbsttest {name} nicht erreichbar: {str(exc)[:180]}")
         _resolve_alerts("seo:", active)
