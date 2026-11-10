@@ -567,7 +567,7 @@ def init_host_automation(app, db, require_admin, db_path):
         base = os.environ.get("PUBLIC_SITE_URL", "https://www.zuhauseambach-wachau.at").rstrip("/")
         active = set()
         checks = [
-            ("home", base + "/", ("<link rel=\\"canonical\\"", "application/ld+json")),
+            ("home", base + "/", ('<link rel="canonical"', "application/ld+json")),
             ("robots", base + "/robots.txt", ("sitemap",)),
             ("sitemap", base + "/sitemap.xml", ("<urlset",)),
         ]
