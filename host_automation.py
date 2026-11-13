@@ -903,7 +903,13 @@ def init_host_automation(app, db, require_admin, db_path):
         _payment_reminders()
         _prearrival_upsell()
         _update_metrics()
-        _seo_self_check()
+        # SEO discovery files change rarely. Check four times a day rather than
+        # on every five-minute business-safety cycle. The persistent key also
+        # prevents duplicate probes when the worker restarts or is invoked manually.
+        seo_now = _now()
+        seo_slot = f"{seo_now.date().isoformat()}:{seo_now.hour // 6}"
+        if _run_once_key(f"seo-self-check:{seo_slot}", "6-hour public SEO check"):
+            _seo_self_check()
         _daily_backup()
         _daily_report()
         _queue_2026_review_campaign()
