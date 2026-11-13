@@ -2751,7 +2751,7 @@ def sitemap():
     for url in public_sitemap_urls():
         body.append(f"<url><loc>{url}</loc></url>")
     body.append("</urlset>")
-    return Response("\n".join(body), mimetype="application/xml")
+    return Response("\n".join(body), mimetype="application/xml", headers={"Cache-Control": "public, max-age=3600"})
 
 
 @app.get(f"/{INDEXNOW_KEY}.txt")
@@ -2762,8 +2762,9 @@ def indexnow_key_file():
 @app.get("/robots.txt")
 def robots():
     return Response(
-        "User-agent: *\nAllow: /\nSitemap: https://www.zuhauseambach-wachau.at/sitemap.xml\n",
+        "User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nDisallow: /health/\nSitemap: https://www.zuhauseambach-wachau.at/sitemap.xml\n",
         mimetype="text/plain",
+        headers={"Cache-Control": "public, max-age=3600"},
     )
 
 
