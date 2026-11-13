@@ -1,0 +1,74 @@
+name: Optimize ZAB homepage hero image losslessly
+
+on:
+  push:
+    branches:
+      - fix/booking-section-order
+    paths:
+      - .github/workflows/optimize-homepage-image-lossless.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/booking-section-order
+          persist-credentials: true
+      - name: Install image converter
+        run: python -m pip install Pillow==11.3.0
+      - name: Convert losslessly and verify exact pixels
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageChops
+          import os
+
+          original = Path("static/images/aggsbach-markt-luftbild.png")
+          target = Path("static/images/aggsbach-markt-luftbild-lossless.webp")
+          css = Path("static/css/style.css")
+          assert original.is_file() and css.is_file(), "Required original image or stylesheet is missing"
+          with Image.open(original) as image:
+              image.load()
+              rgba = image.mode in ("RGBA", "LA") or "transparency" in image.info
+              mode = "RGBA" if rgba else "RGB"
+              pixels = image.convert(mode)
+              meta = {}
+              if image.info.get("icc_profile"):
+                  meta["icc_profile"] = image.info["icc_profile"]
+              pixels.save(target, format="WEBP", lossless=True, method=6, **meta)
+              with Image.open(target) as decoded:
+                  assert decoded.size == pixels.size, "Image dimensions changed"
+                  assert ImageChops.difference(pixels, decoded.convert(mode)).getbbox() is None, "Pixel mismatch: refuse to publish"
+          before = original.stat().st_size
+          after = target.stat().st_size
+          ratio = after / before
+          print(f"Original: {before} bytes; lossless WebP: {after} bytes; ratio={ratio:.4f}")
+          if after >= before * 0.85:
+              print("No meaningful 15% saving. Keep original image and stylesheet unchanged.")
+              target.unlink()
+              raise SystemExit(0)
+          old = css.read_text(encoding="utf-8")
+          assert "aggsbach-markt-luftbild.png" in old, "Expected hero image reference is absent"
+          new = old.replace("aggsbach-markt-luftbild.png", "aggsbach-markt-luftbild-lossless.webp")
+          assert new != old
+          css.write_text(new, encoding="utf-8")
+          print(f"Pixel-perfect conversion verified. Savings: {before-after} bytes ({(1-ratio)*100:.1f}%)")
+          PY
+      - name: Commit verified lossless image only if smaller
+        shell: bash
+        run: |
+          if git diff --quiet -- static/css/style.css; then
+            echo "No page changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add static/css/style.css static/images/aggsbach-markt-luftbild-lossless.webp
+          git commit -m "Optimize homepage hero image losslessly with verified pixel equality"
+          git push origin HEAD:fix/booking-section-order
