@@ -1586,6 +1586,12 @@ def globals_for_templates():
     }
 
 
+@app.get("/favicon.ico")
+def public_favicon():
+    """Serve the existing website icon without a trailing-slash redirect."""
+    return redirect(url_for("static", filename="images/host-app-icon.svg"), code=302)
+
+
 @app.get("/media/windis-band15.jpg")
 def windis_band15_image():
     """Serve the Band 15 cover from repository-safe base64 chunks."""
