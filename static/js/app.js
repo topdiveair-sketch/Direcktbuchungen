@@ -397,7 +397,8 @@ document.getElementById("checkAvailability").addEventListener("click", async () 
   try {
     const response = await fetch("/api/availability", {method:"POST", body:fd});
     const data = await response.json();
-    const status = data.status || (data.available === true ? "free" : data.available === false ? "blocked" : "unknown");
+    const calendarUnconfirmed = /Verfügbarkeit kann gerade nicht bestätigt werden|nicht zuverlässig bestätigt|nicht geprüft werden|calendar.*(unavailable|failed)|sync.*failed/i.test(String(data.message || ""));
+    const status = calendarUnconfirmed ? "unknown" : (data.status || (data.available === true ? "free" : data.available === false ? "blocked" : "unknown"));
     const guestAvailabilityMessage = status === "free"
       ? (data.message || tx("free"))
       : status === "unknown"
