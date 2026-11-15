@@ -1,8 +1,7 @@
 name: ZAB-OS-Masterkalender aktualisieren
 
+# On-demand/manual or relevant code change only; no five-minute background sync.
 on:
-  schedule:
-    - cron: "*/5 * * * *"
   workflow_dispatch:
   push:
     branches:
