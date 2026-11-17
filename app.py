@@ -1676,11 +1676,11 @@ def activity_landing_context(kind: str) -> dict:
     if kind == "bike":
         return {
             "kind": "bike",
-            "page_title": "Donauradweg Unterkunft Wachau | Radurlaub bei Zuhause am Bach",
-            "meta_description": "Donauradweg-Unterkunft Wachau: versperrbarer, kameraüberwachter Fahrradschuppen und E-Bike-Laden; weitere Fahrrad-Extras nach Anfrage und ausdrücklicher Bestätigung.",
+            "page_title": "Donauradweg Unterkunft Wachau | 1 Nacht in Aggsbach Markt",
+            "meta_description": "Unterkunft am Donauradweg in Aggsbach Markt: 1 Nacht möglich, abschließbarer Fahrradraum, E-Bike laden und Frühstück auf Wunsch. Direkt Termin prüfen.",
             "canonical": "https://www.zuhauseambach-wachau.at/unterkunft-donauradweg-wachau",
             "eyebrow": "Donauradweg Wachau · Aggsbach Markt",
-            "headline": "Unterkunft am Donauradweg in der Wachau",
+            "headline": "Donauradweg-Unterkunft in der Wachau – auch für 1 Nacht",
             "intro": "Zuhause am Bach ist ein ruhiger Etappenstopp in Aggsbach Markt für Radreisende aus Österreich, Deutschland und der Schweiz. Auch eine einzelne Übernachtung ist möglich. Fahrräder stehen im versperrbaren, kameraüberwachten Fahrradschuppen; E-Bikes können am Haus geladen werden. Einen Waschplatz mit Öl-, Fett- und Wachsabscheider, ein passendes Ersatzrad, die Beschaffung eines geeigneten Rads nach Budgetfreigabe oder Fahrradtransport können wir auf Anfrage prüfen. Wir bestätigen Termin, Verfügbarkeit, Umfang und Kosten jeweils ausdrücklich vorab; erst dann gilt die Zusatzleistung als vereinbart. Die Extras sind nicht ständig vor Ort verfügbar. Kleine Werkzeughilfe ist freiwillig und nur nach Absprache möglich. Wir sind kein Fahrradfachbetrieb und versprechen keine Reparatur oder Verkehrssicherheitsprüfung. Gäste beurteilen ihr Rad selbst und entscheiden eigenverantwortlich über die Weiterfahrt. Zwingende gesetzliche Haftung bleibt unberührt.",
             "benefits": [
                 "Versperrbarer, kameraüberwachter Fahrradschuppen",
@@ -1770,8 +1770,8 @@ def seo_landing_context(slug: str) -> dict:
             ],
         },
         "wachau": {
-            "title":"Unterkunft & Privatzimmer Wachau | Zuhause am Bach",
-            "description":"Kleine persönliche Unterkunft und Privatzimmer in der Wachau zwischen Melk und Krems: Aggsbach Markt, Donauradweg, Welterbesteig, Frühstück und Direktbuchung.",
+            "title":"Unterkunft Wachau | Gartenzimmer direkt buchen",
+            "description":"Unterkunft in der Wachau: Gartenzimmer für 2 in Aggsbach Markt, 1 Nacht möglich. Praktisch für Donauradweg & Welterbesteig. Preis und Termin direkt prüfen.",
             "canonical":"https://www.zuhauseambach-wachau.at/unterkunft-wachau",
             "h1":"Unterkunft & Privatzimmer in der Wachau zwischen Melk und Krems",
             "lead":"Zuhause am Bach ist eine kleine, persönliche Unterkunft mit Gartenzimmer in Aggsbach Markt – für Gäste aus Österreich, Deutschland und der Schweiz, praktisch für Donauradweg, Welterbesteig und Wachau-Ausflüge.",
@@ -1784,11 +1784,11 @@ def seo_landing_context(slug: str) -> dict:
             "faq":faq_direct,
         },
         "aggsbach": {
-            "title":"Übernachten Aggsbach Markt | Zuhause am Bach Wachau",
-            "description":"Übernachten in Aggsbach Markt: auch 1 Nacht möglich. Ruhiges Gartenzimmer für Donauradweg, Welterbesteig, Frühstück und Direktbuchung bei Zuhause am Bach.",
+            "title":"Übernachten Aggsbach Markt | Gartenzimmer ab 1 Nacht",
+            "description":"Übernachten in Aggsbach Markt: ruhiges Gartenzimmer für maximal 2 Gäste, auch 1 Nacht möglich. Frühstück auf Wunsch. Preis und Verfügbarkeit direkt prüfen.",
             "canonical":"https://www.zuhauseambach-wachau.at/uebernachten-aggsbach-markt",
             "h1":"Übernachten in Aggsbach Markt",
-            "lead":"Zuhause am Bach bietet eine persönliche Übernachtungsmöglichkeit direkt in Aggsbach Markt – auch für nur 1 Nacht, ideal für Wanderer, Radfahrer und Etappengäste.",
+            "lead":"In Aggsbach Markt direkt übernachten: Zuhause am Bach bietet ein ruhiges Gartenzimmer für maximal zwei Personen. Auch eine Nacht ist möglich, wenn der Termin frei ist – Preis und Verfügbarkeit bequem direkt prüfen.",
             "eyebrow":"Aggsbach Markt · Wachau",
             "subheading":"Direkt im Ort schlafen und die Wachau weiterziehen",
             "paragraphs":["Aggsbach Markt ist ein ruhiger Etappenort am nördlichen Donauufer. Das Gartenzimmer ist aktuell unser direkt angebotenes Zimmer für maximal zwei Personen.","Welterbesteig, Donauradweg und Ausflüge in die Wachau können von hier aus gut kombiniert werden.","Frühstück, Gepäcktransport und persönliche Tipps sind auf Wunsch Teil der Reiseplanung."],
