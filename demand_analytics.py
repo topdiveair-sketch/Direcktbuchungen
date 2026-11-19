@@ -201,11 +201,11 @@ def _event_summary(db, since: str):
                 )
                 demand_dates = list(cur.fetchall())
                 cur.execute(
-                    """SELECT substr(arrival,1,7) month,COUNT(*) interest
+                    """SELECT substr(arrival,1,7) AS "month",COUNT(*) interest
                        FROM demand_events
                        WHERE created_at>=%s AND event IN ('dates_selected','price_quote_loaded')
                          AND length(arrival)>=7
-                       GROUP BY substr(arrival,1,7) ORDER BY interest DESC,month LIMIT 12""",
+                       GROUP BY substr(arrival,1,7) ORDER BY interest DESC,"month" LIMIT 12""",
                     (since,),
                 )
                 months = list(cur.fetchall())
@@ -238,11 +238,11 @@ def _event_summary(db, since: str):
             (since,),
         ).fetchall()]
         months = [dict(r) for r in conn.execute(
-            """SELECT substr(arrival,1,7) month,COUNT(*) interest
+            """SELECT substr(arrival,1,7) AS "month",COUNT(*) interest
                FROM demand_events
                WHERE created_at>=? AND event IN ('dates_selected','price_quote_loaded')
                  AND length(arrival)>=7
-               GROUP BY substr(arrival,1,7) ORDER BY interest DESC,month LIMIT 12""",
+               GROUP BY substr(arrival,1,7) ORDER BY interest DESC,"month" LIMIT 12""",
             (since,),
         ).fetchall()]
         sources = [dict(r) for r in conn.execute(
