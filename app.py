@@ -2087,8 +2087,8 @@ def seo_landing_context(slug: str) -> dict:
             "faq":faq_direct,
         },
         "winter": {
-            "title":"Winterurlaub Wachau | Unterkunft zwischen Melk und Krems",
-            "description":"Winterurlaub in der Wachau: ruhig zwischen Melk und Krems in Aggsbach Markt übernachten. Jauerling, Advent, Winterwandern, Frühstück und Direktbuchung.",
+            "title":"Winterurlaub Wachau: Unterkunft ab 1 Nacht | Aggsbach Markt",
+            "description":"Winterurlaub Wachau: Gartenzimmer in Aggsbach Markt für 1–2 Gäste, 1 Nacht grundsätzlich möglich. Advent, Jauerling und Winterwandern. Direkt Verfügbarkeit prüfen.",
             "canonical":"https://www.zuhauseambach-wachau.at/winterurlaub-wachau",
             "h1":"Winterurlaub in der Wachau – ruhig zwischen Melk und Krems",
             "lead":"Zuhause am Bach ist eine kleine Winter-Unterkunft in Aggsbach Markt für Gäste, die Wachau, Jauerling, Advent, Winterwandern und ruhige Tage an der Donau verbinden möchten.",
@@ -2101,8 +2101,8 @@ def seo_landing_context(slug: str) -> dict:
             "faq":faq_direct,
         },
         "ski": {
-            "title":"Skisaison Jauerling Unterkunft Wachau | Skifahren & Übernachten",
-            "description":"Unterkunft für die Skisaison am Jauerling: Flutlicht, Kinderskipark, Skischule und Skiverleih aktuell beim Betreiber prüfen und ruhig in Aggsbach Markt übernachten.",
+            "title":"Skifahren Jauerling: Unterkunft Wachau ab 1 Nacht",
+            "description":"Jauerling Unterkunft in Aggsbach Markt für 1–2 Gäste: auch 1 Nacht grundsätzlich möglich. Winterausflug und Übernachtung verbinden, Direktpreis prüfen.",
             "canonical":"https://www.zuhauseambach-wachau.at/skifahren-jauerling-unterkunft-wachau",
             "h1":"Unterkunft für die Skisaison am Jauerling",
             "lead":"Zuhause am Bach ist eine ruhige Wachau-Unterkunft für Gäste, die einen Winterausflug Richtung Jauerling mit einer Übernachtung in Aggsbach Markt verbinden möchten.",
