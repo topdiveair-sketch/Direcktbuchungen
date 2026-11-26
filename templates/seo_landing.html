@@ -98,19 +98,21 @@
   {% endif %}
 </head>
 <body>
+{% set seo_booking_url = url_for('index') ~ '?source=seo_landing&amp;utm_medium=organic&amp;utm_campaign=' ~ (canonical.split('/')[-1]|urlencode) ~ '#booking' %}
 <header class="hero" id="start">
   <nav class="topbar">
     <a class="brand" href="{{ url_for('index') }}"><span class="logo-mark">⌂</span><span>Zuhause am Bach<small>Gästehaus Wachau</small></span></a>
     <div class="nav-links">
-      <a href="{{ url_for('index') }}{% if business_mode %}?source=business&utm_medium=organic&utm_campaign=business#booking{% else %}#booking{% endif %}">Direkt buchen</a>
+      <a href="{% if business_mode %}{{ url_for('index') }}?source=business&amp;utm_medium=organic&amp;utm_campaign=business#booking{% else %}{{ seo_booking_url|safe }}{% endif %}">Direkt buchen</a>
       <a href="{{ url_for('index') }}#kalender">Kalender</a>
       <a href="{{ url_for('index') }}#kontakt">Kontakt</a>
     </div>
-    <a href="{{ url_for('index') }}{% if business_mode %}?source=business&utm_medium=organic&utm_campaign=business#booking{% else %}#booking{% endif %}" class="btn top-btn">{% if business_mode %}Firmenaufenthalt prüfen{% else %}Verfügbarkeit prüfen{% endif %}</a>
+    <a href="{% if business_mode %}{{ url_for('index') }}?source=business&amp;utm_medium=organic&amp;utm_campaign=business#booking{% else %}{{ seo_booking_url|safe }}{% endif %}" class="btn top-btn">{% if business_mode %}Firmenaufenthalt prüfen{% else %}Verfügbarkeit prüfen{% endif %}</a>
   </nav>
   <div class="hero-content">
     <h1>{{ h1 }}</h1>
     <p>{{ lead }}</p>
+    {% if '/winterurlaub-wachau' in canonical or '/skifahren-jauerling-unterkunft-wachau' in canonical %}<p><strong>Gartenzimmer für 1–2 Gäste · 1 Nacht grundsätzlich möglich · Direktbuchung ohne Plattformprovision für den Gastgeber.</strong></p>{% endif %}
     <span>Zuhause am Bach · Aggsbach Markt · Wachau</span>
   </div>
 </header>
@@ -199,9 +201,9 @@
       {% for paragraph in paragraphs %}<p>{{ paragraph }}</p>{% endfor %}
     </div>
     <div class="review-box">
-      <strong>{% if business_mode %}Firmenaufenthalt direkt anfragen{% else %}Direkt bei uns anfragen{% endif %}</strong>
-      <small>{% if business_mode %}Freie Termine, Direktpreis und Firmendaten auf der offiziellen Website erfassen.{% else %}Freie Termine und Preis direkt auf der offiziellen Website prüfen.{% endif %}</small>
-      <a href="{{ url_for('index') }}{% if business_mode %}?source=business&utm_medium=organic&utm_campaign=business#booking{% else %}#booking{% endif %}">{% if business_mode %}Firmenanfrage &amp; Preis{% else %}Verfügbarkeit &amp; Preis{% endif %}</a>
+      <strong>{% if business_mode %}Firmenaufenthalt direkt anfragen{% else %}Verfügbarkeit und Gesamtpreis direkt prüfen{% endif %}</strong>
+      <small>{% if business_mode %}Freie Termine, Direktpreis und Firmendaten auf der offiziellen Website erfassen.{% else %}Ein Gartenzimmer für maximal 2 Gäste, 1 Nacht grundsätzlich möglich. Aktuelle Verfügbarkeit und den verbindlichen Gesamtpreis direkt beim Gastgeber prüfen.{% endif %}</small>
+      <a href="{% if business_mode %}{{ url_for('index') }}?source=business&amp;utm_medium=organic&amp;utm_campaign=business#booking{% else %}{{ seo_booking_url|safe }}{% endif %}">{% if business_mode %}Firmenanfrage &amp; Preis{% else %}Jetzt Termin und Preis prüfen{% endif %}</a>
       {% if official_url %}<small style="display:block;margin-top:12px">Aktuelle Streckeninfos:</small><a href="{{ official_url }}" target="_blank" rel="noopener">{{ official_label or "Offizielle Routeninformation" }}</a>{% endif %}
     </div>
   </section>
@@ -240,7 +242,7 @@
     <div class="review-box">
       <strong>Offizielle Direktbuchung</strong>
       <small>Verfügbarkeit, Preis und gewünschte Zusatzleistungen direkt beim Gastgeber prüfen – ohne verbindliches Versprechen über freie Termine oder Sonderleistungen.</small>
-      <a href="{{ url_for('index') }}#booking">Gartenzimmer direkt anfragen</a>
+      <a href="{{ seo_booking_url|safe }}">Gartenzimmer: Termin und Preis prüfen</a>
     </div>
   </section>
   {% endif %}
