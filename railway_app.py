@@ -732,6 +732,7 @@ _winter_old_urls = {
     "/winter-wachau-jauerling": "/skifahren-jauerling-unterkunft-wachau",
     "/wachauer-advent-unterkunft": "/wachauer-advent-duernstein-2026-unterkunft",
     "/skifahren-jauerling-unterkunft-wachau/": "/skifahren-jauerling-unterkunft-wachau",
+    "/winterurlaub-wachau/": "/winterurlaub-wachau",
 }
 _prior_winter_wsgi = app.wsgi_app
 
