@@ -2096,7 +2096,7 @@ def seo_landing_context(slug: str) -> dict:
             "subheading":"Wintertage in der Wachau mit persönlicher Unterkunft",
             "paragraphs":["Aggsbach Markt liegt ruhig zwischen Melk und Krems und eignet sich als Basis für Winterausflüge in der Wachau und Richtung Jauerling.","Frühstück auf Wunsch und eine Trocknungsmöglichkeit für Outdoorbekleidung machen kurze Winteraufenthalte unkompliziert.","Adventtermine, Winterwanderungen und wetterabhängige Angebote lassen sich über die offiziellen Veranstalter prüfen; die Übernachtung kann direkt bei Zuhause am Bach angefragt werden."],
             "features":[("❄️","Winterbasis","Ruhig zwischen Melk und Krems übernachten."),("🏔️","Jauerling","Winterausflug und Naturpark verbinden."),("🍳","Frühstück","Auf Wunsch vor dem Wintertag."),("📅","Direkt buchen","Preis und freie Termine live prüfen.")],
-            "hero_image":"images/gartenzimmer-04-web.jpg","hero_image_alt":"Originalfoto des Gartenzimmers Zuhause am Bach in Aggsbach Markt, Wachau","hero_image_caption":"Unser Gartenzimmer in Aggsbach Markt – eine ruhige Basis zwischen Melk und Krems.",
+            "hero_image":"images/welterbesteig-original.jpg","hero_image_alt":"Wanderlandschaft in der Wachau am Welterbesteig","hero_image_caption":"Wachau-Landschaft als Ausflugsziel im Winter; Bedingungen vor Ort prüfen.",
             "secondary_image":"images/gartenzimmer-04-web.jpg","secondary_image_alt":"Gartenzimmer für Winterurlaub in der Wachau","secondary_image_caption":"Persönlich übernachten und die Wachau im Winter erleben.",
             "faq":faq_direct,
         },
