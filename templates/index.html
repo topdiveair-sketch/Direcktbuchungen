@@ -329,6 +329,14 @@
   }
 </style>
 
+  <style id="zab-gaestebuch-style">
+  .zab-slim .zab-gaestebuch{display:flex;flex-wrap:wrap;align-items:center;gap:clamp(16px,3vw,32px);margin:20px 0;padding:clamp(16px,3vw,28px);border:1px solid #d8e4da;border-radius:14px;background:#f9fbf8;scroll-margin-top:90px}
+  .zab-gaestebuch img{width:min(100%,168px);height:auto;display:block;border-radius:4px;box-shadow:0 4px 12px #17392b25}
+  .zab-gaestebuch-copy{flex:1 1 240px;min-width:0}
+  .zab-gaestebuch-copy h3{margin:0;color:#244a34;font:700 clamp(1.3rem,2.5vw,1.85rem)/1.2 Georgia,serif}
+  .zab-gaestebuch-copy p{margin:10px 0;color:#52635b;line-height:1.6;max-width:66ch}
+  .zab-gaestebuch-copy a{color:#23573a;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+</style>
   <style id="zab-windis-booking-style">
     .zab-windis-intro{max-width:1150px;margin:22px auto 18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;background:#f5f8f3;border:1px solid #dce8df;border-radius:18px;overflow:hidden;box-shadow:0 8px 26px rgba(18,55,37,.07)}
     .zab-windis-intro img{width:100%;height:100%;min-height:310px;object-fit:cover;display:block}
@@ -702,6 +710,15 @@
       <article><h3>📍 Aggsbach Markt &amp; Region</h3><p>Weitere Ausflüge, Jauerling und Tipps für die Wachau.</p><a href="/uebernachten-aggsbach-markt">Region entdecken</a></article>
     </div>
     <p class="zab-slim-warning"><strong>Hinweis für Wanderer:</strong> Der Welterbesteig-Abschnitt Glatzberg/Bachleiten ist laut Gemeinde für 19.10.–voraussichtlich 20.11.2026 gesperrt. <a href="https://www.aggsbach.gv.at/Forstliches_Sperrgebiet_-_Welterbesteig_Wachau_Teilabschnitt_Glatzberg" target="_blank" rel="noopener noreferrer">Amtliche Sperrmeldung prüfen</a>.</p>
+    <article id="wachauer-gaestebuch-2026" class="zab-gaestebuch" aria-labelledby="wachauer-gaestebuch-titel">
+      <img src="{{ url_for('static', filename='images/wachauer-gaestebuch-2026.webp') }}" alt="Cover des Wachauer Gästebuchs 2026 von Johann Prem" width="446" height="647" loading="lazy" decoding="async">
+      <div class="zab-gaestebuch-copy">
+        <h3 id="wachauer-gaestebuch-titel">Zuhause am Bach – Das Wachauer Gästebuch 2026</h3>
+        <p>Nur kurz auf die Bank, und plötzlich ist es ein Uhr früh. In 22 illustrierten Märchen für Erwachsene erzählt Johann Prem vom Gästehausleben in Aggsbach Markt: mit müden Wanderern, Wachauer Schmäh und drei Windhunden, die sich ihren Teil denken.</p>
+        <p>Hardcover angekündigt.</p>
+        <a href="mailto:{{ settings.email }}?subject=Wachauer%20G%C3%A4stebuch%202026">Interesse am Buch melden</a>
+      </div>
+    </article>
     <details class="zab-slim-more"><summary>Weitere Wachau-Tipps und Geschichte</summary>
       <div class="zab-slim-more-links">
         <a href="/unterkunft-wachau">Privatzimmer &amp; Unterkunft Wachau</a>
